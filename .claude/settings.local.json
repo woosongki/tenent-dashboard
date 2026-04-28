@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx create-next-app@latest . --typescript --tailwind --eslint --app --src-dir --import-alias \"@/*\" --no-git)",
+      "Read(//c/Users/WOO_SO~1/AppData/Local/Temp/claude/C--Users-woo-songki-Desktop-gana/1e8d7970-18ac-475a-80df-e03604fba26b/tasks/**)"
+    ]
+  }
+}
