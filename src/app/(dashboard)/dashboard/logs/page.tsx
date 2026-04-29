@@ -116,8 +116,8 @@ export default async function LogsPage({
           </div>
         ) : (
           <>
-            <div className="rounded-xl bg-white px-4 py-3.5 border border-[#e8ecf0]">
-              <Suspense fallback={<div className="h-8 animate-pulse rounded-lg bg-gray-100" />}>
+            <div className="rounded-xl border border-[#e8ecf0] bg-white px-4 py-3.5 shadow-[0_1px_3px_rgba(0,0,0,.04)]">
+              <Suspense fallback={<div className="h-8 animate-pulse rounded-lg bg-slate-100" />}>
                 <LogFilters actors={actors} />
               </Suspense>
             </div>

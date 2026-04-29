@@ -22,7 +22,7 @@ async function GoalsContent({ orgId }: { orgId: string }) {
       {total > 0 && (
         <div className="flex flex-wrap gap-2 sm:gap-4">
           <StatChip label="전체" value={total}        color="text-gray-700" />
-          <StatChip label="달성" value={completed}    color="text-indigo-600" />
+          <StatChip label="달성" value={completed}    color="text-violet-600" />
           <StatChip label="주의" value={atRisk}       color="text-rose-500" />
           <StatChip label="진행" value={total - completed - atRisk} color="text-emerald-600" />
         </div>
@@ -105,9 +105,9 @@ function StatChip({
   label, value, color,
 }: { label: string; value: number; color: string }) {
   return (
-    <div className="flex items-center gap-1.5 rounded-xl bg-white px-4 py-2 ring-1 ring-gray-200">
+    <div className="flex items-center gap-1.5 rounded-xl border border-[#e8ecf0] bg-white px-4 py-2 shadow-[0_1px_3px_rgba(0,0,0,.04)]">
       <span className={`text-lg font-bold ${color}`}>{value}</span>
-      <span className="text-xs text-gray-400">{label}</span>
+      <span className="text-xs text-slate-400">{label}</span>
     </div>
   );
 }

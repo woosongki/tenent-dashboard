@@ -12,7 +12,7 @@ interface Props {
 function groupByDate(logs: AuditLog[]): [string, AuditLog[]][] {
   const map = new Map<string, AuditLog[]>();
   for (const log of logs) {
-    const key = log.createdAt.slice(0, 10); // YYYY-MM-DD
+    const key = log.createdAt.slice(0, 10);
     if (!map.has(key)) map.set(key, []);
     map.get(key)!.push(log);
   }
@@ -35,12 +35,12 @@ function formatDateGroup(dateStr: string): string {
 export default function LogTimeline({ logs, hasMore, nextCursor }: Props) {
   if (logs.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center rounded-2xl bg-white py-20 ring-1 ring-gray-200">
-        <svg className="mb-3 h-10 w-10 text-gray-200" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+      <div className="flex flex-col items-center justify-center rounded-xl border border-[#e8ecf0] bg-white py-20 shadow-[0_1px_3px_rgba(0,0,0,.04)]">
+        <svg className="mb-3 h-10 w-10 text-slate-200" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
         </svg>
-        <p className="text-sm font-medium text-gray-400">이력이 없습니다</p>
-        <p className="mt-1 text-xs text-gray-300">목표를 생성하거나 수정하면 여기에 기록됩니다.</p>
+        <p className="text-sm font-medium text-slate-400">이력이 없습니다</p>
+        <p className="mt-1 text-xs text-slate-300">목표를 생성하거나 수정하면 여기에 기록됩니다.</p>
       </div>
     );
   }
@@ -53,15 +53,15 @@ export default function LogTimeline({ logs, hasMore, nextCursor }: Props) {
         <section key={date}>
           {/* 날짜 구분선 */}
           <div className="mb-4 flex items-center gap-3">
-            <span className="text-xs font-semibold text-gray-400 uppercase tracking-wide">
+            <span className="text-[11px] font-semibold uppercase tracking-[.08em] text-slate-400">
               {formatDateGroup(date)}
             </span>
-            <div className="flex-1 h-px bg-gray-100" />
+            <div className="flex-1 h-px bg-[#f1f5f9]" />
           </div>
 
-          {/* 타임라인 세로선 */}
+          {/* 타임라인 */}
           <div className="relative space-y-1">
-            <div className="absolute left-[19px] top-0 bottom-0 w-px bg-gray-100" aria-hidden />
+            <div className="absolute left-[19px] top-0 bottom-0 w-px bg-[#f1f5f9]" aria-hidden />
             {group.map((log) => (
               <LogEntry key={log.id} log={log} />
             ))}
@@ -69,10 +69,7 @@ export default function LogTimeline({ logs, hasMore, nextCursor }: Props) {
         </section>
       ))}
 
-      {/* 더 보기 */}
-      {hasMore && nextCursor && (
-        <LoadMoreButton cursor={nextCursor} />
-      )}
+      {hasMore && nextCursor && <LoadMoreButton cursor={nextCursor} />}
     </div>
   );
 }
@@ -87,33 +84,30 @@ function LogEntry({ log }: { log: AuditLog }) {
   });
 
   return (
-    <div className="relative flex items-start gap-4 rounded-xl px-3 py-2.5 transition-colors hover:bg-gray-50">
+    <div className="relative flex items-start gap-4 rounded-xl px-3 py-2.5 transition-colors hover:bg-[#faf8ff]">
       {/* 액터 아바타 */}
-      <div className="relative z-10 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gray-100 text-xs font-semibold text-gray-500 ring-2 ring-white">
+      <div className="relative z-10 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-slate-100 text-xs font-semibold text-slate-500 ring-2 ring-white">
         {initials}
-        {/* 액션 도트 */}
         <span className={`absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full ${meta.dotColor} ring-2 ring-white`} />
       </div>
 
       {/* 내용 */}
       <div className="flex-1 min-w-0 space-y-0.5">
-        {/* 헤더 */}
         <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
-          <span className="text-sm font-medium text-gray-800 truncate max-w-[180px]" title={log.actorEmail ?? ""}>
+          <span className="text-sm font-medium text-slate-700 truncate max-w-[180px]" title={log.actorEmail ?? ""}>
             {log.actorEmail ?? "알 수 없는 사용자"}
           </span>
           <ActionBadge action={log.action} />
-          <span className="text-sm text-gray-500">
+          <span className="text-sm text-slate-500">
             {entityLabel}{log.entityLabel && (
-              <> <span className="font-medium text-gray-700">'{log.entityLabel}'</span></>
+              <> <span className="font-medium text-slate-700">&apos;{log.entityLabel}&apos;</span></>
             )}
           </span>
         </div>
 
-        {/* 필드 변경 상세 */}
         {log.action === "updated" && log.field && (
-          <div className="flex flex-wrap items-center gap-1.5 text-xs text-gray-400">
-            <span className="font-medium text-gray-500">{log.field}</span>
+          <div className="flex flex-wrap items-center gap-1.5 text-xs text-slate-400">
+            <span className="font-medium text-slate-500">{log.field}</span>
             <ValueChip value={log.oldValue} variant="old" />
             <svg className="h-3 w-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
@@ -123,7 +117,7 @@ function LogEntry({ log }: { log: AuditLog }) {
         )}
 
         {log.action === "status_changed" && log.field && (
-          <div className="flex flex-wrap items-center gap-1.5 text-xs text-gray-400">
+          <div className="flex flex-wrap items-center gap-1.5 text-xs text-slate-400">
             <ValueChip value={log.oldValue} variant="old" />
             <svg className="h-3 w-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
@@ -135,7 +129,7 @@ function LogEntry({ log }: { log: AuditLog }) {
         {log.action === "created" && log.metadata && Object.keys(log.metadata).length > 0 && (
           <div className="flex flex-wrap gap-1.5">
             {Object.entries(log.metadata).map(([k, v]) => (
-              <span key={k} className="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-500">
+              <span key={k} className="rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-500">
                 {k}: {String(v)}
               </span>
             ))}
@@ -143,20 +137,19 @@ function LogEntry({ log }: { log: AuditLog }) {
         )}
       </div>
 
-      {/* 시각 */}
-      <time className="shrink-0 text-xs text-gray-300 pt-0.5">{time}</time>
+      <time className="shrink-0 text-xs text-slate-300 pt-0.5">{time}</time>
     </div>
   );
 }
 
-// ── 더 보기 버튼 (URL cursor 파라미터 추가) ──────────────────
+// ── 더 보기 버튼 ─────────────────────────────────────────────
 function LoadMoreButton({ cursor }: { cursor: string }) {
   return (
     <div className="flex justify-center">
       <Link
         href={`?cursor=${encodeURIComponent(cursor)}`}
         scroll={false}
-        className="rounded-xl border border-gray-200 bg-white px-6 py-2.5 text-sm font-medium text-gray-600 shadow-sm hover:bg-gray-50 transition-colors"
+        className="rounded-xl border border-[#e8ecf0] bg-white px-6 py-2.5 text-sm font-medium text-slate-600 shadow-[0_1px_3px_rgba(0,0,0,.04)] hover:bg-slate-50 hover:border-violet-200 hover:text-violet-600 transition-colors"
       >
         더 보기
       </Link>
@@ -175,7 +168,7 @@ function ActionBadge({ action }: { action: AuditLog["action"] }) {
 }
 
 function ValueChip({ value, variant }: { value: string | null; variant: "old" | "new" }) {
-  if (value === null) return <span className="italic text-gray-300">없음</span>;
+  if (value === null) return <span className="italic text-slate-200">없음</span>;
   const cls = variant === "old"
     ? "bg-rose-50 text-rose-600 line-through"
     : "bg-emerald-50 text-emerald-700 font-medium";

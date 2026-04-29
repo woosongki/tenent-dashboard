@@ -14,9 +14,9 @@ import {
 } from "../_actions/performance";
 
 const EXCEL_COLUMNS: ExcelColumn[] = [
-  { header: "카테고리",    key: "category",             width: 14 },
-  { header: "브랜드코드",  key: "brand_code",            width: 10 },
-  { header: "브랜드명",    key: "brand_name",            width: 24 },
+  { header: "카테고리",     key: "category",             width: 14 },
+  { header: "브랜드코드",   key: "brand_code",            width: 10 },
+  { header: "브랜드명",     key: "brand_name",            width: 24 },
   { header: "매출(현기간)", key: "revenue_current",       width: 16 },
   { header: "매출(전기간)", key: "revenue_prev",          width: 16 },
   { header: "매출성장율(%)", key: "revenue_growth",       width: 14 },
@@ -48,7 +48,7 @@ function rowToForm(r: BrandPerformanceRow): RowFormData {
 }
 
 function GrowthCell({ value }: { value: number | null }) {
-  if (value === null) return <span className="text-gray-300">—</span>;
+  if (value === null) return <span className="text-slate-200">—</span>;
   const pos = value >= 0;
   return (
     <span className={`font-medium ${pos ? "text-emerald-600" : "text-rose-500"}`}>
@@ -62,12 +62,11 @@ interface Props {
 }
 
 export default function PerformanceTable({ rows }: Props) {
-  const [search,   setSearch]   = useState("");
-  const [category, setCategory] = useState("전체");
+  const [search,       setSearch]       = useState("");
+  const [category,     setCategory]     = useState("전체");
   const [excelLoading, setExcelLoading] = useState(false);
 
-  // CRUD state
-  const [editTarget, setEditTarget]   = useState<BrandPerformanceRow | null>(null); // null = add mode
+  const [editTarget, setEditTarget]   = useState<BrandPerformanceRow | null>(null);
   const [modalOpen,  setModalOpen]    = useState(false);
   const [deleteId,   setDeleteId]     = useState<string | null>(null);
   const [isPending,  startTransition] = useTransition();
@@ -84,32 +83,16 @@ export default function PerformanceTable({ rows }: Props) {
     });
   }, [brandRows, search, category]);
 
-  function openAdd() {
-    setEditTarget(null);
-    setModalOpen(true);
-  }
-
-  function openEdit(row: BrandPerformanceRow) {
-    setEditTarget(row);
-    setModalOpen(true);
-  }
-
-  function closeModal() {
-    setModalOpen(false);
-    setEditTarget(null);
-  }
-
-  function handleDelete(id: string) {
-    setDeleteId(id);
-  }
+  function openAdd()  { setEditTarget(null); setModalOpen(true); }
+  function openEdit(row: BrandPerformanceRow) { setEditTarget(row); setModalOpen(true); }
+  function closeModal() { setModalOpen(false); setEditTarget(null); }
+  function handleDelete(id: string) { setDeleteId(id); }
 
   function confirmDelete() {
     if (!deleteId) return;
     const id = deleteId;
     setDeleteId(null);
-    startTransition(async () => {
-      await deleteBrandRow(id);
-    });
+    startTransition(async () => { await deleteBrandRow(id); });
   }
 
   function handleExport() {
@@ -130,7 +113,7 @@ export default function PerformanceTable({ rows }: Props) {
           placeholder="브랜드명 · 코드 검색"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="h-8 w-full rounded-lg border border-gray-200 px-3 text-sm placeholder-gray-400 focus:border-indigo-400 focus:outline-none sm:w-48"
+          className="h-8 w-full rounded-lg border border-[#e8ecf0] px-3 text-sm placeholder-slate-300 focus:border-violet-400 focus:outline-none sm:w-48"
         />
         <div className="flex gap-1 flex-wrap">
           {["전체", ...CATEGORIES].map((c) => (
@@ -138,14 +121,16 @@ export default function PerformanceTable({ rows }: Props) {
               key={c}
               onClick={() => setCategory(c)}
               className={`rounded-full px-2.5 py-1 text-xs font-medium transition-colors ${
-                category === c ? "bg-indigo-600 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                category === c
+                  ? "bg-violet-600 text-white"
+                  : "bg-slate-100 text-slate-500 hover:bg-slate-200"
               }`}
             >
               {c}
             </button>
           ))}
         </div>
-        <span className="ml-auto text-xs text-gray-400">{filtered.length}개 브랜드</span>
+        <span className="ml-auto text-xs text-slate-400">{filtered.length}개 브랜드</span>
 
         {/* 엑셀 */}
         <button
@@ -162,7 +147,7 @@ export default function PerformanceTable({ rows }: Props) {
         {/* 추가 */}
         <button
           onClick={openAdd}
-          className="flex items-center gap-1.5 rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-1.5 text-xs font-medium text-indigo-700 hover:bg-indigo-100 transition-colors"
+          className="flex items-center gap-1.5 rounded-lg border border-violet-200 bg-violet-50 px-3 py-1.5 text-xs font-medium text-violet-700 hover:bg-violet-100 transition-colors"
         >
           <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
@@ -172,57 +157,68 @@ export default function PerformanceTable({ rows }: Props) {
       </div>
 
       {/* 테이블 */}
-      <div className="overflow-x-auto rounded-xl border border-gray-100 bg-white shadow-sm">
+      <div className="overflow-x-auto rounded-xl border border-[#e8ecf0] bg-white shadow-[0_1px_3px_rgba(0,0,0,.04)]">
         <table className="w-full min-w-[780px] text-sm">
           <thead>
-            <tr className="border-b border-gray-100 text-left text-xs text-gray-500 bg-gray-50">
-              <th className="px-3 py-3 font-medium sm:px-4">카테고리</th>
-              <th className="px-3 py-3 font-medium sm:px-4">코드</th>
-              <th className="px-3 py-3 font-medium sm:px-4">브랜드명</th>
-              <th className="px-3 py-3 font-medium text-right sm:px-4">매출(현)</th>
-              <th className="hidden px-3 py-3 font-medium text-right md:table-cell sm:px-4">매출(전)</th>
-              <th className="px-3 py-3 font-medium text-right sm:px-4">매출증감</th>
-              <th className="hidden px-3 py-3 font-medium text-right lg:table-cell sm:px-4">이익(현)</th>
-              <th className="hidden px-3 py-3 font-medium text-right lg:table-cell sm:px-4">이익(전)</th>
-              <th className="hidden px-3 py-3 font-medium text-right lg:table-cell sm:px-4">이익증감</th>
+            <tr className="border-b border-[#f1f5f9] bg-[#f8fafc] text-left text-[11px] font-semibold uppercase tracking-[.05em] text-slate-400">
+              <th className="px-3 py-3 sm:px-4">카테고리</th>
+              <th className="px-3 py-3 sm:px-4">코드</th>
+              <th className="px-3 py-3 sm:px-4">브랜드명</th>
+              <th className="px-3 py-3 text-right sm:px-4">매출(현)</th>
+              <th className="hidden px-3 py-3 text-right md:table-cell sm:px-4">매출(전)</th>
+              <th className="px-3 py-3 text-right sm:px-4">매출증감</th>
+              <th className="hidden px-3 py-3 text-right lg:table-cell sm:px-4">이익(현)</th>
+              <th className="hidden px-3 py-3 text-right lg:table-cell sm:px-4">이익(전)</th>
+              <th className="hidden px-3 py-3 text-right lg:table-cell sm:px-4">이익증감</th>
               <th className="px-3 py-3 sm:px-4" />
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-50">
+          <tbody className="divide-y divide-[#f8fafc]">
             {filtered.length === 0 ? (
               <tr>
-                <td colSpan={10} className="py-16 text-center text-sm text-gray-400">검색 결과가 없습니다.</td>
+                <td colSpan={10} className="py-16 text-center text-sm text-slate-400">
+                  검색 결과가 없습니다.
+                </td>
               </tr>
             ) : (
               filtered.map((r) => (
-                <tr key={r.id} className={`hover:bg-gray-50 transition-colors group ${deleteId === r.id ? "bg-rose-50" : ""}`}>
+                <tr
+                  key={r.id}
+                  className={`group border-l-[3px] border-l-transparent transition-all hover:border-l-violet-500 hover:bg-[#faf8ff] ${
+                    deleteId === r.id ? "bg-rose-50" : ""
+                  }`}
+                >
                   <td className="px-3 py-2.5 sm:px-4 sm:py-3">
-                    <span className="inline-block rounded-full bg-indigo-50 px-2 py-0.5 text-xs font-medium text-indigo-700 whitespace-nowrap">
+                    <span className="inline-block rounded-full bg-violet-50 px-2 py-0.5 text-xs font-medium text-violet-700 whitespace-nowrap">
                       {r.category}
                     </span>
                   </td>
-                  <td className="px-3 py-2.5 font-mono text-xs text-gray-400 sm:px-4 sm:py-3">{r.brand_code ?? "—"}</td>
-                  <td className="px-3 py-2.5 font-medium text-gray-800 sm:px-4 sm:py-3">{r.brand_name}</td>
-                  <td className="px-3 py-2.5 text-right tabular-nums sm:px-4 sm:py-3">
-                    {r.revenue_current !== null ? formatKRW(r.revenue_current) : <span className="text-gray-300">—</span>}
+                  <td className="px-3 py-2.5 font-mono text-xs text-slate-300 sm:px-4 sm:py-3">
+                    {r.brand_code ?? "—"}
                   </td>
-                  <td className="hidden px-3 py-2.5 text-right tabular-nums text-gray-500 md:table-cell sm:px-4 sm:py-3">
-                    {r.revenue_prev !== null ? formatKRW(r.revenue_prev) : <span className="text-gray-300">—</span>}
+                  <td className="px-3 py-2.5 font-semibold text-slate-700 sm:px-4 sm:py-3">
+                    {r.brand_name}
                   </td>
-                  <td className="px-3 py-2.5 text-right tabular-nums sm:px-4 sm:py-3">
+                  <td className="px-3 py-2.5 text-right tabular-nums text-[12px] text-slate-600 sm:px-4 sm:py-3">
+                    {r.revenue_current !== null ? formatKRW(r.revenue_current) : <span className="text-slate-200">—</span>}
+                  </td>
+                  <td className="hidden px-3 py-2.5 text-right tabular-nums text-[12px] text-slate-300 md:table-cell sm:px-4 sm:py-3">
+                    {r.revenue_prev !== null ? formatKRW(r.revenue_prev) : <span className="text-slate-200">—</span>}
+                  </td>
+                  <td className="px-3 py-2.5 text-right tabular-nums text-[12px] sm:px-4 sm:py-3">
                     <GrowthCell value={r.revenue_growth} />
                   </td>
-                  <td className="hidden px-3 py-2.5 text-right tabular-nums lg:table-cell sm:px-4 sm:py-3">
-                    {r.gross_profit_current !== null ? formatKRW(r.gross_profit_current) : <span className="text-gray-300">—</span>}
+                  <td className="hidden px-3 py-2.5 text-right tabular-nums text-[12px] text-slate-600 lg:table-cell sm:px-4 sm:py-3">
+                    {r.gross_profit_current !== null ? formatKRW(r.gross_profit_current) : <span className="text-slate-200">—</span>}
                   </td>
-                  <td className="hidden px-3 py-2.5 text-right tabular-nums text-gray-500 lg:table-cell sm:px-4 sm:py-3">
-                    {r.gross_profit_prev !== null ? formatKRW(r.gross_profit_prev) : <span className="text-gray-300">—</span>}
+                  <td className="hidden px-3 py-2.5 text-right tabular-nums text-[12px] text-slate-300 lg:table-cell sm:px-4 sm:py-3">
+                    {r.gross_profit_prev !== null ? formatKRW(r.gross_profit_prev) : <span className="text-slate-200">—</span>}
                   </td>
-                  <td className="hidden px-3 py-2.5 text-right tabular-nums lg:table-cell sm:px-4 sm:py-3">
+                  <td className="hidden px-3 py-2.5 text-right tabular-nums text-[12px] lg:table-cell sm:px-4 sm:py-3">
                     <GrowthCell value={r.gross_profit_growth} />
                   </td>
 
-                  {/* 액션 버튼 */}
+                  {/* 액션 */}
                   <td className="px-3 py-2.5 sm:px-4 sm:py-3">
                     {deleteId === r.id ? (
                       <div className="flex items-center gap-1 justify-end">
@@ -231,21 +227,17 @@ export default function PerformanceTable({ rows }: Props) {
                           onClick={confirmDelete}
                           disabled={isPending}
                           className="rounded px-2 py-1 text-xs font-medium bg-rose-500 text-white hover:bg-rose-600 disabled:opacity-50"
-                        >
-                          확인
-                        </button>
+                        >확인</button>
                         <button
                           onClick={() => setDeleteId(null)}
-                          className="rounded px-2 py-1 text-xs font-medium bg-gray-100 text-gray-600 hover:bg-gray-200"
-                        >
-                          취소
-                        </button>
+                          className="rounded px-2 py-1 text-xs font-medium bg-slate-100 text-slate-600 hover:bg-slate-200"
+                        >취소</button>
                       </div>
                     ) : (
                       <div className="flex items-center gap-1 justify-end opacity-0 group-hover:opacity-100 transition-opacity">
                         <button
                           onClick={() => openEdit(r)}
-                          className="rounded p-1 text-gray-400 hover:bg-indigo-50 hover:text-indigo-600 transition-colors"
+                          className="rounded p-1 text-slate-300 hover:bg-violet-50 hover:text-violet-600 transition-colors"
                           title="수정"
                         >
                           <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -254,7 +246,7 @@ export default function PerformanceTable({ rows }: Props) {
                         </button>
                         <button
                           onClick={() => handleDelete(r.id)}
-                          className="rounded p-1 text-gray-400 hover:bg-rose-50 hover:text-rose-500 transition-colors"
+                          className="rounded p-1 text-slate-300 hover:bg-rose-50 hover:text-rose-500 transition-colors"
                           title="삭제"
                         >
                           <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -271,18 +263,12 @@ export default function PerformanceTable({ rows }: Props) {
         </table>
       </div>
 
-      {/* 편집 / 추가 모달 */}
-      {modalOpen && (
-        <RowModal
-          target={editTarget}
-          onClose={closeModal}
-        />
-      )}
+      {modalOpen && <RowModal target={editTarget} onClose={closeModal} />}
     </div>
   );
 }
 
-// ── 편집 / 추가 모달 ────────────────────────────────────────
+// ── 편집 / 추가 모달 ────────────────────────────────────────────
 function RowModal({
   target,
   onClose,
@@ -291,10 +277,10 @@ function RowModal({
   onClose: () => void;
 }) {
   const isEdit = target !== null;
-  const [form, setForm] = useState<RowFormData>(isEdit ? rowToForm(target) : EMPTY_FORM);
-  const [error, setError]     = useState<string | null>(null);
-  const [isPending, startTransition] = useTransition();
-  const firstRef = useRef<HTMLSelectElement>(null);
+  const [form, setForm]               = useState<RowFormData>(isEdit ? rowToForm(target) : EMPTY_FORM);
+  const [error, setError]             = useState<string | null>(null);
+  const [isPending, startTransition]  = useTransition();
+  const firstRef                      = useRef<HTMLSelectElement>(null);
 
   useEffect(() => { firstRef.current?.focus(); }, []);
 
@@ -314,18 +300,24 @@ function RowModal({
     });
   }
 
+  const inputCls = "w-full rounded-lg border border-[#e8ecf0] px-3 py-2 text-sm focus:border-violet-400 focus:outline-none";
+  const labelCls = "block text-xs font-medium text-slate-500";
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm" onClick={onClose}>
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm"
+      onClick={onClose}
+    >
       <div
         className="w-full max-w-lg rounded-2xl bg-white shadow-xl"
         onClick={(e) => e.stopPropagation()}
       >
         {/* 헤더 */}
-        <div className="flex items-center justify-between border-b border-gray-100 px-6 py-4">
-          <h3 className="text-sm font-semibold text-gray-800">
+        <div className="flex items-center justify-between border-b border-[#e8ecf0] px-6 py-4">
+          <h3 className="text-sm font-semibold text-slate-800">
             {isEdit ? "브랜드 수정" : "브랜드 추가"}
           </h3>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
+          <button onClick={onClose} className="text-slate-300 hover:text-slate-500 transition-colors">
             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
             </svg>
@@ -335,108 +327,73 @@ function RowModal({
         {/* 폼 */}
         <form onSubmit={handleSubmit} className="px-6 py-5 space-y-4">
           <div className="grid grid-cols-2 gap-3">
-            {/* 카테고리 */}
             <div className="col-span-2 sm:col-span-1 space-y-1">
-              <label className="block text-xs font-medium text-gray-600">카테고리 *</label>
+              <label className={labelCls}>카테고리 *</label>
               <select
                 ref={firstRef}
                 value={form.category}
                 onChange={(e) => set("category", e.target.value)}
-                className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-indigo-400 focus:outline-none"
+                className={inputCls}
               >
                 {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
               </select>
             </div>
-
-            {/* 브랜드 코드 */}
             <div className="col-span-2 sm:col-span-1 space-y-1">
-              <label className="block text-xs font-medium text-gray-600">브랜드 코드</label>
+              <label className={labelCls}>브랜드 코드</label>
               <input
-                type="text"
-                value={form.brand_code}
+                type="text" value={form.brand_code}
                 onChange={(e) => set("brand_code", e.target.value)}
-                placeholder="예: BR001"
-                className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-indigo-400 focus:outline-none"
+                placeholder="예: BR001" className={inputCls}
               />
             </div>
-
-            {/* 브랜드명 */}
             <div className="col-span-2 space-y-1">
-              <label className="block text-xs font-medium text-gray-600">브랜드명 *</label>
+              <label className={labelCls}>브랜드명 *</label>
               <input
-                type="text"
-                value={form.brand_name}
+                type="text" value={form.brand_name}
                 onChange={(e) => set("brand_name", e.target.value)}
-                placeholder="브랜드명 입력"
-                required
-                className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-indigo-400 focus:outline-none"
+                placeholder="브랜드명 입력" required className={inputCls}
               />
             </div>
-
-            {/* 매출 */}
             <div className="space-y-1">
-              <label className="block text-xs font-medium text-gray-600">매출 (현기간)</label>
-              <input
-                type="number"
-                value={form.revenue_current}
+              <label className={labelCls}>매출 (현기간)</label>
+              <input type="number" value={form.revenue_current}
                 onChange={(e) => set("revenue_current", e.target.value)}
-                placeholder="0"
-                className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-indigo-400 focus:outline-none"
-              />
+                placeholder="0" className={inputCls} />
             </div>
             <div className="space-y-1">
-              <label className="block text-xs font-medium text-gray-600">매출 (전기간)</label>
-              <input
-                type="number"
-                value={form.revenue_prev}
+              <label className={labelCls}>매출 (전기간)</label>
+              <input type="number" value={form.revenue_prev}
                 onChange={(e) => set("revenue_prev", e.target.value)}
-                placeholder="0"
-                className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-indigo-400 focus:outline-none"
-              />
+                placeholder="0" className={inputCls} />
             </div>
-
-            {/* 이익 */}
             <div className="space-y-1">
-              <label className="block text-xs font-medium text-gray-600">이익 (현기간)</label>
-              <input
-                type="number"
-                value={form.gross_profit_current}
+              <label className={labelCls}>이익 (현기간)</label>
+              <input type="number" value={form.gross_profit_current}
                 onChange={(e) => set("gross_profit_current", e.target.value)}
-                placeholder="0"
-                className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-indigo-400 focus:outline-none"
-              />
+                placeholder="0" className={inputCls} />
             </div>
             <div className="space-y-1">
-              <label className="block text-xs font-medium text-gray-600">이익 (전기간)</label>
-              <input
-                type="number"
-                value={form.gross_profit_prev}
+              <label className={labelCls}>이익 (전기간)</label>
+              <input type="number" value={form.gross_profit_prev}
                 onChange={(e) => set("gross_profit_prev", e.target.value)}
-                placeholder="0"
-                className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-indigo-400 focus:outline-none"
-              />
+                placeholder="0" className={inputCls} />
             </div>
           </div>
 
-          <p className="text-[11px] text-gray-400">* 성장률은 현기간/전기간 값으로 자동 계산됩니다.</p>
+          <p className="text-[11px] text-slate-300">* 성장률은 현기간/전기간 값으로 자동 계산됩니다.</p>
 
           {error && (
             <p className="rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-600">{error}</p>
           )}
 
-          {/* 버튼 */}
           <div className="flex justify-end gap-2 pt-1">
             <button
-              type="button"
-              onClick={onClose}
-              className="rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50"
-            >
-              취소
-            </button>
+              type="button" onClick={onClose}
+              className="rounded-lg border border-[#e8ecf0] px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors"
+            >취소</button>
             <button
-              type="submit"
-              disabled={isPending}
-              className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-60 flex items-center gap-2"
+              type="submit" disabled={isPending}
+              className="flex items-center gap-2 rounded-lg bg-violet-600 px-4 py-2 text-sm font-semibold text-white hover:bg-violet-700 disabled:opacity-60 transition-colors"
             >
               {isPending && (
                 <svg className="h-3.5 w-3.5 animate-spin" viewBox="0 0 24 24" fill="none">
