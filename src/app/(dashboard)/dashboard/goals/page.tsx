@@ -3,8 +3,10 @@ import { redirect } from "next/navigation";
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import { getGoals } from "@/lib/goals/queries";
+import { getVendorFnb } from "@/lib/vendorFnb/queries";
 import type { PoolType } from "@/types/goals";
 import GoalsTable from "./_components/GoalsTable";
+import VendorFnbTable from "./_components/VendorFnbTable";
 import AddGoalForm from "./_components/AddGoalForm";
 import ContentPoolTabs from "./_components/ContentPoolTabs";
 import TopBar from "@/components/layout/TopBar";
@@ -57,7 +59,13 @@ async function loadCounts(orgId: string): Promise<Record<PoolType, number>> {
   };
 }
 
-// ── 탭별 컨텐츠 (서버) ────────────────────────────────────────
+// ── F&B 탭 전용 컨텐츠 (서버) ────────────────────────────────
+async function VendorFnbContent() {
+  const rows = await getVendorFnb();
+  return <VendorFnbTable rows={rows} />;
+}
+
+// ── 라이프스타일/팝업 탭 컨텐츠 (서버) ──────────────────────
 async function GoalsContent({ orgId, poolType }: { orgId: string; poolType: PoolType }) {
   const goals = await getGoals(orgId, poolType);
 
@@ -112,7 +120,7 @@ export default async function GoalsPage({ searchParams }: PageProps) {
       <TopBar
         crumbs={[{ label: "대시보드", href: "/dashboard" }, { label: "컨텐츠 풀" }]}
         lastUpdated={new Date()}
-        action={orgId ? <AddGoalForm organizationId={orgId} poolType={activeTab} /> : undefined}
+        action={activeTab !== "fnb" && orgId ? <AddGoalForm organizationId={orgId} poolType={activeTab} /> : undefined}
       />
       <main className="flex-1 overflow-y-auto px-7 py-6 space-y-5">
         {/* 제목 */}
@@ -125,7 +133,11 @@ export default async function GoalsPage({ searchParams }: PageProps) {
         <ContentPoolTabs active={activeTab} counts={counts} />
 
         {/* 컨텐츠 */}
-        {!orgId ? (
+        {activeTab === "fnb" ? (
+          <Suspense key="fnb" fallback={<GoalsTableSkeleton />}>
+            <VendorFnbContent />
+          </Suspense>
+        ) : !orgId ? (
           <div className="rounded-xl bg-white py-16 text-center border border-[#e8ecf0]">
             <p className="text-sm text-slate-400">소속 조직이 없습니다.</p>
           </div>

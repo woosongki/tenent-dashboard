@@ -3,7 +3,7 @@
 import { useState, useTransition, useRef, useEffect } from "react";
 import { toast } from "sonner";
 import type { AttractionRow } from "@/types/attraction";
-import { ATTRACTION_CATEGORIES } from "@/types/attraction";
+import { ATTRACTION_CATEGORIES, ATTRACTION_BRANCHES, ATTRACTION_FLOORS } from "@/types/attraction";
 import { upsertAttractionRow, deleteAttractionRow } from "../_actions/attraction";
 
 // ── Helpers ─────────────────────────────────────────────────
@@ -176,11 +176,17 @@ function RowModal({ row, onClose }: ModalProps) {
             </div>
             <div>
               <label className={LABEL_CLS}>지점</label>
-              <input name="branch" defaultValue={row?.branch ?? ""} className={INPUT_CLS} />
+              <select name="branch" defaultValue={row?.branch ?? ""} className={INPUT_CLS}>
+                <option value="">선택</option>
+                {ATTRACTION_BRANCHES.map((b) => <option key={b} value={b}>{b}</option>)}
+              </select>
             </div>
             <div>
               <label className={LABEL_CLS}>층</label>
-              <input name="floor" defaultValue={row?.floor ?? ""} className={INPUT_CLS} />
+              <select name="floor" defaultValue={row?.floor ?? ""} className={INPUT_CLS}>
+                <option value="">선택</option>
+                {ATTRACTION_FLOORS.map((f) => <option key={f} value={f}>{f}</option>)}
+              </select>
             </div>
             <div>
               <label className={LABEL_CLS}>카테고리</label>
