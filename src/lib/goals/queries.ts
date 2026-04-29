@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
-import type { Goal } from "@/types/goals";
+import type { Goal, PoolType } from "@/types/goals";
 
 function rowToGoal(r: Record<string, unknown>): Goal {
   return {
@@ -8,6 +8,7 @@ function rowToGoal(r: Record<string, unknown>): Goal {
     title:          r.title as string,
     description:    r.description as string | null,
     category:       r.category as Goal["category"],
+    poolType:       (r.pool_type as PoolType) ?? "lifestyle",
     targetValue:    Number(r.target_value),
     currentValue:   Number(r.current_value),
     unit:           r.unit as string,
@@ -21,14 +22,20 @@ function rowToGoal(r: Record<string, unknown>): Goal {
   };
 }
 
-export async function getGoals(organizationId: string): Promise<Goal[]> {
+export async function getGoals(
+  organizationId: string,
+  poolType?: PoolType,
+): Promise<Goal[]> {
   const supabase = await createClient();
-  const { data, error } = await supabase
+  let query = supabase
     .from("goals")
     .select("*")
     .eq("organization_id", organizationId)
     .order("created_at", { ascending: false });
 
+  if (poolType) query = query.eq("pool_type", poolType);
+
+  const { data, error } = await query;
   if (error || !data) return [];
   return data.map(rowToGoal);
 }

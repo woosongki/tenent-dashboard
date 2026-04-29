@@ -2,14 +2,15 @@
 
 import { useRef, useState, useTransition } from "react";
 import { createGoal } from "@/lib/goals/actions";
-import { CATEGORY_LABELS, PERIOD_LABELS } from "@/types/goals";
-import type { GoalCategory, GoalPeriod } from "@/types/goals";
+import { CATEGORY_LABELS, PERIOD_LABELS, POOL_TYPE_LABELS } from "@/types/goals";
+import type { GoalCategory, GoalPeriod, PoolType } from "@/types/goals";
 
 interface Props {
   organizationId: string;
+  poolType: PoolType;
 }
 
-export default function AddGoalForm({ organizationId }: Props) {
+export default function AddGoalForm({ organizationId, poolType }: Props) {
   const [open, setOpen] = useState(false);
   const [error, setError] = useState("");
   const [isPending, startTransition] = useTransition();
@@ -33,6 +34,7 @@ export default function AddGoalForm({ organizationId }: Props) {
         title:        fd.get("title") as string,
         description:  fd.get("description") as string || undefined,
         category:     fd.get("category") as GoalCategory,
+        poolType,
         targetValue,
         currentValue: Number(fd.get("currentValue") ?? 0),
         unit:         fd.get("unit") as string,
@@ -58,12 +60,12 @@ export default function AddGoalForm({ organizationId }: Props) {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="flex items-center gap-1.5 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 transition-colors"
+        className="flex items-center gap-1.5 rounded-lg bg-violet-600 px-4 py-2 text-sm font-semibold text-white hover:bg-violet-700 transition-colors shadow-[0_2px_8px_rgba(124,58,237,0.25)]"
       >
         <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
         </svg>
-        목표 추가
+        {POOL_TYPE_LABELS[poolType]} 추가
       </button>
 
       {/* 모달 오버레이 */}
@@ -74,12 +76,14 @@ export default function AddGoalForm({ organizationId }: Props) {
         >
           <div className="w-full max-w-lg rounded-2xl bg-white shadow-xl">
             {/* 헤더 */}
-            <div className="flex items-center justify-between border-b border-gray-100 px-6 py-4">
-              <h2 className="text-base font-semibold text-gray-900">새 목표 추가</h2>
+            <div className="flex items-center justify-between border-b border-[#e8ecf0] px-6 py-4">
+              <h2 className="text-base font-semibold text-slate-900">
+                {POOL_TYPE_LABELS[poolType]} 항목 추가
+              </h2>
               <button
                 type="button"
                 onClick={() => setOpen(false)}
-                className="rounded-md p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+                className="rounded-md p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
               >
                 <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -154,14 +158,14 @@ export default function AddGoalForm({ organizationId }: Props) {
                 <button
                   type="button"
                   onClick={() => setOpen(false)}
-                  className="rounded-lg border border-gray-200 px-4 py-2 text-sm text-gray-600 hover:bg-gray-50"
+                  className="rounded-lg border border-[#e8ecf0] px-4 py-2 text-sm text-slate-600 hover:bg-slate-50"
                 >
                   취소
                 </button>
                 <button
                   type="submit"
                   disabled={isPending}
-                  className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-60"
+                  className="rounded-lg bg-violet-600 px-4 py-2 text-sm font-semibold text-white hover:bg-violet-700 disabled:opacity-60"
                 >
                   {isPending ? "저장 중…" : "저장"}
                 </button>
@@ -175,7 +179,7 @@ export default function AddGoalForm({ organizationId }: Props) {
 }
 
 const inputCls =
-  "w-full rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-800 placeholder-gray-400 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100";
+  "w-full rounded-lg border border-[#e8ecf0] px-3 py-2 text-sm text-slate-800 placeholder-slate-300 focus:border-violet-400 focus:outline-none focus:ring-2 focus:ring-violet-100";
 
 function Field({
   label,
@@ -188,7 +192,7 @@ function Field({
 }) {
   return (
     <div className="space-y-1.5">
-      <label className="block text-xs font-medium text-gray-500">
+      <label className="block text-xs font-medium text-slate-500">
         {label}{required && <span className="ml-0.5 text-rose-400">*</span>}
       </label>
       {children}

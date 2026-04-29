@@ -1,6 +1,7 @@
 export type GoalCategory = "revenue" | "growth" | "retention" | "engagement" | "cost" | "custom";
 export type GoalPeriod   = "monthly" | "quarterly" | "yearly";
 export type GoalStatus   = "on_track" | "at_risk" | "behind" | "completed" | "cancelled";
+export type PoolType     = "lifestyle" | "fnb" | "popup";
 
 export interface Goal {
   id: string;
@@ -8,6 +9,7 @@ export interface Goal {
   title: string;
   description: string | null;
   category: GoalCategory;
+  poolType: PoolType;
   targetValue: number;
   currentValue: number;
   unit: string;
@@ -34,6 +36,7 @@ export interface CreateGoalPayload {
   title: string;
   description?: string;
   category: GoalCategory;
+  poolType: PoolType;
   targetValue: number;
   currentValue?: number;
   unit: string;
@@ -59,6 +62,12 @@ export const PERIOD_LABELS: Record<GoalPeriod, string> = {
   monthly:   "월간",
   quarterly: "분기",
   yearly:    "연간",
+};
+
+export const POOL_TYPE_LABELS: Record<PoolType, string> = {
+  lifestyle: "라이프스타일",
+  fnb:       "F&B",
+  popup:     "팝업",
 };
 
 export const STATUS_META: Record<GoalStatus, { label: string; className: string }> = {

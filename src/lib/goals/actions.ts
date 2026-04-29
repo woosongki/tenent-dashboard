@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import type {
   Goal,
+  PoolType,
   GoalActionResult,
   UpdateGoalPayload,
   CreateGoalPayload,
@@ -16,6 +17,7 @@ function rowToGoal(r: Record<string, unknown>): Goal {
     title:          r.title as string,
     description:    r.description as string | null,
     category:       r.category as Goal["category"],
+    poolType:       (r.pool_type as PoolType) ?? "lifestyle",
     targetValue:    Number(r.target_value),
     currentValue:   Number(r.current_value),
     unit:           r.unit as string,
@@ -80,6 +82,7 @@ export async function createGoal(
       title:           payload.title,
       description:     payload.description ?? null,
       category:        payload.category,
+      pool_type:       payload.poolType,
       target_value:    payload.targetValue,
       current_value:   payload.currentValue ?? 0,
       unit:            payload.unit,
