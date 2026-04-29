@@ -2,68 +2,96 @@ import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
-import { getChannelSummaries, defaultDateRange } from "@/lib/drilldown/queries";
-import { CHANNEL_TYPE_LABELS } from "@/types/drilldown";
-import { ChannelTable } from "./_components/DrillTable";
-import Breadcrumb from "./_components/Breadcrumb";
-import ExportButton from "@/components/ui/ExportButton";
-import type { ExcelColumn } from "@/lib/excel";
-import type { ChannelSummary } from "@/types/drilldown";
+import { getAttractionRows, getAttractionStats } from "@/lib/attraction/queries";
+import AttractionTable from "./_components/AttractionTable";
 
-export const metadata: Metadata = { title: "채널 분석 — Gana" };
-
-const CHANNEL_COLUMNS: ExcelColumn[] = [
-  { header: "채널명",    key: "channelName",      width: 20 },
-  { header: "유형",      key: "channelType",      width: 16, format: (v) => CHANNEL_TYPE_LABELS[v as keyof typeof CHANNEL_TYPE_LABELS] },
-  { header: "세션",      key: "totalSessions",    width: 12 },
-  { header: "전환",      key: "totalConversions", width: 12 },
-  { header: "전환율(%)", key: "conversionRate",   width: 12 },
-  { header: "매출",      key: "totalRevenue",     width: 16 },
-  { header: "광고비",    key: "totalAdSpend",     width: 16 },
-  { header: "ROAS",      key: "roas",             width: 10, format: (v) => (v !== null ? Number(v) : "") },
-  { header: "CPA",       key: "cpa",              width: 14, format: (v) => (v !== null ? Number(v) : "") },
-];
-
-async function ChannelContent({ orgId }: { orgId: string }) {
-  const range = defaultDateRange();
-  const channels = await getChannelSummaries(orgId, range);
-
-  const excelRows = channels as unknown as Record<string, unknown>[];
-
-  return (
-    <div className="space-y-3">
-      <div className="flex justify-end">
-        <ExportButton filename="채널_분석" columns={CHANNEL_COLUMNS} rows={excelRows} />
-      </div>
-      <ChannelTable rows={channels} basePath="/dashboard/drilldown" />
-    </div>
-  );
-}
+export const metadata: Metadata = { title: "입점 현황 — lifestyle" };
 
 function TableSkeleton() {
   return (
     <div className="animate-pulse space-y-3">
-      <div className="flex justify-end">
-        <div className="h-8 w-32 rounded-lg bg-gray-100" />
+      <div className="flex gap-2 flex-wrap">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <div key={i} className="h-7 w-16 rounded-full bg-gray-100" />
+        ))}
       </div>
-      <div className="rounded-xl border border-gray-100 bg-white shadow-sm overflow-hidden">
+      <div className="rounded-2xl border border-gray-100 bg-white shadow-sm overflow-hidden">
         <div className="border-b border-gray-100 bg-gray-50 px-4 py-3 flex gap-8">
-          {Array.from({ length: 9 }).map((_, i) => (
+          {Array.from({ length: 8 }).map((_, i) => (
             <div key={i} className="h-3 w-14 rounded bg-gray-100" />
           ))}
         </div>
-        {Array.from({ length: 5 }).map((_, i) => (
+        {Array.from({ length: 8 }).map((_, i) => (
           <div key={i} className="flex gap-8 border-b border-gray-50 px-4 py-3.5 last:border-0">
-            <div className="h-4 w-28 rounded bg-gray-100" />
+            <div className="h-4 w-24 rounded bg-gray-100" />
             <div className="h-4 w-16 rounded bg-gray-100" />
-            <div className="h-4 w-16 rounded bg-gray-100" />
-            <div className="h-4 w-20 rounded bg-gray-100" />
+            <div className="h-4 w-12 rounded bg-gray-100" />
             <div className="h-4 w-20 rounded bg-gray-100" />
             <div className="h-4 w-12 rounded bg-gray-100" />
+            <div className="h-4 w-16 rounded bg-gray-100" />
             <div className="h-4 w-14 rounded bg-gray-100" />
           </div>
         ))}
       </div>
+    </div>
+  );
+}
+
+async function AttractionContent() {
+  const [rows, stats] = await Promise.all([getAttractionRows(), getAttractionStats()]);
+  const completionRate = stats.total > 0 ? Math.round((stats.completed / stats.total) * 100) : 0;
+
+  return (
+    <div className="space-y-5">
+      {/* Stats row */}
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <StatCard label="전체 브랜드" value={stats.total} color="indigo" />
+        <StatCard label="유치 완료" value={stats.completed} color="emerald" />
+        <StatCard label="진행중" value={stats.inProgress} color="amber" />
+        <StatCard label="완료율" value={`${completionRate}%`} color="violet" />
+      </div>
+
+      {/* Progress bar */}
+      <div className="rounded-xl bg-white ring-1 ring-gray-100 p-4 shadow-sm">
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-xs font-medium text-gray-600">유치 진행률</span>
+          <span className="text-xs font-semibold text-gray-800">{stats.completed} / {stats.total}</span>
+        </div>
+        <div className="h-2.5 w-full overflow-hidden rounded-full bg-gray-100">
+          <div
+            className="h-2.5 rounded-full bg-emerald-500 transition-all"
+            style={{ width: `${completionRate}%` }}
+          />
+        </div>
+        <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1">
+          {Object.entries(stats.byCategory)
+            .sort((a, b) => b[1] - a[1])
+            .map(([cat, cnt]) => (
+              <span key={cat} className="text-xs text-gray-500">
+                {cat} <span className="font-semibold text-gray-700">{cnt}</span>
+              </span>
+            ))}
+        </div>
+      </div>
+
+      {/* Table */}
+      <AttractionTable rows={rows} />
+    </div>
+  );
+}
+
+function StatCard({ label, value, color }: { label: string; value: number | string; color: "indigo" | "emerald" | "amber" | "violet" }) {
+  const colors = {
+    indigo:  { ring: "ring-indigo-100",  bg: "bg-indigo-50",  text: "text-indigo-700" },
+    emerald: { ring: "ring-emerald-100", bg: "bg-emerald-50", text: "text-emerald-700" },
+    amber:   { ring: "ring-amber-100",   bg: "bg-amber-50",   text: "text-amber-700" },
+    violet:  { ring: "ring-violet-100",  bg: "bg-violet-50",  text: "text-violet-700" },
+  };
+  const c = colors[color];
+  return (
+    <div className={`rounded-xl bg-white ring-1 ${c.ring} p-4 shadow-sm`}>
+      <p className="text-xs text-gray-500">{label}</p>
+      <p className={`mt-1 text-2xl font-bold ${c.text}`}>{value}</p>
     </div>
   );
 }
@@ -73,17 +101,9 @@ export default async function DrilldownPage() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const { data: membership } = await supabase
-    .from("organization_members")
-    .select("organization_id")
-    .eq("user_id", user.id)
-    .limit(1)
-    .single();
-
-  const orgId = membership?.organization_id;
-
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Header */}
       <header className="sticky top-0 z-10 border-b border-gray-200 bg-white/80 backdrop-blur-sm">
         <div className="mx-auto flex max-w-7xl items-center gap-3 px-4 py-3 sm:px-6">
           <a href="/dashboard" className="text-gray-400 hover:text-gray-600 transition-colors">
@@ -91,26 +111,21 @@ export default async function DrilldownPage() {
               <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
             </svg>
           </a>
-          <span className="text-sm font-semibold text-gray-800">채널 분석</span>
+          <span className="text-sm font-semibold text-gray-800">입점 현황</span>
+          <span className="ml-auto text-xs text-gray-400">이랜드리테일 컨텐츠 유치 현황</span>
         </div>
       </header>
 
+      {/* Main */}
       <main className="mx-auto max-w-7xl px-4 py-6 space-y-5 sm:px-6 sm:py-8 sm:space-y-6">
         <div>
-          <Breadcrumb crumbs={[{ label: "채널 분석" }]} />
-          <h1 className="mt-2 text-xl font-bold text-gray-900">채널별 성과</h1>
-          <p className="mt-0.5 text-sm text-gray-400">채널을 클릭하면 브랜드별 상세 데이터를 볼 수 있습니다.</p>
+          <h1 className="text-xl font-bold text-gray-900">입점 현황</h1>
+          <p className="mt-0.5 text-sm text-gray-400">이랜드리테일 컨텐츠 유치 현황 데이터입니다.</p>
         </div>
 
-        {!orgId ? (
-          <div className="rounded-xl bg-white py-16 text-center border border-gray-100 shadow-sm">
-            <p className="text-sm text-gray-400">소속 조직이 없습니다.</p>
-          </div>
-        ) : (
-          <Suspense fallback={<TableSkeleton />}>
-            <ChannelContent orgId={orgId} />
-          </Suspense>
-        )}
+        <Suspense fallback={<TableSkeleton />}>
+          <AttractionContent />
+        </Suspense>
       </main>
     </div>
   );
