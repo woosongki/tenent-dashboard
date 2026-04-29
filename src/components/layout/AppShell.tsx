@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Sidebar from "./Sidebar";
+import SearchPalette from "@/components/ui/SearchPalette";
 
 interface Props {
   userEmail: string;
@@ -16,68 +17,107 @@ function IconMenu() {
   );
 }
 
+function IconSearch() {
+  return (
+    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+    </svg>
+  );
+}
+
 export default function AppShell({ userEmail, children }: Props) {
-  const [open, setOpen] = useState(false);
+  const [mobileOpen, setMobileOpen]   = useState(false);
+  const [collapsed,  setCollapsed]    = useState(false);
+  const [searchOpen, setSearchOpen]   = useState(false);
 
   // 페이지 이동 시 모바일 메뉴 자동 닫기
   useEffect(() => {
-    const close = () => setOpen(false);
+    const close = () => setMobileOpen(false);
     window.addEventListener("popstate", close);
     return () => window.removeEventListener("popstate", close);
   }, []);
 
   // 열릴 때 body 스크롤 막기
   useEffect(() => {
-    document.body.style.overflow = open ? "hidden" : "";
+    document.body.style.overflow = mobileOpen ? "hidden" : "";
     return () => { document.body.style.overflow = ""; };
-  }, [open]);
+  }, [mobileOpen]);
+
+  // Cmd+K / Ctrl+K 글로벌 단축키
+  useEffect(() => {
+    function handler(e: KeyboardEvent) {
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+        e.preventDefault();
+        setSearchOpen((v) => !v);
+      }
+    }
+    document.addEventListener("keydown", handler);
+    return () => document.removeEventListener("keydown", handler);
+  }, []);
 
   return (
     <div className="flex h-screen overflow-hidden bg-[#f4f6f9]">
 
       {/* ── 모바일 오버레이 ── */}
-      {open && (
+      {mobileOpen && (
         <div
           className="fixed inset-0 z-20 bg-black/50 backdrop-blur-[2px] md:hidden"
-          onClick={() => setOpen(false)}
+          onClick={() => setMobileOpen(false)}
           aria-hidden="true"
         />
       )}
 
-      {/* ── 사이드바 (모바일: drawer, 데스크톱: fixed) ── */}
+      {/* ── 사이드바 ── */}
       <div
         className={`
           fixed inset-y-0 left-0 z-30 transition-transform duration-300 ease-in-out
           md:relative md:translate-x-0
-          ${open ? "translate-x-0" : "-translate-x-full md:translate-x-0"}
+          ${mobileOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}
         `}
       >
-        <Sidebar userEmail={userEmail} onClose={() => setOpen(false)} />
+        <Sidebar
+          userEmail={userEmail}
+          onClose={() => setMobileOpen(false)}
+          collapsed={collapsed}
+          onToggleCollapse={() => setCollapsed((v) => !v)}
+        />
       </div>
 
       {/* ── 메인 영역 ── */}
       <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
 
         {/* 모바일 전용 상단 바 */}
-        <div className="flex h-12 shrink-0 items-center gap-3 border-b border-[#e8ecf0] bg-white px-4 md:hidden">
-          <button
-            onClick={() => setOpen(true)}
-            aria-label="메뉴 열기"
-            className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-500 transition-colors hover:bg-slate-50 active:bg-slate-100"
-          >
-            <IconMenu />
-          </button>
-          {/* 모바일 로고 */}
-          <div className="flex items-center gap-2">
-            <div className="flex h-6 w-6 items-center justify-center rounded-[7px] bg-gradient-to-br from-violet-600 to-indigo-500 text-[11px] font-black text-white">
-              G
+        <div className="flex h-12 shrink-0 items-center justify-between border-b border-[#e8ecf0] bg-white px-4 md:hidden">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setMobileOpen(true)}
+              aria-label="메뉴 열기"
+              className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-500 transition-colors hover:bg-slate-50 active:bg-slate-100"
+            >
+              <IconMenu />
+            </button>
+            <div className="flex items-center gap-2">
+              <div className="flex h-6 w-6 items-center justify-center rounded-[7px] bg-gradient-to-br from-violet-600 to-indigo-500 text-[11px] font-black text-white">
+                G
+              </div>
+              <span className="text-[14px] font-bold tracking-tight text-slate-800">lifestyle</span>
             </div>
-            <span className="text-[14px] font-bold tracking-tight text-slate-800">lifestyle</span>
           </div>
+          {/* 모바일 검색 버튼 */}
+          <button
+            onClick={() => setSearchOpen(true)}
+            aria-label="검색"
+            className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-slate-100"
+          >
+            <IconSearch />
+          </button>
         </div>
 
         {children}
       </div>
+
+      {/* ── Cmd+K 검색 팔레트 ── */}
+      <SearchPalette open={searchOpen} onClose={() => setSearchOpen(false)} />
     </div>
   );
 }

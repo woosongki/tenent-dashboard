@@ -6,6 +6,8 @@ interface Crumb {
 interface Props {
   crumbs: Crumb[];
   action?: React.ReactNode;
+  /** 우측에 표시할 마지막 업데이트 시각 (ISO 문자열 or Date) */
+  lastUpdated?: string | Date;
 }
 
 function IconBell() {
@@ -26,7 +28,12 @@ function IconRefresh() {
   );
 }
 
-export default function TopBar({ crumbs, action }: Props) {
+function formatLastUpdated(d: string | Date): string {
+  const date = typeof d === "string" ? new Date(d) : d;
+  return date.toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit" });
+}
+
+export default function TopBar({ crumbs, action, lastUpdated }: Props) {
   return (
     <div className="flex h-14 shrink-0 items-center justify-between border-b border-[#e8ecf0] bg-white px-5 sm:px-7">
       {/* 브레드크럼 */}
@@ -47,7 +54,14 @@ export default function TopBar({ crumbs, action }: Props) {
       </div>
 
       {/* 우측 영역 */}
-      <div className="flex shrink-0 items-center gap-2 ml-4">
+      <div className="flex shrink-0 items-center gap-1.5 ml-4">
+        {/* 마지막 업데이트 시각 */}
+        {lastUpdated && (
+          <span className="hidden text-[11px] text-slate-300 tabular-nums sm:inline-block">
+            {formatLastUpdated(lastUpdated)} 업데이트
+          </span>
+        )}
+
         {/* 페이지별 커스텀 액션 */}
         {action && <div className="flex items-center">{action}</div>}
 
@@ -56,7 +70,7 @@ export default function TopBar({ crumbs, action }: Props) {
           <button
             type="submit"
             title="새로고침"
-            className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600"
+            className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400"
           >
             <IconRefresh />
           </button>
@@ -66,10 +80,9 @@ export default function TopBar({ crumbs, action }: Props) {
         <button
           type="button"
           title="알림"
-          className="relative flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600"
+          className="relative flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400"
         >
           <IconBell />
-          {/* 미확인 알림 dot */}
           <span className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-violet-500" />
         </button>
       </div>

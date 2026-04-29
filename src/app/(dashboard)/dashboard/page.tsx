@@ -58,8 +58,9 @@ export default async function DashboardPage() {
     <div className="flex flex-col h-full overflow-hidden">
       <TopBar
         crumbs={[{ label: "대시보드" }]}
+        lastUpdated={new Date()}
         action={
-          <span className="text-[12px] text-slate-400">
+          <span className="hidden text-[12px] text-slate-400 sm:inline">
             {new Date().toLocaleDateString("ko-KR", {
               year: "numeric", month: "long", day: "numeric", weekday: "long",
             })}

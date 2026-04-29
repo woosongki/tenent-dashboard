@@ -3,7 +3,7 @@
 import { usePathname } from "next/navigation";
 import { signOutAction } from "@/app/(auth)/login/_actions/auth";
 
-// ── SVG 아이콘 정의 ──────────────────────────────────────────
+// ── SVG 아이콘 ────────────────────────────────────────────────
 function IconHome() {
   return (
     <svg fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
@@ -46,6 +46,20 @@ function IconLogout() {
     </svg>
   );
 }
+function IconChevronLeft() {
+  return (
+    <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+    </svg>
+  );
+}
+function IconChevronRight() {
+  return (
+    <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+    </svg>
+  );
+}
 
 const NAV = [
   {
@@ -68,9 +82,11 @@ const NAV = [
 interface Props {
   userEmail: string;
   onClose?: () => void;
+  collapsed?: boolean;
+  onToggleCollapse?: () => void;
 }
 
-export default function Sidebar({ userEmail, onClose }: Props) {
+export default function Sidebar({ userEmail, onClose, collapsed = false, onToggleCollapse }: Props) {
   const pathname = usePathname();
 
   function isActive(href: string) {
@@ -81,20 +97,25 @@ export default function Sidebar({ userEmail, onClose }: Props) {
   const initial = (userEmail[0] ?? "U").toUpperCase();
 
   return (
-    <aside className="flex h-screen w-[232px] flex-shrink-0 flex-col border-r border-[#1a2236] bg-[#0c111d]">
-
+    <aside
+      className={`flex h-screen flex-shrink-0 flex-col border-r border-[#1a2236] bg-[#0c111d] transition-all duration-300 ${
+        collapsed ? "w-[64px]" : "w-[232px]"
+      }`}
+    >
       {/* ── 로고 ── */}
-      <div className="border-b border-[#1a2236] px-5 py-5">
+      <div className="border-b border-[#1a2236] px-4 py-5">
         <div className="flex items-center gap-3">
-          <div className="flex h-8 w-8 items-center justify-center rounded-[10px] bg-gradient-to-br from-violet-600 to-indigo-500 text-[13px] font-black text-white shadow-[0_4px_12px_rgba(124,58,237,0.4)]">
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[10px] bg-gradient-to-br from-violet-600 to-indigo-500 text-[13px] font-black text-white shadow-[0_4px_12px_rgba(124,58,237,0.4)]">
             G
           </div>
-          <div className="flex-1">
-            <div className="text-[15px] font-bold tracking-tight text-slate-100">lifestyle</div>
-            <div className="text-[10px] text-slate-500">이랜드리테일</div>
-          </div>
-          {/* 모바일 닫기 버튼 */}
-          {onClose && (
+          {!collapsed && (
+            <div className="flex-1 min-w-0">
+              <div className="text-[15px] font-bold tracking-tight text-slate-100">lifestyle</div>
+              <div className="text-[10px] text-slate-500">이랜드리테일</div>
+            </div>
+          )}
+          {/* 모바일 닫기 */}
+          {onClose && !collapsed && (
             <button
               onClick={onClose}
               aria-label="사이드바 닫기"
@@ -109,27 +130,31 @@ export default function Sidebar({ userEmail, onClose }: Props) {
       </div>
 
       {/* ── 네비게이션 ── */}
-      <nav className="flex-1 overflow-y-auto px-3 py-3">
+      <nav className="flex-1 overflow-y-auto px-2 py-3">
         {NAV.map((group) => (
           <div key={group.section} className="mb-2">
-            {/* ① 개선: 섹션 라벨 가독성 slate-500으로 상향 */}
-            <p className="mb-1 px-2 pt-3 text-[10px] font-semibold tracking-[.1em] text-slate-500">
-              {group.section}
-            </p>
+            {!collapsed && (
+              <p className="mb-1 px-2 pt-3 text-[10px] font-semibold tracking-[.1em] text-slate-500">
+                {group.section}
+              </p>
+            )}
+            {collapsed && <div className="pt-3" />}
             {group.items.map((item) => {
               const active = isActive(item.href);
               return (
                 <a
                   key={item.href}
                   href={item.href}
-                  className={`relative mb-0.5 flex items-center gap-2.5 rounded-[8px] px-2.5 py-2.5 transition-colors ${
+                  title={collapsed ? item.label : undefined}
+                  className={`relative mb-0.5 flex items-center rounded-[8px] transition-colors ${
+                    collapsed ? "justify-center px-0 py-2.5" : "gap-2.5 px-2.5 py-2.5"
+                  } ${
                     active
                       ? "bg-[#1a1040] text-violet-300"
-                      /* ① 개선: 비활성 메뉴 slate-400으로 상향 (대비비 6:1 이상) */
                       : "text-slate-400 hover:bg-[#131c2e] hover:text-slate-200"
                   }`}
                 >
-                  {active && (
+                  {active && !collapsed && (
                     <span className="absolute left-0 top-1/2 h-5 w-[3px] -translate-y-1/2 rounded-r-[3px] bg-violet-500" />
                   )}
                   <span
@@ -139,13 +164,17 @@ export default function Sidebar({ userEmail, onClose }: Props) {
                   >
                     {item.icon}
                   </span>
-                  <span className={`text-[13px] font-medium ${active ? "text-violet-300" : ""}`}>
-                    {item.label}
-                  </span>
-                  {"badge" in item && item.badge && (
-                    <span className="ml-auto rounded-full bg-violet-600 px-1.5 py-0.5 text-[10px] font-bold text-white">
-                      {item.badge}
-                    </span>
+                  {!collapsed && (
+                    <>
+                      <span className={`text-[13px] font-medium ${active ? "text-violet-300" : ""}`}>
+                        {item.label}
+                      </span>
+                      {"badge" in item && item.badge && (
+                        <span className="ml-auto rounded-full bg-violet-600 px-1.5 py-0.5 text-[10px] font-bold text-white">
+                          {item.badge}
+                        </span>
+                      )}
+                    </>
                   )}
                 </a>
               );
@@ -154,27 +183,48 @@ export default function Sidebar({ userEmail, onClose }: Props) {
         ))}
       </nav>
 
+      {/* ── collapse 토글 버튼 (데스크톱 전용) ── */}
+      {onToggleCollapse && (
+        <div className="border-t border-[#1a2236] p-2 hidden md:block">
+          <button
+            onClick={onToggleCollapse}
+            title={collapsed ? "사이드바 펼치기" : "사이드바 접기"}
+            className={`flex w-full items-center rounded-[8px] px-2 py-2 text-slate-500 transition-colors hover:bg-[#1a2236] hover:text-slate-300 ${
+              collapsed ? "justify-center" : "gap-2"
+            }`}
+          >
+            {collapsed ? <IconChevronRight /> : <IconChevronLeft />}
+            {!collapsed && <span className="text-[12px] font-medium">접기</span>}
+          </button>
+        </div>
+      )}
+
       {/* ── 유저 영역 ── */}
-      <div className="border-t border-[#1a2236] p-3">
-        <div className="flex items-center gap-2.5 rounded-[10px] bg-[#111827] px-3 py-2.5">
-          <div className="flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-violet-600 text-[12px] font-bold text-white">
+      <div className={`border-t border-[#1a2236] p-3 ${collapsed ? "flex justify-center" : ""}`}>
+        {collapsed ? (
+          <div className="flex h-[30px] w-[30px] items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-violet-600 text-[12px] font-bold text-white">
             {initial}
           </div>
-          <div className="min-w-0 flex-1">
-            <p className="truncate text-[12px] font-medium text-slate-400">{userEmail}</p>
-            {/* ① 개선: 롤 텍스트 가독성 slate-500으로 상향 */}
-            <p className="text-[10px] text-slate-500">관리자</p>
+        ) : (
+          <div className="flex items-center gap-2.5 rounded-[10px] bg-[#111827] px-3 py-2.5">
+            <div className="flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-violet-600 text-[12px] font-bold text-white">
+              {initial}
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-[12px] font-medium text-slate-400">{userEmail}</p>
+              <p className="text-[10px] text-slate-500">관리자</p>
+            </div>
+            <form action={signOutAction}>
+              <button
+                type="submit"
+                title="로그아웃"
+                className="flex h-6 w-6 items-center justify-center rounded-md text-slate-500 transition-colors hover:bg-[#1a2236] hover:text-slate-300"
+              >
+                <IconLogout />
+              </button>
+            </form>
           </div>
-          <form action={signOutAction}>
-            <button
-              type="submit"
-              title="로그아웃"
-              className="flex h-6 w-6 items-center justify-center rounded-md text-slate-500 transition-colors hover:bg-[#1a2236] hover:text-slate-300"
-            >
-              <IconLogout />
-            </button>
-          </form>
-        </div>
+        )}
       </div>
     </aside>
   );
