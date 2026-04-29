@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
-import type { DashboardSummary, OrgRow, CategoryGroup, TopBrand } from "@/types/dashboard";
+import type { DashboardSummary, OrgRow, CategoryGroup, TopBrand, CategoryStat } from "@/types/dashboard";
 
 /** 대시보드 Summary 지표 */
 export async function getDashboardSummary(): Promise<DashboardSummary> {
@@ -8,7 +8,7 @@ export async function getDashboardSummary(): Promise<DashboardSummary> {
   const [
     orgsRes, membersRes, subsRes, invitationsRes,
     mrrRes, prevMrrRes,
-    topBrandsRes, contentCountRes, positiveRes,
+    topBrandsRes, contentCountRes, positiveRes, categoryRes,
   ] = await Promise.all([
     supabase.from("organizations").select("id", { count: "exact", head: true }),
     supabase.from("organization_members").select("user_id", { count: "exact", head: true }),
@@ -35,6 +35,12 @@ export async function getDashboardSummary(): Promise<DashboardSummary> {
     supabase.from("brand_performance").select("id", { count: "exact", head: true })
       .eq("row_type", "brand")
       .gt("revenue_growth", 0),
+
+    // 카테고리별 브랜드 수 + 매출
+    supabase.from("brand_performance")
+      .select("category, revenue_current")
+      .eq("row_type", "brand")
+      .not("category", "is", null),
   ]);
 
   const mrr = (mrrRes.data ?? []).reduce((s, r) => s + Number(r.amount), 0);
@@ -50,6 +56,20 @@ export async function getDashboardSummary(): Promise<DashboardSummary> {
     revenue_growth: Number(r.revenue_growth),
   }));
 
+  // 카테고리별 집계
+  const catMap = new Map<string, { count: number; revenue: number }>();
+  for (const row of categoryRes.data ?? []) {
+    const cat = row.category ?? "기타";
+    const prev = catMap.get(cat) ?? { count: 0, revenue: 0 };
+    catMap.set(cat, {
+      count: prev.count + 1,
+      revenue: prev.revenue + (row.revenue_current ? Number(row.revenue_current) : 0),
+    });
+  }
+  const categoryStats: CategoryStat[] = [...catMap.entries()]
+    .map(([category, { count, revenue }]) => ({ category, count, revenue }))
+    .sort((a, b) => b.revenue - a.revenue);
+
   return {
     totalOrgs: orgsRes.count ?? 0,
     totalMembers: membersRes.count ?? 0,
@@ -60,6 +80,7 @@ export async function getDashboardSummary(): Promise<DashboardSummary> {
     topBrands,
     contentCount: contentCountRes.count ?? 0,
     positiveGrowthCount: positiveRes.count ?? 0,
+    categoryStats,
   };
 }
 

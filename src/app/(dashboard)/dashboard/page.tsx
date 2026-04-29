@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getDashboardSummary } from "@/lib/dashboard/queries";
 import SummaryCards from "./_components/SummaryCards";
 import GrowthRankingTable from "./_components/GrowthRankingTable";
+import CategoryDonutChart from "./_components/CategoryDonutChart";
 import TopBar from "@/components/layout/TopBar";
 
 export const metadata: Metadata = { title: "대시보드 — lifestyle" };
@@ -28,6 +29,7 @@ async function SummarySection() {
   return (
     <>
       <SummaryCards summary={summary} />
+      <CategoryDonutChart stats={summary.categoryStats} />
       <section className="space-y-3">
         <div className="flex items-center justify-between">
           <h2 className="text-sm font-bold text-slate-800">매출 성장 순위</h2>

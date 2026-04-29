@@ -7,6 +7,12 @@ export interface TopBrand {
   revenue_growth: number;
 }
 
+export interface CategoryStat {
+  category: string;
+  count: number;
+  revenue: number;
+}
+
 export interface DashboardSummary {
   totalOrgs: number;
   totalMembers: number;
@@ -17,6 +23,7 @@ export interface DashboardSummary {
   topBrands: TopBrand[];
   contentCount: number;
   positiveGrowthCount: number;
+  categoryStats: CategoryStat[];
 }
 
 export interface OrgRow {

@@ -67,9 +67,10 @@ const NAV = [
 
 interface Props {
   userEmail: string;
+  onClose?: () => void;
 }
 
-export default function Sidebar({ userEmail }: Props) {
+export default function Sidebar({ userEmail, onClose }: Props) {
   const pathname = usePathname();
 
   function isActive(href: string) {
@@ -88,11 +89,22 @@ export default function Sidebar({ userEmail }: Props) {
           <div className="flex h-8 w-8 items-center justify-center rounded-[10px] bg-gradient-to-br from-violet-600 to-indigo-500 text-[13px] font-black text-white shadow-[0_4px_12px_rgba(124,58,237,0.4)]">
             G
           </div>
-          <div>
+          <div className="flex-1">
             <div className="text-[15px] font-bold tracking-tight text-slate-100">lifestyle</div>
-            {/* ① 개선: 가독성을 위해 슬레이트 500으로 상향 */}
             <div className="text-[10px] text-slate-500">이랜드리테일</div>
           </div>
+          {/* 모바일 닫기 버튼 */}
+          {onClose && (
+            <button
+              onClick={onClose}
+              aria-label="사이드바 닫기"
+              className="flex h-7 w-7 items-center justify-center rounded-lg text-slate-500 transition-colors hover:bg-[#1a2236] hover:text-slate-300 md:hidden"
+            >
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          )}
         </div>
       </div>
 

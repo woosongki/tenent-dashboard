@@ -14,6 +14,46 @@ const CAT_COLORS: Record<string, string> = {
   "기타":       "bg-slate-50 text-slate-600",
 };
 
+// ⑥ 스파크라인: prev(회색) vs current(컬러) 미니 바 차트
+function SparkBar({
+  prev,
+  current,
+  positive,
+}: {
+  prev: number | null;
+  current: number | null;
+  positive: boolean;
+}) {
+  if (prev === null || current === null) {
+    return <span className="text-slate-200 text-[11px]">—</span>;
+  }
+  const max = Math.max(prev, current, 1);
+  const prevH = Math.round((prev / max) * 28);
+  const currH = Math.round((current / max) * 28);
+  const barColor = positive ? "#10b981" : "#f43f5e";
+
+  return (
+    <svg
+      width="26"
+      height="32"
+      viewBox="0 0 26 32"
+      aria-label={`이전 ${KRW.format(prev)} → 현재 ${KRW.format(current)}`}
+      className="shrink-0"
+    >
+      {/* 이전 매출 바 (회색) */}
+      <rect
+        x="0" y={32 - prevH} width="10" height={prevH}
+        rx="2" fill="#e2e8f0"
+      />
+      {/* 현재 매출 바 (컬러) */}
+      <rect
+        x="14" y={32 - currH} width="10" height={currH}
+        rx="2" fill={barColor} opacity={0.85}
+      />
+    </svg>
+  );
+}
+
 interface Props {
   brands: TopBrand[];
 }
@@ -28,7 +68,7 @@ export default function GrowthRankingTable({ brands }: Props) {
   }
 
   return (
-    <div className="overflow-hidden rounded-xl border border-[#e8ecf0] bg-white shadow-[0_1px_3px_rgba(0,0,0,.04)]">
+    <div className="overflow-x-auto overflow-hidden rounded-xl border border-[#e8ecf0] bg-white shadow-[0_1px_3px_rgba(0,0,0,.04)]">
       <table className="w-full text-sm">
         <thead>
           <tr className="border-b border-[#f1f5f9] bg-[#f8fafc] text-[11px] font-semibold uppercase tracking-[.05em] text-slate-400">
@@ -37,6 +77,8 @@ export default function GrowthRankingTable({ brands }: Props) {
             <th className="px-5 py-3 text-left">카테고리</th>
             <th className="px-5 py-3 text-right">매출(현)</th>
             <th className="hidden px-5 py-3 text-right sm:table-cell">매출(전)</th>
+            {/* ⑥ 스파크라인 열 */}
+            <th className="hidden px-4 py-3 text-center sm:table-cell">추이</th>
             <th className="px-5 py-3 text-right">성장률</th>
           </tr>
         </thead>
@@ -70,6 +112,12 @@ export default function GrowthRankingTable({ brands }: Props) {
                 </td>
                 <td className="hidden px-5 py-3.5 text-right tabular-nums text-[12px] text-slate-300 sm:table-cell">
                   {b.revenue_prev !== null ? KRW.format(b.revenue_prev) : <span className="text-slate-200">—</span>}
+                </td>
+                {/* ⑥ 스파크라인 셀 */}
+                <td className="hidden px-4 py-3.5 sm:table-cell">
+                  <div className="flex items-end justify-center gap-0.5">
+                    <SparkBar prev={b.revenue_prev} current={b.revenue_current} positive={pos} />
+                  </div>
                 </td>
                 <td className="px-5 py-3.5 text-right tabular-nums text-[12px] font-bold">
                   <span className={pos ? "text-emerald-600" : "text-rose-500"}>
