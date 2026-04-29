@@ -10,8 +10,9 @@ import {
 import PerformanceCards from "./_components/PerformanceCards";
 import CategoryChart from "./_components/CategoryChart";
 import PerformanceTable from "./_components/PerformanceTable";
+import TopBar from "@/components/layout/TopBar";
 
-export const metadata: Metadata = { title: "판매 분석 — Gana" };
+export const metadata: Metadata = { title: "판매분석 — lifestyle" };
 
 async function SalesContent() {
   const [summary, subtotals, rows] = await Promise.all([
@@ -65,29 +66,13 @@ export default async function SalesPage() {
   if (!user) redirect("/login");
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="sticky top-0 z-10 border-b border-gray-200 bg-white/80 backdrop-blur-sm">
-        <div className="mx-auto flex max-w-7xl items-center gap-3 px-4 py-3 sm:px-6">
-          <a
-            href="/dashboard"
-            className="text-gray-400 hover:text-gray-600 transition-colors"
-          >
-            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
-            </svg>
-          </a>
-          <span className="text-sm font-semibold text-gray-800">판매 분석</span>
-        </div>
-      </header>
-
-      <main className="mx-auto max-w-7xl px-4 py-6 space-y-5 sm:px-6 sm:py-8 sm:space-y-6">
+    <div className="flex flex-col h-full overflow-hidden">
+      <TopBar crumbs={[{ label: "대시보드", href: "/dashboard" }, { label: "판매분석" }]} />
+      <main className="flex-1 overflow-y-auto px-7 py-6 space-y-5">
         <div>
-          <h1 className="text-xl font-bold text-gray-900">판매 분석</h1>
-          <p className="mt-0.5 text-sm text-gray-400">
-            카테고리·브랜드별 매출 및 이익 현황 (2026-04-01 vs 2025-04-02)
-          </p>
+          <h1 className="text-[22px] font-extrabold tracking-tight text-slate-900">판매분석</h1>
+          <p className="mt-1 text-[13px] text-slate-400">카테고리·브랜드별 매출 및 이익 현황</p>
         </div>
-
         <Suspense fallback={<ContentSkeleton />}>
           <SalesContent />
         </Suspense>

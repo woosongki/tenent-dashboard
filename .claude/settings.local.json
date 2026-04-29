@@ -2,7 +2,35 @@
   "permissions": {
     "allow": [
       "Bash(npx create-next-app@latest . --typescript --tailwind --eslint --app --src-dir --import-alias \"@/*\" --no-git)",
-      "Read(//c/Users/WOO_SO~1/AppData/Local/Temp/claude/C--Users-woo-songki-Desktop-gana/1e8d7970-18ac-475a-80df-e03604fba26b/tasks/**)"
+      "Read(//c/Users/WOO_SO~1/AppData/Local/Temp/claude/C--Users-woo-songki-Desktop-gana/1e8d7970-18ac-475a-80df-e03604fba26b/tasks/**)",
+      "Bash(npm install *)",
+      "Bash(echo \"EXIT:$?\")",
+      "Bash(2>/dev/null)",
+      "Bash(mkdir -p \"C:\\\\Users\\\\woo_songki\\\\Desktop\\\\gana\\\\src\\\\app\\\\\\(dashboard\\)\\\\dashboard\\\\drilldown\\\\[channelId]\")",
+      "Bash(mkdir -p \"C:\\\\Users\\\\woo_songki\\\\Desktop\\\\gana\\\\src\\\\app\\\\\\(dashboard\\)\\\\dashboard\\\\drilldown\\\\[channelId]\\\\[brandId]\")",
+      "Bash(npx tsc *)",
+      "Bash(page\")",
+      "PowerShell(vercel --version 2>&1)",
+      "PowerShell($LASTEXITCODE)",
+      "PowerShell(cd \"C:\\\\Users\\\\woo_songki\\\\Desktop\\\\gana\"; $env:FORCE_COLOR = \"0\"; echo \"\" | vercel login 2>&1 | head -20)",
+      "PowerShell(cd \"C:\\\\Users\\\\woo_songki\\\\Desktop\\\\gana\"; $env:FORCE_COLOR = \"0\"; $output = \\(echo \"\" | vercel login 2>&1\\); $output)",
+      "Bash(vercel env *)",
+      "mcp__44455955-04bf-42b9-bc7b-968aab6a7e66__execute_sql",
+      "mcp__44455955-04bf-42b9-bc7b-968aab6a7e66__apply_migration",
+      "mcp__f58e43cb-df00-488f-8cb1-25e7181e14b0__deploy_to_vercel",
+      "Bash(vercel deploy *)",
+      "Bash(del .env.vercel.tmp)",
+      "Bash(del \"C:\\\\Users\\\\woo_songki\\\\Desktop\\\\gana\\\\.env.vercel.tmp\")",
+      "Bash(curl -s -X GET \"https://api.supabase.com/v1/projects/arxpepynyenotpgjkazq/config/auth\" -H \"Authorization: Bearer sbp_64871b7180044bfdcab6f0ab17a9d4dc8d436fda\")",
+      "Bash(python -m json.tool)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git push *)",
+      "Bash(git checkout *)",
+      "mcp__e6432ca4-4167-433c-b19d-dd95a8593b55__notion-search",
+      "mcp__e6432ca4-4167-433c-b19d-dd95a8593b55__notion-fetch",
+      "Bash(npx vercel *)",
+      "mcp__Claude_Preview__preview_start"
     ]
   }
 }

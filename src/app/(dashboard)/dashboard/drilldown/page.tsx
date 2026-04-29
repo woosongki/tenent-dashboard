@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import { getAttractionRows, getAttractionStats } from "@/lib/attraction/queries";
 import AttractionTable from "./_components/AttractionTable";
+import TopBar from "@/components/layout/TopBar";
 
 export const metadata: Metadata = { title: "입점 현황 — lifestyle" };
 
@@ -102,27 +103,13 @@ export default async function DrilldownPage() {
   if (!user) redirect("/login");
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="sticky top-0 z-10 border-b border-gray-200 bg-white/80 backdrop-blur-sm">
-        <div className="mx-auto flex max-w-7xl items-center gap-3 px-4 py-3 sm:px-6">
-          <a href="/dashboard" className="text-gray-400 hover:text-gray-600 transition-colors">
-            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
-            </svg>
-          </a>
-          <span className="text-sm font-semibold text-gray-800">입점 현황</span>
-          <span className="ml-auto text-xs text-gray-400">이랜드리테일 컨텐츠 유치 현황</span>
-        </div>
-      </header>
-
-      {/* Main */}
-      <main className="mx-auto max-w-7xl px-4 py-6 space-y-5 sm:px-6 sm:py-8 sm:space-y-6">
+    <div className="flex flex-col h-full overflow-hidden">
+      <TopBar crumbs={[{ label: "대시보드", href: "/dashboard" }, { label: "입점 현황" }]} />
+      <main className="flex-1 overflow-y-auto px-7 py-6 space-y-5">
         <div>
-          <h1 className="text-xl font-bold text-gray-900">입점 현황</h1>
-          <p className="mt-0.5 text-sm text-gray-400">이랜드리테일 컨텐츠 유치 현황 데이터입니다.</p>
+          <h1 className="text-[22px] font-extrabold tracking-tight text-slate-900">입점 현황</h1>
+          <p className="mt-1 text-[13px] text-slate-400">이랜드리테일 컨텐츠 유치 현황 데이터입니다.</p>
         </div>
-
         <Suspense fallback={<TableSkeleton />}>
           <AttractionContent />
         </Suspense>

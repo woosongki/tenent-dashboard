@@ -5,8 +5,9 @@ import { createClient } from "@/lib/supabase/server";
 import { getGoals } from "@/lib/goals/queries";
 import GoalsTable from "./_components/GoalsTable";
 import AddGoalForm from "./_components/AddGoalForm";
+import TopBar from "@/components/layout/TopBar";
 
-export const metadata: Metadata = { title: "목표 관리 — Gana" };
+export const metadata: Metadata = { title: "컨텐츠 POOL — lifestyle" };
 
 async function GoalsContent({ orgId }: { orgId: string }) {
   const goals = await getGoals(orgId);
@@ -76,33 +77,19 @@ export default async function GoalsPage() {
   const orgId = membership?.organization_id;
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* 헤더 */}
-      <header className="sticky top-0 z-10 border-b border-gray-200 bg-white/80 backdrop-blur-sm">
-        <div className="mx-auto flex max-w-7xl items-center gap-3 px-4 py-3 sm:px-6">
-          <a href="/dashboard" className="text-gray-400 hover:text-gray-600 transition-colors">
-            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
-            </svg>
-          </a>
-          <span className="text-sm font-semibold text-gray-800">목표 관리</span>
+    <div className="flex flex-col h-full overflow-hidden">
+      <TopBar
+        crumbs={[{ label: "대시보드", href: "/dashboard" }, { label: "컨텐츠 POOL" }]}
+        action={orgId ? <AddGoalForm organizationId={orgId} /> : undefined}
+      />
+      <main className="flex-1 overflow-y-auto px-7 py-6 space-y-5">
+        <div>
+          <h1 className="text-[22px] font-extrabold tracking-tight text-slate-900">컨텐츠 POOL</h1>
+          <p className="mt-1 text-[13px] text-slate-400">셀을 클릭하면 바로 수정할 수 있습니다.</p>
         </div>
-      </header>
-
-      <main className="mx-auto max-w-7xl px-4 py-6 space-y-5 sm:px-6 sm:py-8 sm:space-y-6">
-        {/* 페이지 타이틀 + 추가 버튼 */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-xl font-bold text-gray-900">목표치 관리</h1>
-            <p className="mt-0.5 text-sm text-gray-400">셀을 클릭하면 바로 수정할 수 있습니다.</p>
-          </div>
-          {orgId && <AddGoalForm organizationId={orgId} />}
-        </div>
-
-        {/* 조직이 없는 경우 */}
         {!orgId ? (
-          <div className="rounded-2xl bg-white py-16 text-center ring-1 ring-gray-200">
-            <p className="text-sm text-gray-400">소속 조직이 없습니다. 먼저 조직을 생성해주세요.</p>
+          <div className="rounded-xl bg-white py-16 text-center border border-[#e8ecf0]">
+            <p className="text-sm text-slate-400">소속 조직이 없습니다.</p>
           </div>
         ) : (
           <Suspense fallback={<GoalsTableSkeleton />}>
