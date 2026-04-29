@@ -12,7 +12,7 @@ import CategoryChart from "./_components/CategoryChart";
 import PerformanceTable from "./_components/PerformanceTable";
 import TopBar from "@/components/layout/TopBar";
 
-export const metadata: Metadata = { title: "판매분석 — lifestyle" };
+export const metadata: Metadata = { title: "매출분석 — lifestyle" };
 
 async function SalesContent() {
   const [summary, subtotals, rows] = await Promise.all([
@@ -67,10 +67,10 @@ export default async function SalesPage() {
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
-      <TopBar crumbs={[{ label: "대시보드", href: "/dashboard" }, { label: "판매분석" }]} />
+      <TopBar crumbs={[{ label: "대시보드", href: "/dashboard" }, { label: "매출분석" }]} />
       <main className="flex-1 overflow-y-auto px-7 py-6 space-y-5">
         <div>
-          <h1 className="text-[22px] font-extrabold tracking-tight text-slate-900">판매분석</h1>
+          <h1 className="text-[22px] font-extrabold tracking-tight text-slate-900">매출분석</h1>
           <p className="mt-1 text-[13px] text-slate-400">카테고리·브랜드별 매출 및 이익 현황</p>
         </div>
         <Suspense fallback={<ContentSkeleton />}>

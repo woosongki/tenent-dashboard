@@ -7,7 +7,7 @@ import GoalsTable from "./_components/GoalsTable";
 import AddGoalForm from "./_components/AddGoalForm";
 import TopBar from "@/components/layout/TopBar";
 
-export const metadata: Metadata = { title: "컨텐츠 POOL — lifestyle" };
+export const metadata: Metadata = { title: "컨텐츠 풀 — lifestyle" };
 
 async function GoalsContent({ orgId }: { orgId: string }) {
   const goals = await getGoals(orgId);
@@ -79,12 +79,12 @@ export default async function GoalsPage() {
   return (
     <div className="flex flex-col h-full overflow-hidden">
       <TopBar
-        crumbs={[{ label: "대시보드", href: "/dashboard" }, { label: "컨텐츠 POOL" }]}
+        crumbs={[{ label: "대시보드", href: "/dashboard" }, { label: "컨텐츠 풀" }]}
         action={orgId ? <AddGoalForm organizationId={orgId} /> : undefined}
       />
       <main className="flex-1 overflow-y-auto px-7 py-6 space-y-5">
         <div>
-          <h1 className="text-[22px] font-extrabold tracking-tight text-slate-900">컨텐츠 POOL</h1>
+          <h1 className="text-[22px] font-extrabold tracking-tight text-slate-900">컨텐츠 풀</h1>
           <p className="mt-1 text-[13px] text-slate-400">셀을 클릭하면 바로 수정할 수 있습니다.</p>
         </div>
         {!orgId ? (

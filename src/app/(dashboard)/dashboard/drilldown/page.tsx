@@ -6,7 +6,7 @@ import { getAttractionRows, getAttractionStats } from "@/lib/attraction/queries"
 import AttractionTable from "./_components/AttractionTable";
 import TopBar from "@/components/layout/TopBar";
 
-export const metadata: Metadata = { title: "입점 현황 — lifestyle" };
+export const metadata: Metadata = { title: "입점계획(26년) — lifestyle" };
 
 function TableSkeleton() {
   return (
@@ -115,10 +115,10 @@ export default async function DrilldownPage() {
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
-      <TopBar crumbs={[{ label: "대시보드", href: "/dashboard" }, { label: "입점 현황" }]} />
+      <TopBar crumbs={[{ label: "대시보드", href: "/dashboard" }, { label: "입점계획(26년)" }]} />
       <main className="flex-1 overflow-y-auto px-5 py-6 space-y-5 sm:px-7">
         <div>
-          <h1 className="text-[22px] font-extrabold tracking-tight text-slate-900">입점 현황</h1>
+          <h1 className="text-[22px] font-extrabold tracking-tight text-slate-900">입점계획(26년)</h1>
           <p className="mt-1 text-[13px] text-slate-400">이랜드리테일 컨텐츠 유치 현황 데이터입니다.</p>
         </div>
         <Suspense fallback={<TableSkeleton />}>

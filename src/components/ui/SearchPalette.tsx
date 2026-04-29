@@ -24,10 +24,10 @@ const NAV_ITEMS: NavItem[] = [
     ),
   },
   {
-    label: "판매분석",
+    label: "매출분석",
     description: "카테고리·브랜드별 매출 및 이익 현황",
     href: "/dashboard/sales",
-    keywords: ["sales", "매출", "이익", "revenue", "performance"],
+    keywords: ["sales", "매출", "이익", "revenue", "performance", "매출분석"],
     icon: (
       <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
@@ -35,10 +35,10 @@ const NAV_ITEMS: NavItem[] = [
     ),
   },
   {
-    label: "입점 현황",
-    description: "이랜드리테일 컨텐츠 유치 현황 데이터",
+    label: "입점계획(26년)",
+    description: "이랜드리테일 2026년 입점 계획 데이터",
     href: "/dashboard/drilldown",
-    keywords: ["drilldown", "입점", "유치", "attraction", "브랜드"],
+    keywords: ["drilldown", "입점", "유치", "attraction", "브랜드", "26년", "2026"],
     icon: (
       <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
@@ -46,10 +46,10 @@ const NAV_ITEMS: NavItem[] = [
     ),
   },
   {
-    label: "컨텐츠 POOL",
+    label: "컨텐츠 풀",
     description: "목표 설정 · 진행률 추적 · 상태 관리",
     href: "/dashboard/goals",
-    keywords: ["goals", "목표", "컨텐츠", "pool", "content"],
+    keywords: ["goals", "목표", "컨텐츠", "pool", "content", "컨텐츠풀"],
     icon: (
       <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
@@ -64,6 +64,17 @@ const NAV_ITEMS: NavItem[] = [
     icon: (
       <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+      </svg>
+    ),
+  },
+  {
+    label: "지점정보",
+    description: "이랜드리테일 지점 현황 및 상세 정보",
+    href: "/dashboard/branch",
+    keywords: ["branch", "지점", "store", "매장", "점포"],
+    icon: (
+      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 21v-7.5a.75.75 0 01.75-.75h3a.75.75 0 01.75.75V21m-4.5 0H2.36m11.14 0H18m0 0h3.64m-1.39 0V9.349m-16.5 11.65V9.35m0 0a3.001 3.001 0 003.75-.615A2.993 2.993 0 009.75 9.75c.896 0 1.7-.393 2.25-1.016a2.993 2.993 0 002.25 1.016c.896 0 1.7-.393 2.25-1.016a3.001 3.001 0 003.75.614m-16.5 0a3.004 3.004 0 01-.621-4.72L4.318 3.44A1.5 1.5 0 015.378 3h13.243a1.5 1.5 0 011.06.44l1.19 1.189a3 3 0 01-.621 4.72m-13.5 8.65h3.75a.75.75 0 00.75-.75V13.5a.75.75 0 00-.75-.75H6.75a.75.75 0 00-.75.75v3.75c0 .415.336.75.75.75z" />
       </svg>
     ),
   },
