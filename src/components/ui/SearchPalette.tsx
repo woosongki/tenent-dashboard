@@ -85,22 +85,81 @@ interface Props {
   onClose: () => void;
 }
 
+interface RemoteResult {
+  type: "goal" | "vendor" | "market" | "attraction";
+  id: string;
+  label: string;
+  description: string;
+  href: string;
+}
+
+interface UnifiedItem {
+  key: string;
+  label: string;
+  description: string;
+  href: string;
+  icon?: React.ReactNode;
+  badge?: string;
+}
+
+const TYPE_BADGE: Record<RemoteResult["type"], string> = {
+  goal:       "목표",
+  vendor:     "F&B",
+  market:     "시세",
+  attraction: "입점",
+};
+
 export default function SearchPalette({ open, onClose }: Props) {
   const [query, setQuery]       = useState("");
   const [activeIdx, setActiveIdx] = useState(0);
+  const [remote, setRemote]     = useState<RemoteResult[]>([]);
+  const [loading, setLoading]   = useState(false);
   const inputRef                = useRef<HTMLInputElement>(null);
   const router                  = useRouter();
 
-  const filtered = query.trim()
-    ? NAV_ITEMS.filter((item) => {
-        const q = query.toLowerCase();
-        return (
-          item.label.toLowerCase().includes(q) ||
-          item.description.toLowerCase().includes(q) ||
-          item.keywords.some((k) => k.includes(q))
-        );
-      })
-    : NAV_ITEMS;
+  // 로컬 NAV 필터
+  const navFiltered: UnifiedItem[] = (
+    query.trim()
+      ? NAV_ITEMS.filter((item) => {
+          const q = query.toLowerCase();
+          return (
+            item.label.toLowerCase().includes(q) ||
+            item.description.toLowerCase().includes(q) ||
+            item.keywords.some((k) => k.includes(q))
+          );
+        })
+      : NAV_ITEMS
+  ).map((n) => ({
+    key: n.href, label: n.label, description: n.description, href: n.href, icon: n.icon, badge: "페이지",
+  }));
+
+  const remoteItems: UnifiedItem[] = remote.map((r) => ({
+    key: `${r.type}-${r.id}`,
+    label: r.label,
+    description: r.description,
+    href: r.href,
+    badge: TYPE_BADGE[r.type],
+  }));
+
+  const filtered = [...navFiltered, ...remoteItems];
+
+  // ── 디바운스 글로벌 검색 ─────────────────────────────────
+  useEffect(() => {
+    if (!open || query.trim().length < 2) { setRemote([]); return; }
+    const handle = setTimeout(async () => {
+      setLoading(true);
+      try {
+        const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
+        const json = await res.json();
+        setRemote(json.results ?? []);
+      } catch {
+        setRemote([]);
+      } finally {
+        setLoading(false);
+      }
+    }, 200);
+    return () => clearTimeout(handle);
+  }, [query, open]);
 
   // 열릴 때 input focus
   useEffect(() => {
@@ -129,7 +188,7 @@ export default function SearchPalette({ open, onClose }: Props) {
       e.preventDefault();
       setActiveIdx((i) => Math.max(i - 1, 0));
     } else if (e.key === "Enter" && filtered[activeIdx]) {
-      navigate(filtered[activeIdx].href);
+      navigate(filtered[activeIdx]!.href);
     } else if (e.key === "Escape") {
       onClose();
     }
@@ -161,9 +220,15 @@ export default function SearchPalette({ open, onClose }: Props) {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="페이지 이동…"
+            placeholder="페이지·목표·업체·시세 검색…"
             className="flex-1 bg-transparent text-sm text-slate-800 placeholder-slate-300 focus:outline-none"
           />
+          {loading && (
+            <svg className="h-3.5 w-3.5 animate-spin text-violet-500" viewBox="0 0 24 24" fill="none">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
+            </svg>
+          )}
           <kbd className="hidden shrink-0 rounded border border-[#e8ecf0] px-1.5 py-0.5 text-[10px] font-medium text-slate-400 sm:inline">
             ESC
           </kbd>
@@ -178,7 +243,7 @@ export default function SearchPalette({ open, onClose }: Props) {
           ) : (
             filtered.map((item, i) => (
               <button
-                key={item.href}
+                key={item.key}
                 onClick={() => navigate(item.href)}
                 onMouseEnter={() => setActiveIdx(i)}
                 className={`flex w-full items-center gap-3 px-4 py-3 text-left transition-colors ${
@@ -188,7 +253,7 @@ export default function SearchPalette({ open, onClose }: Props) {
                 <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${
                   i === activeIdx ? "bg-violet-100 text-violet-600" : "bg-slate-100 text-slate-500"
                 }`}>
-                  {item.icon}
+                  {item.icon ?? <span className="text-[10px] font-bold">{item.badge?.[0]}</span>}
                 </span>
                 <span className="min-w-0 flex-1">
                   <span className={`block text-[13px] font-semibold ${i === activeIdx ? "text-violet-700" : "text-slate-700"}`}>
@@ -198,10 +263,12 @@ export default function SearchPalette({ open, onClose }: Props) {
                     {item.description}
                   </span>
                 </span>
-                {i === activeIdx && (
-                  <kbd className="shrink-0 rounded border border-violet-200 bg-violet-100 px-1.5 py-0.5 text-[10px] font-medium text-violet-500">
-                    Enter
-                  </kbd>
+                {item.badge && (
+                  <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium ${
+                    i === activeIdx ? "bg-violet-200 text-violet-700" : "bg-slate-100 text-slate-400"
+                  }`}>
+                    {item.badge}
+                  </span>
                 )}
               </button>
             ))

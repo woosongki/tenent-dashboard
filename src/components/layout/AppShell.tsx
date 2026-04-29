@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Sidebar from "./Sidebar";
 import SearchPalette from "@/components/ui/SearchPalette";
+import { useSidebarTheme } from "@/hooks/useSidebarTheme";
 
 interface Props {
   userEmail: string;
@@ -29,6 +30,7 @@ export default function AppShell({ userEmail, children }: Props) {
   const [mobileOpen, setMobileOpen]   = useState(false);
   const [collapsed,  setCollapsed]    = useState(false);
   const [searchOpen, setSearchOpen]   = useState(false);
+  const [theme, setTheme]             = useSidebarTheme();
 
   // 페이지 이동 시 모바일 메뉴 자동 닫기
   useEffect(() => {
@@ -80,6 +82,8 @@ export default function AppShell({ userEmail, children }: Props) {
           onClose={() => setMobileOpen(false)}
           collapsed={collapsed}
           onToggleCollapse={() => setCollapsed((v) => !v)}
+          theme={theme}
+          onToggleTheme={() => setTheme(theme === "dark" ? "light" : "dark")}
         />
       </div>
 

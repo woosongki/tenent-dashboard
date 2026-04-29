@@ -10,6 +10,7 @@ import {
   RELIABILITY_META, TREND_META,
 } from "@/types/marketPrice";
 import { upsertMarketPriceRow, deleteMarketPriceRow } from "@/lib/marketPrice/actions";
+import FilterDrawer from "@/components/ui/FilterDrawer";
 
 // ── Badges ───────────────────────────────────────────────────
 function ReliabilityBadge({ value }: { value: string | null }) {
@@ -281,21 +282,23 @@ export default function MarketPriceTable({ rows: initialRows }: Props) {
           <input
             value={q} onChange={(e) => setQ(e.target.value)}
             placeholder="지점명 검색…"
-            className="h-8 rounded-lg border border-[#e8ecf0] px-3 text-sm text-slate-700 placeholder-slate-300 focus:outline-none focus:ring-2 focus:ring-violet-300 w-48"
+            className="h-8 rounded-lg border border-[#e8ecf0] px-3 text-sm text-slate-700 placeholder-slate-300 focus:outline-none focus:ring-2 focus:ring-violet-300 flex-1 min-w-[160px] md:flex-none md:w-48"
           />
-          <select value={fBrand} onChange={(e) => setFBrand(e.target.value)} className="h-8 rounded-lg border border-[#e8ecf0] px-2 text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-violet-300">
-            <option value="">전체 브랜드</option>
-            {MARKET_BRANDS.map((b) => <option key={b} value={b}>{b}</option>)}
-          </select>
-          <select value={fRegion} onChange={(e) => setFRegion(e.target.value)} className="h-8 rounded-lg border border-[#e8ecf0] px-2 text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-violet-300">
-            <option value="">전체 지역</option>
-            {MARKET_REGIONS.map((r) => <option key={r} value={r}>{r}</option>)}
-          </select>
-          <select value={fContract} onChange={(e) => setFContract(e.target.value)} className="h-8 rounded-lg border border-[#e8ecf0] px-2 text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-violet-300">
-            <option value="">전체 계약유형</option>
-            {MARKET_CONTRACT_TYPES.map((c) => <option key={c} value={c}>{c}</option>)}
-          </select>
-          <span className="ml-auto text-xs text-slate-400">{filtered.length} / {rows.length}건</span>
+          <FilterDrawer activeCount={[fBrand, fRegion, fContract].filter(Boolean).length}>
+            <select value={fBrand} onChange={(e) => setFBrand(e.target.value)} className="h-8 rounded-lg border border-[#e8ecf0] px-2 text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-violet-300">
+              <option value="">전체 브랜드</option>
+              {MARKET_BRANDS.map((b) => <option key={b} value={b}>{b}</option>)}
+            </select>
+            <select value={fRegion} onChange={(e) => setFRegion(e.target.value)} className="h-8 rounded-lg border border-[#e8ecf0] px-2 text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-violet-300">
+              <option value="">전체 지역</option>
+              {MARKET_REGIONS.map((r) => <option key={r} value={r}>{r}</option>)}
+            </select>
+            <select value={fContract} onChange={(e) => setFContract(e.target.value)} className="h-8 rounded-lg border border-[#e8ecf0] px-2 text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-violet-300">
+              <option value="">전체 계약유형</option>
+              {MARKET_CONTRACT_TYPES.map((c) => <option key={c} value={c}>{c}</option>)}
+            </select>
+          </FilterDrawer>
+          <span className="ml-auto text-xs text-slate-400 hidden sm:inline">{filtered.length} / {rows.length}건</span>
           <button
             type="button"
             onClick={() => setModalRow({})}

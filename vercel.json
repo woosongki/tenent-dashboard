@@ -9,5 +9,10 @@
       "main": true
     }
   },
-  "crons": []
+  "crons": [
+    {
+      "path": "/api/sync/notion",
+      "schedule": "0 18 * * *"
+    }
+  ]
 }

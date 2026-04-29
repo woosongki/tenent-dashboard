@@ -7,6 +7,8 @@ import { getVendorFnb } from "@/lib/vendorFnb/queries";
 import type { PoolType } from "@/types/goals";
 import GoalsTable from "./_components/GoalsTable";
 import VendorFnbTable from "./_components/VendorFnbTable";
+import VendorStatusFunnel from "./_components/VendorStatusFunnel";
+import NotionSyncButton from "@/components/ui/NotionSyncButton";
 import AddGoalForm from "./_components/AddGoalForm";
 import ContentPoolTabs from "./_components/ContentPoolTabs";
 import TopBar from "@/components/layout/TopBar";
@@ -62,7 +64,12 @@ async function loadCounts(orgId: string): Promise<Record<PoolType, number>> {
 // ── F&B 탭 전용 컨텐츠 (서버) ────────────────────────────────
 async function VendorFnbContent() {
   const rows = await getVendorFnb();
-  return <VendorFnbTable rows={rows} />;
+  return (
+    <div className="space-y-5">
+      {rows.length > 0 && <VendorStatusFunnel rows={rows} />}
+      <VendorFnbTable rows={rows} />
+    </div>
+  );
 }
 
 // ── 라이프스타일/팝업 탭 컨텐츠 (서버) ──────────────────────
@@ -120,7 +127,11 @@ export default async function GoalsPage({ searchParams }: PageProps) {
       <TopBar
         crumbs={[{ label: "대시보드", href: "/dashboard" }, { label: "컨텐츠 풀" }]}
         lastUpdated={new Date()}
-        action={activeTab !== "fnb" && orgId ? <AddGoalForm organizationId={orgId} poolType={activeTab} /> : undefined}
+        action={
+          activeTab === "fnb"
+            ? <NotionSyncButton />
+            : orgId ? <AddGoalForm organizationId={orgId} poolType={activeTab} /> : undefined
+        }
       />
       <main className="flex-1 overflow-y-auto px-7 py-6 space-y-5">
         {/* 제목 */}

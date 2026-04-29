@@ -4,7 +4,9 @@ import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import { getMarketPriceData } from "@/lib/marketPrice/queries";
 import MarketPriceTable from "./_components/MarketPriceTable";
+import MarketPriceCharts from "./_components/MarketPriceCharts";
 import TopBar from "@/components/layout/TopBar";
+import NotionSyncButton from "@/components/ui/NotionSyncButton";
 
 export const metadata: Metadata = { title: "상권분석 — lifestyle" };
 
@@ -40,7 +42,12 @@ function TableSkeleton() {
 
 async function MarketPriceContent() {
   const rows = await getMarketPriceData();
-  return <MarketPriceTable rows={rows} />;
+  return (
+    <div className="space-y-5">
+      {rows.length > 0 && <MarketPriceCharts rows={rows} />}
+      <MarketPriceTable rows={rows} />
+    </div>
+  );
 }
 
 export default async function LogsPage() {
@@ -53,6 +60,7 @@ export default async function LogsPage() {
       <TopBar
         crumbs={[{ label: "대시보드", href: "/dashboard" }, { label: "상권분석" }]}
         lastUpdated={new Date()}
+        action={<NotionSyncButton />}
       />
       <main className="flex-1 overflow-y-auto px-7 py-6 space-y-5">
         <div>

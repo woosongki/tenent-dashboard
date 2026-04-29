@@ -4,7 +4,9 @@ import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import { getAttractionRows, getAttractionStats } from "@/lib/attraction/queries";
 import AttractionTable from "./_components/AttractionTable";
+import BranchProgressGrid from "./_components/BranchProgressGrid";
 import TopBar from "@/components/layout/TopBar";
+import NotionSyncButton from "@/components/ui/NotionSyncButton";
 
 export const metadata: Metadata = { title: "입점계획(26년) — lifestyle" };
 
@@ -78,6 +80,9 @@ async function AttractionContent() {
         </div>
       </div>
 
+      {/* Branch heatmap */}
+      <BranchProgressGrid rows={rows} />
+
       {/* Table */}
       <AttractionTable rows={rows} />
     </div>
@@ -115,7 +120,10 @@ export default async function DrilldownPage() {
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
-      <TopBar crumbs={[{ label: "대시보드", href: "/dashboard" }, { label: "입점계획(26년)" }]} />
+      <TopBar
+        crumbs={[{ label: "대시보드", href: "/dashboard" }, { label: "입점계획(26년)" }]}
+        action={<NotionSyncButton />}
+      />
       <main className="flex-1 overflow-y-auto px-5 py-6 space-y-5 sm:px-7">
         <div>
           <h1 className="text-[22px] font-extrabold tracking-tight text-slate-900">입점계획(26년)</h1>

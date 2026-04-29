@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import type { VendorFnbRow } from "@/types/vendorFnb";
 import { VENDOR_SCORES, VENDOR_STATUSES, STATUS_META, VENDOR_TYPE_OPTIONS } from "@/types/vendorFnb";
 import { upsertVendorFnb, deleteVendorFnb } from "@/lib/vendorFnb/actions";
+import FilterDrawer from "@/components/ui/FilterDrawer";
 
 // ── Badges ───────────────────────────────────────────────────
 function StatusBadge({ value }: { value: string | null }) {
@@ -255,17 +256,19 @@ export default function VendorFnbTable({ rows: initialRows }: Props) {
           <input
             value={q} onChange={(e) => setQ(e.target.value)}
             placeholder="업체명·키맨 검색…"
-            className="h-8 rounded-lg border border-[#e8ecf0] px-3 text-sm text-slate-700 placeholder-slate-300 focus:outline-none focus:ring-2 focus:ring-violet-300 w-44"
+            className="h-8 rounded-lg border border-[#e8ecf0] px-3 text-sm text-slate-700 placeholder-slate-300 focus:outline-none focus:ring-2 focus:ring-violet-300 flex-1 min-w-[160px] md:flex-none md:w-44"
           />
-          <select value={fStatus} onChange={(e) => setFStatus(e.target.value)} className="h-8 rounded-lg border border-[#e8ecf0] px-2 text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-violet-300">
-            <option value="">전체 상태</option>
-            {VENDOR_STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
-          </select>
-          <select value={fType} onChange={(e) => setFType(e.target.value)} className="h-8 rounded-lg border border-[#e8ecf0] px-2 text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-violet-300">
-            <option value="">전체 유형</option>
-            {VENDOR_TYPE_OPTIONS.map((t) => <option key={t} value={t}>{t}</option>)}
-          </select>
-          <span className="ml-auto text-xs text-slate-400">{filtered.length} / {rows.length}개 업체</span>
+          <FilterDrawer activeCount={[fStatus, fType].filter(Boolean).length}>
+            <select value={fStatus} onChange={(e) => setFStatus(e.target.value)} className="h-8 rounded-lg border border-[#e8ecf0] px-2 text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-violet-300">
+              <option value="">전체 상태</option>
+              {VENDOR_STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
+            </select>
+            <select value={fType} onChange={(e) => setFType(e.target.value)} className="h-8 rounded-lg border border-[#e8ecf0] px-2 text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-violet-300">
+              <option value="">전체 유형</option>
+              {VENDOR_TYPE_OPTIONS.map((t) => <option key={t} value={t}>{t}</option>)}
+            </select>
+          </FilterDrawer>
+          <span className="ml-auto text-xs text-slate-400 hidden sm:inline">{filtered.length} / {rows.length}개 업체</span>
           <button
             type="button"
             onClick={() => setModalRow({})}
