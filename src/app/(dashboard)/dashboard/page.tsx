@@ -74,8 +74,8 @@ export default async function DashboardPage() {
       />
       <main className="flex-1 overflow-y-auto px-7 py-6 space-y-6">
         <div>
-          <h1 className="text-[22px] font-extrabold tracking-tight text-slate-900">대시보드</h1>
-          <p className="mt-1 text-[13px] text-slate-400">이랜드리테일 브랜드 성과 현황을 한눈에 확인하세요</p>
+          <h1 className="text-[22px] font-extrabold tracking-tight text-slate-900">브랜드 성과</h1>
+          <p className="mt-1 text-[13px] text-slate-400">매출·입점·팝업 현황을 한눈에 — 셀 클릭으로 드릴다운</p>
         </div>
 
         <Suspense fallback={<SummarySkeleton />}>

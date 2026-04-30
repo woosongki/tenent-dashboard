@@ -4,19 +4,24 @@ export interface MarketPriceRow {
   brand: string | null;     // 브랜드
   contract_type: string | null;       // 계약유형
   size_range: string | null;          // 평수구간
-  deposit_median: string | null;      // 보증금_중앙값
-  monthly_rent_median: string | null; // 월세_중앙값
+  deposit_median: string | null;      // 보증금_중앙값 (텍스트)
+  monthly_rent_median: string | null; // 월세_중앙값 (텍스트)
   floor_type: string | null;          // 층수
-  rent_per_pyeong: string | null;     // 평당월세_역산
+  rent_per_pyeong: string | null;     // 평당월세_역산 (텍스트)
   store_type: string | null;          // 상가유형
   region: string | null;              // 지역구분
   reliability: string | null;         // 신뢰도
   price_trend: string | null;         // 지수추세
   data_source: string | null;         // 데이터출처
-  sample_count: string | null;        // 표본건수
+  sample_count: string | null;        // 표본건수 (텍스트)
   note: string | null;                // 비고
   last_updated: string | null;        // 최종갱신일
   created_at: string;
+  // ── numeric 파싱 컬럼 (만원 단위) — optional (신규 싱크 이후 채워짐) ──
+  deposit_median_num?: number | null;
+  monthly_rent_num?: number | null;
+  rent_per_pyeong_num?: number | null;
+  sample_count_num?: number | null;
 }
 
 export const MARKET_BRANDS = ["뉴코아아울렛", "NC백화점", "2001아울렛", "동아백화점"] as const;

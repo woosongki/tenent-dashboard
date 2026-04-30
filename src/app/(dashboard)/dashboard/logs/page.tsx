@@ -66,7 +66,7 @@ export default async function LogsPage() {
       <main className="flex-1 overflow-y-auto px-7 py-6 space-y-5">
         <div>
           <h1 className="text-[22px] font-extrabold tracking-tight text-slate-900">상권분석</h1>
-          <p className="mt-1 text-[13px] text-slate-400">상가 임차 시세 데이터 · 뉴코아/NC/2001/동아 브랜드별 현황</p>
+          <p className="mt-1 text-[13px] text-slate-400">뉴코아·NC·2001·동아 브랜드별 임차 시세 — 노션 싱크로 최신 유지</p>
         </div>
         <Suspense fallback={<TableSkeleton />}>
           <MarketPriceContent />

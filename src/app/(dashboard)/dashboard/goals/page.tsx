@@ -141,7 +141,7 @@ export default async function GoalsPage({ searchParams }: PageProps) {
         {/* 제목 */}
         <div>
           <h1 className="text-[22px] font-extrabold tracking-tight text-slate-900">컨텐츠 풀</h1>
-          <p className="mt-1 text-[13px] text-slate-400">셀을 클릭하면 바로 수정할 수 있습니다.</p>
+          <p className="mt-1 text-[13px] text-slate-400">라이프스타일 · F&amp;B · 팝업 브랜드 후보를 관리합니다 · 셀 클릭으로 즉시 수정</p>
         </div>
 
         {/* 탭 */}

@@ -8,15 +8,6 @@ interface Props {
   rows: MarketPriceRow[];
 }
 
-// 텍스트 형태의 월세 중앙값에서 숫자 추출 ("120만원" → 120)
-function parseMan(s: string | null): number | null {
-  if (!s) return null;
-  const m = s.match(/[\d,]+/);
-  if (!m) return null;
-  const n = Number(m[0].replace(/,/g, ""));
-  return isNaN(n) ? null : n;
-}
-
 export default function MarketPriceCharts({ rows }: Props) {
   // 1) 지수추세 분포
   const trendDist = useMemo(() => {
@@ -26,11 +17,11 @@ export default function MarketPriceCharts({ rows }: Props) {
     return map;
   }, [rows]);
 
-  // 2) 브랜드별 평균 월세
+  // 2) 브랜드별 평균 월세 — numeric 컬럼 직접 사용 (텍스트 파싱 불필요)
   const brandAvg = useMemo(() => {
     return MARKET_BRANDS.map((brand) => {
       const items = rows.filter((r) => r.brand === brand);
-      const values = items.map((r) => parseMan(r.monthly_rent_median)).filter((v): v is number => v !== null);
+      const values = items.map((r) => r.monthly_rent_num).filter((v): v is number => v !== null);
       const avg = values.length ? Math.round(values.reduce((a, b) => a + b, 0) / values.length) : 0;
       return { brand, avg, count: items.length };
     });

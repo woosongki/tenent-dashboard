@@ -1,7 +1,8 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import {
-  PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend,
+  PieChart, Pie, Cell, Tooltip, ResponsiveContainer,
 } from "recharts";
 import type { CategoryStat } from "@/types/dashboard";
 
@@ -55,6 +56,7 @@ function CustomTooltip({ active, payload }: { active?: boolean; payload?: Toolti
 }
 
 export default function CategoryDonutChart({ stats }: Props) {
+  const router = useRouter();
   if (!stats.length) return null;
 
   const totalRevenue = stats.reduce((s, c) => s + c.revenue, 0);
@@ -62,6 +64,10 @@ export default function CategoryDonutChart({ stats }: Props) {
     ...c,
     pct: totalRevenue > 0 ? (c.revenue / totalRevenue) * 100 : 0,
   }));
+
+  function handleSliceClick() {
+    router.push("/dashboard/sales");
+  }
 
   return (
     <div className="relative overflow-hidden rounded-xl border border-[#e8ecf0] bg-white p-5 shadow-[0_1px_3px_rgba(0,0,0,.04)]">
@@ -92,6 +98,8 @@ export default function CategoryDonutChart({ stats }: Props) {
                 paddingAngle={2}
                 dataKey="revenue"
                 nameKey="category"
+                onClick={handleSliceClick}
+                className="cursor-pointer"
               >
                 {data.map((entry) => (
                   <Cell key={entry.category} fill={getColor(entry.category)} strokeWidth={0} />
@@ -102,16 +110,21 @@ export default function CategoryDonutChart({ stats }: Props) {
           </ResponsiveContainer>
         </div>
 
-        {/* 범례 + 상세 */}
+        {/* 범례 + 상세 — 클릭 시 매출분석으로 */}
         <div className="flex flex-1 flex-col gap-1.5">
           {data.map((d) => (
-            <div key={d.category} className="flex items-center gap-2.5">
+            <button
+              key={d.category}
+              type="button"
+              onClick={() => router.push("/dashboard/sales")}
+              className="group flex w-full items-center gap-2.5 rounded-lg px-1 py-0.5 text-left transition-colors hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-violet-400"
+              title={`${d.category} 매출분석 보기`}
+            >
               <span
                 className="h-2.5 w-2.5 shrink-0 rounded-full"
                 style={{ background: getColor(d.category) }}
               />
-              <span className="w-20 text-[12px] font-medium text-slate-600">{d.category}</span>
-              {/* 미니 퍼센트 바 */}
+              <span className="w-20 text-[12px] font-medium text-slate-600 group-hover:text-violet-700 transition-colors">{d.category}</span>
               <div className="flex-1 h-[5px] overflow-hidden rounded-full bg-slate-100">
                 <div
                   className="h-full rounded-full transition-all duration-700"
@@ -128,7 +141,7 @@ export default function CategoryDonutChart({ stats }: Props) {
               <span className="w-8 text-right text-[11px] font-semibold tabular-nums text-slate-600">
                 {d.count}개
               </span>
-            </div>
+            </button>
           ))}
         </div>
       </div>

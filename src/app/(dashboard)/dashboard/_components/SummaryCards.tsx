@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { DashboardSummary, TopBrand } from "@/types/dashboard";
 
 interface Props {
@@ -93,6 +94,7 @@ export default function SummaryCards({ summary }: Props) {
 
       {/* 공실해결 — violet */}
       <MetricCard
+        href="/dashboard/drilldown"
         accent="violet"
         label="공실해결 건수"
         value={summary.totalMembers.toLocaleString()}
@@ -103,6 +105,7 @@ export default function SummaryCards({ summary }: Props) {
 
       {/* 컨텐츠 수 — emerald */}
       <MetricCard
+        href="/dashboard/goals"
         accent="emerald"
         label="컨텐츠 수"
         value={summary.contentCount.toLocaleString()}
@@ -117,6 +120,7 @@ export default function SummaryCards({ summary }: Props) {
 
       {/* 팝업 수 — amber */}
       <MetricCard
+        href="/dashboard/goals?tab=popup"
         accent="amber"
         label="팝업 수"
         value={summary.activeSubscriptions.toLocaleString()}
@@ -130,11 +134,13 @@ export default function SummaryCards({ summary }: Props) {
       />
 
       {/* 입점 완료율 — rose */}
-      <div className="relative overflow-hidden rounded-xl border border-[#e8ecf0] bg-white p-5 shadow-[0_1px_3px_rgba(0,0,0,.04)]">
+      <Link
+        href="/dashboard/drilldown"
+        className="group relative overflow-hidden rounded-xl border border-[#e8ecf0] bg-white p-5 shadow-[0_1px_3px_rgba(0,0,0,.04)] transition-shadow hover:shadow-[0_4px_12px_rgba(0,0,0,.08)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400"
+      >
         <div className="absolute inset-x-0 top-0 h-[3px] rounded-t-xl bg-gradient-to-r from-rose-500 to-rose-300" />
         <div className="flex items-center justify-between">
           <span className="text-[12px] font-medium text-slate-500">입점 완료율</span>
-          {/* ⑤ 이모지 → SVG */}
           <div className="flex h-[34px] w-[34px] items-center justify-center rounded-[10px] bg-rose-50">
             <IconChartBar className="h-[18px] w-[18px] text-rose-500" />
           </div>
@@ -142,7 +148,6 @@ export default function SummaryCards({ summary }: Props) {
         <p className="mt-3 text-[28px] font-extrabold leading-none tracking-tight text-slate-900">
           {completionRate}<span className="text-[16px] font-semibold text-slate-400">%</span>
         </p>
-        {/* ② 트렌드: 프로그레스 바 + 수치 */}
         <div className="mt-3 h-[4px] w-full overflow-hidden rounded-full bg-rose-50">
           <div
             className="h-full rounded-full bg-gradient-to-r from-rose-500 to-rose-300 transition-all duration-500"
@@ -154,7 +159,10 @@ export default function SummaryCards({ summary }: Props) {
           value={`${summary.positiveGrowthCount} / ${summary.contentCount}`}
           label="성장 / 전체 브랜드"
         />
-      </div>
+        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-medium text-slate-300 opacity-0 transition-opacity group-hover:opacity-100">
+          상세 →
+        </span>
+      </Link>
     </div>
   );
 }
@@ -257,15 +265,15 @@ interface MetricCardProps {
   icon: React.ReactNode;
   iconBg: string;
   trend: { direction: "up" | "down" | "neutral"; value: string; label: string };
+  href?: string;
 }
 
-function MetricCard({ accent, label, value, icon, iconBg, trend }: MetricCardProps) {
-  return (
-    <div className="relative overflow-hidden rounded-xl border border-[#e8ecf0] bg-white p-5 shadow-[0_1px_3px_rgba(0,0,0,.04)]">
+function MetricCard({ accent, label, value, icon, iconBg, trend, href }: MetricCardProps) {
+  const inner = (
+    <>
       <div className={`absolute inset-x-0 top-0 h-[3px] rounded-t-xl bg-gradient-to-r ${GRADIENT[accent]}`} />
       <div className="flex items-center justify-between">
         <span className="text-[12px] font-medium text-slate-500">{label}</span>
-        {/* ⑤ SVG 아이콘 래퍼 */}
         <div className={`flex h-[34px] w-[34px] items-center justify-center rounded-[10px] ${iconBg}`}>
           {icon}
         </div>
@@ -273,8 +281,28 @@ function MetricCard({ accent, label, value, icon, iconBg, trend }: MetricCardPro
       <p className="mt-3 text-[28px] font-extrabold leading-none tracking-tight text-slate-900">
         {value}
       </p>
-      {/* ② 트렌드 인디케이터 */}
       <TrendBadge direction={trend.direction} value={trend.value} label={trend.label} />
+      {href && (
+        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-medium text-slate-300 opacity-0 transition-opacity group-hover:opacity-100">
+          상세 →
+        </span>
+      )}
+    </>
+  );
+
+  if (href) {
+    return (
+      <Link
+        href={href}
+        className="group relative overflow-hidden rounded-xl border border-[#e8ecf0] bg-white p-5 shadow-[0_1px_3px_rgba(0,0,0,.04)] transition-shadow hover:shadow-[0_4px_12px_rgba(0,0,0,.08)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400"
+      >
+        {inner}
+      </Link>
+    );
+  }
+  return (
+    <div className="relative overflow-hidden rounded-xl border border-[#e8ecf0] bg-white p-5 shadow-[0_1px_3px_rgba(0,0,0,.04)]">
+      {inner}
     </div>
   );
 }

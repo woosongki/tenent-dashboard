@@ -71,7 +71,7 @@ export default async function SalesPage() {
       <main className="flex-1 overflow-y-auto px-7 py-6 space-y-5">
         <div>
           <h1 className="text-[22px] font-extrabold tracking-tight text-slate-900">매출분석</h1>
-          <p className="mt-1 text-[13px] text-slate-400">카테고리·브랜드별 매출 및 이익 현황</p>
+          <p className="mt-1 text-[13px] text-slate-400">채널·카테고리·브랜드별 매출 성과 및 전월 대비 성장률</p>
         </div>
         <Suspense fallback={<ContentSkeleton />}>
           <SalesContent />

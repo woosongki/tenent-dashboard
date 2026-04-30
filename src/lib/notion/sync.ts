@@ -27,6 +27,27 @@ function getSupabaseAdmin() {
   return createSupabaseAdmin(url, key, { auth: { persistSession: false } });
 }
 
+// ── 숫자 파싱 헬퍼 ─────────────────────────────────────────
+/** "1억 5,000만 원" / "75만 원" / "—" → 만원 단위 숫자 */
+function parseManWon(txt: string | null): number | null {
+  if (!txt || /^\s*[—\-–]\s*$/.test(txt) || !txt.trim()) return null;
+  const cleaned = txt.replace(/[,\s]/g, "").replace(/[원/평만]/g, "");
+  if (/억/.test(cleaned)) {
+    const uk  = parseFloat(cleaned.match(/^([0-9.]+)억/)?.[1] ?? "0") * 10000;
+    const man = parseFloat(cleaned.match(/억([0-9.]+)$/)?.[1] ?? "0");
+    return uk + man;
+  }
+  const n = parseFloat(cleaned);
+  return isNaN(n) ? null : n;
+}
+
+/** "⚠ 3건" / "5건" → 정수 */
+function parseSampleCount(txt: string | null): number | null {
+  if (!txt) return null;
+  const m = txt.match(/([0-9]+)건/);
+  return m ? parseInt(m[1], 10) : null;
+}
+
 // ── 헬퍼 ────────────────────────────────────────────────────
 async function fetchAllPages(dataSourceId: string): Promise<Record<string, unknown>[]> {
   const notion = getNotionClient();
@@ -104,24 +125,34 @@ export async function syncMarketPrice(): Promise<SyncResult> {
       const name = getTitle(props, "지점");
       if (!name) continue;
 
+      const depositText      = getRichText(props, "보증금_중앙값");
+      const monthlyRentText  = getRichText(props, "월세_중앙값");
+      const rentPerPyeongText= getRichText(props, "평당월세_역산");
+      const sampleCountText  = getRichText(props, "표본건수");
+
       const record = {
         name,
-        brand:               getSelect(props,   "브랜드"),
-        contract_type:       getSelect(props,   "계약유형"),
-        size_range:          getSelect(props,   "평수구간"),
-        deposit_median:      getRichText(props, "보증금_중앙값"),
-        monthly_rent_median: getRichText(props, "월세_중앙값"),
-        floor_type:          getSelect(props,   "층수"),
-        rent_per_pyeong:     getRichText(props, "평당월세_역산"),
-        store_type:          getSelect(props,   "상가유형"),
-        region:              getSelect(props,   "지역구분"),
-        reliability:         getSelect(props,   "신뢰도"),
-        price_trend:         getSelect(props,   "지수추세"),
-        data_source:         getSelect(props,   "데이터출처"),
-        sample_count:        getRichText(props, "표본건수"),
-        note:                getRichText(props, "비고"),
-        last_updated:        getDate(props,     "최종갱신일"),
-        notion_url:          notionUrl,
+        brand:                getSelect(props,   "브랜드"),
+        contract_type:        getSelect(props,   "계약유형"),
+        size_range:           getSelect(props,   "평수구간"),
+        deposit_median:       depositText,
+        monthly_rent_median:  monthlyRentText,
+        floor_type:           getSelect(props,   "층수"),
+        rent_per_pyeong:      rentPerPyeongText,
+        store_type:           getSelect(props,   "상가유형"),
+        region:               getSelect(props,   "지역구분"),
+        reliability:          getSelect(props,   "신뢰도"),
+        price_trend:          getSelect(props,   "지수추세"),
+        data_source:          getSelect(props,   "데이터출처"),
+        sample_count:         sampleCountText,
+        note:                 getRichText(props, "비고"),
+        last_updated:         getDate(props,     "최종갱신일"),
+        notion_url:           notionUrl,
+        // ── numeric 파싱 컬럼 ──
+        deposit_median_num:   parseManWon(depositText),
+        monthly_rent_num:     parseManWon(monthlyRentText),
+        rent_per_pyeong_num:  parseManWon(rentPerPyeongText),
+        sample_count_num:     parseSampleCount(sampleCountText),
       };
 
       const { error } = await admin
