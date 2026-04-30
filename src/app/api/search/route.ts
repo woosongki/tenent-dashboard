@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 
 export interface SearchResult {
-  type: "goal" | "vendor" | "market" | "attraction";
+  type: "goal" | "vendor" | "store" | "attraction";
   id: string;
   label: string;
   description: string;
@@ -53,21 +53,22 @@ export async function GET(req: Request) {
     });
   });
 
-  // 3. Market price
-  const { data: markets } = await supabase
-    .from("market_price_data")
-    .select("id, name, brand, region")
-    .ilike("name", pat)
-    .limit(5);
-  markets?.forEach((m) => {
-    results.push({
-      type: "market",
-      id: m.id as string,
-      label: m.name as string,
-      description: `상권분석 · ${m.brand ?? "—"}${m.region ? ` · ${m.region}` : ""}`,
-      href: `/dashboard/logs`,
+  // 3. Stores (이랜드리테일 41개 점포 — 정적 데이터)
+  try {
+    const { searchStoresByQuery } = await import("@/lib/stores");
+    const matches = searchStoresByQuery(q, 5);
+    matches.forEach((s) => {
+      results.push({
+        type: "store",
+        id: s.id,
+        label: `${s.brand} ${s.name}`,
+        description: `상권분석 · ${s.region1} ${s.region2}`,
+        href: `/dashboard/branch/${s.id}`,
+      });
     });
-  });
+  } catch {
+    // stores 로더 실패는 검색 전체를 막지 않음
+  }
 
   // 4. Attraction (입점계획)
   const { data: attractions } = await supabase

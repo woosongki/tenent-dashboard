@@ -56,7 +56,7 @@ export default async function DashboardPage() {
   if (!user) redirect("/login");
 
   const lastUpdated = await getLastUpdatedMax([
-    "goals", "attraction_status", "market_price_data", "vendor_fnb",
+    "goals", "attraction_status", "vendor_fnb",
   ]);
 
   return (

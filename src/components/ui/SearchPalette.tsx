@@ -58,23 +58,12 @@ const NAV_ITEMS: NavItem[] = [
   },
   {
     label: "상권분석",
-    description: "목표 변경 이력 · 감사 로그",
-    href: "/dashboard/logs",
-    keywords: ["logs", "audit", "history", "상권", "이력", "log"],
+    description: "이랜드리테일 41개 점포 · 주변 상권 · 상업용 실거래가",
+    href: "/dashboard/branch",
+    keywords: ["branch", "지점", "store", "매장", "점포", "상권", "trade", "area", "상권분석"],
     icon: (
       <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
-      </svg>
-    ),
-  },
-  {
-    label: "지점정보",
-    description: "이랜드리테일 지점 현황 및 상세 정보",
-    href: "/dashboard/branch",
-    keywords: ["branch", "지점", "store", "매장", "점포"],
-    icon: (
-      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 21v-7.5a.75.75 0 01.75-.75h3a.75.75 0 01.75.75V21m-4.5 0H2.36m11.14 0H18m0 0h3.64m-1.39 0V9.349m-16.5 11.65V9.35m0 0a3.001 3.001 0 003.75-.615A2.993 2.993 0 009.75 9.75c.896 0 1.7-.393 2.25-1.016a2.993 2.993 0 002.25 1.016c.896 0 1.7-.393 2.25-1.016a3.001 3.001 0 003.75.614m-16.5 0a3.004 3.004 0 01-.621-4.72L4.318 3.44A1.5 1.5 0 015.378 3h13.243a1.5 1.5 0 011.06.44l1.19 1.189a3 3 0 01-.621 4.72m-13.5 8.65h3.75a.75.75 0 00.75-.75V13.5a.75.75 0 00-.75-.75H6.75a.75.75 0 00-.75.75v3.75c0 .415.336.75.75.75z" />
       </svg>
     ),
   },

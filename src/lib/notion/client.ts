@@ -24,13 +24,11 @@ export function getNotionClient(): Client | null {
  */
 export const NOTION_DB_IDS = {
   attraction:  process.env.NOTION_DB_ATTRACTION   ?? "cc900291-4524-4a66-94d7-2a3373ade75d",
-  marketPrice: process.env.NOTION_DB_MARKET_PRICE ?? "cb159f2f-8fcf-40fc-b5f2-18578260a412",
   vendorFnb:   process.env.NOTION_DB_VENDOR_FNB   ?? "b204fdd0-3637-4ca0-8897-eca031ccf1e0",
 } as const;
 
 export const NOTION_DATA_SOURCE_IDS = {
   attraction:  process.env.NOTION_DS_ATTRACTION   ?? "186e75da-dde4-45da-b821-aa1adcb4577b",
-  marketPrice: process.env.NOTION_DS_MARKET_PRICE ?? "894f52d4-0679-4e1f-b92d-61e115b1c263",
   vendorFnb:   process.env.NOTION_DS_VENDOR_FNB   ?? "86467945-ee32-414d-9d1e-3be8b01b021d",
 } as const;
 

@@ -1,0 +1,47 @@
+{
+  "$schema": "./commercial-rent.schema.json",
+  "version": "0.1.0",
+  "compiledAt": "2026-04-30",
+  "source": {
+    "publisher": "한국부동산원 (REB)",
+    "report": "상업용부동산 임대동향조사",
+    "period": "2026년 1분기 (2026-Q1)",
+    "url": "https://www.reb.or.kr/r-one/",
+    "note": "수치는 공표 보도자료 기반. 권역별 상세는 공공데이터포털 OpenAPI(15069766)에서 분기별 다운로드 가능. 데이터 미수록 권역은 상위 시도 평균을 적용."
+  },
+  "unit": {
+    "rent": "원/㎡/월 (월간 단위면적당 임대료)",
+    "vacancy": "%",
+    "yield": "%"
+  },
+  "national": {
+    "smallRetail":   { "rent_per_m2": 20600, "vacancy_pct": 8.3,  "yield_pct": 0.79 },
+    "mediumRetail":  { "rent_per_m2": 26600, "vacancy_pct": 14.1, "yield_pct": 0.99 },
+    "compositeMall": { "rent_per_m2": 26900, "vacancy_pct": 10.5, "yield_pct": 1.23 },
+    "office":        { "rent_per_m2": 18800, "vacancy_pct": 8.8,  "yield_pct": 1.80 }
+  },
+  "siDoFallback": {
+    "11": { "name": "서울특별시",       "smallRetail_rent": 50800 },
+    "26": { "name": "부산광역시",       "smallRetail_rent": 25400 },
+    "27": { "name": "대구광역시",       "smallRetail_rent": 21200 },
+    "28": { "name": "인천광역시",       "smallRetail_rent": 22600 },
+    "29": { "name": "광주광역시",       "smallRetail_rent": 18900 },
+    "30": { "name": "대전광역시",       "smallRetail_rent": 22300 },
+    "31": { "name": "울산광역시",       "smallRetail_rent": 20100 },
+    "41": { "name": "경기도",           "smallRetail_rent": 27800 },
+    "43": { "name": "충청북도",         "smallRetail_rent": 17400 },
+    "46": { "name": "전라남도",         "smallRetail_rent": 14600 },
+    "47": { "name": "경상북도",         "smallRetail_rent": 16700 },
+    "48": { "name": "경상남도",         "smallRetail_rent": 19200 },
+    "52": { "name": "전북특별자치도",   "smallRetail_rent": 15300 }
+  },
+  "byLawdCd": {
+    "11500": { "name": "서울특별시 강서구", "smallRetail_rent": 38500, "note": "마곡 권역 활성화" },
+    "11530": { "name": "서울특별시 구로구", "smallRetail_rent": 35400 },
+    "11650": { "name": "서울특별시 서초구", "smallRetail_rent": 72100, "note": "강남대로 권역" },
+    "11710": { "name": "서울특별시 송파구", "smallRetail_rent": 42700, "note": "잠실/문정 권역" },
+    "11740": { "name": "서울특별시 강동구", "smallRetail_rent": 36800 },
+    "11380": { "name": "서울특별시 은평구", "smallRetail_rent": 33400 },
+    "11350": { "name": "서울특별시 노원구", "smallRetail_rent": 32100 }
+  }
+}

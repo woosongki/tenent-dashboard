@@ -2,7 +2,7 @@ import { createClient as createSupabaseAdmin } from "@supabase/supabase-js";
 import {
   getNotionClient, NOTION_DATA_SOURCE_IDS,
   getTitle, getRichText, getSelect, getMultiSelect,
-  getNumber, getCheckbox, getStatus, getUrl, getPhone, getDate,
+  getNumber, getCheckbox, getStatus, getUrl, getPhone,
 } from "./client";
 
 /**
@@ -25,27 +25,6 @@ function getSupabaseAdmin() {
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!url || !key) throw new Error("Supabase admin credentials missing");
   return createSupabaseAdmin(url, key, { auth: { persistSession: false } });
-}
-
-// ── 숫자 파싱 헬퍼 ─────────────────────────────────────────
-/** "1억 5,000만 원" / "75만 원" / "—" → 만원 단위 숫자 */
-function parseManWon(txt: string | null): number | null {
-  if (!txt || /^\s*[—\-–]\s*$/.test(txt) || !txt.trim()) return null;
-  const cleaned = txt.replace(/[,\s]/g, "").replace(/[원/평만]/g, "");
-  if (/억/.test(cleaned)) {
-    const uk  = parseFloat(cleaned.match(/^([0-9.]+)억/)?.[1] ?? "0") * 10000;
-    const man = parseFloat(cleaned.match(/억([0-9.]+)$/)?.[1] ?? "0");
-    return uk + man;
-  }
-  const n = parseFloat(cleaned);
-  return isNaN(n) ? null : n;
-}
-
-/** "⚠ 3건" / "5건" → 정수 */
-function parseSampleCount(txt: string | null): number | null {
-  if (!txt) return null;
-  const m = txt.match(/([0-9]+)건/);
-  return m ? parseInt(m[1], 10) : null;
 }
 
 // ── 헬퍼 ────────────────────────────────────────────────────
@@ -110,64 +89,9 @@ export async function syncAttraction(): Promise<SyncResult> {
   return result;
 }
 
-// ── 2. 상가 시세 (market_price_data) ───────────────────────
-export async function syncMarketPrice(): Promise<SyncResult> {
-  const result: SyncResult = { table: "market_price_data", fetched: 0, upserted: 0, errors: [] };
-  try {
-    const pages = await fetchAllPages(NOTION_DATA_SOURCE_IDS.marketPrice);
-    result.fetched = pages.length;
+// ── 2. 업체리스트 F&B (vendor_fnb) ─────────────────────────
+// (기존 상가 시세 marketPrice 동기화는 제거됨 — 41개 점포 마스터 + k-skill-proxy 실거래가로 전환)
 
-    const admin = getSupabaseAdmin();
-    for (const page of pages) {
-      const props = (page as { properties: Record<string, unknown> }).properties;
-      const notionUrl = (page as { url: string }).url;
-
-      const name = getTitle(props, "지점");
-      if (!name) continue;
-
-      const depositText      = getRichText(props, "보증금_중앙값");
-      const monthlyRentText  = getRichText(props, "월세_중앙값");
-      const rentPerPyeongText= getRichText(props, "평당월세_역산");
-      const sampleCountText  = getRichText(props, "표본건수");
-
-      const record = {
-        name,
-        brand:                getSelect(props,   "브랜드"),
-        contract_type:        getSelect(props,   "계약유형"),
-        size_range:           getSelect(props,   "평수구간"),
-        deposit_median:       depositText,
-        monthly_rent_median:  monthlyRentText,
-        floor_type:           getSelect(props,   "층수"),
-        rent_per_pyeong:      rentPerPyeongText,
-        store_type:           getSelect(props,   "상가유형"),
-        region:               getSelect(props,   "지역구분"),
-        reliability:          getSelect(props,   "신뢰도"),
-        price_trend:          getSelect(props,   "지수추세"),
-        data_source:          getSelect(props,   "데이터출처"),
-        sample_count:         sampleCountText,
-        note:                 getRichText(props, "비고"),
-        last_updated:         getDate(props,     "최종갱신일"),
-        notion_url:           notionUrl,
-        // ── numeric 파싱 컬럼 ──
-        deposit_median_num:   parseManWon(depositText),
-        monthly_rent_num:     parseManWon(monthlyRentText),
-        rent_per_pyeong_num:  parseManWon(rentPerPyeongText),
-        sample_count_num:     parseSampleCount(sampleCountText),
-      };
-
-      const { error } = await admin
-        .from("market_price_data")
-        .upsert(record, { onConflict: "notion_url" });
-      if (error) result.errors.push(`[${name}] ${error.message}`);
-      else result.upserted++;
-    }
-  } catch (e) {
-    result.errors.push(String(e));
-  }
-  return result;
-}
-
-// ── 3. 업체리스트 F&B (vendor_fnb) ─────────────────────────
 export async function syncVendorFnb(): Promise<SyncResult> {
   const result: SyncResult = { table: "vendor_fnb", fetched: 0, upserted: 0, errors: [] };
   try {
@@ -209,10 +133,9 @@ export async function syncVendorFnb(): Promise<SyncResult> {
 
 // ── 통합 실행 ───────────────────────────────────────────────
 export async function syncAll(): Promise<SyncResult[]> {
-  const [a, m, v] = await Promise.all([
+  const [a, v] = await Promise.all([
     syncAttraction(),
-    syncMarketPrice(),
     syncVendorFnb(),
   ]);
-  return [a, m, v];
+  return [a, v];
 }
