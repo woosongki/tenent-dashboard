@@ -75,14 +75,25 @@ export default async function BranchPage({
                 className="group rounded-xl border border-[#e8ecf0] bg-white p-4 shadow-[0_1px_3px_rgba(0,0,0,.04)] hover:border-slate-300 hover:shadow-[0_2px_8px_rgba(0,0,0,.06)] transition-all"
               >
                 <div className="flex items-start justify-between gap-2 mb-2">
-                  <span className={`inline-block px-2 py-0.5 text-[10px] font-medium rounded border ${BRAND_BADGE[s.brand]}`}>
-                    {s.brand}
-                  </span>
-                  {s.hasKimsclub && (
-                    <span className="text-[10px] text-slate-500 px-1.5 py-0.5 rounded border border-slate-200">
-                      킴스클럽
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <span className={`inline-block px-2 py-0.5 text-[10px] font-medium rounded border ${BRAND_BADGE[s.brand]}`}>
+                      {s.brand}
                     </span>
-                  )}
+                    {s.hasKimsclub && (
+                      <span className="text-[10px] text-slate-500 px-1.5 py-0.5 rounded border border-slate-200">
+                        킴스클럽
+                      </span>
+                    )}
+                  </div>
+                  <svg
+                    className="h-3.5 w-3.5 shrink-0 text-slate-300 group-hover:text-slate-600 group-hover:translate-x-0.5 transition-all"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth={2.5}
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                  </svg>
                 </div>
                 <h3 className="font-semibold text-[14px] text-slate-900 group-hover:text-slate-700">
                   {s.name}
@@ -109,8 +120,8 @@ export default async function BranchPage({
                     )}
                   </div>
                 ) : (
-                  <p className="mt-2 text-[10px] text-slate-400 tabular-nums">
-                    {s.lat.toFixed(4)}, {s.lng.toFixed(4)}
+                  <p className="mt-2 text-[10px] text-slate-400">
+                    상권 데이터 준비 중
                   </p>
                 )}
               </Link>
@@ -134,6 +145,7 @@ function FilterChip({
   return (
     <Link
       href={href}
+      scroll={false}
       className={`text-[12px] px-3 py-1.5 rounded-full border transition-colors ${
         active
           ? "bg-slate-900 text-white border-slate-900"

@@ -60,13 +60,7 @@ export default async function StoreDetailPage({
       <main className="flex-1 overflow-y-auto px-7 py-6 space-y-5">
         {/* Header */}
         <div>
-          <Link
-            href="/dashboard/branch"
-            className="text-[12px] text-slate-400 hover:text-slate-700 inline-flex items-center gap-1"
-          >
-            ← 매장 리스트
-          </Link>
-          <div className="mt-2 flex items-center gap-2">
+          <div className="flex items-center gap-2">
             <span className={`inline-block px-2 py-0.5 text-[10px] font-medium rounded border ${BRAND_BADGE[store.brand]}`}>
               {store.brand}
             </span>
@@ -100,8 +94,6 @@ export default async function StoreDetailPage({
               rows={[
                 ["도로명", store.roadAddress ?? "-"],
                 ["지번", store.jibunAddress ?? "-"],
-                ["법정동코드", store.bcode],
-                ["시군구코드", store.lawdCd],
                 ["행정구역", `${store.region1} ${store.region2} ${store.region3 ?? ""}`],
               ]}
             />
@@ -207,7 +199,7 @@ export default async function StoreDetailPage({
           </Section>
 
           {/* 같은 상권 유형 매장 비교 */}
-          {cohort && tradeArea && (
+          {cohort && tradeArea ? (
             <Section
               title={`같은 '${tradeArea.tradeAreaType}' 매장 ${cohort.cohortSize}곳 비교`}
               className="lg:col-span-3"
@@ -287,6 +279,15 @@ export default async function StoreDetailPage({
                 </div>
               )}
             </Section>
+          ) : (
+            <Section title="같은 상권 유형 매장 비교" className="lg:col-span-3">
+              <p className="text-[13px] text-slate-500">
+                cohort 비교 데이터 준비 중입니다.
+              </p>
+              <p className="mt-1 text-[11px] text-slate-400">
+                상권 데이터가 수집된 점포가 충분히 모이면 활성화됩니다.
+              </p>
+            </Section>
           )}
 
           {/* 상업용 매매 실거래가 */}
@@ -303,16 +304,16 @@ export default async function StoreDetailPage({
                   <Stat label="최고가" value={formatPrice10k(trade.summary.max_price_10k)} />
                 </div>
 
-                <div className="overflow-x-auto -mx-1">
-                  <table className="w-full text-[13px]">
-                    <thead className="text-[10px] uppercase tracking-wider text-slate-500">
+                <div className="overflow-x-auto -mx-5 px-5">
+                  <table className="min-w-[640px] w-full text-[13px]">
+                    <thead className="text-[11px] tracking-tight text-slate-500">
                       <tr className="border-b border-[#f1f5f9] bg-[#f8fafc]">
-                        <th className="text-left py-2 px-3 font-medium">건물명</th>
-                        <th className="text-left py-2 px-3 font-medium">동</th>
-                        <th className="text-right py-2 px-3 font-medium">면적</th>
-                        <th className="text-right py-2 px-3 font-medium">층</th>
-                        <th className="text-right py-2 px-3 font-medium">거래가</th>
-                        <th className="text-right py-2 px-3 font-medium">거래일</th>
+                        <th className="text-left py-2 px-3 font-medium tracking-tight">건물명</th>
+                        <th className="text-left py-2 px-3 font-medium tracking-tight">동</th>
+                        <th className="text-right py-2 px-3 font-medium tracking-tight">면적</th>
+                        <th className="text-right py-2 px-3 font-medium tracking-tight">층</th>
+                        <th className="text-right py-2 px-3 font-medium tracking-tight">거래가</th>
+                        <th className="text-right py-2 px-3 font-medium tracking-tight">거래일</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -337,6 +338,11 @@ export default async function StoreDetailPage({
                     </tbody>
                   </table>
                 </div>
+                {trade.items.length > 30 && (
+                  <p className="mt-2 text-[11px] text-slate-400 text-center">
+                    총 {trade.items.length}건 중 최근 30건 표시
+                  </p>
+                )}
                 <p className="mt-3 text-[10px] text-slate-400">
                   출처: 국토교통부 상업용 부동산 실거래가 신고 (k-skill-proxy 캐시)
                 </p>
@@ -366,7 +372,7 @@ function Section({
     <section
       className={`rounded-xl border border-[#e8ecf0] bg-white p-5 shadow-[0_1px_3px_rgba(0,0,0,.04)] ${className}`}
     >
-      <h2 className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 mb-3">
+      <h2 className="text-[11px] font-semibold tracking-tight text-slate-500 mb-3">
         {title}
       </h2>
       {children}
@@ -377,7 +383,7 @@ function Section({
 function Stat({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-lg bg-slate-50 px-4 py-3">
-      <p className="text-[10px] uppercase tracking-wider text-slate-500">{label}</p>
+      <p className="text-[11px] tracking-tight text-slate-500">{label}</p>
       <p className="mt-1 text-[18px] font-bold tabular-nums text-slate-900">{value}</p>
     </div>
   );
@@ -404,7 +410,7 @@ function CompareStat({
   const sign = delta > 0 ? "+" : "";
   return (
     <div className="rounded-lg bg-slate-50 px-4 py-3">
-      <p className="text-[10px] uppercase tracking-wider text-slate-500">{label}</p>
+      <p className="text-[11px] tracking-tight text-slate-500">{label}</p>
       <p className="mt-1 text-[18px] font-bold tabular-nums text-slate-900">
         {myValue}
         <span className="text-[11px] font-normal text-slate-500 ml-0.5">{unit}</span>
