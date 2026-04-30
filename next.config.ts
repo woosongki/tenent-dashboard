@@ -14,12 +14,13 @@ const securityHeaders = [
     key: "Content-Security-Policy",
     value: [
       "default-src 'self'",
-      // Next.js HMR + RSC payload
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
-      // Tailwind inline styles + Recharts SVG
+      // Next.js HMR + RSC payload + Kakao Maps SDK (dapi.kakao.com)
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://dapi.kakao.com https://t1.daumcdn.net",
+      // Tailwind inline styles + Recharts SVG + Kakao Maps inline styles
       "style-src 'self' 'unsafe-inline'",
-      // Supabase API + Storage
-      `connect-src 'self' ${process.env.NEXT_PUBLIC_SUPABASE_URL ?? "*"} wss://*.supabase.co`,
+      // Supabase API + Storage + Kakao Maps tile/API XHR
+      `connect-src 'self' ${process.env.NEXT_PUBLIC_SUPABASE_URL ?? "*"} wss://*.supabase.co https://dapi.kakao.com https://*.daumcdn.net`,
+      // Kakao 지도 타일은 *.daumcdn.net 에서 로드 (https: 와일드카드로 이미 허용되지만 명시)
       "img-src 'self' data: blob: https:",
       "font-src 'self'",
       "frame-ancestors 'none'",
