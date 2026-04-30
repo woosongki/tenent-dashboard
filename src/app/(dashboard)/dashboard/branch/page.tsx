@@ -14,7 +14,6 @@ export default async function BranchPage() {
     <div className="flex flex-col h-full overflow-hidden">
       <TopBar
         crumbs={[{ label: "지점정보" }]}
-        lastUpdated={new Date()}
       />
       <main className="flex-1 overflow-y-auto px-7 py-6 space-y-6">
         <div>

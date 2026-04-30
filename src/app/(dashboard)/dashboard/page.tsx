@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import { getDashboardSummary } from "@/lib/dashboard/queries";
+import { getLastUpdatedMax } from "@/lib/dashboard/lastUpdated";
 import SummaryCards from "./_components/SummaryCards";
 import GrowthRankingTable from "./_components/GrowthRankingTable";
 import CategoryDonutChart from "./_components/CategoryDonutChart";
@@ -54,11 +55,15 @@ export default async function DashboardPage() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
+  const lastUpdated = await getLastUpdatedMax([
+    "goals", "attraction_status", "market_price_data", "vendor_fnb",
+  ]);
+
   return (
     <div className="flex flex-col h-full overflow-hidden">
       <TopBar
         crumbs={[{ label: "대시보드" }]}
-        lastUpdated={new Date()}
+        lastUpdated={lastUpdated}
         action={
           <span className="hidden text-[12px] text-slate-400 sm:inline">
             {new Date().toLocaleDateString("ko-KR", {

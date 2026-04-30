@@ -1,8 +1,10 @@
 "use client";
 
+import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOutAction } from "@/app/(auth)/login/_actions/auth";
 import { SIDEBAR_THEMES, type SidebarTheme } from "@/lib/tokens";
+import NotionSyncButton from "@/components/ui/NotionSyncButton";
 
 // ── SVG 아이콘 ────────────────────────────────────────────────
 function IconHome() {
@@ -71,13 +73,13 @@ function IconChevronRight() {
 
 const NAV = [
   {
-    section: "OVERVIEW",
+    section: "개요",
     items: [
       { href: "/dashboard",           label: "대시보드",    icon: <IconHome /> },
     ],
   },
   {
-    section: "ANALYTICS",
+    section: "분석",
     items: [
       { href: "/dashboard/sales",     label: "매출분석",       icon: <IconChart /> },
       { href: "/dashboard/drilldown", label: "입점계획(26년)", icon: <IconBuilding /> },
@@ -172,11 +174,11 @@ export default function Sidebar({
             {group.items.map((item) => {
               const active = isActive(item.href);
               return (
-                <a
+                <Link
                   key={item.href}
                   href={item.href}
                   title={collapsed ? item.label : undefined}
-                  className={`relative mb-0.5 flex items-center rounded-[8px] transition-colors ${
+                  className={`relative mb-0.5 flex items-center rounded-[8px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500/60 ${
                     collapsed ? "justify-center px-0 py-2.5" : "gap-2.5 px-2.5 py-2.5"
                   } ${
                     active
@@ -199,12 +201,17 @@ export default function Sidebar({
                       {item.label}
                     </span>
                   )}
-                </a>
+                </Link>
               );
             })}
           </div>
         ))}
       </nav>
+
+      {/* ── 글로벌 노션 동기화 ── */}
+      <div className={`border-t ${t.border} p-2 flex flex-col gap-1`}>
+        <NotionSyncButton variant="sidebar" collapsed={collapsed} themeIsLight={theme === "light"} />
+      </div>
 
       {/* ── collapse + theme 토글 (데스크톱 전용) ── */}
       {(onToggleCollapse || onToggleTheme) && (
@@ -212,13 +219,13 @@ export default function Sidebar({
           {onToggleTheme && (
             <button
               onClick={onToggleTheme}
-              title={theme === "dark" ? "라이트 모드" : "다크 모드"}
+              title={theme === "dark" ? "사이드바 라이트 톤" : "사이드바 다크 톤"}
               className={`flex w-full items-center rounded-[8px] px-2 py-2 ${t.itemBase} transition-colors ${t.itemHover} ${
                 collapsed ? "justify-center" : "gap-2"
               }`}
             >
               {theme === "dark" ? <IconSun /> : <IconMoon />}
-              {!collapsed && <span className="text-[12px] font-medium">{theme === "dark" ? "라이트 모드" : "다크 모드"}</span>}
+              {!collapsed && <span className="text-[12px] font-medium">{theme === "dark" ? "라이트 톤" : "다크 톤"}</span>}
             </button>
           )}
           {onToggleCollapse && (

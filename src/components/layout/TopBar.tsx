@@ -6,8 +6,10 @@ interface Crumb {
 interface Props {
   crumbs: Crumb[];
   action?: React.ReactNode;
-  /** 우측에 표시할 마지막 업데이트 시각 (ISO 문자열 or Date) */
-  lastUpdated?: string | Date;
+  /** 우측에 표시할 마지막 업데이트 시각 (ISO 문자열 or Date) — 실제 데이터 시점 */
+  lastUpdated?: string | Date | null;
+  /** 모바일 햄버거 클릭 핸들러 (모바일에서만 노출) */
+  onOpenSidebar?: () => void;
 }
 
 function IconBell() {
@@ -30,14 +32,37 @@ function IconRefresh() {
 
 function formatLastUpdated(d: string | Date): string {
   const date = typeof d === "string" ? new Date(d) : d;
-  return date.toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit" });
+  const now = new Date();
+  const sameDay = date.toDateString() === now.toDateString();
+  if (sameDay) {
+    return `오늘 ${date.toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit" })}`;
+  }
+  return date.toLocaleDateString("ko-KR", { month: "short", day: "numeric" });
 }
 
-export default function TopBar({ crumbs, action, lastUpdated }: Props) {
+function IconMenu() {
+  return (
+    <svg className="h-[18px] w-[18px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+    </svg>
+  );
+}
+
+export default function TopBar({ crumbs, action, lastUpdated, onOpenSidebar }: Props) {
   return (
     <div className="flex h-14 shrink-0 items-center justify-between border-b border-[#e8ecf0] bg-white px-5 sm:px-7">
       {/* 브레드크럼 */}
       <div className="flex items-center gap-1.5 text-[13px] min-w-0">
+        {onOpenSidebar && (
+          <button
+            type="button"
+            onClick={onOpenSidebar}
+            aria-label="사이드바 열기"
+            className="-ml-1 mr-1 flex h-8 w-8 items-center justify-center rounded-lg text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400 md:hidden"
+          >
+            <IconMenu />
+          </button>
+        )}
         <span className="shrink-0 text-slate-400">lifestyle</span>
         {crumbs.map((c, i) => (
           <span key={i} className="flex items-center gap-1.5 min-w-0">
@@ -55,9 +80,12 @@ export default function TopBar({ crumbs, action, lastUpdated }: Props) {
 
       {/* 우측 영역 */}
       <div className="flex shrink-0 items-center gap-1.5 ml-4">
-        {/* 마지막 업데이트 시각 */}
+        {/* 마지막 업데이트 시각 — 실제 데이터 시점 */}
         {lastUpdated && (
-          <span className="hidden text-[11px] text-slate-300 tabular-nums sm:inline-block">
+          <span
+            className="hidden text-[11px] text-slate-400 tabular-nums sm:inline-block"
+            title={`데이터 마지막 갱신: ${typeof lastUpdated === "string" ? lastUpdated : lastUpdated.toISOString()}`}
+          >
             {formatLastUpdated(lastUpdated)} 업데이트
           </span>
         )}

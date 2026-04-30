@@ -4,11 +4,11 @@ import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import { getGoals } from "@/lib/goals/queries";
 import { getVendorFnb } from "@/lib/vendorFnb/queries";
+import { getLastUpdatedMax } from "@/lib/dashboard/lastUpdated";
 import type { PoolType } from "@/types/goals";
 import GoalsTable from "./_components/GoalsTable";
 import VendorFnbTable from "./_components/VendorFnbTable";
 import VendorStatusFunnel from "./_components/VendorStatusFunnel";
-import NotionSyncButton from "@/components/ui/NotionSyncButton";
 import AddGoalForm from "./_components/AddGoalForm";
 import ContentPoolTabs from "./_components/ContentPoolTabs";
 import TopBar from "@/components/layout/TopBar";
@@ -84,10 +84,10 @@ async function GoalsContent({ orgId, poolType }: { orgId: string; poolType: Pool
     <div className="space-y-5">
       {total > 0 && (
         <div className="flex flex-wrap gap-2 sm:gap-3">
-          <StatChip label="전체" value={total}                    color="text-slate-700" />
-          <StatChip label="달성" value={completed}               color="text-violet-600" />
-          <StatChip label="주의" value={atRisk}                  color="text-rose-500"  />
-          <StatChip label="진행" value={total - completed - atRisk} color="text-emerald-600" />
+          <StatChip label="전체" value={total}                       color="text-slate-700"   />
+          <StatChip label="진행" value={total - completed - atRisk}   color="text-blue-600"    />
+          <StatChip label="주의" value={atRisk}                      color="text-amber-600"   />
+          <StatChip label="달성" value={completed}                   color="text-emerald-600" />
         </div>
       )}
       <GoalsTable goals={goals} />
@@ -122,15 +122,19 @@ export default async function GoalsPage({ searchParams }: PageProps) {
     ? await loadCounts(orgId)
     : { lifestyle: 0, fnb: 0, popup: 0 };
 
+  const lastUpdated = await getLastUpdatedMax(
+    activeTab === "fnb" ? ["vendor_fnb"] : ["goals"],
+  );
+
   return (
     <div className="flex flex-col h-full overflow-hidden">
       <TopBar
         crumbs={[{ label: "대시보드", href: "/dashboard" }, { label: "컨텐츠 풀" }]}
-        lastUpdated={new Date()}
+        lastUpdated={lastUpdated}
         action={
-          activeTab === "fnb"
-            ? <NotionSyncButton />
-            : orgId ? <AddGoalForm organizationId={orgId} poolType={activeTab} /> : undefined
+          activeTab !== "fnb" && orgId
+            ? <AddGoalForm organizationId={orgId} poolType={activeTab} />
+            : undefined
         }
       />
       <main className="flex-1 overflow-y-auto px-7 py-6 space-y-5">

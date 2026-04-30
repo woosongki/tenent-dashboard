@@ -3,10 +3,10 @@ import { redirect } from "next/navigation";
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import { getMarketPriceData } from "@/lib/marketPrice/queries";
+import { getLastUpdated } from "@/lib/dashboard/lastUpdated";
 import MarketPriceTable from "./_components/MarketPriceTable";
 import MarketPriceCharts from "./_components/MarketPriceCharts";
 import TopBar from "@/components/layout/TopBar";
-import NotionSyncButton from "@/components/ui/NotionSyncButton";
 
 export const metadata: Metadata = { title: "상권분석 — lifestyle" };
 
@@ -55,12 +55,13 @@ export default async function LogsPage() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
+  const lastUpdated = await getLastUpdated("market_price_data");
+
   return (
     <div className="flex flex-col h-full overflow-hidden">
       <TopBar
         crumbs={[{ label: "대시보드", href: "/dashboard" }, { label: "상권분석" }]}
-        lastUpdated={new Date()}
-        action={<NotionSyncButton />}
+        lastUpdated={lastUpdated}
       />
       <main className="flex-1 overflow-y-auto px-7 py-6 space-y-5">
         <div>
