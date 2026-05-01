@@ -8,7 +8,9 @@ export async function getDashboardSummary(): Promise<DashboardSummary> {
   const [
     orgsRes, membersRes, subsRes, invitationsRes,
     mrrRes, prevMrrRes,
-    topBrandsRes, contentCountRes, positiveRes, categoryRes,
+    topBrandsRes, brandTotalRes, positiveRes, categoryRes,
+    // 사이드바 "컨텐츠 풀" 3개 탭 — 라이프스타일·F&B·팝업
+    lifestyleRes, popupRes, vendorFnbRes,
   ] = await Promise.all([
     supabase.from("organizations").select("id", { count: "exact", head: true }),
     supabase.from("organization_members").select("user_id", { count: "exact", head: true }),
@@ -28,7 +30,7 @@ export async function getDashboardSummary(): Promise<DashboardSummary> {
       .order("revenue_growth", { ascending: false })
       .limit(10),
 
-    // 브랜드 총 수
+    // 브랜드 총 수 — 입점 완료율 계산용
     supabase.from("brand_performance").select("id", { count: "exact", head: true }).eq("row_type", "brand"),
 
     // 성장 플러스 브랜드 수
@@ -41,6 +43,14 @@ export async function getDashboardSummary(): Promise<DashboardSummary> {
       .select("category, revenue_current")
       .eq("row_type", "brand")
       .not("category", "is", null),
+
+    // ── 컨텐츠 풀 카운트 ─────────────────────────
+    // 라이프스타일 — goals 테이블 pool_type='lifestyle'
+    supabase.from("goals").select("id", { count: "exact", head: true }).eq("pool_type", "lifestyle"),
+    // 팝업 — goals 테이블 pool_type='popup'
+    supabase.from("goals").select("id", { count: "exact", head: true }).eq("pool_type", "popup"),
+    // F&B — vendor_fnb 테이블 (컨텐츠 풀 F&B 탭이 실제 표시하는 데이터)
+    supabase.from("vendor_fnb").select("id", { count: "exact", head: true }),
   ]);
 
   const mrr = (mrrRes.data ?? []).reduce((s, r) => s + Number(r.amount), 0);
@@ -70,6 +80,14 @@ export async function getDashboardSummary(): Promise<DashboardSummary> {
     .map(([category, { count, revenue }]) => ({ category, count, revenue }))
     .sort((a, b) => b.revenue - a.revenue);
 
+  const contentPoolBreakdown = {
+    lifestyle: lifestyleRes.count ?? 0,
+    fnb:       vendorFnbRes.count ?? 0,
+    popup:     popupRes.count ?? 0,
+  };
+  const contentPoolCount =
+    contentPoolBreakdown.lifestyle + contentPoolBreakdown.fnb + contentPoolBreakdown.popup;
+
   return {
     totalOrgs: orgsRes.count ?? 0,
     totalMembers: membersRes.count ?? 0,
@@ -78,7 +96,9 @@ export async function getDashboardSummary(): Promise<DashboardSummary> {
     mrr,
     mrrChange,
     topBrands,
-    contentCount: contentCountRes.count ?? 0,
+    contentPoolCount,
+    contentPoolBreakdown,
+    brandTotalCount: brandTotalRes.count ?? 0,
     positiveGrowthCount: positiveRes.count ?? 0,
     categoryStats,
   };

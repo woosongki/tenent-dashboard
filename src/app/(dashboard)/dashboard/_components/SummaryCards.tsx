@@ -85,9 +85,14 @@ function TrendBadge({ direction, value, label }: TrendBadgeProps) {
 
 // ── Summary Cards ────────────────────────────────────────────
 export default function SummaryCards({ summary }: Props) {
-  const completionRate = summary.contentCount > 0
-    ? Math.round((summary.positiveGrowthCount / summary.contentCount) * 100)
+  // 입점 완료율은 brand_performance 기준 — 컨텐츠 풀과 별개 지표
+  const completionRate = summary.brandTotalCount > 0
+    ? Math.round((summary.positiveGrowthCount / summary.brandTotalCount) * 100)
     : 0;
+
+  // 컨텐츠 풀 트렌드 라벨 — 가장 큰 카테고리 기준 한 줄 요약
+  const pool = summary.contentPoolBreakdown;
+  const poolTrendLabel = `라이프 ${pool.lifestyle} · F&B ${pool.fnb} · 팝업 ${pool.popup}`;
 
   return (
     <div className="grid grid-cols-2 gap-4 xl:grid-cols-4">
@@ -103,18 +108,18 @@ export default function SummaryCards({ summary }: Props) {
         trend={{ direction: "up", value: `${summary.pendingInvitations}건`, label: "초대 대기 중" }}
       />
 
-      {/* 컨텐츠 수 — emerald */}
+      {/* 컨텐츠 수 — emerald — 사이드바 "컨텐츠 풀" 3개 탭 합계 */}
       <MetricCard
         href="/dashboard/goals"
         accent="emerald"
         label="컨텐츠 수"
-        value={summary.contentCount.toLocaleString()}
+        value={summary.contentPoolCount.toLocaleString()}
         icon={<IconDocument className="h-[18px] w-[18px] text-emerald-600" />}
         iconBg="bg-emerald-50"
         trend={{
-          direction: summary.positiveGrowthCount > 0 ? "up" : "neutral",
-          value: `${summary.positiveGrowthCount}개`,
-          label: "성장 브랜드",
+          direction: summary.contentPoolCount > 0 ? "up" : "neutral",
+          value: poolTrendLabel,
+          label: "",
         }}
       />
 
@@ -156,7 +161,7 @@ export default function SummaryCards({ summary }: Props) {
         </div>
         <TrendBadge
           direction={completionRate >= 50 ? "up" : "neutral"}
-          value={`${summary.positiveGrowthCount} / ${summary.contentCount}`}
+          value={`${summary.positiveGrowthCount} / ${summary.brandTotalCount}`}
           label="성장 / 전체 브랜드"
         />
         <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-medium text-slate-300 opacity-0 transition-opacity group-hover:opacity-100">

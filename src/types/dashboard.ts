@@ -13,6 +13,15 @@ export interface CategoryStat {
   revenue: number;
 }
 
+export interface ContentPoolBreakdown {
+  /** 라이프스타일 — goals.pool_type='lifestyle' */
+  lifestyle: number;
+  /** F&B — vendor_fnb 테이블 (컨텐츠 풀 F&B 탭 실제 표시 데이터) */
+  fnb: number;
+  /** 팝업 — goals.pool_type='popup' */
+  popup: number;
+}
+
 export interface DashboardSummary {
   totalOrgs: number;
   totalMembers: number;
@@ -21,7 +30,11 @@ export interface DashboardSummary {
   mrr: number;
   mrrChange: number;
   topBrands: TopBrand[];
-  contentCount: number;
+  /** 사이드바 "컨텐츠 풀" 페이지의 3개 탭(라이프스타일·F&B·팝업) 합계 */
+  contentPoolCount: number;
+  contentPoolBreakdown: ContentPoolBreakdown;
+  /** 입점 완료율 계산용 — brand_performance 전체 행 수 */
+  brandTotalCount: number;
   positiveGrowthCount: number;
   categoryStats: CategoryStat[];
 }
