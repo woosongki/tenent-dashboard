@@ -30,8 +30,8 @@ export async function getDashboardSummary(): Promise<DashboardSummary> {
       .lt("paid_at", new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString()),
 
     // ── 컨텐츠 풀 카운트 ─────────────────────────
-    // 라이프스타일 — goals 테이블 pool_type='lifestyle'
-    supabase.from("goals").select("id", { count: "exact", head: true }).eq("pool_type", "lifestyle"),
+    // 라이프스타일 — vendor_lease 테이블 (노션 업체리스트(일반임대) 싱크)
+    supabase.from("vendor_lease").select("id", { count: "exact", head: true }),
     // F&B — vendor_fnb 테이블 (컨텐츠 풀 F&B 탭이 실제 표시하는 데이터)
     supabase.from("vendor_fnb").select("id", { count: "exact", head: true }),
   ]);
