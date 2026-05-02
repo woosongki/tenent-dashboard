@@ -150,7 +150,8 @@ export async function syncVendorLease(): Promise<SyncResult> {
       const props = (page as { properties: Record<string, unknown> }).properties;
       const notionUrl = (page as { url: string }).url;
 
-      const name = getTitle(props, "업체명");
+      // title 컬럼명이 "업체명" 또는 "이름" 둘 다 허용
+      const name = getTitle(props, "업체명") || getTitle(props, "이름");
       if (!name) continue;
 
       const record = {
