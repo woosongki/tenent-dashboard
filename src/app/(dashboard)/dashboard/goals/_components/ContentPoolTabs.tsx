@@ -34,10 +34,9 @@ const TABS: { key: PoolType; icon: React.ReactNode }[] = [
 
 interface Props {
   active: PoolType;
-  counts: Record<PoolType, number>;
 }
 
-export default function ContentPoolTabs({ active, counts }: Props) {
+export default function ContentPoolTabs({ active }: Props) {
   const router      = useRouter();
   const pathname    = usePathname();
   const searchParams = useSearchParams();
@@ -69,12 +68,6 @@ export default function ContentPoolTabs({ active, counts }: Props) {
               {icon}
             </span>
             {POOL_TYPE_LABELS[key]}
-            <span className={`
-              rounded-full px-1.5 py-0.5 text-[10px] font-bold tabular-nums
-              ${isActive ? "bg-violet-500 text-violet-100" : "bg-slate-100 text-slate-400"}
-            `}>
-              {counts[key]}
-            </span>
           </button>
         );
       })}

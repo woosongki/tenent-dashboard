@@ -54,23 +54,6 @@ function GoalsTableSkeleton() {
   );
 }
 
-// ── 탭 카운트 로드 (서버) ──────────────────────────────────────
-// 각 탭의 배지는 해당 탭이 실제 표시하는 데이터 소스와 일치시킴.
-// - 라이프스타일: goals.pool_type='lifestyle'
-// - F&B:        vendor_fnb 테이블 (탭 내용과 동일 소스)
-// - 팝업:        노션 컨텍판(정적 CSV)
-async function loadCounts(orgId: string): Promise<Record<PoolType, number>> {
-  const [goals, vendorFnb] = await Promise.all([
-    getGoals(orgId),
-    getVendorFnb(),
-  ]);
-  return {
-    lifestyle: goals.filter((g) => g.poolType === "lifestyle").length,
-    fnb:       vendorFnb.length,
-    popup:     getPopupContacts().length,
-  };
-}
-
 // ── 팝업 탭 전용 컨텐츠 (정적 CSV + 캘린더 핀 역참조) ───────────
 async function PopupContactContent({ orgId }: { orgId: string | null }) {
   const rows = getPopupContacts();
@@ -145,10 +128,6 @@ export default async function GoalsPage({ searchParams }: PageProps) {
   const tabParam = Array.isArray(params.tab) ? params.tab[0] : params.tab;
   const activeTab: PoolType = isPoolType(tabParam) ? tabParam : "lifestyle";
 
-  const counts = orgId
-    ? await loadCounts(orgId)
-    : { lifestyle: 0, fnb: 0, popup: 0 };
-
   const lastUpdated = await getLastUpdatedMax(
     activeTab === "fnb" ? ["vendor_fnb"] : ["goals"],
   );
@@ -172,7 +151,7 @@ export default async function GoalsPage({ searchParams }: PageProps) {
         </div>
 
         {/* 탭 */}
-        <ContentPoolTabs active={activeTab} counts={counts} />
+        <ContentPoolTabs active={activeTab} />
 
         {/* 컨텐츠 */}
         {activeTab === "popup" ? (
