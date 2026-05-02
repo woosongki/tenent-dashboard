@@ -53,6 +53,13 @@ const nextConfig: NextConfig = {
 
   // 빌드 시 타입 오류를 CI에서 명시적으로 잡도록 설정
   typescript: { ignoreBuildErrors: false },
+
+  // Server Actions 바디 크기 — 도면 업로드용 (기본 1MB → 25MB)
+  experimental: {
+    serverActions: {
+      bodySizeLimit: "25mb",
+    },
+  },
 };
 
 export default nextConfig;

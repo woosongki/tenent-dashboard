@@ -72,7 +72,10 @@ export async function uploadFloorplan(formData: FormData): Promise<Result<Floorp
   const { error: upErr } = await supabase.storage
     .from("floorplans")
     .upload(path, buf, { contentType: file.type, upsert: true });
-  if (upErr) return { ok: false, error: `Storage 업로드 실패: ${upErr.message}` };
+  if (upErr) {
+    console.error("[floorplans.upload] Storage error:", upErr);
+    return { ok: false, error: `Storage 업로드 실패: ${upErr.message}` };
+  }
 
   // 3) 공개 URL
   const { data: pub } = supabase.storage.from("floorplans").getPublicUrl(path);
