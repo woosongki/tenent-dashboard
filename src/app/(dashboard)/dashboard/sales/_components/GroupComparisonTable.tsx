@@ -1,4 +1,5 @@
-import { GROUP_COLOR, formatKRWCompact, type GroupRecord } from "@/lib/sales/csvData";
+import { GROUP_COLOR, formatKRWCompact } from "@/lib/sales/format";
+import type { GroupRecord } from "@/lib/sales/csvData";
 
 interface Props {
   groups: GroupRecord[];

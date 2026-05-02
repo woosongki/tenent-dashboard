@@ -3,7 +3,8 @@
  * 데이터 소스: data/sales/brand-sales.json (CSV 변환)
  */
 
-import { GROUP_COLOR, shortBrandName, formatKRWCompact, type BrandRecord } from "@/lib/sales/csvData";
+import { GROUP_COLOR, shortBrandName, formatKRWCompact } from "@/lib/sales/format";
+import type { BrandRecord } from "@/lib/sales/csvData";
 
 interface Props {
   byRevenue: BrandRecord[];

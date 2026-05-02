@@ -1,4 +1,5 @@
-import { formatKRWCompact, type PeriodTotals, type MonthSummary } from "@/lib/sales/csvData";
+import { formatKRWCompact } from "@/lib/sales/format";
+import type { PeriodTotals, MonthSummary } from "@/lib/sales/csvData";
 
 interface Props {
   overall: PeriodTotals | null;

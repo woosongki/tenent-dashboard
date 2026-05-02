@@ -11,7 +11,7 @@ import {
   Legend,
 } from "recharts";
 import type { MonthSummary } from "@/lib/sales/csvData";
-import { formatKRWCompact } from "@/lib/sales/csvData";
+import { formatKRWCompact } from "@/lib/sales/format";
 
 interface Props {
   monthly: MonthSummary[];

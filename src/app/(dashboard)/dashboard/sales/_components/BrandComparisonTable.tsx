@@ -1,7 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { GROUP_COLOR, shortBrandName, formatKRWCompact, type BrandRecord } from "@/lib/sales/csvData";
+import { GROUP_COLOR, shortBrandName, formatKRWCompact } from "@/lib/sales/format";
+import type { BrandRecord } from "@/lib/sales/csvData";
 
 type SortKey = "revenue_current" | "revenue_prev" | "revenue_growth" | "profit_current" | "profit_growth";
 type SortDir = "asc" | "desc";
