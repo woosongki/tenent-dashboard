@@ -131,11 +131,59 @@ export async function syncVendorFnb(): Promise<SyncResult> {
   return result;
 }
 
+// ── 3. 업체리스트 일반임대 (vendor_lease) ──────────────────
+export async function syncVendorLease(): Promise<SyncResult> {
+  const result: SyncResult = { table: "vendor_lease", fetched: 0, upserted: 0, errors: [] };
+
+  const dataSourceId = NOTION_DATA_SOURCE_IDS.vendorLease;
+  if (!dataSourceId) {
+    result.errors.push("NOTION_DS_VENDOR_LEASE 환경변수가 설정되지 않았습니다.");
+    return result;
+  }
+
+  try {
+    const pages = await fetchAllPages(dataSourceId);
+    result.fetched = pages.length;
+
+    const admin = getSupabaseAdmin();
+    for (const page of pages) {
+      const props = (page as { properties: Record<string, unknown> }).properties;
+      const notionUrl = (page as { url: string }).url;
+
+      const name = getTitle(props, "업체명");
+      if (!name) continue;
+
+      const record = {
+        name,
+        types:      getMultiSelect(props, "유형"),
+        score:      getSelect(props,      "점수"),
+        is_checked: getCheckbox(props,    "체크박스"),
+        status:     getStatus(props,      "상태") ?? getSelect(props, "상태"),
+        link:       getUrl(props,         "링크"),
+        contact:    getPhone(props,       "연락처"),
+        keyman:     getRichText(props,    "키맨"),
+        memo:       getRichText(props,    "기타"),
+        notion_url: notionUrl,
+      };
+
+      const { error } = await admin
+        .from("vendor_lease")
+        .upsert(record, { onConflict: "notion_url" });
+      if (error) result.errors.push(`[${name}] ${error.message}`);
+      else result.upserted++;
+    }
+  } catch (e) {
+    result.errors.push(String(e));
+  }
+  return result;
+}
+
 // ── 통합 실행 ───────────────────────────────────────────────
 export async function syncAll(): Promise<SyncResult[]> {
-  const [a, v] = await Promise.all([
+  const [a, v, l] = await Promise.all([
     syncAttraction(),
     syncVendorFnb(),
+    syncVendorLease(),
   ]);
-  return [a, v];
+  return [a, v, l];
 }

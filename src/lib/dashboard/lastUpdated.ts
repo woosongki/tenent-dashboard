@@ -6,7 +6,7 @@ import { createClient } from "@/lib/supabase/server";
  * 결과 없거나 오류 시 null 반환 (UI에서 빈값 처리).
  */
 export async function getLastUpdated(
-  table: "goals" | "attraction_status" | "vendor_fnb",
+  table: "goals" | "attraction_status" | "vendor_fnb" | "vendor_lease",
   column: "updated_at" | "created_at" = "updated_at",
 ): Promise<Date | null> {
   try {

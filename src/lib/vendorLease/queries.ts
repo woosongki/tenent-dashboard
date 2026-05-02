@@ -1,0 +1,29 @@
+import { createClient } from "@/lib/supabase/server";
+import type { VendorLeaseRow } from "@/types/vendorLease";
+
+function rowToLease(r: Record<string, unknown>): VendorLeaseRow {
+  return {
+    id:         r.id as string,
+    name:       r.name as string,
+    types:      (r.types as string[]) ?? [],
+    score:      r.score as string | null,
+    is_checked: Boolean(r.is_checked),
+    status:     r.status as string | null,
+    link:       r.link as string | null,
+    contact:    r.contact as string | null,
+    keyman:     r.keyman as string | null,
+    memo:       r.memo as string | null,
+    created_at: r.created_at as string,
+    updated_at: r.updated_at as string,
+  };
+}
+
+export async function getVendorLease(): Promise<VendorLeaseRow[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("vendor_lease")
+    .select("*")
+    .order("created_at", { ascending: false });
+  if (error || !data) return [];
+  return data.map(rowToLease);
+}

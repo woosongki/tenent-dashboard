@@ -2,14 +2,13 @@ import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
-import { getGoals } from "@/lib/goals/queries";
 import { getVendorFnb } from "@/lib/vendorFnb/queries";
+import { getVendorLease } from "@/lib/vendorLease/queries";
 import { getLastUpdatedMax } from "@/lib/dashboard/lastUpdated";
 import type { PoolType } from "@/types/goals";
-import GoalsTable from "./_components/GoalsTable";
 import VendorFnbTable from "./_components/VendorFnbTable";
 import VendorStatusFunnel from "./_components/VendorStatusFunnel";
-import AddGoalForm from "./_components/AddGoalForm";
+import VendorLeaseTable from "./_components/VendorLeaseTable";
 import ContentPoolTabs from "./_components/ContentPoolTabs";
 import PopupContactTable from "./_components/PopupContactTable";
 import TopBar from "@/components/layout/TopBar";
@@ -82,25 +81,12 @@ async function VendorFnbContent() {
   );
 }
 
-// ── 라이프스타일/팝업 탭 컨텐츠 (서버) ──────────────────────
-async function GoalsContent({ orgId, poolType }: { orgId: string; poolType: PoolType }) {
-  const goals = await getGoals(orgId, poolType);
-
-  const total     = goals.length;
-  const completed = goals.filter((g) => g.status === "completed").length;
-  const atRisk    = goals.filter((g) => g.status === "at_risk" || g.status === "behind").length;
-
+// ── 라이프스타일 탭 컨텐츠 (노션 일반임대 싱크) ─────────────
+async function LifestyleContent() {
+  const rows = await getVendorLease();
   return (
     <div className="space-y-5">
-      {total > 0 && (
-        <div className="flex flex-wrap gap-2 sm:gap-3">
-          <StatChip label="전체" value={total}                       color="text-slate-700"   />
-          <StatChip label="진행" value={total - completed - atRisk}   color="text-blue-600"    />
-          <StatChip label="주의" value={atRisk}                      color="text-amber-600"   />
-          <StatChip label="달성" value={completed}                   color="text-emerald-600" />
-        </div>
-      )}
-      <GoalsTable goals={goals} />
+      <VendorLeaseTable rows={rows} />
     </div>
   );
 }
@@ -129,7 +115,7 @@ export default async function GoalsPage({ searchParams }: PageProps) {
   const activeTab: PoolType = isPoolType(tabParam) ? tabParam : "lifestyle";
 
   const lastUpdated = await getLastUpdatedMax(
-    activeTab === "fnb" ? ["vendor_fnb"] : ["goals"],
+    activeTab === "fnb" ? ["vendor_fnb"] : activeTab === "lifestyle" ? ["vendor_lease"] : ["goals"],
   );
 
   return (
@@ -137,11 +123,6 @@ export default async function GoalsPage({ searchParams }: PageProps) {
       <TopBar
         crumbs={[{ label: "대시보드", href: "/dashboard" }, { label: "컨텐츠 풀" }]}
         lastUpdated={lastUpdated}
-        action={
-          activeTab === "lifestyle" && orgId
-            ? <AddGoalForm organizationId={orgId} poolType={activeTab} />
-            : undefined
-        }
       />
       <main className="flex-1 overflow-y-auto px-7 py-6 space-y-5">
         {/* 제목 */}
@@ -160,27 +141,12 @@ export default async function GoalsPage({ searchParams }: PageProps) {
           <Suspense key="fnb" fallback={<GoalsTableSkeleton />}>
             <VendorFnbContent />
           </Suspense>
-        ) : !orgId ? (
-          <div className="rounded-xl bg-white py-16 text-center border border-[#e8ecf0]">
-            <p className="text-sm text-slate-400">소속 조직이 없습니다.</p>
-          </div>
         ) : (
-          <Suspense key={activeTab} fallback={<GoalsTableSkeleton />}>
-            <GoalsContent orgId={orgId} poolType={activeTab} />
+          <Suspense key="lifestyle" fallback={<GoalsTableSkeleton />}>
+            <LifestyleContent />
           </Suspense>
         )}
       </main>
-    </div>
-  );
-}
-
-function StatChip({
-  label, value, color,
-}: { label: string; value: number; color: string }) {
-  return (
-    <div className="flex items-center gap-1.5 rounded-xl border border-[#e8ecf0] bg-white px-4 py-2 shadow-[0_1px_3px_rgba(0,0,0,.04)]">
-      <span className={`text-lg font-bold ${color}`}>{value}</span>
-      <span className="text-xs text-slate-400">{label}</span>
     </div>
   );
 }

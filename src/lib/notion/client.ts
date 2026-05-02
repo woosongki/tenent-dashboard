@@ -6,6 +6,8 @@ import { Client } from "@notionhq/client";
  *   NOTION_DB_ATTRACTION          — 이랜드리테일 컨텐츠 유치 현황 DB ID
  *   NOTION_DB_MARKET_PRICE        — 상가 시세 데이터 DB ID
  *   NOTION_DB_VENDOR_FNB          — 업체리스트(F&B) DB ID
+ *   NOTION_DB_VENDOR_LEASE        — 업체리스트(일반임대) DB ID
+ *   NOTION_DS_VENDOR_LEASE        — 업체리스트(일반임대) Data Source ID
  *   CRON_SECRET                   — /api/sync/notion 보호용 토큰
  */
 
@@ -25,11 +27,15 @@ export function getNotionClient(): Client | null {
 export const NOTION_DB_IDS = {
   attraction:  process.env.NOTION_DB_ATTRACTION   ?? "cc900291-4524-4a66-94d7-2a3373ade75d",
   vendorFnb:   process.env.NOTION_DB_VENDOR_FNB   ?? "b204fdd0-3637-4ca0-8897-eca031ccf1e0",
+  vendorLease: process.env.NOTION_DB_VENDOR_LEASE ?? "",
 } as const;
 
 export const NOTION_DATA_SOURCE_IDS = {
   attraction:  process.env.NOTION_DS_ATTRACTION   ?? "186e75da-dde4-45da-b821-aa1adcb4577b",
   vendorFnb:   process.env.NOTION_DS_VENDOR_FNB   ?? "86467945-ee32-414d-9d1e-3be8b01b021d",
+  // ★ Vercel 환경변수에 NOTION_DS_VENDOR_LEASE 를 설정하세요
+  // Notion 페이지 "업체리스트(일반임대)"의 Data Source ID (collection ID)
+  vendorLease: process.env.NOTION_DS_VENDOR_LEASE ?? "",
 } as const;
 
 // ── Property 추출 헬퍼 ──────────────────────────────────────
