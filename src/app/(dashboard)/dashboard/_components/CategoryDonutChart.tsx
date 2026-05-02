@@ -9,15 +9,21 @@ import type { CategoryStat } from "@/types/dashboard";
 const KRW = new Intl.NumberFormat("ko-KR", { style: "currency", currency: "KRW", maximumFractionDigits: 0 });
 
 const CAT_COLORS: Record<string, string> = {
-  "팬시/굿즈": "#d946ef",
-  "가전":       "#3b82f6",
-  "키즈카페":   "#f59e0b",
-  "뷰티":       "#f43f5e",
-  "스포츠":     "#10b981",
-  "빅컨텐츠":   "#8b5cf6",
-  "리빙":       "#14b8a6",
-  "체험":       "#f97316",
-  "기타":       "#94a3b8",
+  // CSV 매출 그룹 (구매그룹 코드 기준 색상)
+  "모던 특정":   "#8b5cf6", // FAA — violet
+  "가정문화":     "#10b981", // EFA — emerald
+  "테넌트일반":  "#0ea5e9", // EGA — sky
+  "취미/라이프": "#f59e0b", // EBA — amber
+  // 기존 brand_performance 카테고리 (호환용)
+  "팬시/굿즈":   "#d946ef",
+  "가전":         "#3b82f6",
+  "키즈카페":     "#f59e0b",
+  "뷰티":         "#f43f5e",
+  "스포츠":       "#10b981",
+  "빅컨텐츠":     "#8b5cf6",
+  "리빙":         "#14b8a6",
+  "체험":         "#f97316",
+  "기타":         "#94a3b8",
 };
 
 function getColor(cat: string) {

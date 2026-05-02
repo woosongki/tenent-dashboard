@@ -1,6 +1,11 @@
 import { createClient } from "@/lib/supabase/server";
-import type { DashboardSummary, OrgRow, CategoryGroup, TopBrand, CategoryStat } from "@/types/dashboard";
+import type { DashboardSummary, OrgRow, CategoryGroup, CategoryStat } from "@/types/dashboard";
 import { getPopupContactCount } from "@/lib/popupContacts";
+import {
+  getGroups as getSalesGroups,
+  getTopByRevenue,
+  getTopByGrowth,
+} from "@/lib/sales/csvData";
 
 /** 대시보드 Summary 지표 */
 export async function getDashboardSummary(): Promise<DashboardSummary> {
@@ -9,7 +14,6 @@ export async function getDashboardSummary(): Promise<DashboardSummary> {
   const [
     orgsRes, membersRes, subsRes, invitationsRes,
     mrrRes, prevMrrRes,
-    topBrandsRes, brandTotalRes, positiveRes, categoryRes,
     // 사이드바 "컨텐츠 풀" 3개 탭 — 라이프스타일·F&B·팝업
     // 팝업은 정적 CSV(팝업 컨텍판) 기준이라 supabase 호출 불필요
     lifestyleRes, vendorFnbRes,
@@ -24,28 +28,6 @@ export async function getDashboardSummary(): Promise<DashboardSummary> {
       .gte("paid_at", new Date(new Date().getFullYear(), new Date().getMonth() - 1, 1).toISOString())
       .lt("paid_at", new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString()),
 
-    // 매출 성장률 상위 브랜드 (최대 10개)
-    supabase.from("brand_performance")
-      .select("brand_name, category, revenue_current, revenue_prev, revenue_growth")
-      .eq("row_type", "brand")
-      .not("revenue_growth", "is", null)
-      .order("revenue_growth", { ascending: false })
-      .limit(10),
-
-    // 브랜드 총 수 — 입점 완료율 계산용
-    supabase.from("brand_performance").select("id", { count: "exact", head: true }).eq("row_type", "brand"),
-
-    // 성장 플러스 브랜드 수
-    supabase.from("brand_performance").select("id", { count: "exact", head: true })
-      .eq("row_type", "brand")
-      .gt("revenue_growth", 0),
-
-    // 카테고리별 브랜드 수 + 매출
-    supabase.from("brand_performance")
-      .select("category, revenue_current")
-      .eq("row_type", "brand")
-      .not("category", "is", null),
-
     // ── 컨텐츠 풀 카운트 ─────────────────────────
     // 라이프스타일 — goals 테이블 pool_type='lifestyle'
     supabase.from("goals").select("id", { count: "exact", head: true }).eq("pool_type", "lifestyle"),
@@ -53,32 +35,25 @@ export async function getDashboardSummary(): Promise<DashboardSummary> {
     supabase.from("vendor_fnb").select("id", { count: "exact", head: true }),
   ]);
 
+  // ── 매출 데이터 (CSV 변환본) ─────────────────────────
+  const salesGroups = getSalesGroups();
+  const topByRevenue = getTopByRevenue(5);
+  const topByGrowth = getTopByGrowth(5);
+  const brandTotalCount = salesGroups.reduce((sum, g) => sum + g.brandCount, 0);
+  // "성장 브랜드 수" — 매출 성장률 > 0 인 그룹의 브랜드 합계는 단순화상 그룹 평균이 +인 것 카운트
+  // (브랜드 단위 정확치는 SalesRankingDual에서 표시)
+  const positiveGrowthCount = salesGroups.filter((g) => (g.revenue_growth ?? 0) > 0).length;
+
   const mrr = (mrrRes.data ?? []).reduce((s, r) => s + Number(r.amount), 0);
   const prevMrr = (prevMrrRes.data ?? []).reduce((s, r) => s + Number(r.amount), 0);
   const mrrChange = prevMrr === 0 ? 0 : Math.round(((mrr - prevMrr) / prevMrr) * 100);
 
-  const topBrands: TopBrand[] = (topBrandsRes.data ?? []).map((r, i) => ({
-    rank: i + 1,
-    brand_name: r.brand_name,
-    category: r.category,
-    revenue_current: r.revenue_current !== null ? Number(r.revenue_current) : null,
-    revenue_prev: r.revenue_prev !== null ? Number(r.revenue_prev) : null,
-    revenue_growth: Number(r.revenue_growth),
+  // 카테고리(=구매그룹) 집계 — CSV 그룹 데이터 그대로 도넛에
+  const categoryStats: CategoryStat[] = salesGroups.map((g) => ({
+    category: g.name,
+    count: g.brandCount,
+    revenue: g.revenue_current ?? 0,
   }));
-
-  // 카테고리별 집계
-  const catMap = new Map<string, { count: number; revenue: number }>();
-  for (const row of categoryRes.data ?? []) {
-    const cat = row.category ?? "기타";
-    const prev = catMap.get(cat) ?? { count: 0, revenue: 0 };
-    catMap.set(cat, {
-      count: prev.count + 1,
-      revenue: prev.revenue + (row.revenue_current ? Number(row.revenue_current) : 0),
-    });
-  }
-  const categoryStats: CategoryStat[] = [...catMap.entries()]
-    .map(([category, { count, revenue }]) => ({ category, count, revenue }))
-    .sort((a, b) => b.revenue - a.revenue);
 
   const contentPoolBreakdown = {
     lifestyle: lifestyleRes.count ?? 0,
@@ -96,11 +71,12 @@ export async function getDashboardSummary(): Promise<DashboardSummary> {
     pendingInvitations: invitationsRes.count ?? 0,
     mrr,
     mrrChange,
-    topBrands,
+    topByRevenue,
+    topByGrowth,
     contentPoolCount,
     contentPoolBreakdown,
-    brandTotalCount: brandTotalRes.count ?? 0,
-    positiveGrowthCount: positiveRes.count ?? 0,
+    brandTotalCount,
+    positiveGrowthCount,
     categoryStats,
   };
 }

@@ -1,12 +1,3 @@
-export interface TopBrand {
-  rank: number;
-  brand_name: string;
-  category: string;
-  revenue_current: number | null;
-  revenue_prev: number | null;
-  revenue_growth: number;
-}
-
 export interface CategoryStat {
   category: string;
   count: number;
@@ -22,6 +13,9 @@ export interface ContentPoolBreakdown {
   popup: number;
 }
 
+// 매출 랭킹 데이터는 BrandRecord 그대로 사용 (csvData.ts)
+import type { BrandRecord } from "@/lib/sales/csvData";
+
 export interface DashboardSummary {
   totalOrgs: number;
   totalMembers: number;
@@ -29,11 +23,14 @@ export interface DashboardSummary {
   pendingInvitations: number;
   mrr: number;
   mrrChange: number;
-  topBrands: TopBrand[];
+  /** 매출액 Top 5 (CSV 변환본) */
+  topByRevenue: BrandRecord[];
+  /** 매출 성장률 Top 5 (CSV 변환본) */
+  topByGrowth: BrandRecord[];
   /** 사이드바 "컨텐츠 풀" 페이지의 3개 탭(라이프스타일·F&B·팝업) 합계 */
   contentPoolCount: number;
   contentPoolBreakdown: ContentPoolBreakdown;
-  /** 입점 완료율 계산용 — brand_performance 전체 행 수 */
+  /** 입점 완료율 계산용 — CSV 브랜드 전체 수 */
   brandTotalCount: number;
   positiveGrowthCount: number;
   categoryStats: CategoryStat[];

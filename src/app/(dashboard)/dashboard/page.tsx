@@ -5,7 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getDashboardSummary } from "@/lib/dashboard/queries";
 import { getLastUpdatedMax } from "@/lib/dashboard/lastUpdated";
 import SummaryCards from "./_components/SummaryCards";
-import GrowthRankingTable from "./_components/GrowthRankingTable";
+import SalesRankingDual from "./_components/SalesRankingDual";
 import CategoryDonutChart from "./_components/CategoryDonutChart";
 import TopBar from "@/components/layout/TopBar";
 
@@ -44,7 +44,7 @@ async function SummarySection() {
             </svg>
           </a>
         </div>
-        <GrowthRankingTable brands={summary.topBrands} />
+        <SalesRankingDual byRevenue={summary.topByRevenue} byGrowth={summary.topByGrowth} />
       </section>
     </>
   );
