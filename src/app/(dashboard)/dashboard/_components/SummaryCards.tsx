@@ -67,9 +67,10 @@ function TrendBadge({ direction, value, label }: TrendBadgeProps) {
 
 // ── Summary Cards ────────────────────────────────────────────
 export default function SummaryCards({ summary }: Props) {
-  // 입점 완료율은 brand_performance 기준 — 컨텐츠 풀과 별개 지표
-  const completionRate = summary.brandTotalCount > 0
-    ? Math.round((summary.positiveGrowthCount / summary.brandTotalCount) * 100)
+  // 입점 완료율 — 사이드바 "입점계획(26년)" 페이지와 동일 소스 (attraction_status)
+  const attraction = summary.attraction;
+  const completionRate = attraction.total > 0
+    ? Math.round((attraction.completed / attraction.total) * 100)
     : 0;
 
   // 컨텐츠 풀 트렌드 라벨 — 가장 큰 카테고리 기준 한 줄 요약
@@ -142,9 +143,9 @@ export default function SummaryCards({ summary }: Props) {
           />
         </div>
         <TrendBadge
-          direction={completionRate >= 50 ? "up" : "neutral"}
-          value={`${summary.positiveGrowthCount} / ${summary.brandTotalCount}`}
-          label="성장 / 전체 브랜드"
+          direction={completionRate >= 50 ? "up" : completionRate > 0 ? "up" : "neutral"}
+          value={`${attraction.completed} / ${attraction.total}`}
+          label={`완료 / 전체 · 진행중 ${attraction.inProgress}`}
         />
         <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-medium text-slate-300 opacity-0 transition-opacity group-hover:opacity-100">
           상세 →

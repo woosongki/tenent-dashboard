@@ -30,9 +30,12 @@ export interface DashboardSummary {
   /** 사이드바 "컨텐츠 풀" 페이지의 3개 탭(라이프스타일·F&B·팝업) 합계 */
   contentPoolCount: number;
   contentPoolBreakdown: ContentPoolBreakdown;
-  /** 입점 완료율 계산용 — CSV 브랜드 전체 수 */
-  brandTotalCount: number;
-  positiveGrowthCount: number;
+  /** 입점계획(26년) 통계 — attraction_status 테이블 */
+  attraction: {
+    total: number;
+    completed: number;
+    inProgress: number;
+  };
   categoryStats: CategoryStat[];
 }
 

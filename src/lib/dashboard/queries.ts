@@ -6,6 +6,7 @@ import {
   getTopByRevenue,
   getTopByGrowth,
 } from "@/lib/sales/csvData";
+import { getAttractionStats } from "@/lib/attraction/queries";
 
 /** 대시보드 Summary 지표 */
 export async function getDashboardSummary(): Promise<DashboardSummary> {
@@ -39,10 +40,9 @@ export async function getDashboardSummary(): Promise<DashboardSummary> {
   const salesGroups = getSalesGroups();
   const topByRevenue = getTopByRevenue(5);
   const topByGrowth = getTopByGrowth(5);
-  const brandTotalCount = salesGroups.reduce((sum, g) => sum + g.brandCount, 0);
-  // "성장 브랜드 수" — 매출 성장률 > 0 인 그룹의 브랜드 합계는 단순화상 그룹 평균이 +인 것 카운트
-  // (브랜드 단위 정확치는 SalesRankingDual에서 표시)
-  const positiveGrowthCount = salesGroups.filter((g) => (g.revenue_growth ?? 0) > 0).length;
+
+  // ── 입점계획 통계 (attraction_status — 사이드바 "입점계획(26년)"과 동일 소스) ──
+  const attraction = await getAttractionStats();
 
   const mrr = (mrrRes.data ?? []).reduce((s, r) => s + Number(r.amount), 0);
   const prevMrr = (prevMrrRes.data ?? []).reduce((s, r) => s + Number(r.amount), 0);
@@ -75,8 +75,11 @@ export async function getDashboardSummary(): Promise<DashboardSummary> {
     topByGrowth,
     contentPoolCount,
     contentPoolBreakdown,
-    brandTotalCount,
-    positiveGrowthCount,
+    attraction: {
+      total: attraction.total,
+      completed: attraction.completed,
+      inProgress: attraction.inProgress,
+    },
     categoryStats,
   };
 }
