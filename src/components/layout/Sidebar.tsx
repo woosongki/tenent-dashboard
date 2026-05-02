@@ -49,6 +49,13 @@ function IconCalendar() {
     </svg>
   );
 }
+function IconBlueprint() {
+  return (
+    <svg fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 21h16.5M4.5 3h15M5.25 3v18m13.5-18v18M9 6.75h1.5m-1.5 3h1.5m-1.5 3h1.5m3-6H15m-1.5 3H15m-1.5 3H15M9 21v-3.375c0-.621.504-1.125 1.125-1.125h3.75c.621 0 1.125.504 1.125 1.125V21" />
+    </svg>
+  );
+}
 function IconLogout() {
   return (
     <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -85,6 +92,7 @@ const NAV = [
       { href: "/dashboard/drilldown", label: "입점계획(26년)", icon: <IconBuilding /> },
       { href: "/dashboard/goals",     label: "컨텐츠 풀",     icon: <IconArchive /> },
       { href: "/dashboard/calendar",  label: "52주 캘린더",   icon: <IconCalendar /> },
+      { href: "/dashboard/floorplans",label: "전점도면",       icon: <IconBlueprint /> },
       { href: "/dashboard/branch",    label: "상권분석",       icon: <IconMap /> },
     ],
   },
