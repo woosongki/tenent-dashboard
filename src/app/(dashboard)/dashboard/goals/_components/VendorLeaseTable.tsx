@@ -210,9 +210,9 @@ function LeaseStatusFunnel({ rows }: { rows: VendorLeaseRow[] }) {
   const steps = [
     { key: "미팅전",   label: "미팅전" },
     { key: "미팅완료", label: "미팅완료" },
-    { key: "제안중",   label: "제안중" },
+    { key: "입점제안", label: "입점제안" },
     { key: "계약검토", label: "계약검토" },
-    { key: "계약완료", label: "계약완료" },
+    { key: "입점중",   label: "입점중" },
     { key: "입점완료", label: "입점완료" },
   ];
   const counts = steps.map((s) => ({

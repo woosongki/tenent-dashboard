@@ -157,9 +157,9 @@ export async function syncVendorLease(): Promise<SyncResult> {
       const record = {
         name,
         types:      getMultiSelect(props, "유형"),
-        score:      getSelect(props,      "점수"),
+        score:      getSelect(props,      "정성점수"),
         is_checked: getCheckbox(props,    "체크박스"),
-        status:     getStatus(props,      "상태") ?? getSelect(props, "상태"),
+        status:     getStatus(props,      "영업진행"),
         link:       getUrl(props,         "링크"),
         contact:    getPhone(props,       "연락처"),
         keyman:     getRichText(props,    "키맨"),
