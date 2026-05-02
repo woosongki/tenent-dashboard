@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import type { DashboardSummary, OrgRow, CategoryGroup, TopBrand, CategoryStat } from "@/types/dashboard";
+import { getPopupContactCount } from "@/lib/popupContacts";
 
 /** 대시보드 Summary 지표 */
 export async function getDashboardSummary(): Promise<DashboardSummary> {
@@ -10,7 +11,8 @@ export async function getDashboardSummary(): Promise<DashboardSummary> {
     mrrRes, prevMrrRes,
     topBrandsRes, brandTotalRes, positiveRes, categoryRes,
     // 사이드바 "컨텐츠 풀" 3개 탭 — 라이프스타일·F&B·팝업
-    lifestyleRes, popupRes, vendorFnbRes,
+    // 팝업은 정적 CSV(팝업 컨텍판) 기준이라 supabase 호출 불필요
+    lifestyleRes, vendorFnbRes,
   ] = await Promise.all([
     supabase.from("organizations").select("id", { count: "exact", head: true }),
     supabase.from("organization_members").select("user_id", { count: "exact", head: true }),
@@ -47,8 +49,6 @@ export async function getDashboardSummary(): Promise<DashboardSummary> {
     // ── 컨텐츠 풀 카운트 ─────────────────────────
     // 라이프스타일 — goals 테이블 pool_type='lifestyle'
     supabase.from("goals").select("id", { count: "exact", head: true }).eq("pool_type", "lifestyle"),
-    // 팝업 — goals 테이블 pool_type='popup'
-    supabase.from("goals").select("id", { count: "exact", head: true }).eq("pool_type", "popup"),
     // F&B — vendor_fnb 테이블 (컨텐츠 풀 F&B 탭이 실제 표시하는 데이터)
     supabase.from("vendor_fnb").select("id", { count: "exact", head: true }),
   ]);
@@ -83,7 +83,8 @@ export async function getDashboardSummary(): Promise<DashboardSummary> {
   const contentPoolBreakdown = {
     lifestyle: lifestyleRes.count ?? 0,
     fnb:       vendorFnbRes.count ?? 0,
-    popup:     popupRes.count ?? 0,
+    // 팝업은 노션 컨텍판(정적 CSV import) 기준
+    popup:     getPopupContactCount(),
   };
   const contentPoolCount =
     contentPoolBreakdown.lifestyle + contentPoolBreakdown.fnb + contentPoolBreakdown.popup;

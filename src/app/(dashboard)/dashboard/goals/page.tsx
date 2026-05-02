@@ -11,7 +11,10 @@ import VendorFnbTable from "./_components/VendorFnbTable";
 import VendorStatusFunnel from "./_components/VendorStatusFunnel";
 import AddGoalForm from "./_components/AddGoalForm";
 import ContentPoolTabs from "./_components/ContentPoolTabs";
+import PopupContactTable from "./_components/PopupContactTable";
 import TopBar from "@/components/layout/TopBar";
+import { getPopupContacts, getPopupContactsMeta } from "@/lib/popupContacts";
+import { getCalendarAssignments } from "@/lib/calendarAssignments";
 
 export const metadata: Metadata = { title: "컨텐츠 풀 — lifestyle" };
 
@@ -57,8 +60,26 @@ async function loadCounts(orgId: string): Promise<Record<PoolType, number>> {
   return {
     lifestyle: all.filter((g) => g.poolType === "lifestyle").length,
     fnb:       all.filter((g) => g.poolType === "fnb").length,
-    popup:     all.filter((g) => g.poolType === "popup").length,
+    // 팝업 탭은 노션 컨텍판(정적 CSV) 기준으로 표시
+    popup:     getPopupContacts().length,
   };
+}
+
+// ── 팝업 탭 전용 컨텐츠 (정적 CSV + 캘린더 핀 역참조) ───────────
+async function PopupContactContent({ orgId }: { orgId: string | null }) {
+  const rows = getPopupContacts();
+  const meta = getPopupContactsMeta();
+  // contactNo → 핀된 주차 인덱스 배열
+  const pinsByContact: Record<number, number[]> = {};
+  if (orgId) {
+    const grouped = await getCalendarAssignments(orgId);
+    for (const [weekIdx, arr] of Object.entries(grouped)) {
+      for (const a of arr) {
+        (pinsByContact[a.contactNo] ??= []).push(Number(weekIdx));
+      }
+    }
+  }
+  return <PopupContactTable rows={rows} importedAt={meta.importedAt} pinsByContact={pinsByContact} />;
 }
 
 // ── F&B 탭 전용 컨텐츠 (서버) ────────────────────────────────
@@ -132,7 +153,7 @@ export default async function GoalsPage({ searchParams }: PageProps) {
         crumbs={[{ label: "대시보드", href: "/dashboard" }, { label: "컨텐츠 풀" }]}
         lastUpdated={lastUpdated}
         action={
-          activeTab !== "fnb" && orgId
+          activeTab === "lifestyle" && orgId
             ? <AddGoalForm organizationId={orgId} poolType={activeTab} />
             : undefined
         }
@@ -148,7 +169,9 @@ export default async function GoalsPage({ searchParams }: PageProps) {
         <ContentPoolTabs active={activeTab} counts={counts} />
 
         {/* 컨텐츠 */}
-        {activeTab === "fnb" ? (
+        {activeTab === "popup" ? (
+          <PopupContactContent orgId={orgId ?? null} />
+        ) : activeTab === "fnb" ? (
           <Suspense key="fnb" fallback={<GoalsTableSkeleton />}>
             <VendorFnbContent />
           </Suspense>
