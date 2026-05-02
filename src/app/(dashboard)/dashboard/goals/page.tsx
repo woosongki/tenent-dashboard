@@ -55,12 +55,18 @@ function GoalsTableSkeleton() {
 }
 
 // ── 탭 카운트 로드 (서버) ──────────────────────────────────────
+// 각 탭의 배지는 해당 탭이 실제 표시하는 데이터 소스와 일치시킴.
+// - 라이프스타일: goals.pool_type='lifestyle'
+// - F&B:        vendor_fnb 테이블 (탭 내용과 동일 소스)
+// - 팝업:        노션 컨텍판(정적 CSV)
 async function loadCounts(orgId: string): Promise<Record<PoolType, number>> {
-  const all = await getGoals(orgId);
+  const [goals, vendorFnb] = await Promise.all([
+    getGoals(orgId),
+    getVendorFnb(),
+  ]);
   return {
-    lifestyle: all.filter((g) => g.poolType === "lifestyle").length,
-    fnb:       all.filter((g) => g.poolType === "fnb").length,
-    // 팝업 탭은 노션 컨텍판(정적 CSV) 기준으로 표시
+    lifestyle: goals.filter((g) => g.poolType === "lifestyle").length,
+    fnb:       vendorFnb.length,
     popup:     getPopupContacts().length,
   };
 }

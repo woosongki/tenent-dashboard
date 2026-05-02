@@ -123,16 +123,16 @@ export default function SummaryCards({ summary }: Props) {
         }}
       />
 
-      {/* 팝업 수 — amber */}
+      {/* 팝업 수 — amber — 컨텐츠 풀 팝업 탭 (정적 CSV 컨텍판) 기준 */}
       <MetricCard
         href="/dashboard/goals?tab=popup"
         accent="amber"
         label="팝업 수"
-        value={summary.activeSubscriptions.toLocaleString()}
+        value={pool.popup.toLocaleString()}
         icon={<IconSparkles className="h-[18px] w-[18px] text-amber-600" />}
         iconBg="bg-amber-50"
         trend={{
-          direction: "neutral",
+          direction: pool.popup > 0 ? "up" : "neutral",
           value: `${summary.totalOrgs}개`,
           label: "전체 조직",
         }}
