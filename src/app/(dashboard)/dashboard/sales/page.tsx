@@ -13,6 +13,9 @@ import SalesSummaryCards from "./_components/SalesSummaryCards";
 import GroupComparisonTable from "./_components/GroupComparisonTable";
 import BrandComparisonTable from "./_components/BrandComparisonTable";
 import TopBar from "@/components/layout/TopBar";
+import PageHeader from "@/components/ui/PageHeader";
+import AppFooter from "@/components/ui/AppFooter";
+import { SPACE } from "@/lib/tokens";
 
 export const metadata: Metadata = { title: "매출분석 — lifestyle" };
 
@@ -32,18 +35,14 @@ export default async function SalesPage() {
       <TopBar
         crumbs={[{ label: "대시보드", href: "/dashboard" }, { label: "매출분석" }]}
       />
-      <main className="flex-1 overflow-y-auto px-7 py-6 space-y-5">
-        <div>
-          <div className="flex items-baseline gap-3 flex-wrap">
-            <h1 className="text-[22px] font-extrabold tracking-tight text-slate-900">매출분석</h1>
-            <span className="text-[12px] text-slate-400">
-              {meta.period1} <span className="text-slate-300">vs</span> {meta.period2}
-            </span>
-          </div>
-          <p className="mt-1 text-[13px] text-slate-400">
-            구매그룹 4분류 · 브랜드 {brands.length}개 · 월별 작년/올해 비교
-          </p>
-        </div>
+      <main className={`flex-1 overflow-y-auto ${SPACE.pageX} ${SPACE.pageY}`}>
+        <div className={`${SPACE.pageMaxW} ${SPACE.sectionGap} flex flex-col`}>
+          <PageHeader
+            eyebrow="SALES ANALYTICS"
+            title="매출분석"
+            subtitle="구매그룹 4분류 · 월별 작년/올해 비교"
+            meta={`${meta.period1} vs ${meta.period2} · 브랜드 ${brands.length}개`}
+          />
 
         {/* 종합 + 월별 차트 */}
         <SalesSummaryCards overall={overall} monthly={monthly} />
@@ -63,9 +62,12 @@ export default async function SalesPage() {
           <BrandComparisonTable brands={brands} />
         </section>
 
-        <p className="text-[10px] text-slate-400">
-          데이터 출처: {meta.compiledAt} 변환 · CSV 원본 일매출 2기간 비교분석
-        </p>
+          <p className="text-[10px] text-slate-400">
+            데이터 출처: {meta.compiledAt} 변환 · CSV 원본 일매출 2기간 비교분석
+          </p>
+
+          <AppFooter />
+        </div>
       </main>
     </div>
   );

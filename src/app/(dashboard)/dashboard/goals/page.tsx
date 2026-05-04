@@ -12,6 +12,9 @@ import VendorLeaseTable from "./_components/VendorLeaseTable";
 import ContentPoolTabs from "./_components/ContentPoolTabs";
 import PopupContactTable from "./_components/PopupContactTable";
 import TopBar from "@/components/layout/TopBar";
+import PageHeader from "@/components/ui/PageHeader";
+import AppFooter from "@/components/ui/AppFooter";
+import { SPACE } from "@/lib/tokens";
 import { getPopupContacts, getPopupContactsMeta } from "@/lib/popupContacts";
 import { getCalendarAssignments } from "@/lib/calendarAssignments";
 
@@ -124,28 +127,30 @@ export default async function GoalsPage({ searchParams }: PageProps) {
         crumbs={[{ label: "대시보드", href: "/dashboard" }, { label: "컨텐츠 풀" }]}
         lastUpdated={lastUpdated}
       />
-      <main className="flex-1 overflow-y-auto px-7 py-6 space-y-5">
-        {/* 제목 */}
-        <div>
-          <h1 className="text-[22px] font-extrabold tracking-tight text-slate-900">컨텐츠 풀</h1>
-          <p className="mt-1 text-[13px] text-slate-400">라이프스타일 · F&amp;B · 팝업 브랜드 후보를 관리합니다 · 셀 클릭으로 즉시 수정</p>
+      <main className={`flex-1 overflow-y-auto ${SPACE.pageX} ${SPACE.pageY}`}>
+        <div className={`${SPACE.pageMaxW} ${SPACE.sectionGap} flex flex-col`}>
+          <PageHeader
+            eyebrow="CONTENT POOL"
+            title="컨텐츠 풀"
+            subtitle="라이프스타일 · F&B · 팝업 컨텍판 — 셀 클릭으로 즉시 수정합니다."
+          />
+
+          <ContentPoolTabs active={activeTab} />
+
+          {activeTab === "popup" ? (
+            <PopupContactContent orgId={orgId ?? null} />
+          ) : activeTab === "fnb" ? (
+            <Suspense key="fnb" fallback={<GoalsTableSkeleton />}>
+              <VendorFnbContent />
+            </Suspense>
+          ) : (
+            <Suspense key="lifestyle" fallback={<GoalsTableSkeleton />}>
+              <LifestyleContent />
+            </Suspense>
+          )}
+
+          <AppFooter />
         </div>
-
-        {/* 탭 */}
-        <ContentPoolTabs active={activeTab} />
-
-        {/* 컨텐츠 */}
-        {activeTab === "popup" ? (
-          <PopupContactContent orgId={orgId ?? null} />
-        ) : activeTab === "fnb" ? (
-          <Suspense key="fnb" fallback={<GoalsTableSkeleton />}>
-            <VendorFnbContent />
-          </Suspense>
-        ) : (
-          <Suspense key="lifestyle" fallback={<GoalsTableSkeleton />}>
-            <LifestyleContent />
-          </Suspense>
-        )}
       </main>
     </div>
   );

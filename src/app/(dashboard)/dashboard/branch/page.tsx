@@ -3,6 +3,9 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import TopBar from "@/components/layout/TopBar";
+import PageHeader from "@/components/ui/PageHeader";
+import AppFooter from "@/components/ui/AppFooter";
+import { SPACE } from "@/lib/tokens";
 import { getAllStores, BRAND_BADGE, type StoreBrand } from "@/lib/stores";
 import { getTradeAreaIndex, TRADE_AREA_BADGE } from "@/lib/tradeArea";
 
@@ -34,16 +37,14 @@ export default async function BranchPage({
   return (
     <div className="flex flex-col h-full overflow-hidden">
       <TopBar crumbs={[{ label: "대시보드", href: "/dashboard" }, { label: "상권분석" }]} />
-      <main className="flex-1 overflow-y-auto px-7 py-6 space-y-5">
-        <div>
-          <div className="flex items-baseline gap-3">
-            <h1 className="text-[22px] font-extrabold tracking-tight text-slate-900">상권분석</h1>
-            <span className="text-[13px] text-slate-400 tabular-nums">{stores.length}개 점포</span>
-          </div>
-          <p className="mt-1 text-[13px] text-slate-400">
-            이랜드리테일 점포별 위치 · 주변 상권 · 상업용 부동산 실거래가
-          </p>
-        </div>
+      <main className={`flex-1 overflow-y-auto ${SPACE.pageX} ${SPACE.pageY}`}>
+        <div className={`${SPACE.pageMaxW} ${SPACE.sectionGap} flex flex-col`}>
+          <PageHeader
+            eyebrow="LOCATION INTELLIGENCE"
+            title="상권 분석"
+            subtitle="이랜드리테일 41개 점포의 위치 · 주변 상권 · 상업용 부동산 실거래가를 한 곳에서."
+            meta={`${stores.length}개 점포`}
+          />
 
         {/* 브랜드 필터 칩 */}
         <nav className="flex flex-wrap gap-1.5">
@@ -127,6 +128,9 @@ export default async function BranchPage({
               </Link>
             );
           })}
+        </div>
+
+          <AppFooter />
         </div>
       </main>
     </div>

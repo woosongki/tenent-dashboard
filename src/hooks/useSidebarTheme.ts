@@ -6,7 +6,7 @@ import type { SidebarTheme } from "@/lib/tokens";
 const STORAGE_KEY = "lifestyle.sidebar.theme";
 
 export function useSidebarTheme(): [SidebarTheme, (t: SidebarTheme) => void] {
-  const [theme, setTheme] = useState<SidebarTheme>("dark");
+  const [theme, setTheme] = useState<SidebarTheme>("light");
 
   useEffect(() => {
     const stored = typeof window !== "undefined" ? window.localStorage.getItem(STORAGE_KEY) : null;

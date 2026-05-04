@@ -1,216 +1,117 @@
 import Link from "next/link";
 import type { DashboardSummary } from "@/types/dashboard";
+import { TYPO } from "@/lib/tokens";
 
 interface Props {
   summary: DashboardSummary;
 }
 
-// ── SVG 아이콘 ────────────────────────────────────────────────
-// ⑤ 이모지 대신 일관된 SVG 아이콘 사용
+type Accent = "violet" | "emerald" | "amber" | "rose";
+const ACCENT_BAR: Record<Accent, string> = {
+  violet:  "bg-gradient-to-r from-violet-600 to-violet-400",
+  emerald: "bg-gradient-to-r from-emerald-600 to-emerald-400",
+  amber:   "bg-gradient-to-r from-amber-500 to-amber-300",
+  rose:    "bg-gradient-to-r from-rose-500 to-rose-300",
+};
+const TREND: Record<"up"|"down"|"neutral", { dot: string; text: string; arrow: string }> = {
+  up:      { dot: "bg-emerald-500", text: "text-emerald-600", arrow: "↗" },
+  down:    { dot: "bg-rose-500",    text: "text-rose-600",    arrow: "↘" },
+  neutral: { dot: "bg-slate-400",   text: "text-slate-500",   arrow: "→" },
+};
 
-function IconBuilding({ className }: { className?: string }) {
-  return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.6}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3.75h.008v.008h-.008v-.008zm0 3h.008v.008h-.008v-.008zm0 3h.008v.008h-.008v-.008z" />
-    </svg>
-  );
-}
-
-function IconDocument({ className }: { className?: string }) {
-  return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.6}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
-    </svg>
-  );
-}
-
-function IconSparkles({ className }: { className?: string }) {
-  return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.6}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456z" />
-    </svg>
-  );
-}
-
-function IconChartBar({ className }: { className?: string }) {
-  return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.6}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" />
-    </svg>
-  );
-}
-
-// ── 트렌드 뱃지 ─────────────────────────────────────────────
-// ② 트렌드 인디케이터: 방향 + 수치 + 설명
-interface TrendBadgeProps {
-  direction: "up" | "down" | "neutral";
-  value: string;
+interface KpiProps {
+  href?: string;
+  accent: Accent;
   label: string;
+  value: string;
+  unit?: string;
+  caption?: string;
+  trend?: { direction: "up"|"down"|"neutral"; value: string; label: string };
 }
-function TrendBadge({ direction, value, label }: TrendBadgeProps) {
-  const styles = {
-    up:      { dot: "bg-emerald-500", text: "text-emerald-600", arrow: "▲" },
-    down:    { dot: "bg-rose-500",    text: "text-rose-500",    arrow: "▼" },
-    neutral: { dot: "bg-slate-400",   text: "text-slate-400",   arrow: "—" },
-  };
-  const s = styles[direction];
+
+function Kpi({ href, accent, label, value, unit, caption, trend }: KpiProps) {
+  const Wrap: React.ElementType = href ? Link : "div";
+  const wrapProps = href ? { href } : {};
   return (
-    <p className="mt-2 flex items-center gap-1.5 text-[11px]">
-      <span className={`inline-block h-1.5 w-1.5 rounded-full ${s.dot}`} />
-      <span className={`font-semibold tabular-nums ${s.text}`}>
-        {s.arrow} {value}
-      </span>
-      <span className="text-slate-300">{label}</span>
-    </p>
+    <Wrap
+      {...wrapProps}
+      className="group relative overflow-hidden rounded-2xl border border-slate-200/70 bg-white p-6 shadow-[0_1px_2px_rgba(15,23,42,.04)] transition-all hover:shadow-[0_8px_24px_rgba(15,23,42,.08)] hover:-translate-y-0.5"
+    >
+      <span className={`absolute inset-x-0 top-0 h-[3px] ${ACCENT_BAR[accent]}`} />
+      <p className={TYPO.kpiLabel}>{label}</p>
+      <div className="mt-3 flex items-baseline gap-1.5">
+        <span className={TYPO.kpiNumber}>{value}</span>
+        {unit && <span className="text-[18px] font-semibold text-slate-400">{unit}</span>}
+      </div>
+      <div className="mt-2 flex items-center justify-between gap-2 min-h-[20px]">
+        {caption ? <p className="text-[12px] text-slate-500">{caption}</p> : <span />}
+        {trend && (
+          <span className="inline-flex items-center gap-1 text-[11px]">
+            <span className={`h-1.5 w-1.5 rounded-full ${TREND[trend.direction].dot}`} />
+            <span className={`font-semibold tabular-nums ${TREND[trend.direction].text}`}>
+              {TREND[trend.direction].arrow} {trend.value}
+            </span>
+            {trend.label && <span className="text-slate-400">{trend.label}</span>}
+          </span>
+        )}
+      </div>
+      {href && (
+        <span className="absolute right-4 top-4 text-[10px] font-medium text-slate-300 opacity-0 transition-opacity group-hover:opacity-100">
+          상세 →
+        </span>
+      )}
+    </Wrap>
   );
 }
 
-// ── Summary Cards ────────────────────────────────────────────
 export default function SummaryCards({ summary }: Props) {
-  // 입점 완료율 — 사이드바 "입점계획(26년)" 페이지와 동일 소스 (attraction_status)
   const attraction = summary.attraction;
   const completionRate = attraction.total > 0
     ? Math.round((attraction.completed / attraction.total) * 100)
     : 0;
-
-  // 컨텐츠 풀 트렌드 라벨 — 가장 큰 카테고리 기준 한 줄 요약
   const pool = summary.contentPoolBreakdown;
-  const poolTrendLabel = `라이프 ${pool.lifestyle} · F&B ${pool.fnb} · 팝업 ${pool.popup}`;
+  const poolBreakdown = `라이프 ${pool.lifestyle} · F&B ${pool.fnb} · 팝업 ${pool.popup}`;
 
   return (
     <div className="grid grid-cols-2 gap-4 xl:grid-cols-4">
-
-      {/* 공실해결 — violet */}
-      <MetricCard
+      <Kpi
         href="/dashboard/drilldown"
         accent="violet"
-        label="공실해결 건수"
+        label="공실 해결"
         value={summary.totalMembers.toLocaleString()}
-        icon={<IconBuilding className="h-[18px] w-[18px] text-violet-600" />}
-        iconBg="bg-violet-50"
-        trend={{ direction: "up", value: `${summary.pendingInvitations}건`, label: "초대 대기 중" }}
+        unit="건"
+        caption="입점 진척 추적"
+        trend={{ direction: "up", value: `${summary.pendingInvitations}`, label: "초대 대기" }}
       />
-
-      {/* 컨텐츠 수 — emerald — 사이드바 "컨텐츠 풀" 3개 탭 합계 */}
-      <MetricCard
+      <Kpi
         href="/dashboard/goals"
         accent="emerald"
-        label="컨텐츠 수"
+        label="컨텐츠 풀"
         value={summary.contentPoolCount.toLocaleString()}
-        icon={<IconDocument className="h-[18px] w-[18px] text-emerald-600" />}
-        iconBg="bg-emerald-50"
+        unit="건"
+        caption={poolBreakdown}
+      />
+      <Kpi
+        href="/dashboard/goals?tab=popup"
+        accent="amber"
+        label="팝업 컨텍판"
+        value={pool.popup.toLocaleString()}
+        unit="건"
+        caption="컨텍 진행 중인 팝업 후보"
+      />
+      <Kpi
+        href="/dashboard/drilldown"
+        accent="rose"
+        label="입점 완료율"
+        value={completionRate.toString()}
+        unit="%"
+        caption={`${attraction.completed} / ${attraction.total} · 진행중 ${attraction.inProgress}`}
         trend={{
-          direction: summary.contentPoolCount > 0 ? "up" : "neutral",
-          value: poolTrendLabel,
+          direction: completionRate >= 50 ? "up" : "neutral",
+          value: `${completionRate}%`,
           label: "",
         }}
       />
-
-      {/* 팝업 수 — amber — 컨텐츠 풀 팝업 탭 (정적 CSV 컨텍판) 기준 */}
-      <MetricCard
-        href="/dashboard/goals?tab=popup"
-        accent="amber"
-        label="팝업 수"
-        value={pool.popup.toLocaleString()}
-        icon={<IconSparkles className="h-[18px] w-[18px] text-amber-600" />}
-        iconBg="bg-amber-50"
-        trend={{
-          direction: pool.popup > 0 ? "up" : "neutral",
-          value: `${summary.totalOrgs}개`,
-          label: "전체 조직",
-        }}
-      />
-
-      {/* 입점 완료율 — rose */}
-      <Link
-        href="/dashboard/drilldown"
-        className="group relative overflow-hidden rounded-xl border border-[#e8ecf0] bg-white p-5 shadow-[0_1px_3px_rgba(0,0,0,.04)] transition-shadow hover:shadow-[0_4px_12px_rgba(0,0,0,.08)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400"
-      >
-        <div className="absolute inset-x-0 top-0 h-[3px] rounded-t-xl bg-gradient-to-r from-rose-500 to-rose-300" />
-        <div className="flex items-center justify-between">
-          <span className="text-[12px] font-medium text-slate-500">입점 완료율</span>
-          <div className="flex h-[34px] w-[34px] items-center justify-center rounded-[10px] bg-rose-50">
-            <IconChartBar className="h-[18px] w-[18px] text-rose-500" />
-          </div>
-        </div>
-        <p className="mt-3 text-[28px] font-extrabold leading-none tracking-tight text-slate-900">
-          {completionRate}<span className="text-[16px] font-semibold text-slate-400">%</span>
-        </p>
-        <div className="mt-3 h-[4px] w-full overflow-hidden rounded-full bg-rose-50">
-          <div
-            className="h-full rounded-full bg-gradient-to-r from-rose-500 to-rose-300 transition-all duration-500"
-            style={{ width: `${completionRate}%` }}
-          />
-        </div>
-        <TrendBadge
-          direction={completionRate >= 50 ? "up" : completionRate > 0 ? "up" : "neutral"}
-          value={`${attraction.completed} / ${attraction.total}`}
-          label={`완료 / 전체 · 진행중 ${attraction.inProgress}`}
-        />
-        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-medium text-slate-300 opacity-0 transition-opacity group-hover:opacity-100">
-          상세 →
-        </span>
-      </Link>
-    </div>
-  );
-}
-
-// ── Metric Card ───────────────────────────────────────────────
-type Accent = "violet" | "emerald" | "amber" | "rose" | "indigo";
-
-const GRADIENT: Record<Accent, string> = {
-  violet:  "from-violet-600 to-violet-400",
-  emerald: "from-emerald-600 to-emerald-400",
-  amber:   "from-amber-500 to-amber-300",
-  rose:    "from-rose-500 to-rose-300",
-  indigo:  "from-indigo-600 to-indigo-400",
-};
-
-interface MetricCardProps {
-  accent: Accent;
-  label: string;
-  value: string;
-  icon: React.ReactNode;
-  iconBg: string;
-  trend: { direction: "up" | "down" | "neutral"; value: string; label: string };
-  href?: string;
-}
-
-function MetricCard({ accent, label, value, icon, iconBg, trend, href }: MetricCardProps) {
-  const inner = (
-    <>
-      <div className={`absolute inset-x-0 top-0 h-[3px] rounded-t-xl bg-gradient-to-r ${GRADIENT[accent]}`} />
-      <div className="flex items-center justify-between">
-        <span className="text-[12px] font-medium text-slate-500">{label}</span>
-        <div className={`flex h-[34px] w-[34px] items-center justify-center rounded-[10px] ${iconBg}`}>
-          {icon}
-        </div>
-      </div>
-      <p className="mt-3 text-[28px] font-extrabold leading-none tracking-tight text-slate-900">
-        {value}
-      </p>
-      <TrendBadge direction={trend.direction} value={trend.value} label={trend.label} />
-      {href && (
-        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-medium text-slate-300 opacity-0 transition-opacity group-hover:opacity-100">
-          상세 →
-        </span>
-      )}
-    </>
-  );
-
-  if (href) {
-    return (
-      <Link
-        href={href}
-        className="group relative overflow-hidden rounded-xl border border-[#e8ecf0] bg-white p-5 shadow-[0_1px_3px_rgba(0,0,0,.04)] transition-shadow hover:shadow-[0_4px_12px_rgba(0,0,0,.08)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400"
-      >
-        {inner}
-      </Link>
-    );
-  }
-  return (
-    <div className="relative overflow-hidden rounded-xl border border-[#e8ecf0] bg-white p-5 shadow-[0_1px_3px_rgba(0,0,0,.04)]">
-      {inner}
     </div>
   );
 }

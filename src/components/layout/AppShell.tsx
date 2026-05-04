@@ -59,7 +59,7 @@ export default function AppShell({ userEmail, role = null, children }: Props) {
   }, []);
 
   return (
-    <div className="flex h-screen overflow-hidden bg-[#f4f6f9]">
+    <div className="flex h-screen overflow-hidden bg-[#f5f7fa]">
 
       {/* ── 모바일 오버레이 ── */}
       {mobileOpen && (

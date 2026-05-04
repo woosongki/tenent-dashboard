@@ -2,6 +2,9 @@ import { redirect } from "next/navigation";
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import TopBar from "@/components/layout/TopBar";
+import PageHeader from "@/components/ui/PageHeader";
+import AppFooter from "@/components/ui/AppFooter";
+import { SPACE, TYPO } from "@/lib/tokens";
 import UserApprovalTable from "./_components/UserApprovalTable";
 
 export const metadata: Metadata = { title: "사용자 관리 — lifestyle" };
@@ -76,31 +79,38 @@ export default async function AdminUsersPage() {
           { label: "사용자 관리" },
         ]}
       />
-      <main className="flex-1 overflow-y-auto px-7 py-6 space-y-5">
-        <div>
-          <h1 className="text-[22px] font-extrabold tracking-tight text-slate-900">사용자 관리</h1>
-          <p className="mt-1 text-[13px] text-slate-400">
-            관리자 승인 대기 · 승인/거부 · 권한 박탈
-          </p>
-        </div>
+      <main className={`flex-1 overflow-y-auto ${SPACE.pageX} ${SPACE.pageY}`}>
+        <div className={`${SPACE.pageMaxW} ${SPACE.sectionGap} flex flex-col`}>
+          <PageHeader
+            eyebrow="ADMIN"
+            title="사용자 관리"
+            subtitle="신규 가입자의 접근을 승인 · 거부하고, 기존 사용자의 권한을 관리합니다."
+            meta={`총 ${rows.length}명`}
+          />
 
-        <div className="grid grid-cols-3 gap-3">
-          <Stat label="승인 대기" value={pendingCount} color="text-amber-600" />
-          <Stat label="승인 완료" value={approvedCount} color="text-emerald-600" />
-          <Stat label="거부됨"    value={rejectedCount} color="text-rose-600" />
-        </div>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+            <Stat label="승인 대기" value={pendingCount} color="text-amber-600" accent="bg-gradient-to-r from-amber-500 to-amber-300" />
+            <Stat label="승인 완료" value={approvedCount} color="text-emerald-600" accent="bg-gradient-to-r from-emerald-600 to-emerald-400" />
+            <Stat label="거부됨"    value={rejectedCount} color="text-rose-600" accent="bg-gradient-to-r from-rose-500 to-rose-300" />
+          </div>
 
-        <UserApprovalTable rows={rows} />
+          <UserApprovalTable rows={rows} />
+
+          <AppFooter />
+        </div>
       </main>
     </div>
   );
 }
 
-function Stat({ label, value, color }: { label: string; value: number; color: string }) {
+function Stat({
+  label, value, color, accent,
+}: { label: string; value: number; color: string; accent: string }) {
   return (
-    <div className="rounded-xl border border-[#e8ecf0] bg-white px-5 py-4 shadow-[0_1px_3px_rgba(0,0,0,.04)]">
-      <p className="text-[11px] text-slate-500">{label}</p>
-      <p className={`mt-1 text-[22px] font-bold tabular-nums ${color}`}>{value.toLocaleString()}</p>
+    <div className="relative overflow-hidden rounded-2xl border border-slate-200/70 bg-white p-6 shadow-[0_1px_2px_rgba(15,23,42,.04)]">
+      <span className={`absolute inset-x-0 top-0 h-[3px] ${accent}`} />
+      <p className={TYPO.kpiLabel}>{label}</p>
+      <p className={`mt-3 ${TYPO.kpiNumber} ${color}`}>{value.toLocaleString()}</p>
     </div>
   );
 }

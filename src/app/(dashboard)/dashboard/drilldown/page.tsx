@@ -6,6 +6,9 @@ import { getAttractionRows, getAttractionStats } from "@/lib/attraction/queries"
 import AttractionTable from "./_components/AttractionTable";
 import BranchProgressGrid from "./_components/BranchProgressGrid";
 import TopBar from "@/components/layout/TopBar";
+import PageHeader from "@/components/ui/PageHeader";
+import AppFooter from "@/components/ui/AppFooter";
+import { SPACE } from "@/lib/tokens";
 
 export const metadata: Metadata = { title: "입점계획(26년) — lifestyle" };
 
@@ -122,14 +125,19 @@ export default async function DrilldownPage() {
       <TopBar
         crumbs={[{ label: "대시보드", href: "/dashboard" }, { label: "입점계획(26년)" }]}
       />
-      <main className="flex-1 overflow-y-auto px-5 py-6 space-y-5 sm:px-7">
-        <div>
-          <h1 className="text-[22px] font-extrabold tracking-tight text-slate-900">입점계획 2026</h1>
-          <p className="mt-1 text-[13px] text-slate-400">34개 지점 · 브랜드별 컨텐츠 유치 현황을 관리합니다</p>
+      <main className={`flex-1 overflow-y-auto ${SPACE.pageX} ${SPACE.pageY}`}>
+        <div className={`${SPACE.pageMaxW} ${SPACE.sectionGap} flex flex-col`}>
+          <PageHeader
+            eyebrow="ATTRACTION 2026"
+            title="입점계획 2026"
+            subtitle="34개 지점 · 브랜드별 컨텐츠 유치 현황을 관리합니다."
+          />
+          <Suspense fallback={<TableSkeleton />}>
+            <AttractionContent />
+          </Suspense>
+
+          <AppFooter />
         </div>
-        <Suspense fallback={<TableSkeleton />}>
-          <AttractionContent />
-        </Suspense>
       </main>
     </div>
   );

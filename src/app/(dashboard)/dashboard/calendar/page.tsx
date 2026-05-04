@@ -2,6 +2,9 @@ import { redirect } from "next/navigation";
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import TopBar from "@/components/layout/TopBar";
+import PageHeader from "@/components/ui/PageHeader";
+import AppFooter from "@/components/ui/AppFooter";
+import { SPACE } from "@/lib/tokens";
 import { getCalendar52Meta } from "@/lib/calendar52";
 import { getCalendarWeeksForOrg, buildPopupMatches } from "@/lib/calendarWeeks";
 import { getPopupContacts } from "@/lib/popupContacts";
@@ -44,37 +47,31 @@ export default async function CalendarPage() {
         crumbs={[{ label: "대시보드", href: "/dashboard" }, { label: "52주 캘린더" }]}
         lastUpdated={meta.importedAt}
       />
-      <main className="flex-1 overflow-y-auto px-7 py-6 space-y-5">
-        <div>
-          <div className="flex items-baseline gap-3 flex-wrap">
-            <h1 className="text-[22px] font-extrabold tracking-tight text-slate-900">
-              52주 마케팅 캘린더
-            </h1>
-            <span className="text-[13px] text-slate-400 tabular-nums">{weeks.length}주</span>
-          </div>
-          <p className="mt-1 text-[13px] text-slate-400">
-            연간 시즌·컨셉별 팝업 후보 캘린더 · 컨텐츠 풀 컨텍판 매칭{" "}
-            <span className="text-violet-600 font-medium">
-              · 자동 {matchedWeeks}주/{matchedTotal}건
-            </span>
-            <span className="text-amber-600 font-medium">
-              {" · 핀 "}
-              {pinnedWeeks}주/{pinnedTotal}건
-            </span>
-            <span className="text-slate-400">
-              {source === "db" ? " · DB 편집" : " · 시드(읽기)"}
-            </span>
-          </p>
-        </div>
+      <main className={`flex-1 overflow-y-auto ${SPACE.pageX} ${SPACE.pageY}`}>
+        <div className={`${SPACE.pageMaxW} ${SPACE.sectionGap} flex flex-col`}>
+          <PageHeader
+            eyebrow="MARKETING CALENDAR"
+            title="52주 마케팅 캘린더"
+            subtitle="연간 시즌·컨셉별 팝업 후보를 주차 단위로 관리하고, 팝업 컨텍판과 자동·수동으로 연결합니다."
+            meta={
+              `${weeks.length}주 · ` +
+              `자동 ${matchedWeeks}주/${matchedTotal}건 · ` +
+              `핀 ${pinnedWeeks}주/${pinnedTotal}건 · ` +
+              (source === "db" ? "DB 편집" : "시드")
+            }
+          />
 
-        <CalendarBoard
-          weeks={weeks}
-          matches={matches}
-          contacts={contacts}
-          assignments={assignments}
-          canEdit={!!orgId}
-          canEditWeek={canEditWeek}
-        />
+          <CalendarBoard
+            weeks={weeks}
+            matches={matches}
+            contacts={contacts}
+            assignments={assignments}
+            canEdit={!!orgId}
+            canEditWeek={canEditWeek}
+          />
+
+          <AppFooter />
+        </div>
       </main>
     </div>
   );
