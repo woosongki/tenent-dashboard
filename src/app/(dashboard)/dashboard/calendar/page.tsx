@@ -2,11 +2,8 @@ import { redirect } from "next/navigation";
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import TopBar from "@/components/layout/TopBar";
-import {
-  getCalendar52,
-  getCalendar52Meta,
-  buildCalendarPopupMatches,
-} from "@/lib/calendar52";
+import { getCalendar52Meta } from "@/lib/calendar52";
+import { getCalendarWeeksForOrg, buildPopupMatches } from "@/lib/calendarWeeks";
 import { getPopupContacts } from "@/lib/popupContacts";
 import { getCalendarAssignments } from "@/lib/calendarAssignments";
 import CalendarBoard from "./_components/CalendarBoard";
@@ -20,17 +17,20 @@ export default async function CalendarPage() {
 
   const { data: membership } = await supabase
     .from("organization_members")
-    .select("organization_id")
+    .select("organization_id, role")
     .eq("user_id", user.id)
     .limit(1)
     .single();
   const orgId: string | null = membership?.organization_id ?? null;
+  const role: "owner" | "admin" | "member" | null =
+    (membership?.role as "owner" | "admin" | "member" | undefined) ?? null;
+  const canEditWeek = role === "owner" || role === "admin";
 
-  const weeks       = getCalendar52();
-  const meta        = getCalendar52Meta();
-  const matches     = buildCalendarPopupMatches();
-  const contacts    = getPopupContacts();
-  const assignments = orgId ? await getCalendarAssignments(orgId) : {};
+  const { weeks, source } = await getCalendarWeeksForOrg(orgId);
+  const meta              = getCalendar52Meta();
+  const matches           = buildPopupMatches(weeks);
+  const contacts          = getPopupContacts();
+  const assignments       = orgId ? await getCalendarAssignments(orgId) : {};
 
   // 매칭 + 직접배정 합산 통계
   const matchedTotal = Object.values(matches).reduce((s, arr) => s + arr.length, 0);
@@ -61,6 +61,9 @@ export default async function CalendarPage() {
               {" · 핀 "}
               {pinnedWeeks}주/{pinnedTotal}건
             </span>
+            <span className="text-slate-400">
+              {source === "db" ? " · DB 편집" : " · 시드(읽기)"}
+            </span>
           </p>
         </div>
 
@@ -70,6 +73,7 @@ export default async function CalendarPage() {
           contacts={contacts}
           assignments={assignments}
           canEdit={!!orgId}
+          canEditWeek={canEditWeek}
         />
       </main>
     </div>

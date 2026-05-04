@@ -15,6 +15,8 @@ import type { CalendarAssignment } from "@/lib/calendarAssignments";
 import {
   assignContactToWeek,
   unassignContact,
+  updateCalendarWeek,
+  type WeekPatch,
 } from "../_actions";
 
 interface Props {
@@ -23,12 +25,14 @@ interface Props {
   contacts: PopupContact[];
   assignments: Record<number, CalendarAssignment[]>;
   canEdit: boolean;
+  canEditWeek: boolean;
 }
 
 const MONTHS = ["1월","2월","3월","4월","5월","6월","7월","8월","9월","10월","11월","12월"];
 const INTENSITY_LABEL: Record<Intensity, string> = { high: "고강도", mid: "중강도", low: "저강도" };
 
-export default function CalendarBoard({ weeks, matches, contacts, assignments, canEdit }: Props) {
+export default function CalendarBoard({ weeks, matches, contacts, assignments, canEdit, canEditWeek }: Props) {
+  const [editingWeek, setEditingWeek] = useState<CalendarWeek | null>(null);
   const [intensity, setIntensity] = useState<Intensity | "all">("all");
   const [q, setQ]                 = useState("");
   const [onlyMatched, setOnlyMatched] = useState(false);
@@ -128,6 +132,8 @@ export default function CalendarBoard({ weeks, matches, contacts, assignments, c
                   }))}
                   contacts={contacts}
                   canEdit={canEdit}
+                  canEditWeek={canEditWeek}
+                  onEdit={() => setEditingWeek(w)}
                 />
               ))}
             </div>
@@ -139,6 +145,13 @@ export default function CalendarBoard({ weeks, matches, contacts, assignments, c
         <div className="rounded-xl bg-white py-16 text-center border border-[#e8ecf0]">
           <p className="text-sm text-slate-400">조건에 맞는 주차가 없습니다.</p>
         </div>
+      )}
+
+      {editingWeek && (
+        <WeekEditModal
+          week={editingWeek}
+          onClose={() => setEditingWeek(null)}
+        />
       )}
     </div>
   );
@@ -152,12 +165,16 @@ function WeekCard({
   pins,
   contacts,
   canEdit,
+  canEditWeek,
+  onEdit,
 }: {
   week: CalendarWeek;
   matches: CalendarMatch[];
   pins: PinRow[];
   contacts: PopupContact[];
   canEdit: boolean;
+  canEditWeek: boolean;
+  onEdit: () => void;
 }) {
   const ic = INTENSITY_COLOR[week.intensity];
   const pinnedNos = useMemo(() => new Set(pins.map((p) => p.assignment.contactNo)), [pins]);
@@ -169,6 +186,16 @@ function WeekCard({
           <span className="text-[10px] font-semibold text-slate-400">{week.month} {week.weekNo}주</span>
           <span className={`inline-block w-1.5 h-1.5 rounded-full ${ic.dot}`} />
           <span className="text-[10px] text-amber-500">{week.grade}</span>
+          {canEditWeek && (
+            <button
+              type="button"
+              onClick={onEdit}
+              className="ml-auto text-[10px] text-slate-400 hover:text-violet-600"
+              title="주차 편집"
+            >
+              ✏️ 편집
+            </button>
+          )}
         </div>
         <p className="text-[12.5px] font-bold text-slate-900 leading-tight whitespace-pre-line">
           {week.concept}
@@ -291,6 +318,203 @@ function Item({ label, color, text }: { label: string; color?: string; text: str
         {label}
       </span>
       <span className="text-slate-600 whitespace-pre-line">{text}</span>
+    </div>
+  );
+}
+
+function WeekEditModal({ week, onClose }: { week: CalendarWeek; onClose: () => void }) {
+  const [concept,   setConcept]   = useState(week.concept);
+  const [grade,     setGrade]     = useState(week.grade);
+  const [intensity, setIntensity] = useState<Intensity>(week.intensity);
+  const [monthKw,   setMonthKw]   = useState(week.monthKw);
+  const [item,      setItem]      = useState(week.item);
+  const [hotsauce,  setHotsauce]  = useState(week.hotsauce);
+  const [bestCat,   setBestCat]   = useState(week.bestCat);
+  const [popups,    setPopups]    = useState(JSON.stringify(week.popups, null, 2));
+  const [others,    setOthers]    = useState(JSON.stringify(week.others, null, 2));
+  const [extEvents, setExtEvents] = useState(JSON.stringify(week.extEvents, null, 2));
+  const [pending,   start]        = useTransition();
+
+  function tryParse(label: string, txt: string): unknown[] | null {
+    try {
+      const v = JSON.parse(txt);
+      if (!Array.isArray(v)) throw new Error("배열이어야 합니다");
+      return v;
+    } catch (e) {
+      toast.error(`${label} JSON 파싱 실패: ${(e as Error).message}`);
+      return null;
+    }
+  }
+
+  function onSave() {
+    const popsParsed = tryParse("팝업 후보", popups);
+    const otrParsed  = tryParse("타유통", others);
+    const extParsed  = tryParse("외부 이벤트", extEvents);
+    if (!popsParsed || !otrParsed || !extParsed) return;
+
+    const patch: WeekPatch = {
+      concept, grade, intensity, monthKw, item, hotsauce, bestCat,
+      popups:    popsParsed as WeekPatch["popups"],
+      others:    otrParsed  as WeekPatch["others"],
+      extEvents: extParsed  as WeekPatch["extEvents"],
+    };
+
+    start(async () => {
+      const res = await updateCalendarWeek(week.index, patch);
+      if (!res.ok) toast.error(res.error);
+      else {
+        toast.success(`${week.month} ${week.weekNo}주 저장됨`);
+        onClose();
+      }
+    });
+  }
+
+  return (
+    <div className="fixed inset-0 z-40 flex items-start justify-center p-4 sm:p-8 bg-black/40" onClick={onClose}>
+      <div
+        className="w-full max-w-2xl rounded-2xl bg-white shadow-2xl border border-slate-200 overflow-hidden"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* 헤더 */}
+        <div className="px-5 py-3 border-b border-slate-200 flex items-center gap-2">
+          <h3 className="text-[15px] font-bold text-slate-900">
+            {week.month} {week.weekNo}주 편집
+          </h3>
+          <span className="text-[11px] text-slate-400">{week.season}</span>
+          <button
+            type="button"
+            onClick={onClose}
+            className="ml-auto text-slate-400 hover:text-slate-700"
+            aria-label="닫기"
+          >
+            ✕
+          </button>
+        </div>
+
+        {/* 본문 */}
+        <div className="p-5 max-h-[70vh] overflow-y-auto space-y-4 text-[13px]">
+          <Field label="컨셉">
+            <textarea
+              value={concept}
+              onChange={(e) => setConcept(e.target.value)}
+              rows={2}
+              className={inputCls}
+            />
+          </Field>
+
+          <div className="grid grid-cols-3 gap-3">
+            <Field label="강도">
+              <select
+                value={intensity}
+                onChange={(e) => setIntensity(e.target.value as Intensity)}
+                className={inputCls}
+              >
+                <option value="high">고강도</option>
+                <option value="mid">중강도</option>
+                <option value="low">저강도</option>
+              </select>
+            </Field>
+            <Field label="등급(★)">
+              <input
+                value={grade}
+                onChange={(e) => setGrade(e.target.value)}
+                className={inputCls}
+              />
+            </Field>
+            <Field label="월 키워드">
+              <input
+                value={monthKw}
+                onChange={(e) => setMonthKw(e.target.value)}
+                className={inputCls}
+              />
+            </Field>
+          </div>
+
+          <Field
+            label="팝업 후보 (JSON 배열)"
+            hint='형식: [{"label":"핵심팝업","color":"#8e44ad","text":"내용\n여러줄"}]'
+          >
+            <textarea
+              value={popups}
+              onChange={(e) => setPopups(e.target.value)}
+              rows={8}
+              className={`${inputCls} font-mono text-[11px]`}
+              spellCheck={false}
+            />
+          </Field>
+
+          <Field
+            label="타유통 팝업 (JSON 배열)"
+            hint='형식: [{"label":"더현대","color":"#1a6eb5","text":"..."}]'
+          >
+            <textarea
+              value={others}
+              onChange={(e) => setOthers(e.target.value)}
+              rows={6}
+              className={`${inputCls} font-mono text-[11px]`}
+              spellCheck={false}
+            />
+          </Field>
+
+          <Field
+            label="외부 이벤트 (JSON 배열)"
+            hint='형식: [{"label":"박람회","text":"..."}]'
+          >
+            <textarea
+              value={extEvents}
+              onChange={(e) => setExtEvents(e.target.value)}
+              rows={4}
+              className={`${inputCls} font-mono text-[11px]`}
+              spellCheck={false}
+            />
+          </Field>
+
+          <Field label="단일 대상 (item)">
+            <textarea value={item} onChange={(e) => setItem(e.target.value)} rows={2} className={inputCls} />
+          </Field>
+          <Field label="핫소스 (hotsauce)">
+            <textarea value={hotsauce} onChange={(e) => setHotsauce(e.target.value)} rows={3} className={inputCls} />
+          </Field>
+          <Field label="베스트 카테고리 (bestCat)">
+            <textarea value={bestCat} onChange={(e) => setBestCat(e.target.value)} rows={2} className={inputCls} />
+          </Field>
+        </div>
+
+        {/* 푸터 */}
+        <div className="px-5 py-3 border-t border-slate-200 bg-slate-50 flex items-center justify-end gap-2">
+          <button
+            type="button"
+            onClick={onClose}
+            disabled={pending}
+            className="text-[13px] px-4 py-2 rounded-lg border border-slate-200 text-slate-700 hover:bg-white"
+          >
+            취소
+          </button>
+          <button
+            type="button"
+            onClick={onSave}
+            disabled={pending}
+            className="text-[13px] px-4 py-2 rounded-lg bg-slate-900 text-white hover:bg-slate-700 disabled:opacity-50"
+          >
+            {pending ? "저장 중..." : "저장"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const inputCls =
+  "w-full rounded-lg border border-slate-200 px-3 py-2 text-[13px] focus:outline-none focus:ring-2 focus:ring-violet-500/40";
+
+function Field({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) {
+  return (
+    <div>
+      <label className="block text-[11px] font-semibold text-slate-600 mb-1">
+        {label}
+        {hint && <span className="ml-2 font-normal text-slate-400">{hint}</span>}
+      </label>
+      {children}
     </div>
   );
 }
