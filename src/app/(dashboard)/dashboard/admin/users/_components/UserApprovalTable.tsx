@@ -2,6 +2,8 @@
 
 import { useMemo, useState, useTransition } from "react";
 import { toast } from "sonner";
+import Badge from "@/components/ui/Badge";
+import EmptyState from "@/components/ui/EmptyState";
 import { approveUser, rejectUser, revokeApproval } from "../_actions";
 
 export interface UserRow {
@@ -19,11 +21,11 @@ export interface UserRow {
 
 type Filter = "all" | "pending" | "approved" | "rejected";
 
-const ROLE_BADGE: Record<string, string> = {
-  owner:  "bg-violet-100 text-violet-800 border-violet-200",
-  admin:  "bg-blue-100 text-blue-800 border-blue-200",
-  member: "bg-slate-100 text-slate-700 border-slate-200",
-};
+const ROLE_TONE = {
+  owner:  "brand",
+  admin:  "info",
+  member: "neutral",
+} as const;
 
 function fmtDate(iso: string | null) {
   if (!iso) return "-";
@@ -81,8 +83,14 @@ export default function UserApprovalTable({ rows }: { rows: UserRow[] }) {
             <tbody>
               {filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="py-10 text-center text-slate-400">
-                    조건에 맞는 사용자가 없습니다.
+                  <td colSpan={5}>
+                    <EmptyState
+                      title="조건에 맞는 사용자가 없습니다"
+                      description="필터를 초기화하거나 다른 검색어를 시도해 보세요."
+                      namedIcon="users"
+                      size="sm"
+                      inline
+                    />
                   </td>
                 </tr>
               ) : (
@@ -126,11 +134,11 @@ function UserRowItem({ row }: { row: UserRow }) {
     });
   }
 
-  const status = row.isApproved
-    ? { label: "승인됨", cls: "bg-emerald-50 text-emerald-700 border-emerald-200" }
+  const status: { label: string; tone: "success" | "danger" | "warning" } = row.isApproved
+    ? { label: "승인됨", tone: "success" }
     : row.rejectedAt
-      ? { label: "거부됨", cls: "bg-rose-50 text-rose-700 border-rose-200" }
-      : { label: "대기 중", cls: "bg-amber-50 text-amber-700 border-amber-200" };
+      ? { label: "거부됨", tone: "danger" }
+      : { label: "대기 중", tone: "warning" };
 
   return (
     <tr className={`border-b border-[#f8fafc] last:border-0 hover:bg-slate-50/60 ${pending ? "opacity-50" : ""}`}>
@@ -146,17 +154,15 @@ function UserRowItem({ row }: { row: UserRow }) {
       </td>
       <td className="py-2 px-3">
         {row.role ? (
-          <span className={`inline-block px-2 py-0.5 text-[10px] font-semibold rounded border ${ROLE_BADGE[row.role]}`}>
-            {row.role}
-          </span>
+          <Badge tone={ROLE_TONE[row.role]} size="xs">
+            <span className="font-semibold">{row.role}</span>
+          </Badge>
         ) : (
           <span className="text-[10px] text-slate-400">조직 미배정</span>
         )}
       </td>
       <td className="py-2 px-3">
-        <span className={`inline-block px-2 py-0.5 text-[10px] font-semibold rounded border ${status.cls}`}>
-          {status.label}
-        </span>
+        <Badge tone={status.tone} size="sm" variant="dot">{status.label}</Badge>
       </td>
       <td className="py-2 px-3 text-[11px] text-slate-500">
         {row.isApproved && row.approvedAt && <>승인 {fmtDate(row.approvedAt)}</>}

@@ -4,10 +4,9 @@ import { useMemo, useState } from "react";
 import {
   type PopupContact,
   STAGE_ORDER,
-  STAGE_BADGE,
-  FIELD_BADGE,
-  GRADE_BADGE,
 } from "@/lib/popupContacts";
+import Badge, { FIELD_TONE, STAGE_TONE, GRADE_TONE } from "@/components/ui/Badge";
+import EmptyState from "@/components/ui/EmptyState";
 
 interface Props {
   rows: PopupContact[];
@@ -110,8 +109,14 @@ export default function PopupContactTable({ rows, importedAt, pinsByContact = {}
             <tbody>
               {filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="py-10 text-center text-slate-400">
-                    조건에 맞는 컨택 자료가 없습니다.
+                  <td colSpan={8}>
+                    <EmptyState
+                      title="조건에 맞는 컨택 자료가 없습니다"
+                      description="필터를 초기화하거나 검색어를 다시 입력해 보세요."
+                      namedIcon="search"
+                      size="sm"
+                      inline
+                    />
                   </td>
                 </tr>
               ) : (
@@ -144,27 +149,23 @@ export default function PopupContactTable({ rows, importedAt, pinsByContact = {}
                     <td className="py-2 px-3 text-slate-600">{r.company ?? "-"}</td>
                     <td className="py-2 px-3">
                       {r.field ? (
-                        <span className={`inline-block px-1.5 py-0.5 text-[10px] rounded border ${FIELD_BADGE[r.field] ?? "bg-slate-50 text-slate-700 border-slate-200"}`}>
-                          {r.field}
-                        </span>
+                        <Badge tone={FIELD_TONE[r.field] ?? "neutral"} size="xs">{r.field}</Badge>
                       ) : (
                         <span className="text-slate-300">-</span>
                       )}
                     </td>
                     <td className="py-2 px-3">
                       {r.grade ? (
-                        <span className={`inline-block px-1.5 py-0.5 text-[10px] font-semibold rounded border ${GRADE_BADGE[r.grade] ?? "bg-slate-50 text-slate-700 border-slate-200"}`}>
-                          {r.grade}
-                        </span>
+                        <Badge tone={GRADE_TONE[r.grade] ?? "neutral"} size="xs" variant={r.grade === "A" ? "soft" : "outline"}>
+                          <span className="font-semibold">{r.grade}</span>
+                        </Badge>
                       ) : (
                         <span className="text-slate-300">-</span>
                       )}
                     </td>
                     <td className="py-2 px-3">
                       {r.stage ? (
-                        <span className={`inline-block px-2 py-0.5 text-[11px] rounded-full border ${STAGE_BADGE[r.stage] ?? "bg-slate-50 text-slate-700 border-slate-200"}`}>
-                          {r.stage}
-                        </span>
+                        <Badge tone={STAGE_TONE[r.stage] ?? "neutral"} size="sm" variant="dot">{r.stage}</Badge>
                       ) : (
                         <span className="text-slate-300">-</span>
                       )}

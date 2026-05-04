@@ -10,6 +10,8 @@ import { getCalendarWeeksForOrg, buildPopupMatches } from "@/lib/calendarWeeks";
 import { getPopupContacts } from "@/lib/popupContacts";
 import { getCalendarAssignments } from "@/lib/calendarAssignments";
 import CalendarBoard from "./_components/CalendarBoard";
+import IntensityHeatmap from "./_components/IntensityHeatmap";
+import SectionCard from "@/components/ui/SectionCard";
 
 export const metadata: Metadata = { title: "52주 캘린더 — lifestyle" };
 
@@ -60,6 +62,14 @@ export default async function CalendarPage() {
               (source === "db" ? "DB 편집" : "시드")
             }
           />
+
+          <SectionCard
+            eyebrow="OVERVIEW"
+            title="연간 강도 히트맵"
+            description="48주 강도(고/중/저) 분포 — 카드의 ★ 등급도 함께 표시"
+          >
+            <IntensityHeatmap weeks={weeks} />
+          </SectionCard>
 
           <CalendarBoard
             weeks={weeks}
