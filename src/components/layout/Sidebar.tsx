@@ -49,6 +49,13 @@ function IconCalendar() {
     </svg>
   );
 }
+function IconUsers() {
+  return (
+    <svg fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+    </svg>
+  );
+}
 function IconBlueprint() {
   return (
     <svg fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
@@ -78,7 +85,11 @@ function IconChevronRight() {
   );
 }
 
-const NAV = [
+type Role = "owner" | "admin" | "member";
+interface NavItem { href: string; label: string; icon: React.ReactElement; roles?: Role[] }
+interface NavGroup { section: string; items: NavItem[] }
+
+const NAV: NavGroup[] = [
   {
     section: "개요",
     items: [
@@ -94,6 +105,12 @@ const NAV = [
       { href: "/dashboard/calendar",  label: "52주 캘린더",   icon: <IconCalendar /> },
       { href: "/dashboard/floorplans",label: "전점도면",       icon: <IconBlueprint /> },
       { href: "/dashboard/branch",    label: "상권분석",       icon: <IconMap /> },
+    ],
+  },
+  {
+    section: "관리",
+    items: [
+      { href: "/dashboard/admin/users", label: "사용자 관리", icon: <IconUsers />, roles: ["owner","admin"] },
     ],
   },
 ];
@@ -115,6 +132,7 @@ function IconMoon() {
 
 interface Props {
   userEmail: string;
+  role?: Role | null;
   onClose?: () => void;
   collapsed?: boolean;
   onToggleCollapse?: () => void;
@@ -123,7 +141,7 @@ interface Props {
 }
 
 export default function Sidebar({
-  userEmail, onClose, collapsed = false, onToggleCollapse,
+  userEmail, role = null, onClose, collapsed = false, onToggleCollapse,
   theme = "dark", onToggleTheme,
 }: Props) {
   const pathname = usePathname();
@@ -171,7 +189,13 @@ export default function Sidebar({
 
       {/* ── 네비게이션 ── */}
       <nav className="flex-1 overflow-y-auto px-2 py-3">
-        {NAV.map((group) => (
+        {NAV.map((group) => {
+          // role 제한이 있는 항목만 추리기 — 그룹이 통째로 비면 섹션 자체 숨김
+          const items = group.items.filter(
+            (it) => !it.roles || (role && it.roles.includes(role)),
+          );
+          if (items.length === 0) return null;
+          return (
           <div key={group.section} className="mb-2">
             {!collapsed && (
               <p className={`mb-1 px-2 pt-3 text-[10px] font-semibold tracking-[.1em] ${t.textMuted}`}>
@@ -179,7 +203,7 @@ export default function Sidebar({
               </p>
             )}
             {collapsed && <div className="pt-3" />}
-            {group.items.map((item) => {
+            {items.map((item) => {
               const active = isActive(item.href);
               return (
                 <Link
@@ -213,7 +237,8 @@ export default function Sidebar({
               );
             })}
           </div>
-        ))}
+          );
+        })}
       </nav>
 
       {/* ── 글로벌 노션 동기화 ── */}
