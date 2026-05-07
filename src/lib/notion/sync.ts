@@ -46,6 +46,31 @@ async function fetchAllPages(dataSourceId: string): Promise<Record<string, unkno
   return all;
 }
 
+/**
+ * 대상 테이블의 (notion_url → id) 맵을 1회 페치.
+ * 동일 notion_url에 여러 id가 있으면 created_at이 가장 빠른 1건을 정본으로 둔다
+ * (이후 update가 정본을 향하도록). DB UNIQUE 제약이 빠진 환경에서도
+ * 중복 없이 멱등 동기화하기 위한 핵심 헬퍼.
+ */
+type AdminClient = ReturnType<typeof getSupabaseAdmin>;
+
+async function loadNotionUrlMap(
+  admin: AdminClient,
+  table: "attraction_status" | "vendor_fnb" | "vendor_lease",
+): Promise<Map<string, string>> {
+  const map = new Map<string, string>();
+  const { data, error } = await admin
+    .from(table)
+    .select("id, notion_url, created_at")
+    .not("notion_url", "is", null)
+    .order("created_at", { ascending: true });
+  if (error || !data) return map;
+  for (const row of data as Array<{ id: string; notion_url: string | null }>) {
+    if (row.notion_url && !map.has(row.notion_url)) map.set(row.notion_url, row.id);
+  }
+  return map;
+}
+
 // ── 1. 입점계획 (attraction_status) ──────────────────────────
 export async function syncAttraction(): Promise<SyncResult> {
   const result: SyncResult = { table: "attraction_status", fetched: 0, upserted: 0, errors: [] };
@@ -54,10 +79,15 @@ export async function syncAttraction(): Promise<SyncResult> {
     result.fetched = pages.length;
 
     const admin = getSupabaseAdmin();
+
+    // 기존 행을 미리 로드해 notion_url → id 맵을 만든다.
+    // DB에 UNIQUE 제약이 빠져 있어도 이 맵으로 update vs insert를 분기해
+    // 멱등하게 동기화한다 (중복 방지).
+    const urlToId = await loadNotionUrlMap(admin, "attraction_status");
+
     for (const page of pages) {
       const props = (page as { properties: Record<string, unknown> }).properties;
-      const notionId = (page as { id: string }).id;
-      const url      = (page as { url: string }).url;
+      const url   = (page as { url: string }).url;
 
       const brandName = getTitle(props, "컨텐츠 브랜드");
       if (!brandName) continue;
@@ -74,14 +104,13 @@ export async function syncAttraction(): Promise<SyncResult> {
         notion_url:   url,
       };
 
-      // notion_url unique로 upsert
-      const { error } = await admin
-        .from("attraction_status")
-        .upsert(record, { onConflict: "notion_url" });
+      const existingId = url ? urlToId.get(url) : undefined;
+      const { error } = existingId
+        ? await admin.from("attraction_status").update(record).eq("id", existingId)
+        : await admin.from("attraction_status").insert(record);
+
       if (error) result.errors.push(`[${brandName}] ${error.message}`);
       else result.upserted++;
-      // notionId 변수는 향후 별도 컬럼 추가 시 사용 — 사용 표시
-      void notionId;
     }
   } catch (e) {
     result.errors.push(String(e));
@@ -99,6 +128,8 @@ export async function syncVendorFnb(): Promise<SyncResult> {
     result.fetched = pages.length;
 
     const admin = getSupabaseAdmin();
+    const urlToId = await loadNotionUrlMap(admin, "vendor_fnb");
+
     for (const page of pages) {
       const props = (page as { properties: Record<string, unknown> }).properties;
       const notionUrl = (page as { url: string }).url;
@@ -119,9 +150,11 @@ export async function syncVendorFnb(): Promise<SyncResult> {
         notion_url: notionUrl,
       };
 
-      const { error } = await admin
-        .from("vendor_fnb")
-        .upsert(record, { onConflict: "notion_url" });
+      const existingId = notionUrl ? urlToId.get(notionUrl) : undefined;
+      const { error } = existingId
+        ? await admin.from("vendor_fnb").update(record).eq("id", existingId)
+        : await admin.from("vendor_fnb").insert(record);
+
       if (error) result.errors.push(`[${name}] ${error.message}`);
       else result.upserted++;
     }
@@ -146,6 +179,8 @@ export async function syncVendorLease(): Promise<SyncResult> {
     result.fetched = pages.length;
 
     const admin = getSupabaseAdmin();
+    const urlToId = await loadNotionUrlMap(admin, "vendor_lease");
+
     for (const page of pages) {
       const props = (page as { properties: Record<string, unknown> }).properties;
       const notionUrl = (page as { url: string }).url;
@@ -167,9 +202,11 @@ export async function syncVendorLease(): Promise<SyncResult> {
         notion_url: notionUrl,
       };
 
-      const { error } = await admin
-        .from("vendor_lease")
-        .upsert(record, { onConflict: "notion_url" });
+      const existingId = notionUrl ? urlToId.get(notionUrl) : undefined;
+      const { error } = existingId
+        ? await admin.from("vendor_lease").update(record).eq("id", existingId)
+        : await admin.from("vendor_lease").insert(record);
+
       if (error) result.errors.push(`[${name}] ${error.message}`);
       else result.upserted++;
     }
