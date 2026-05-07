@@ -7,6 +7,7 @@ import {
   getTopByGrowth,
 } from "@/lib/sales/csvData";
 import { getAttractionStats } from "@/lib/attraction/queries";
+import { getVacancyResolvedCount, getVacancyRows } from "@/lib/vacancy";
 
 /** 대시보드 Summary 지표 */
 export async function getDashboardSummary(): Promise<DashboardSummary> {
@@ -44,6 +45,10 @@ export async function getDashboardSummary(): Promise<DashboardSummary> {
   // ── 입점계획 통계 (attraction_status — 사이드바 "입점계획(26년)"과 동일 소스) ──
   const attraction = await getAttractionStats();
 
+  // ── 공실해결 통계 (정적 CSV — 사이드바 "공실해결"과 동일 소스) ──
+  const vacancyResolved = getVacancyResolvedCount();
+  const vacancyTotal = getVacancyRows().length;
+
   const mrr = (mrrRes.data ?? []).reduce((s, r) => s + Number(r.amount), 0);
   const prevMrr = (prevMrrRes.data ?? []).reduce((s, r) => s + Number(r.amount), 0);
   const mrrChange = prevMrr === 0 ? 0 : Math.round(((mrr - prevMrr) / prevMrr) * 100);
@@ -79,6 +84,10 @@ export async function getDashboardSummary(): Promise<DashboardSummary> {
       total: attraction.total,
       completed: attraction.completed,
       inProgress: attraction.inProgress,
+    },
+    vacancy: {
+      resolved: vacancyResolved,
+      total: vacancyTotal,
     },
     categoryStats,
   };

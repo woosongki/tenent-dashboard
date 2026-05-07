@@ -36,6 +36,11 @@ export interface DashboardSummary {
     completed: number;
     inProgress: number;
   };
+  /** 공실해결 — 담당 카테고리 ∈ {리징, 리빙} AND 진척사항 ∈ {3단계, 4단계} */
+  vacancy: {
+    resolved: number;
+    total: number;
+  };
   categoryStats: CategoryStat[];
 }
 

@@ -44,8 +44,13 @@ Vercel 프로젝트 → Settings → Environment Variables에 추가:
 
 ### 동기화 동작
 - 노션 행을 100건씩 페이지네이션으로 모두 가져옴
-- `notion_url` 컬럼을 unique key로 upsert (존재 시 업데이트, 없으면 신규 추가)
+- 시작 시점에 대상 테이블의 `notion_url → id` 맵을 1회 로드
+- 각 노션 페이지에 대해 맵에 존재하면 UPDATE, 없으면 INSERT (앱-사이드 멱등 처리)
+- DB에도 `notion_url` partial UNIQUE INDEX(NOT NULL 한정)가 걸려 있어 이중 안전망 — `supabase/attraction.sql`, `supabase/vendor_lease.sql` 참조
 - 노션에서 삭제된 행은 Supabase에 잔존 (안전성 우선; 필요 시 수동 정리)
+
+### 기존 중복 정리
+운영 DB에 이미 중복이 쌓여 있다면 `supabase/attraction.sql`을 1회 실행. notion_url 기준으로 가장 오래된 1건만 남기고 나머지를 삭제한 뒤 partial UNIQUE INDEX를 건다 (멱등 — 여러 번 돌려도 안전).
 
 ## 5. 디버깅
 

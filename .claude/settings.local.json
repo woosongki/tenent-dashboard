@@ -30,7 +30,16 @@
       "mcp__e6432ca4-4167-433c-b19d-dd95a8593b55__notion-search",
       "mcp__e6432ca4-4167-433c-b19d-dd95a8593b55__notion-fetch",
       "Bash(npx vercel *)",
-      "mcp__Claude_Preview__preview_start"
+      "mcp__Claude_Preview__preview_start",
+      "Bash(iconv -f CP949 -t UTF-8 \"C:/Users/woo_songki/Desktop/공실4월3주.CSV\")",
+      "Read(//tmp/**)",
+      "PowerShell($src = \"C:\\\\Users\\\\woo_songki\\\\Desktop\\\\공실4월3주.CSV\"; $dst = \"C:\\\\Users\\\\woo_songki\\\\Desktop\\\\gana\\\\.claude\\\\worktrees\\\\interesting-curran-877644\\\\data\\\\vacancy_2026_w15.csv\"; $enc = [System.Text.Encoding]::GetEncoding\\(949\\); $utf8 = New-Object System.Text.UTF8Encoding $false; $bytes = [System.IO.File]::ReadAllBytes\\($src\\); $text = $enc.GetString\\($bytes\\); [System.IO.File]::WriteAllText\\($dst, $text, $utf8\\); Write-Output \"ok\")",
+      "Bash(awk -F',' 'NR>=8 {print $11}' data/vacancy_2026_w15.csv)",
+      "Bash(awk -F',' 'NR>=8 {print $12}' data/vacancy_2026_w15.csv)",
+      "Bash(node scripts/import-vacancy.mjs)",
+      "Bash(npx eslint *)",
+      "Bash(ps -p)",
+      "Bash(git status *)"
     ]
   }
 }
