@@ -6,8 +6,9 @@ import TopBar from "@/components/layout/TopBar";
 import PageHeader from "@/components/ui/PageHeader";
 import AppFooter from "@/components/ui/AppFooter";
 import { SPACE } from "@/lib/tokens";
-import { getAllStores, BRAND_BADGE, type StoreBrand } from "@/lib/stores";
-import { getTradeAreaIndex, TRADE_AREA_BADGE } from "@/lib/tradeArea";
+import { getAllStores, type StoreBrand } from "@/lib/stores";
+import { getTradeAreaIndex } from "@/lib/tradeArea";
+import BranchBrowser from "./_components/BranchBrowser";
 
 export const metadata: Metadata = { title: "상권분석 — lifestyle" };
 
@@ -30,9 +31,7 @@ export default async function BranchPage({
 
   // 상권 분석 인덱스 (storeId → 라벨/카운트)
   const taIndex = getTradeAreaIndex();
-  const taMap = new Map(
-    (taIndex?.stores ?? []).map((t) => [t.id, t]),
-  );
+  const taItems = taIndex?.stores ?? [];
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
@@ -65,70 +64,8 @@ export default async function BranchPage({
           })}
         </nav>
 
-        {/* 점포 그리드 */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-          {stores.map((s) => {
-            const ta = taMap.get(s.id);
-            return (
-              <Link
-                key={s.id}
-                href={`/dashboard/branch/${s.id}`}
-                className="group rounded-xl border border-[#e8ecf0] bg-white p-4 shadow-[0_1px_3px_rgba(0,0,0,.04)] hover:border-slate-300 hover:shadow-[0_2px_8px_rgba(0,0,0,.06)] transition-all"
-              >
-                <div className="flex items-start justify-between gap-2 mb-2">
-                  <div className="flex items-center gap-1.5 flex-wrap">
-                    <span className={`inline-block px-2 py-0.5 text-[10px] font-medium rounded border ${BRAND_BADGE[s.brand]}`}>
-                      {s.brand}
-                    </span>
-                    {s.hasKimsclub && (
-                      <span className="text-[10px] text-slate-500 px-1.5 py-0.5 rounded border border-slate-200">
-                        킴스클럽
-                      </span>
-                    )}
-                  </div>
-                  <svg
-                    className="h-3.5 w-3.5 shrink-0 text-slate-300 group-hover:text-slate-600 group-hover:translate-x-0.5 transition-all"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth={2.5}
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                  </svg>
-                </div>
-                <h3 className="font-semibold text-[14px] text-slate-900 group-hover:text-slate-700">
-                  {s.name}
-                </h3>
-                <p className="mt-1 text-[12px] text-slate-500 leading-relaxed">
-                  {s.region1} {s.region2}
-                  {s.region3 ? ` ${s.region3}` : ""}
-                </p>
-
-                {ta ? (
-                  <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
-                    <span
-                      className={`inline-block px-1.5 py-0.5 text-[10px] font-medium rounded border ${TRADE_AREA_BADGE[ta.tradeAreaType] ?? TRADE_AREA_BADGE["복합 상권"]}`}
-                    >
-                      {ta.tradeAreaType}
-                    </span>
-                    <span className="text-[10px] text-slate-500 tabular-nums">
-                      {ta.total.toLocaleString()}개 점포
-                    </span>
-                    {ta.competitorCount > 0 && (
-                      <span className="text-[10px] text-rose-600 font-medium">
-                        ⚠ 경쟁점 {ta.competitorCount}
-                      </span>
-                    )}
-                  </div>
-                ) : (
-                  <p className="mt-2 text-[10px] text-slate-400">
-                    상권 데이터 준비 중
-                  </p>
-                )}
-              </Link>
-            );
-          })}
-        </div>
+        {/* 검색 + 점포 그리드 (클라이언트 인터랙션) */}
+        <BranchBrowser stores={stores} taItems={taItems} />
 
           <AppFooter />
         </div>
