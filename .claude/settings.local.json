@@ -39,7 +39,8 @@
       "Bash(node scripts/import-vacancy.mjs)",
       "Bash(npx eslint *)",
       "Bash(ps -p)",
-      "Bash(git status *)"
+      "Bash(git status *)",
+      "Bash(SUPABASE_SERVICE_ROLE_KEY=dummy NEXT_PUBLIC_SUPABASE_URL=https://dummy.supabase.co NEXT_PUBLIC_SUPABASE_ANON_KEY=dummy npx next build)"
     ]
   }
 }

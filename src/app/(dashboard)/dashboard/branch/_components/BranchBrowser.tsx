@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import type { Store } from "@/lib/stores";
 import { BRAND_BADGE } from "@/lib/stores";
-import { TRADE_AREA_BADGE, type TradeAreaIndexItem } from "@/lib/tradeArea";
+import { TRADE_AREA_BADGE, type TradeAreaIndexItem } from "@/lib/tradeAreaTypes";
 
 interface Props {
   stores: Store[];
