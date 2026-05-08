@@ -23,9 +23,9 @@ export interface DashboardSummary {
   pendingInvitations: number;
   mrr: number;
   mrrChange: number;
-  /** 매출액 Top 5 (CSV 변환본) */
-  topByRevenue: BrandRecord[];
-  /** 매출 성장률 Top 5 (CSV 변환본) */
+  /** 매출액 성장(증가액) Top 5 — 전년 동기 대비 +원 (CSV 변환본) */
+  topByGrowthAmount: BrandRecord[];
+  /** 매출 성장률 Top 5 — 전년 동기 대비 +% (CSV 변환본) */
   topByGrowth: BrandRecord[];
   /** 사이드바 "컨텐츠 풀" 페이지의 3개 탭(라이프스타일·F&B·팝업) 합계 */
   contentPoolCount: number;

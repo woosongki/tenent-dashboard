@@ -17,6 +17,8 @@ interface SyncResult {
   table: string;
   fetched: number;
   upserted: number;
+  /** 이번 sync에서 자가치유로 삭제한 중복 행 수 */
+  deduped: number;
   errors: string[];
 }
 
@@ -46,44 +48,105 @@ async function fetchAllPages(dataSourceId: string): Promise<Record<string, unkno
   return all;
 }
 
-/**
- * 대상 테이블의 (notion_url → id) 맵을 1회 페치.
- * 동일 notion_url에 여러 id가 있으면 created_at이 가장 빠른 1건을 정본으로 둔다
- * (이후 update가 정본을 향하도록). DB UNIQUE 제약이 빠진 환경에서도
- * 중복 없이 멱등 동기화하기 위한 핵심 헬퍼.
- */
 type AdminClient = ReturnType<typeof getSupabaseAdmin>;
+type SyncTable = "attraction_status" | "vendor_fnb" | "vendor_lease";
 
-async function loadNotionUrlMap(
+interface ExistingRow {
+  id: string;
+  notion_url: string | null;
+  created_at: string;
+}
+
+/**
+ * 대상 테이블의 모든 행을 chunk 페이지네이션으로 로드.
+ * PostgREST 기본 cap이 1000이라 한 번의 select 만으로는 1000을 초과한 행을
+ * 보지 못한다. 중복이 누적된 환경에서는 이 cap에 걸려 일부 기존 행이
+ * map에 빠지고, 같은 notion_url이 또 INSERT되어 중복이 더 쌓이는
+ * 악순환이 발생한다 — 반드시 페이지네이션 필요.
+ */
+async function loadAllRows(
   admin: AdminClient,
-  table: "attraction_status" | "vendor_fnb" | "vendor_lease",
-): Promise<Map<string, string>> {
+  table: SyncTable,
+): Promise<ExistingRow[]> {
+  const all: ExistingRow[] = [];
+  const PAGE = 1000;
+  for (let from = 0; ; from += PAGE) {
+    const { data, error } = await admin
+      .from(table)
+      .select("id, notion_url, created_at")
+      .order("created_at", { ascending: true })
+      .order("id",         { ascending: true })
+      .range(from, from + PAGE - 1);
+    if (error || !data || data.length === 0) break;
+    all.push(...(data as ExistingRow[]));
+    if (data.length < PAGE) break;
+  }
+  return all;
+}
+
+/**
+ * notion_url 별로 created_at 가장 빠른 1건만 남기고 나머지를 삭제.
+ * 이전 버전 sync에서 누적된 중복이 있어도 이 단계가 자가치유한다.
+ * DB에 UNIQUE 제약이 없어도, 매 sync마다 0건의 중복으로 정리됨.
+ */
+async function dedupeByNotionUrl(
+  admin: AdminClient,
+  table: SyncTable,
+  rows: ExistingRow[],
+): Promise<{ deleted: number; errors: string[] }> {
+  const errors: string[] = [];
+  // notion_url 별 그룹화 (null 제외)
+  const groups = new Map<string, ExistingRow[]>();
+  for (const r of rows) {
+    if (!r.notion_url) continue;
+    const arr = groups.get(r.notion_url) ?? [];
+    arr.push(r);
+    groups.set(r.notion_url, arr);
+  }
+  const idsToDelete: string[] = [];
+  for (const arr of groups.values()) {
+    if (arr.length < 2) continue;
+    // created_at asc + id asc 로 정렬되어 있다고 가정 (loadAllRows의 order)
+    // 가장 오래된 1건 유지, 나머지 삭제 대상.
+    for (let i = 1; i < arr.length; i++) idsToDelete.push(arr[i].id);
+  }
+  if (idsToDelete.length === 0) return { deleted: 0, errors };
+  // chunk 단위로 삭제 (URL 길이/파라미터 한도 회피)
+  const CHUNK = 200;
+  for (let i = 0; i < idsToDelete.length; i += CHUNK) {
+    const slice = idsToDelete.slice(i, i + CHUNK);
+    const { error } = await admin.from(table).delete().in("id", slice);
+    if (error) errors.push(`dedupe ${table}: ${error.message}`);
+  }
+  return { deleted: idsToDelete.length, errors };
+}
+
+/** notion_url → 정본 id 맵 (가장 오래된 1건). dedupe 후의 rows로 호출할 것. */
+function buildUrlToIdMap(rows: ExistingRow[]): Map<string, string> {
   const map = new Map<string, string>();
-  const { data, error } = await admin
-    .from(table)
-    .select("id, notion_url, created_at")
-    .not("notion_url", "is", null)
-    .order("created_at", { ascending: true });
-  if (error || !data) return map;
-  for (const row of data as Array<{ id: string; notion_url: string | null }>) {
-    if (row.notion_url && !map.has(row.notion_url)) map.set(row.notion_url, row.id);
+  for (const r of rows) {
+    if (r.notion_url && !map.has(r.notion_url)) map.set(r.notion_url, r.id);
   }
   return map;
 }
 
 // ── 1. 입점계획 (attraction_status) ──────────────────────────
 export async function syncAttraction(): Promise<SyncResult> {
-  const result: SyncResult = { table: "attraction_status", fetched: 0, upserted: 0, errors: [] };
+  const result: SyncResult = { table: "attraction_status", fetched: 0, upserted: 0, deduped: 0, errors: [] };
   try {
     const pages = await fetchAllPages(NOTION_DATA_SOURCE_IDS.attraction);
     result.fetched = pages.length;
 
     const admin = getSupabaseAdmin();
 
-    // 기존 행을 미리 로드해 notion_url → id 맵을 만든다.
-    // DB에 UNIQUE 제약이 빠져 있어도 이 맵으로 update vs insert를 분기해
-    // 멱등하게 동기화한다 (중복 방지).
-    const urlToId = await loadNotionUrlMap(admin, "attraction_status");
+    // 1) 기존 모든 행을 페이지네이션으로 로드 (PostgREST 1000 cap 회피).
+    // 2) notion_url 중복 자가치유 (가장 오래된 1건만 유지).
+    // 3) 정리된 결과로 url → id 맵 작성. 이후 update / insert 분기.
+    const existing = await loadAllRows(admin, "attraction_status");
+    const dedupe = await dedupeByNotionUrl(admin, "attraction_status", existing);
+    result.deduped = dedupe.deleted;
+    result.errors.push(...dedupe.errors);
+    const urlToId = buildUrlToIdMap(existing);
 
     for (const page of pages) {
       const props = (page as { properties: Record<string, unknown> }).properties;
@@ -122,13 +185,17 @@ export async function syncAttraction(): Promise<SyncResult> {
 // (기존 상가 시세 marketPrice 동기화는 제거됨 — 41개 점포 마스터 + k-skill-proxy 실거래가로 전환)
 
 export async function syncVendorFnb(): Promise<SyncResult> {
-  const result: SyncResult = { table: "vendor_fnb", fetched: 0, upserted: 0, errors: [] };
+  const result: SyncResult = { table: "vendor_fnb", fetched: 0, upserted: 0, deduped: 0, errors: [] };
   try {
     const pages = await fetchAllPages(NOTION_DATA_SOURCE_IDS.vendorFnb);
     result.fetched = pages.length;
 
     const admin = getSupabaseAdmin();
-    const urlToId = await loadNotionUrlMap(admin, "vendor_fnb");
+    const existing = await loadAllRows(admin, "vendor_fnb");
+    const dedupe = await dedupeByNotionUrl(admin, "vendor_fnb", existing);
+    result.deduped = dedupe.deleted;
+    result.errors.push(...dedupe.errors);
+    const urlToId = buildUrlToIdMap(existing);
 
     for (const page of pages) {
       const props = (page as { properties: Record<string, unknown> }).properties;
@@ -166,7 +233,7 @@ export async function syncVendorFnb(): Promise<SyncResult> {
 
 // ── 3. 업체리스트 일반임대 (vendor_lease) ──────────────────
 export async function syncVendorLease(): Promise<SyncResult> {
-  const result: SyncResult = { table: "vendor_lease", fetched: 0, upserted: 0, errors: [] };
+  const result: SyncResult = { table: "vendor_lease", fetched: 0, upserted: 0, deduped: 0, errors: [] };
 
   const dataSourceId = NOTION_DATA_SOURCE_IDS.vendorLease;
   if (!dataSourceId) {
@@ -179,7 +246,11 @@ export async function syncVendorLease(): Promise<SyncResult> {
     result.fetched = pages.length;
 
     const admin = getSupabaseAdmin();
-    const urlToId = await loadNotionUrlMap(admin, "vendor_lease");
+    const existing = await loadAllRows(admin, "vendor_lease");
+    const dedupe = await dedupeByNotionUrl(admin, "vendor_lease", existing);
+    result.deduped = dedupe.deleted;
+    result.errors.push(...dedupe.errors);
+    const urlToId = buildUrlToIdMap(existing);
 
     for (const page of pages) {
       const props = (page as { properties: Record<string, unknown> }).properties;

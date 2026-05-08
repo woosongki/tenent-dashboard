@@ -43,14 +43,18 @@ Vercel 프로젝트 → Settings → Environment Variables에 추가:
 - 로그인 사용자만 호출 가능
 
 ### 동기화 동작
-- 노션 행을 100건씩 페이지네이션으로 모두 가져옴
-- 시작 시점에 대상 테이블의 `notion_url → id` 맵을 1회 로드
-- 각 노션 페이지에 대해 맵에 존재하면 UPDATE, 없으면 INSERT (앱-사이드 멱등 처리)
-- DB에도 `notion_url` partial UNIQUE INDEX(NOT NULL 한정)가 걸려 있어 이중 안전망 — `supabase/attraction.sql`, `supabase/vendor_lease.sql` 참조
-- 노션에서 삭제된 행은 Supabase에 잔존 (안전성 우선; 필요 시 수동 정리)
+1. 노션 행을 100건씩 페이지네이션으로 모두 가져옴.
+2. Supabase 대상 테이블의 **모든 행을 1000건 chunk 페이지네이션으로 로드** — PostgREST 기본 1000 cap을 우회.
+3. **자가치유 dedupe**: 같은 `notion_url` 그룹에서 `created_at` 가장 빠른 1건만 남기고 나머지 삭제. 이전 sync에서 누적된 중복도 다음 실행 시 0건이 됨.
+4. 정리된 결과로 `notion_url → id` 맵 작성. 각 노션 페이지에 대해 맵에 있으면 `UPDATE`, 없으면 `INSERT`.
+5. DB에 `notion_url` partial UNIQUE INDEX(NOT NULL 한정)가 걸려 있으면 이중 안전망. — `supabase/attraction.sql`, `supabase/vendor_lease.sql` 참조.
+6. 노션에서 삭제된 행은 Supabase에 잔존 (안전성 우선; 필요 시 수동 정리).
+
+응답에 각 테이블별 `deduped`(이번 실행에서 삭제한 중복 수)가 포함되어 모니터링 가능.
 
 ### 기존 중복 정리
-운영 DB에 이미 중복이 쌓여 있다면 `supabase/attraction.sql`을 1회 실행. notion_url 기준으로 가장 오래된 1건만 남기고 나머지를 삭제한 뒤 partial UNIQUE INDEX를 건다 (멱등 — 여러 번 돌려도 안전).
+- **자동**: 다음 sync 실행 시 자가치유 단계가 처리.
+- **수동(권장 1회)**: `supabase/attraction.sql`을 Supabase SQL Editor에서 실행 — DB 레벨에서 한 번에 정리하고 partial UNIQUE INDEX를 건다 (멱등).
 
 ## 5. 디버깅
 
