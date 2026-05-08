@@ -54,8 +54,8 @@ export default function MonthlyComparisonChart({ monthly }: Props) {
   return (
     <div className="rounded-xl border border-[#e8ecf0] bg-white p-5 shadow-[0_1px_3px_rgba(0,0,0,.04)]">
       <h3 className="text-[14px] font-bold text-slate-800 mb-3">월별 매출 비교 (작년 vs 올해)</h3>
-      <div className="h-[280px]">
-        <ResponsiveContainer width="100%" height="100%">
+      <div className="h-[280px] w-full min-w-0">
+        <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
           <BarChart data={data} margin={{ top: 10, right: 8, bottom: 0, left: 0 }}>
             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
             <XAxis dataKey="label" tick={{ fontSize: 11, fill: "#64748b" }} axisLine={false} tickLine={false} />

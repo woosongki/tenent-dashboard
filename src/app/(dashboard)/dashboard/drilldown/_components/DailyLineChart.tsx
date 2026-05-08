@@ -81,8 +81,8 @@ export default function DailyLineChart({ data }: Props) {
       </div>
 
       {/* 반응형 높이: 모바일 180px → 태블릿 220px → 데스크탑 260px */}
-      <div className="h-[180px] sm:h-[220px] lg:h-[260px]">
-        <ResponsiveContainer width="100%" height="100%">
+      <div className="h-[180px] w-full min-w-0 sm:h-[220px] lg:h-[260px]">
+        <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
           <LineChart data={chartData} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" />
             <XAxis
