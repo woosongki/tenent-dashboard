@@ -12,6 +12,12 @@ import {
   formatWon,
   estimateMonthlyByPyeong,
 } from "@/lib/commercialRent";
+import {
+  computeLocalRent,
+  formatRent,
+  formatPricePerM2,
+  CAP_RATE_PERCENT,
+} from "@/lib/localRent";
 import KakaoStoreMap from "@/components/maps/KakaoStoreMap";
 
 // 첫 방문 시 동적 렌더 (3개 월 외부 API 호출이라 빌드 시 prerender 비효율)
@@ -47,6 +53,12 @@ export default async function StoreDetailPage({
   const cohort = getCohortStat(store.id);
   const rent = getCommercialRent(store.lawdCd);
   const rentSource = getRentSource();
+  // 1km 인근 (동일 행정동 우선) 추정 임대료
+  const localRent = computeLocalRent({
+    trades: trade.items,
+    storeRegion3: store.region3,
+    storeRegion2: store.region2,
+  });
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
@@ -145,6 +157,73 @@ export default async function StoreDetailPage({
               </div>
             )}
           </Section>
+
+          {/* 1차상권(동일 행정동) 추정 임대료 — 매매 실거래가 환산 */}
+          {localRent.sampleCount > 0 && (
+            <Section
+              title={`1차상권 추정 임대료 (${localRent.scope === "동" ? "동일 행정동" : "시군구 평균"})`}
+              className="lg:col-span-3"
+            >
+              <div className="flex items-center gap-2 mb-4 flex-wrap">
+                <span className="inline-block border-[1.5px] border-[#0a0a0a] bg-yellow-300 px-2 py-0 text-[10px] font-extrabold uppercase tracking-wider text-[#0a0a0a]">
+                  {localRent.scopeLabel}
+                </span>
+                <span className="inline-block border-[1.5px] border-[#0a0a0a] bg-[#F1ECDB] px-2 py-0 text-[10px] font-extrabold uppercase tracking-wider text-[#0a0a0a]">
+                  표본 {localRent.sampleCount}건
+                </span>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-[#0a0a0a]/55">
+                  자본환원율 {CAP_RATE_PERCENT}% 가정 · 추정값
+                </span>
+              </div>
+
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <Stat
+                  label="중위 매매가/㎡"
+                  value={formatPricePerM2(localRent.medianPricePerM2_10k)}
+                />
+                <Stat
+                  label="추정 월임대료/㎡"
+                  value={localRent.estimatedMonthlyRentPerM2 > 0
+                    ? `${localRent.estimatedMonthlyRentPerM2.toLocaleString()}원`
+                    : "-"}
+                />
+                {localRent.estimatedMonthlyRentByPyeong.slice(0, 2).map((p) => (
+                  <Stat
+                    key={p.pyeong}
+                    label={`${p.pyeong}평 월세 추정`}
+                    value={formatRent(p.monthlyRent)}
+                  />
+                ))}
+              </div>
+
+              {localRent.estimatedMonthlyRentByPyeong.length > 0 && (
+                <div className="mt-4 grid grid-cols-3 gap-3">
+                  {localRent.estimatedMonthlyRentByPyeong.map((p) => (
+                    <div
+                      key={p.pyeong}
+                      className="border-[2px] border-[#0a0a0a] bg-white px-4 py-3 shadow-[3px_3px_0_0_#0a0a0a]"
+                    >
+                      <p className="text-[10px] font-extrabold uppercase tracking-[.14em] text-[#0a0a0a]/65">
+                        {p.pyeong}평 ({Math.round(p.areaM2)}㎡)
+                      </p>
+                      <p className="mt-1.5 font-mono text-[18px] font-extrabold tabular-nums text-[#0a0a0a]">
+                        {formatRent(p.monthlyRent)}
+                        <span className="ml-1 text-[10px] font-bold text-[#0a0a0a]/50 font-sans">/월</span>
+                      </p>
+                      <p className="font-mono text-[10px] font-bold tabular-nums text-[#0a0a0a]/55">
+                        연 {formatRent(p.monthlyRent * 12)}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <p className="mt-4 text-[10px] font-bold uppercase tracking-wider text-[#0a0a0a]/55 leading-relaxed">
+                ※ 국토부 상업용 매매 실거래가를 자본환원율(연 {CAP_RATE_PERCENT}%)로 환산한 추정치입니다.
+                실제 시장 임대료와 차이가 있을 수 있으며, 매매 거래가 있는 매물 기준 통계입니다.
+              </p>
+            </Section>
+          )}
 
           {/* 권역 평균 임대료 (한국부동산원) */}
           <Section
