@@ -53,7 +53,7 @@ export default async function VacancyPage() {
           />
 
           {/* ── 상단 KPI ── */}
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <div className="grid grid-cols-2 gap-5 sm:grid-cols-4">
             <Stat
               label="공실 해결 (KPI)"
               value={resolvedCount}
@@ -61,7 +61,7 @@ export default async function VacancyPage() {
               accent="violet"
             />
             <Stat
-              label="전체 공실 건수"
+              label="전체 공실"
               value={rows.length}
               caption={meta.source}
               accent="slate"
@@ -73,7 +73,7 @@ export default async function VacancyPage() {
               accent="emerald"
             />
             <Stat
-              label="리징/리빙"
+              label="리징 / 리빙"
               value={leasingCount + livingCount}
               caption={`리징 ${leasingCount} · 리빙 ${livingCount}`}
               accent="rose"
@@ -90,18 +90,15 @@ export default async function VacancyPage() {
   );
 }
 
-const ACCENT_BAR: Record<string, string> = {
-  violet:  "bg-gradient-to-r from-violet-600 to-violet-400",
-  emerald: "bg-gradient-to-r from-emerald-600 to-emerald-400",
-  rose:    "bg-gradient-to-r from-rose-500 to-rose-300",
-  slate:   "bg-gradient-to-r from-slate-400 to-slate-300",
+const ACCENT_BG: Record<string, string> = {
+  violet:  "bg-violet-500 text-white",
+  emerald: "bg-emerald-400 text-emerald-950",
+  rose:    "bg-rose-500 text-white",
+  slate:   "bg-[#F1ECDB] text-[#0a0a0a]",
 };
 
 function Stat({
-  label,
-  value,
-  caption,
-  accent,
+  label, value, caption, accent,
 }: {
   label: string;
   value: number;
@@ -109,14 +106,15 @@ function Stat({
   accent: "violet" | "emerald" | "rose" | "slate";
 }) {
   return (
-    <div className="relative overflow-hidden  border border-slate-200/70 bg-white p-5 shadow-[0_1px_2px_rgba(15,23,42,.04)]">
-      <span className={`absolute inset-x-0 top-0 h-[3px] ${ACCENT_BAR[accent]}`} />
-      <p className="text-[11px] font-semibold uppercase tracking-[.1em] text-slate-500">{label}</p>
-      <p className="mt-2 text-[32px] font-bold tabular-nums leading-none text-slate-900">
+    <div className="brutal bg-white p-5">
+      <div className={`flex items-center justify-between px-3 py-2 border-[2px] border-[#0a0a0a] ${ACCENT_BG[accent]}`}>
+        <span className="text-[10px] font-extrabold uppercase tracking-[.16em]">{label}</span>
+      </div>
+      <p className="mt-4 font-mono text-[40px] font-extrabold leading-none tabular-nums tracking-tight text-[#0a0a0a]">
         {value.toLocaleString()}
-        <span className="ml-1 text-[14px] font-semibold text-slate-400">건</span>
+        <span className="ml-1 text-[14px] font-extrabold text-[#0a0a0a]/55 font-sans">건</span>
       </p>
-      {caption && <p className="mt-1.5 text-[11px] text-slate-500">{caption}</p>}
+      {caption && <p className="mt-2 text-[11px] font-medium text-[#0a0a0a]/65 leading-tight">{caption}</p>}
     </div>
   );
 }

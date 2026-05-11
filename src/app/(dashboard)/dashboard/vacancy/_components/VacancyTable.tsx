@@ -3,17 +3,29 @@
 import { useMemo, useState } from "react";
 import {
   type VacancyRow,
-  STAGE_BADGE,
-  CATEGORY_BADGE,
   isResolvedRow,
 } from "@/lib/vacancy";
-import { TOKENS } from "@/lib/tokens";
 
 interface Props {
   rows: VacancyRow[];
 }
 
 const STAGES = ["전체", "1단계", "2단계", "3단계", "4단계"] as const;
+
+// 진척 단계 brutalist 컬러
+const STAGE_BG: Record<string, string> = {
+  "1단계": "bg-[#F1ECDB] text-[#0a0a0a]",
+  "2단계": "bg-cyan-400 text-cyan-950",
+  "3단계": "bg-yellow-300 text-[#0a0a0a]",
+  "4단계": "bg-emerald-400 text-emerald-950",
+};
+
+// 카테고리 brutalist
+const CAT_BG: Record<string, string> = {
+  "리징": "bg-violet-500 text-white",
+  "리빙": "bg-fuchsia-400 text-white",
+  "기타": "bg-[#F1ECDB] text-[#0a0a0a]",
+};
 
 export default function VacancyTable({ rows }: Props) {
   const [stage, setStage] = useState<(typeof STAGES)[number]>("전체");
@@ -59,10 +71,10 @@ export default function VacancyTable({ rows }: Props) {
               key={s}
               type="button"
               onClick={() => setStage(s)}
-              className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
+              className={`text-[11px] font-extrabold uppercase tracking-wider px-3 py-1.5 border-[2px] border-[#0a0a0a] transition-all ${
                 stage === s
-                  ? "bg-slate-900 text-white"
-                  : "border border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
+                  ? "bg-[#0a0a0a] text-white shadow-[2px_2px_0_0_#0a0a0a]"
+                  : "bg-white text-[#0a0a0a] hover:bg-yellow-300"
               }`}
             >
               {s}
@@ -73,23 +85,27 @@ export default function VacancyTable({ rows }: Props) {
         <select
           value={category}
           onChange={(e) => setCategory(e.target.value)}
-          className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-700 focus:border-violet-400 focus:outline-none focus:ring-2 focus:ring-violet-100"
+          className="text-[11px] font-extrabold uppercase tracking-wider px-3 py-1.5 border-[2px] border-[#0a0a0a] bg-white text-[#0a0a0a] shadow-[2px_2px_0_0_#0a0a0a] focus:outline-none focus:translate-x-[-1px] focus:translate-y-[-1px] focus:shadow-[3px_3px_0_0_#0a0a0a] transition-all"
         >
           {categories.map((c) => (
             <option key={c} value={c}>
-              담당 카테고리: {c}
+              담당: {c}
             </option>
           ))}
         </select>
 
-        <label className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-violet-200 bg-violet-50/60 px-3 py-1 text-xs font-medium text-violet-700 hover:bg-violet-50">
+        <label className={`inline-flex cursor-pointer items-center gap-1.5 text-[11px] font-extrabold uppercase tracking-wider px-3 py-1.5 border-[2px] border-[#0a0a0a] transition-all ${
+          resolvedOnly
+            ? "bg-violet-500 text-white shadow-[2px_2px_0_0_#0a0a0a]"
+            : "bg-white text-[#0a0a0a] hover:bg-yellow-300"
+        }`}>
           <input
             type="checkbox"
             checked={resolvedOnly}
             onChange={(e) => setResolvedOnly(e.target.checked)}
             className="h-3.5 w-3.5 accent-violet-600"
           />
-          공실해결 KPI만 (리징·리빙 × 3·4단계)
+          KPI만 (리징·리빙 × 3·4단계)
         </label>
 
         <div className="ml-auto">
@@ -98,112 +114,113 @@ export default function VacancyTable({ rows }: Props) {
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder="지점·브랜드·메모 검색"
-            className="w-64 rounded-lg border border-slate-200 px-3 py-1.5 text-xs placeholder-slate-300 focus:border-violet-400 focus:outline-none focus:ring-2 focus:ring-violet-100"
+            className="h-9 w-64 border-[2px] border-[#0a0a0a] bg-white px-3 text-[12px] font-medium placeholder:text-[#0a0a0a]/40 shadow-[2px_2px_0_0_#0a0a0a] focus:outline-none focus:translate-x-[-1px] focus:translate-y-[-1px] focus:shadow-[3px_3px_0_0_#0a0a0a] transition-all"
           />
         </div>
       </div>
 
-      <p className="text-[11px] text-slate-400">
-        총 <span className="font-semibold text-slate-700 tabular-nums">{filtered.length.toLocaleString()}</span>건
+      <p className="text-[11px] font-bold uppercase tracking-wider text-[#0a0a0a]/65">
+        총 <span className="font-mono font-extrabold text-[#0a0a0a]">{filtered.length.toLocaleString()}</span>건
         {filtered.length !== rows.length && (
-          <> · 전체 {rows.length.toLocaleString()}건 중 필터 적용</>
+          <> · 전체 <span className="font-mono">{rows.length.toLocaleString()}</span>건 중 필터 적용</>
         )}
       </p>
 
       {/* ── 표 ── */}
-      <div className="overflow-hidden  border border-slate-200 bg-white">
+      <div className="overflow-hidden brutal bg-white">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
-            <thead className="border-b border-slate-200 bg-slate-50/70">
+            <thead className="border-b-[2px] border-[#0a0a0a] bg-[#F1ECDB]">
               <tr>
-                <th className={TOKENS.th}>지점</th>
-                <th className={TOKENS.th}>기존 브랜드</th>
-                <th className={TOKENS.th}>대안 브랜드</th>
-                <th className={`${TOKENS.th} text-right`}>면적(PY)</th>
-                <th className={TOKENS.th}>담당 카테고리</th>
-                <th className={TOKENS.th}>진척사항</th>
-                <th className={TOKENS.th}>MD 의견</th>
+                <TH>지점</TH>
+                <TH>기존 브랜드</TH>
+                <TH>대안 브랜드</TH>
+                <TH align="right">면적(PY)</TH>
+                <TH>담당 카테고리</TH>
+                <TH>진척사항</TH>
+                <TH>MD 의견</TH>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody>
               {filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-4 py-12 text-center text-xs text-slate-400">
-                    조건에 맞는 행이 없습니다.
+                  <td colSpan={7} className="px-4 py-12 text-center text-[12px] font-bold uppercase tracking-wider text-[#0a0a0a]/40">
+                    조건에 맞는 행이 없습니다
                   </td>
                 </tr>
               ) : (
                 filtered.map((r, i) => {
                   const resolved = isResolvedRow(r);
+                  const zebra = i % 2 === 1 ? "bg-[#FAF7EC]/40" : "bg-white";
                   return (
                     <tr
                       key={`${r.branch}-${r.floor ?? ""}-${r.currentBrand ?? ""}-${i}`}
-                      className={`transition-colors hover:bg-slate-50 ${
-                        resolved ? "bg-violet-50/30" : ""
+                      className={`border-b border-[#0a0a0a]/10 transition-colors hover:bg-yellow-100 ${
+                        resolved ? "bg-violet-50/40" : zebra
                       }`}
                     >
-                      <td className="whitespace-nowrap px-4 py-3 text-slate-700">
-                        <div className="font-medium text-slate-800">{r.branch}</div>
+                      <td className="whitespace-nowrap px-4 py-3">
+                        <div className="font-extrabold text-[#0a0a0a]">{r.branch}</div>
                         {r.floor && (
-                          <div className="text-[11px] text-slate-400">{r.floor}</div>
+                          <div className="text-[10px] font-bold uppercase tracking-wider text-[#0a0a0a]/55">{r.floor}</div>
                         )}
                       </td>
-                      <td className="whitespace-nowrap px-4 py-3 text-slate-700">
-                        {r.currentBrand ?? <span className="text-slate-300">—</span>}
+                      <td className="whitespace-nowrap px-4 py-3 font-medium text-[#0a0a0a]/80">
+                        {r.currentBrand ?? <span className="text-[#0a0a0a]/25">—</span>}
                       </td>
-                      <td className="px-4 py-3 text-slate-700">
+                      <td className="px-4 py-3">
                         {r.altBrands.length === 0 ? (
-                          <span className="text-slate-300">—</span>
+                          <span className="text-[#0a0a0a]/25">—</span>
                         ) : (
-                          <div className="flex flex-wrap gap-1">
+                          <div className="flex flex-wrap gap-1.5">
                             {r.altBrands.map((b, idx) => (
                               <span
                                 key={`${b}-${idx}`}
-                                className="rounded-md bg-slate-100 px-2 py-0.5 text-[11px] text-slate-700"
+                                className="inline-flex items-center gap-1 border-[1.5px] border-[#0a0a0a] bg-white px-1.5 py-0 text-[11px] font-bold text-[#0a0a0a]"
                               >
-                                {idx === 0 ? "1안 " : "2안 "}
+                                <span className="font-mono text-[9px] font-extrabold text-[#0a0a0a]/55">{idx === 0 ? "1안" : "2안"}</span>
                                 {b}
                               </span>
                             ))}
                           </div>
                         )}
                       </td>
-                      <td className="whitespace-nowrap px-4 py-3 text-right tabular-nums text-slate-700">
-                        {r.areaPy != null ? r.areaPy.toFixed(1) : <span className="text-slate-300">—</span>}
+                      <td className="whitespace-nowrap px-4 py-3 text-right font-mono tabular-nums font-extrabold text-[#0a0a0a]">
+                        {r.areaPy != null ? r.areaPy.toFixed(1) : <span className="text-[#0a0a0a]/25">—</span>}
                       </td>
                       <td className="whitespace-nowrap px-4 py-3">
                         {r.category ? (
                           <span
-                            className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium ${
-                              CATEGORY_BADGE[r.category] ?? CATEGORY_BADGE["기타"]
+                            className={`inline-block border-[1.5px] border-[#0a0a0a] px-1.5 py-0 text-[10px] font-extrabold uppercase tracking-wider ${
+                              CAT_BG[r.category] ?? CAT_BG["기타"]
                             }`}
                           >
                             {r.category}
                           </span>
                         ) : (
-                          <span className="text-slate-300">—</span>
+                          <span className="text-[#0a0a0a]/25">—</span>
                         )}
                       </td>
                       <td className="whitespace-nowrap px-4 py-3">
                         {r.stage ? (
                           <span
-                            className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium ${
-                              STAGE_BADGE[r.stage] ?? "bg-slate-50 text-slate-500 border-slate-200"
+                            className={`inline-block border-[1.5px] border-[#0a0a0a] px-1.5 py-0 text-[10px] font-extrabold uppercase tracking-wider ${
+                              STAGE_BG[r.stage] ?? "bg-[#F1ECDB] text-[#0a0a0a]"
                             }`}
                           >
                             {r.stage}
                           </span>
                         ) : (
-                          <span className="text-slate-300">—</span>
+                          <span className="text-[#0a0a0a]/25">—</span>
                         )}
                       </td>
-                      <td className="px-4 py-3 text-slate-600">
+                      <td className="px-4 py-3 max-w-[300px] text-[11px] font-medium text-[#0a0a0a]/70">
                         {r.mdOpinion ? (
-                          <span className="line-clamp-2 text-[12px]" title={r.mdOpinion}>
+                          <span className="line-clamp-2" title={r.mdOpinion}>
                             {r.mdOpinion}
                           </span>
                         ) : (
-                          <span className="text-slate-300">—</span>
+                          <span className="text-[#0a0a0a]/25">—</span>
                         )}
                       </td>
                     </tr>
@@ -215,5 +232,16 @@ export default function VacancyTable({ rows }: Props) {
         </div>
       </div>
     </div>
+  );
+}
+
+function TH({
+  children, align = "left",
+}: { children: React.ReactNode; align?: "left" | "right" | "center" }) {
+  const a = align === "right" ? "text-right" : align === "center" ? "text-center" : "text-left";
+  return (
+    <th className={`px-4 py-3 ${a} text-[11px] font-extrabold uppercase tracking-[.12em] text-[#0a0a0a] whitespace-nowrap`}>
+      {children}
+    </th>
   );
 }
