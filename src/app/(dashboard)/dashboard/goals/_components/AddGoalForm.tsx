@@ -60,7 +60,7 @@ export default function AddGoalForm({ organizationId, poolType }: Props) {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="flex items-center gap-1.5 rounded-lg bg-violet-600 px-4 py-2 text-sm font-semibold text-white hover:bg-violet-700 transition-colors shadow-[0_2px_8px_rgba(124,58,237,0.25)]"
+        className="inline-flex items-center gap-1.5 text-[12px] font-extrabold uppercase tracking-wider px-4 py-2 border-[2px] border-[#0a0a0a] bg-[#0a0a0a] text-white shadow-[3px_3px_0_0_#0a0a0a] hover:translate-x-[-1px] hover:translate-y-[-1px] hover:shadow-[4px_4px_0_0_#0a0a0a] transition-all"
       >
         <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
@@ -74,18 +74,18 @@ export default function AddGoalForm({ organizationId, poolType }: Props) {
           className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 p-4 sm:items-center"
           onClick={(e) => e.target === e.currentTarget && setOpen(false)}
         >
-          <div className="w-full max-w-lg  bg-white shadow-xl">
+          <div className="w-full max-w-lg brutal-lg bg-white">
             {/* 헤더 */}
-            <div className="flex items-center justify-between border-b border-[#0a0a0a] px-6 py-4">
-              <h2 className="text-base font-semibold text-slate-900">
+            <div className="flex items-center justify-between border-b-[2px] border-[#0a0a0a] bg-[#F1ECDB] px-6 py-4">
+              <h2 className="font-display text-[18px] leading-none text-[#0a0a0a]">
                 {POOL_TYPE_LABELS[poolType]} 항목 추가
               </h2>
               <button
                 type="button"
                 onClick={() => setOpen(false)}
-                className="rounded-md p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+                className="flex h-8 w-8 items-center justify-center border-[2px] border-[#0a0a0a] bg-white text-[#0a0a0a] hover:bg-yellow-300 transition-colors"
               >
-                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
@@ -150,7 +150,7 @@ export default function AddGoalForm({ organizationId, poolType }: Props) {
 
               {/* 에러 */}
               {error && (
-                <p className="rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-600">{error}</p>
+                <p className="border-[2px] border-[#0a0a0a] bg-rose-100 px-3 py-2 text-sm font-bold text-rose-700">{error}</p>
               )}
 
               {/* 버튼 */}
@@ -158,14 +158,14 @@ export default function AddGoalForm({ organizationId, poolType }: Props) {
                 <button
                   type="button"
                   onClick={() => setOpen(false)}
-                  className="rounded-lg border-[2px] border-[#0a0a0a] px-4 py-2 text-sm text-slate-600 hover:bg-slate-50"
+                  className="text-[12px] font-extrabold uppercase tracking-wider px-4 py-2 border-[2px] border-[#0a0a0a] bg-white text-[#0a0a0a] hover:bg-yellow-300 transition-colors"
                 >
                   취소
                 </button>
                 <button
                   type="submit"
                   disabled={isPending}
-                  className="rounded-lg bg-violet-600 px-4 py-2 text-sm font-semibold text-white hover:bg-violet-700 disabled:opacity-60"
+                  className="text-[12px] font-extrabold uppercase tracking-wider px-4 py-2 border-[2px] border-[#0a0a0a] bg-[#0a0a0a] text-white shadow-[3px_3px_0_0_#0a0a0a] hover:translate-x-[-1px] hover:translate-y-[-1px] hover:shadow-[4px_4px_0_0_#0a0a0a] disabled:opacity-50 transition-all"
                 >
                   {isPending ? "저장 중…" : "저장"}
                 </button>
@@ -179,7 +179,7 @@ export default function AddGoalForm({ organizationId, poolType }: Props) {
 }
 
 const inputCls =
-  "w-full rounded-lg border-[2px] border-[#0a0a0a] px-3 py-2 text-sm text-slate-800 placeholder-slate-300 focus:border-violet-400 focus:outline-none focus:ring-2 focus:ring-violet-100";
+  "w-full border-[2px] border-[#0a0a0a] bg-white px-3 py-2 text-sm text-[#0a0a0a] placeholder:text-[#0a0a0a]/30 shadow-[2px_2px_0_0_#0a0a0a] focus:outline-none focus:translate-x-[-1px] focus:translate-y-[-1px] focus:shadow-[3px_3px_0_0_#0a0a0a] transition-all";
 
 function Field({
   label,
@@ -192,8 +192,8 @@ function Field({
 }) {
   return (
     <div className="space-y-1.5">
-      <label className="block text-xs font-medium text-slate-500">
-        {label}{required && <span className="ml-0.5 text-rose-400">*</span>}
+      <label className="block text-[11px] font-extrabold uppercase tracking-[.12em] text-[#0a0a0a]">
+        {label}{required && <span className="ml-0.5 text-rose-600">*</span>}
       </label>
       {children}
     </div>

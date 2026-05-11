@@ -48,8 +48,8 @@ export default function ContentPoolTabs({ active }: Props) {
   }, [router, pathname, searchParams]);
 
   return (
-    <div className="flex items-center gap-1 brutal bg-white">
-      {TABS.map(({ key, icon }) => {
+    <div className="inline-flex items-stretch border-[2px] border-[#0a0a0a] bg-white shadow-[3px_3px_0_0_#0a0a0a] w-fit">
+      {TABS.map(({ key, icon }, idx) => {
         const isActive = active === key;
         return (
           <button
@@ -57,16 +57,15 @@ export default function ContentPoolTabs({ active }: Props) {
             type="button"
             onClick={() => switchTab(key)}
             className={`
-              relative flex items-center gap-2 rounded-lg px-4 py-2 text-[13px] font-semibold transition-all
+              relative flex items-center gap-2 px-5 py-2.5 text-[12px] font-extrabold uppercase tracking-wider transition-colors
+              ${idx > 0 ? "border-l-[2px] border-[#0a0a0a]" : ""}
               ${isActive
-                ? "bg-violet-600 text-white shadow-[0_2px_8px_rgba(124,58,237,0.3)]"
-                : "text-slate-500 hover:bg-slate-50 hover:text-slate-700"
+                ? "bg-[#0a0a0a] text-white"
+                : "bg-white text-[#0a0a0a] hover:bg-yellow-300"
               }
             `}
           >
-            <span className={isActive ? "text-violet-200" : "text-slate-400"}>
-              {icon}
-            </span>
+            <span>{icon}</span>
             {POOL_TYPE_LABELS[key]}
           </button>
         );

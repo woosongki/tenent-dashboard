@@ -86,7 +86,7 @@ export default function PopupContactTable({ rows, importedAt, pinsByContact = {}
           value={q}
           onChange={(e) => setQ(e.target.value)}
           placeholder="브랜드·업체·담당자 검색"
-          className="ml-auto h-8 w-64 rounded-lg border-[2px] border-[#0a0a0a] bg-white px-3 text-[12px] placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500/40"
+          className="ml-auto h-8 w-64 rounded-lg border-[2px] border-[#0a0a0a] bg-white px-3 text-[12px] placeholder:text-[#0a0a0a]/55 font-medium focus:outline-none focus:ring-2 focus:ring-violet-500/40"
         />
       </div>
 
@@ -94,7 +94,7 @@ export default function PopupContactTable({ rows, importedAt, pinsByContact = {}
       <div className="overflow-x-auto -mx-1 px-1">
         <div className="overflow-hidden brutal bg-white">
           <table className="min-w-[960px] w-full text-[13px]">
-            <thead className="text-[11px] tracking-tight text-slate-500 bg-[#F1ECDB] border-b border-[#0a0a0a]/10">
+            <thead className="text-[11px] tracking-tight text-[#0a0a0a]/65 bg-[#F1ECDB] border-b border-[#0a0a0a]/10">
               <tr>
                 <th className="text-left py-2 px-3 font-medium w-12">No.</th>
                 <th className="text-left py-2 px-3 font-medium">브랜드</th>
@@ -122,8 +122,8 @@ export default function PopupContactTable({ rows, importedAt, pinsByContact = {}
               ) : (
                 filtered.map((r) => (
                   <tr key={r.no} className="border-b border-[#0a0a0a]/10 last:border-0 hover:bg-slate-50/60">
-                    <td className="py-2 px-3 tabular-nums text-slate-400">{r.no}</td>
-                    <td className="py-2 px-3 font-medium text-slate-900">
+                    <td className="py-2 px-3 tabular-nums text-[#0a0a0a]/55 font-medium">{r.no}</td>
+                    <td className="py-2 px-3 font-medium text-[#0a0a0a]">
                       <div className="flex items-center gap-1.5 flex-wrap">
                         {r.brand}
                         {r.isFirstPage && (
@@ -140,18 +140,18 @@ export default function PopupContactTable({ rows, importedAt, pinsByContact = {}
                           </a>
                         ))}
                         {(pinsByContact[r.no]?.length ?? 0) > 3 && (
-                          <span className="text-[9.5px] text-slate-400">
+                          <span className="text-[9.5px] text-[#0a0a0a]/55 font-medium">
                             +{(pinsByContact[r.no]?.length ?? 0) - 3}
                           </span>
                         )}
                       </div>
                     </td>
-                    <td className="py-2 px-3 text-slate-600">{r.company ?? "-"}</td>
+                    <td className="py-2 px-3 text-[#0a0a0a]/80">{r.company ?? "-"}</td>
                     <td className="py-2 px-3">
                       {r.field ? (
                         <Badge tone={FIELD_TONE[r.field] ?? "neutral"} size="xs">{r.field}</Badge>
                       ) : (
-                        <span className="text-slate-300">-</span>
+                        <span className="text-[#0a0a0a]/30">-</span>
                       )}
                     </td>
                     <td className="py-2 px-3">
@@ -160,21 +160,21 @@ export default function PopupContactTable({ rows, importedAt, pinsByContact = {}
                           <span className="font-semibold">{r.grade}</span>
                         </Badge>
                       ) : (
-                        <span className="text-slate-300">-</span>
+                        <span className="text-[#0a0a0a]/30">-</span>
                       )}
                     </td>
                     <td className="py-2 px-3">
                       {r.stage ? (
                         <Badge tone={STAGE_TONE[r.stage] ?? "neutral"} size="sm" variant="dot">{r.stage}</Badge>
                       ) : (
-                        <span className="text-slate-300">-</span>
+                        <span className="text-[#0a0a0a]/30">-</span>
                       )}
                     </td>
-                    <td className="py-2 px-3 text-slate-600">
+                    <td className="py-2 px-3 text-[#0a0a0a]/80">
                       {r.manager ?? "-"}
-                      {r.contactName && <span className="text-slate-400"> · {r.contactName}</span>}
+                      {r.contactName && <span className="text-[#0a0a0a]/55 font-medium"> · {r.contactName}</span>}
                     </td>
-                    <td className="py-2 px-3 text-slate-500 max-w-[280px] truncate" title={r.reference ?? ""}>
+                    <td className="py-2 px-3 text-[#0a0a0a]/65 max-w-[280px] truncate" title={r.reference ?? ""}>
                       {r.reference ?? "-"}
                     </td>
                   </tr>
@@ -185,7 +185,7 @@ export default function PopupContactTable({ rows, importedAt, pinsByContact = {}
         </div>
       </div>
 
-      <p className="text-[11px] text-slate-400">
+      <p className="text-[11px] text-[#0a0a0a]/55 font-medium">
         총 {rows.length}건 중 {filtered.length}건 표시 · 출처: 💫이랜드리테일 콘텐츠팝업팀 - 팝업 컨텍판 ·
         가져오기 {new Date(importedAt).toLocaleString("ko-KR")}
       </p>
@@ -208,7 +208,7 @@ function Chip({
       className={`text-[12px] px-3 py-1.5 rounded-full border transition-colors ${
         active
           ? "bg-slate-900 text-white border-slate-900"
-          : "bg-white border-[#0a0a0a] text-slate-700 hover:bg-slate-50"
+          : "bg-white border-[#0a0a0a] text-[#0a0a0a] hover:bg-slate-50"
       }`}
     >
       {children}
@@ -229,11 +229,11 @@ function SelectChip({
 }) {
   return (
     <label className="inline-flex items-center gap-1.5 rounded-lg border-[2px] border-[#0a0a0a] bg-white pl-3 pr-1 py-1 text-[12px]">
-      <span className="text-slate-500">{label}</span>
+      <span className="text-[#0a0a0a]/65">{label}</span>
       <select
         value={value ?? ""}
         onChange={(e) => onChange(e.target.value || null)}
-        className="bg-transparent text-slate-800 focus:outline-none pr-2"
+        className="bg-transparent text-[#0a0a0a] focus:outline-none pr-2"
       >
         <option value="">전체</option>
         {options.map((o) => (
