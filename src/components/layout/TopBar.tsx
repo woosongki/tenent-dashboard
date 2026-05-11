@@ -50,68 +50,63 @@ function IconMenu() {
 
 export default function TopBar({ crumbs, action, lastUpdated, onOpenSidebar }: Props) {
   return (
-    <div className="flex h-14 shrink-0 items-center justify-between border-b border-[#e8ecf0] bg-white px-5 sm:px-7">
-      {/* 브레드크럼 */}
-      <div className="flex items-center gap-1.5 text-[13px] min-w-0">
+    <div className="flex h-12 shrink-0 items-center justify-between border-b-[3px] border-[#0a0a0a] bg-[#FAF7EC] px-4 sm:px-6">
+      <div className="flex items-center gap-2 text-[12px] min-w-0">
         {onOpenSidebar && (
           <button
             type="button"
             onClick={onOpenSidebar}
             aria-label="사이드바 열기"
-            className="-ml-1 mr-1 flex h-8 w-8 items-center justify-center rounded-lg text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400 md:hidden"
+            className="-ml-1 mr-1 flex h-8 w-8 items-center justify-center border-[2px] border-[#0a0a0a] bg-white text-[#0a0a0a] transition-colors hover:bg-yellow-300 md:hidden"
           >
             <IconMenu />
           </button>
         )}
-        <span className="shrink-0 text-slate-400">lifestyle</span>
+        <span className="shrink-0 border-[2px] border-[#0a0a0a] bg-[#0a0a0a] text-white px-1.5 py-0.5 text-[10px] font-extrabold uppercase tracking-[.16em]">lifestyle</span>
         {crumbs.map((c, i) => (
-          <span key={i} className="flex items-center gap-1.5 min-w-0">
-            <span className="shrink-0 text-slate-300">›</span>
+          <span key={i} className="flex items-center gap-2 min-w-0">
+            <span className="shrink-0 text-[#0a0a0a]/40 font-bold">/</span>
             {c.href ? (
-              <a href={c.href} className="truncate font-medium text-slate-600 hover:text-violet-600 transition-colors">
+              <a href={c.href} className="truncate text-[11.5px] font-bold uppercase tracking-wider text-[#0a0a0a]/65 hover:text-[#0a0a0a] transition-colors">
                 {c.label}
               </a>
             ) : (
-              <span className="truncate font-semibold text-slate-800">{c.label}</span>
+              <span className="truncate text-[11.5px] font-extrabold uppercase tracking-wider text-[#0a0a0a]">{c.label}</span>
             )}
           </span>
         ))}
       </div>
 
-      {/* 우측 영역 */}
-      <div className="flex shrink-0 items-center gap-1.5 ml-4">
-        {/* 마지막 업데이트 시각 — 실제 데이터 시점 */}
+      <div className="flex shrink-0 items-center gap-2 ml-4">
         {lastUpdated && (
           <span
-            className="hidden text-[11px] text-slate-400 tabular-nums sm:inline-block"
+            className="hidden sm:inline-flex items-center gap-1.5 border-[2px] border-[#0a0a0a] bg-white px-2 py-0.5 text-[10px] font-extrabold tabular-nums uppercase tracking-wider"
             title={`데이터 마지막 갱신: ${typeof lastUpdated === "string" ? lastUpdated : lastUpdated.toISOString()}`}
           >
-            {formatLastUpdated(lastUpdated)} 업데이트
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+            {formatLastUpdated(lastUpdated)}
           </span>
         )}
 
-        {/* 페이지별 커스텀 액션 */}
         {action && <div className="flex items-center">{action}</div>}
 
-        {/* 새로고침 */}
         <form action="">
           <button
             type="submit"
             title="새로고침"
-            className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400"
+            className="flex h-8 w-8 items-center justify-center border-[2px] border-[#0a0a0a] bg-white text-[#0a0a0a] transition-colors hover:bg-yellow-300"
           >
             <IconRefresh />
           </button>
         </form>
 
-        {/* 알림 */}
         <button
           type="button"
           title="알림"
-          className="relative flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400"
+          className="relative flex h-8 w-8 items-center justify-center border-[2px] border-[#0a0a0a] bg-white text-[#0a0a0a] transition-colors hover:bg-yellow-300"
         >
           <IconBell />
-          <span className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-violet-500" />
+          <span className="absolute -top-1 -right-1 h-2.5 w-2.5 border border-[#0a0a0a] bg-fuchsia-500" />
         </button>
       </div>
     </div>

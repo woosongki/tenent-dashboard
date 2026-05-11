@@ -1,35 +1,46 @@
 import Link from "next/link";
-import { TYPO, ELEVATION } from "@/lib/tokens";
+import { TYPO } from "@/lib/tokens";
 
 interface Props {
   label: string;
   value: string | number;
   unit?: string;
-  /** 보조 설명 (예: "전월 대비") */
   caption?: string;
-  /** 트렌드 변화율 — 양수=상승(emerald), 음수=하락(rose), 0=평탄 */
   delta?: number;
-  /** 트렌드 표시할 때 단위(% 또는 pp) */
   deltaUnit?: string;
   href?: string;
-  /** raised(강조) | card(기본) */
-  variant?: "raised" | "card";
+  /** 강조 색상 (상단 블록) */
+  accent?: "teal" | "magenta" | "yellow" | "violet" | "ink";
   icon?: React.ReactNode;
 }
 
+const ACCENT_BG: Record<NonNullable<Props["accent"]>, string> = {
+  teal:    "bg-cyan-400",
+  magenta: "bg-fuchsia-500",
+  yellow:  "bg-yellow-300",
+  violet:  "bg-violet-500",
+  ink:     "bg-[#0a0a0a]",
+};
+const ACCENT_TEXT: Record<NonNullable<Props["accent"]>, string> = {
+  teal:    "text-[#0a0a0a]",
+  magenta: "text-white",
+  yellow:  "text-[#0a0a0a]",
+  violet:  "text-white",
+  ink:     "text-white",
+};
+
 export default function StatCard({
-  label, value, unit, caption, delta, deltaUnit = "%", href, variant = "card", icon,
+  label, value, unit, caption, delta, deltaUnit = "%", href, accent = "yellow", icon,
 }: Props) {
-  const elev = variant === "raised" ? ELEVATION.raised : ELEVATION.card;
   const Wrap: React.ElementType = href ? Link : "div";
   const wrapProps = href ? { href } : {};
 
   const showDelta = typeof delta === "number" && Number.isFinite(delta);
-  const trendCls =
+  const trendBg =
     !showDelta ? ""
-    : delta! > 0 ? "text-emerald-600 bg-emerald-50 border-emerald-100"
-    : delta! < 0 ? "text-rose-600 bg-rose-50 border-rose-100"
-    : "text-slate-500 bg-slate-50 border-slate-200";
+    : delta! > 0 ? "bg-emerald-400 text-emerald-950"
+    : delta! < 0 ? "bg-rose-500 text-white"
+    : "bg-[#F1ECDB] text-[#0a0a0a]";
   const trendArrow =
     !showDelta ? ""
     : delta! > 0 ? "↗"
@@ -39,22 +50,27 @@ export default function StatCard({
   return (
     <Wrap
       {...wrapProps}
-      className={`${elev} rounded-2xl p-6 transition-all ${href ? "hover:shadow-[0_8px_24px_rgba(15,23,42,.08)] hover:-translate-y-0.5" : ""}`}
+      className={`brutal ${href ? "brutal-hover" : ""} bg-white p-5 flex flex-col`}
     >
-      <div className="flex items-start justify-between gap-3">
-        <p className={TYPO.kpiLabel}>{label}</p>
-        {icon && <span className="text-slate-300">{icon}</span>}
+      {/* 상단 액센트 블록 */}
+      <div className={`flex items-center justify-between gap-2 px-3 py-2 border-[2px] border-[#0a0a0a] ${ACCENT_BG[accent]} ${ACCENT_TEXT[accent]}`}>
+        <span className="text-[10px] font-extrabold uppercase tracking-[.14em]">{label}</span>
+        {icon && <span>{icon}</span>}
       </div>
-      <div className="mt-3 flex items-baseline gap-1.5">
+
+      {/* 숫자 */}
+      <div className="mt-5 flex items-baseline gap-2">
         <span className={TYPO.kpiNumber}>{value}</span>
-        {unit && <span className="text-[16px] font-semibold text-slate-400">{unit}</span>}
+        {unit && <span className="text-[20px] font-extrabold text-[#0a0a0a]/60 font-mono">{unit}</span>}
       </div>
-      <div className="mt-2 flex items-center justify-between gap-2">
+
+      {/* 캡션 + 트렌드 */}
+      <div className="mt-3 flex items-center justify-between gap-2 min-h-[22px]">
         {caption ? (
-          <p className="text-[12px] text-slate-500">{caption}</p>
+          <p className="text-[11.5px] font-medium text-[#0a0a0a]/70 leading-tight">{caption}</p>
         ) : <span />}
         {showDelta && (
-          <span className={`inline-flex items-center gap-0.5 text-[11px] font-semibold tabular-nums px-1.5 py-0.5 rounded border ${trendCls}`}>
+          <span className={`inline-flex items-center gap-1 text-[11px] font-extrabold tabular-nums px-2 py-0.5 border-[2px] border-[#0a0a0a] ${trendBg}`}>
             {trendArrow} {Math.abs(delta!).toFixed(1)}{deltaUnit}
           </span>
         )}

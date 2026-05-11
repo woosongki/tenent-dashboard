@@ -156,30 +156,29 @@ export default function Sidebar({
 
   return (
     <aside
-      className={`flex h-screen flex-shrink-0 flex-col border-r ${t.border} ${t.bg} transition-all duration-300 ${
-        collapsed ? "w-[64px]" : "w-[232px]"
+      className={`flex h-screen flex-shrink-0 flex-col border-r-[3px] ${t.border} ${t.bg} transition-all duration-300 ${
+        collapsed ? "w-[68px]" : "w-[236px]"
       }`}
     >
       {/* ── 로고 ── */}
-      <div className={`border-b ${t.border} px-4 py-5`}>
-        <div className="flex items-center gap-3">
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[10px] bg-gradient-to-br from-violet-600 to-indigo-500 text-[13px] font-black text-white shadow-[0_4px_12px_rgba(124,58,237,0.4)]">
-            G
+      <div className={`border-b-[3px] ${t.border} px-3 py-4`}>
+        <div className="flex items-center gap-2.5">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center border-[2px] border-[#0a0a0a] bg-yellow-300 text-[#0a0a0a] text-[16px] font-black shadow-[3px_3px_0_0_#0a0a0a]">
+            L
           </div>
           {!collapsed && (
             <div className="flex-1 min-w-0">
-              <div className={`text-[15px] font-bold tracking-tight ${t.text}`}>lifestyle</div>
-              <div className={`text-[10px] ${t.textMuted}`}>이랜드리테일</div>
+              <div className={`text-[14px] font-extrabold uppercase tracking-wider ${t.text}`}>lifestyle</div>
+              <div className={`text-[10px] font-bold ${t.textMuted} uppercase tracking-[.14em]`}>이랜드리테일</div>
             </div>
           )}
-          {/* 모바일 닫기 */}
           {onClose && !collapsed && (
             <button
               onClick={onClose}
               aria-label="사이드바 닫기"
-              className={`flex h-7 w-7 items-center justify-center rounded-lg ${t.textMuted} transition-colors ${t.itemHover} md:hidden`}
+              className={`flex h-7 w-7 items-center justify-center border-[2px] ${t.border} bg-white ${t.text} transition-colors hover:bg-yellow-300 md:hidden`}
             >
-              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
@@ -196,9 +195,9 @@ export default function Sidebar({
           );
           if (items.length === 0) return null;
           return (
-          <div key={group.section} className="mb-2">
+          <div key={group.section} className="mb-3">
             {!collapsed && (
-              <p className={`mb-1 px-2 pt-3 text-[10px] font-semibold tracking-[.1em] ${t.textMuted}`}>
+              <p className={`mb-2 px-3 pt-3 text-[10px] font-extrabold tracking-[.16em] uppercase ${t.textMuted}`}>
                 {group.section}
               </p>
             )}
@@ -210,26 +209,21 @@ export default function Sidebar({
                   key={item.href}
                   href={item.href}
                   title={collapsed ? item.label : undefined}
-                  className={`relative mb-0.5 flex items-center rounded-[8px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500/60 ${
-                    collapsed ? "justify-center px-0 py-2.5" : "gap-2.5 px-2.5 py-2.5"
+                  className={`relative flex items-center transition-colors ${
+                    collapsed ? "justify-center px-0 py-3" : "gap-2.5 pl-3 pr-2 py-2.5"
                   } ${
                     active
                       ? `${t.itemActive} ${t.textActive}`
                       : `${t.itemBase} ${t.itemHover}`
                   }`}
                 >
-                  {active && !collapsed && (
-                    <span className="absolute left-0 top-1/2 h-5 w-[3px] -translate-y-1/2 rounded-r-[3px] bg-violet-500" />
-                  )}
                   <span
-                    className={`h-[15px] w-[15px] shrink-0 [&>svg]:h-full [&>svg]:w-full ${
-                      active ? "[&>svg]:stroke-violet-500" : "[&>svg]:stroke-current"
-                    }`}
+                    className={`h-[16px] w-[16px] shrink-0 [&>svg]:h-full [&>svg]:w-full [&>svg]:stroke-current`}
                   >
                     {item.icon}
                   </span>
                   {!collapsed && (
-                    <span className="text-[13px] font-medium">
+                    <span className="text-[13px] font-bold">
                       {item.label}
                     </span>
                   )}
@@ -242,60 +236,60 @@ export default function Sidebar({
       </nav>
 
       {/* ── 글로벌 노션 동기화 ── */}
-      <div className={`border-t ${t.border} p-2 flex flex-col gap-1`}>
+      <div className={`border-t-[2px] ${t.border} p-2 flex flex-col gap-1`}>
         <NotionSyncButton variant="sidebar" collapsed={collapsed} themeIsLight={theme === "light"} />
       </div>
 
       {/* ── collapse + theme 토글 (데스크톱 전용) ── */}
       {(onToggleCollapse || onToggleTheme) && (
-        <div className={`border-t ${t.border} p-2 hidden md:flex md:flex-col gap-1`}>
+        <div className={`border-t-[2px] ${t.border} p-2 hidden md:flex md:flex-col gap-1`}>
           {onToggleTheme && (
             <button
               onClick={onToggleTheme}
               title={theme === "dark" ? "사이드바 라이트 톤" : "사이드바 다크 톤"}
-              className={`flex w-full items-center rounded-[8px] px-2 py-2 ${t.itemBase} transition-colors ${t.itemHover} ${
+              className={`flex w-full items-center px-2 py-2 ${t.itemBase} transition-colors ${t.itemHover} ${
                 collapsed ? "justify-center" : "gap-2"
               }`}
             >
               {theme === "dark" ? <IconSun /> : <IconMoon />}
-              {!collapsed && <span className="text-[12px] font-medium">{theme === "dark" ? "라이트 톤" : "다크 톤"}</span>}
+              {!collapsed && <span className="text-[11px] font-bold uppercase tracking-wider">{theme === "dark" ? "Light" : "Dark"}</span>}
             </button>
           )}
           {onToggleCollapse && (
             <button
               onClick={onToggleCollapse}
               title={collapsed ? "사이드바 펼치기" : "사이드바 접기"}
-              className={`flex w-full items-center rounded-[8px] px-2 py-2 ${t.itemBase} transition-colors ${t.itemHover} ${
+              className={`flex w-full items-center px-2 py-2 ${t.itemBase} transition-colors ${t.itemHover} ${
                 collapsed ? "justify-center" : "gap-2"
               }`}
             >
               {collapsed ? <IconChevronRight /> : <IconChevronLeft />}
-              {!collapsed && <span className="text-[12px] font-medium">접기</span>}
+              {!collapsed && <span className="text-[11px] font-bold uppercase tracking-wider">Collapse</span>}
             </button>
           )}
         </div>
       )}
 
       {/* ── 유저 영역 ── */}
-      <div className={`border-t ${t.border} p-3 ${collapsed ? "flex justify-center" : ""}`}>
+      <div className={`border-t-[2px] ${t.border} p-3 ${collapsed ? "flex justify-center" : ""}`}>
         {collapsed ? (
-          <div className="flex h-[30px] w-[30px] items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-violet-600 text-[12px] font-bold text-white">
+          <div className="flex h-[34px] w-[34px] items-center justify-center border-[2px] border-[#0a0a0a] bg-cyan-400 text-[#0a0a0a] text-[14px] font-extrabold shadow-[2px_2px_0_0_#0a0a0a]">
             {initial}
           </div>
         ) : (
-          <div className={`flex items-center gap-2.5 rounded-[10px] ${t.userBg} px-3 py-2.5`}>
-            <div className="flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-violet-600 text-[12px] font-bold text-white">
+          <div className={`flex items-center gap-2 ${t.userBg} px-2 py-2 shadow-[3px_3px_0_0_#0a0a0a]`}>
+            <div className="flex h-[32px] w-[32px] shrink-0 items-center justify-center border-[2px] border-[#0a0a0a] bg-cyan-400 text-[#0a0a0a] text-[13px] font-extrabold">
               {initial}
             </div>
             <div className="min-w-0 flex-1">
-              <p className={`truncate text-[12px] font-medium ${theme === "dark" ? "text-slate-400" : "text-slate-700"}`}>{userEmail}</p>
-              <p className={`text-[10px] ${t.textMuted}`}>관리자</p>
+              <p className={`truncate text-[11.5px] font-bold ${theme === "dark" ? "text-white" : "text-[#0a0a0a]"}`}>{userEmail}</p>
+              <p className={`text-[10px] font-bold uppercase tracking-[.14em] ${t.textMuted}`}>ADMIN</p>
             </div>
             <form action={signOutAction}>
               <button
                 type="submit"
                 title="로그아웃"
-                className={`flex h-6 w-6 items-center justify-center rounded-md ${t.textMuted} transition-colors ${t.itemHover}`}
+                className={`flex h-7 w-7 items-center justify-center border-[2px] border-[#0a0a0a] bg-white text-[#0a0a0a] transition-colors hover:bg-yellow-300`}
               >
                 <IconLogout />
               </button>

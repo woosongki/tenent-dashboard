@@ -88,10 +88,10 @@ export default async function AdminUsersPage() {
             meta={`총 ${rows.length}명`}
           />
 
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-            <Stat label="승인 대기" value={pendingCount} color="text-amber-600" accent="bg-gradient-to-r from-amber-500 to-amber-300" />
-            <Stat label="승인 완료" value={approvedCount} color="text-emerald-600" accent="bg-gradient-to-r from-emerald-600 to-emerald-400" />
-            <Stat label="거부됨"    value={rejectedCount} color="text-rose-600" accent="bg-gradient-to-r from-rose-500 to-rose-300" />
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-3">
+            <Stat label="승인 대기" value={pendingCount} accent="bg-yellow-300"   accentText="text-[#0a0a0a]" />
+            <Stat label="승인 완료" value={approvedCount} accent="bg-emerald-400" accentText="text-emerald-950" />
+            <Stat label="거부됨"    value={rejectedCount} accent="bg-rose-500"    accentText="text-white" />
           </div>
 
           <UserApprovalTable rows={rows} />
@@ -104,13 +104,14 @@ export default async function AdminUsersPage() {
 }
 
 function Stat({
-  label, value, color, accent,
-}: { label: string; value: number; color: string; accent: string }) {
+  label, value, accent, accentText,
+}: { label: string; value: number; accent: string; accentText: string }) {
   return (
-    <div className="relative overflow-hidden rounded-2xl border border-slate-200/70 bg-white p-6 shadow-[0_1px_2px_rgba(15,23,42,.04)]">
-      <span className={`absolute inset-x-0 top-0 h-[3px] ${accent}`} />
-      <p className={TYPO.kpiLabel}>{label}</p>
-      <p className={`mt-3 ${TYPO.kpiNumber} ${color}`}>{value.toLocaleString()}</p>
+    <div className="brutal bg-white p-5 flex flex-col">
+      <div className={`flex items-center justify-between px-3 py-2 border-[2px] border-[#0a0a0a] ${accent} ${accentText}`}>
+        <span className="text-[10px] font-extrabold uppercase tracking-[.16em]">{label}</span>
+      </div>
+      <p className={`mt-5 ${TYPO.kpiNumber}`}>{value.toLocaleString()}</p>
     </div>
   );
 }

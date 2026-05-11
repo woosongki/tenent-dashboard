@@ -1,26 +1,85 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #FAF7EC;       /* paper beige */
+  --foreground: #0a0a0a;       /* ink */
+  --ink: #0a0a0a;
+  --paper: #FAF7EC;
+  --paper-soft: #F1ECDB;
+  --accent-teal: #06b6d4;
+  --accent-magenta: #d946ef;
+  --accent-yellow: #facc15;
+  --accent-violet: #7c3aed;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --font-mono: var(--font-mono);
+  --font-display: var(--font-display);
 }
 
 body {
-  background: var(--background);
+  background: var(--paper);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: "Pretendard", "Inter", system-ui, -apple-system, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+}
+
+/* Brutalist utility classes — 굵은 테두리 + offset shadow */
+.brutal {
+  border: 2px solid var(--ink);
+  box-shadow: 4px 4px 0 0 var(--ink);
+  background: #fff;
+}
+.brutal-lg {
+  border: 3px solid var(--ink);
+  box-shadow: 6px 6px 0 0 var(--ink);
+  background: #fff;
+}
+.brutal-sm {
+  border: 2px solid var(--ink);
+  box-shadow: 3px 3px 0 0 var(--ink);
+  background: #fff;
+}
+.brutal-flat {
+  border: 2px solid var(--ink);
+  background: #fff;
+}
+
+/* hover lift — 그림자 더 깊게 + 살짝 올라옴 */
+.brutal-hover {
+  transition: transform .15s, box-shadow .15s;
+}
+.brutal-hover:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0 0 var(--ink);
+}
+.brutal-lg.brutal-hover:hover {
+  box-shadow: 9px 9px 0 0 var(--ink);
+}
+.brutal-sm.brutal-hover:hover {
+  box-shadow: 5px 5px 0 0 var(--ink);
+}
+
+/* 액센트 블록 (라벨/뱃지용) — solid bg + 검정 테두리 */
+.chip-teal     { background: var(--accent-teal);    color: #fff; }
+.chip-magenta  { background: var(--accent-magenta); color: #fff; }
+.chip-yellow   { background: var(--accent-yellow);  color: #0a0a0a; }
+.chip-violet   { background: var(--accent-violet);  color: #fff; }
+.chip-ink      { background: var(--ink);            color: #fff; }
+.chip-paper    { background: var(--paper-soft);     color: #0a0a0a; }
+
+/* 디스플레이 헤드라인 (영문/숫자) */
+.font-display {
+  font-family: var(--font-display), "Pretendard", system-ui, sans-serif;
+  letter-spacing: -0.01em;
+}
+.font-mono {
+  font-family: var(--font-mono), "SFMono-Regular", Menlo, Monaco, Consolas, monospace;
+}
+
+/* focus는 매우 강하게 보이도록 — Brutalist 핵심 */
+*:focus-visible {
+  outline: 3px solid var(--accent-yellow);
+  outline-offset: 2px;
 }

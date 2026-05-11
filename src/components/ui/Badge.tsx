@@ -1,6 +1,6 @@
 /**
- * 통일 Badge 컴포넌트.
- * tone × variant 조합으로 모든 상태 표현 (분야/등급/단계 등 카테고리는 colorMap helper로 처리).
+ * Neo-Brutalist Badge.
+ * tone × variant — 모두 검정 테두리 + 굵은 폰트.
  */
 
 export type BadgeTone = "neutral" | "brand" | "success" | "warning" | "danger" | "info" | "violet" | "amber";
@@ -16,18 +16,18 @@ interface Props {
   title?: string;
 }
 
-const TONE_BG: Record<BadgeTone, { soft: string; solid: string; outline: string; dot: string; text: string; border: string }> = {
-  neutral: { soft: "bg-slate-100",   solid: "bg-slate-700 text-white",   outline: "border-slate-200 text-slate-700",  dot: "bg-slate-400",   text: "text-slate-700",   border: "border-slate-200" },
-  brand:   { soft: "bg-violet-50",   solid: "bg-violet-600 text-white",  outline: "border-violet-200 text-violet-700",dot: "bg-violet-500",  text: "text-violet-700",  border: "border-violet-200" },
-  success: { soft: "bg-emerald-50",  solid: "bg-emerald-600 text-white", outline: "border-emerald-200 text-emerald-700", dot: "bg-emerald-500", text: "text-emerald-700", border: "border-emerald-200" },
-  warning: { soft: "bg-amber-50",    solid: "bg-amber-500 text-white",   outline: "border-amber-200 text-amber-700",  dot: "bg-amber-400",   text: "text-amber-700",   border: "border-amber-200" },
-  danger:  { soft: "bg-rose-50",     solid: "bg-rose-600 text-white",    outline: "border-rose-200 text-rose-700",    dot: "bg-rose-500",    text: "text-rose-700",    border: "border-rose-200" },
-  info:    { soft: "bg-blue-50",     solid: "bg-blue-600 text-white",    outline: "border-blue-200 text-blue-700",    dot: "bg-blue-500",    text: "text-blue-700",    border: "border-blue-200" },
-  violet:  { soft: "bg-violet-50",   solid: "bg-violet-600 text-white",  outline: "border-violet-200 text-violet-700",dot: "bg-violet-500",  text: "text-violet-700",  border: "border-violet-200" },
-  amber:   { soft: "bg-amber-50",    solid: "bg-amber-500 text-white",   outline: "border-amber-200 text-amber-700",  dot: "bg-amber-400",   text: "text-amber-700",   border: "border-amber-200" },
+const TONE: Record<BadgeTone, { solid: string; soft: string; dot: string }> = {
+  neutral: { solid: "bg-[#0a0a0a] text-white",        soft: "bg-[#F1ECDB] text-[#0a0a0a]", dot: "bg-[#0a0a0a]" },
+  brand:   { solid: "bg-violet-500 text-white",        soft: "bg-violet-100 text-violet-950", dot: "bg-violet-500" },
+  success: { solid: "bg-emerald-500 text-white",       soft: "bg-emerald-200 text-emerald-950", dot: "bg-emerald-500" },
+  warning: { solid: "bg-amber-300 text-amber-950",     soft: "bg-amber-100 text-amber-950", dot: "bg-amber-400" },
+  danger:  { solid: "bg-rose-500 text-white",          soft: "bg-rose-100 text-rose-950", dot: "bg-rose-500" },
+  info:    { solid: "bg-cyan-400 text-cyan-950",       soft: "bg-cyan-100 text-cyan-950", dot: "bg-cyan-500" },
+  violet:  { solid: "bg-violet-500 text-white",        soft: "bg-violet-100 text-violet-950", dot: "bg-violet-500" },
+  amber:   { solid: "bg-amber-300 text-amber-950",     soft: "bg-amber-100 text-amber-950", dot: "bg-amber-400" },
 };
 
-const SIZE_CLS: Record<BadgeSize, string> = {
+const SIZE: Record<BadgeSize, string> = {
   xs: "text-[10px] px-1.5 py-0.5",
   sm: "text-[11px] px-2 py-0.5",
   md: "text-[12px] px-2.5 py-1",
@@ -41,48 +41,47 @@ export default function Badge({
   children,
   title,
 }: Props) {
-  const c = TONE_BG[tone];
-  const base = "inline-flex items-center gap-1 rounded font-medium tracking-tight";
-  let cls = "";
+  const c = TONE[tone];
+  const base = "inline-flex items-center gap-1 rounded-none border-[2px] border-[#0a0a0a] font-extrabold uppercase tracking-wider";
 
-  switch (variant) {
-    case "solid":
-      cls = c.solid;
-      break;
-    case "outline":
-      cls = `bg-white border ${c.outline}`;
-      break;
-    case "dot":
-      cls = `bg-white border ${c.outline}`;
-      return (
-        <span title={title} className={`${base} ${SIZE_CLS[size]} ${cls} ${className}`}>
-          <span className={`h-1.5 w-1.5 rounded-full ${c.dot}`} />
-          {children}
-        </span>
-      );
-    case "soft":
-    default:
-      cls = `${c.soft} ${c.text} border ${c.border}`;
-      break;
+  if (variant === "dot") {
+    return (
+      <span title={title} className={`${base} ${SIZE[size]} bg-white text-[#0a0a0a] ${className}`}>
+        <span className={`h-1.5 w-1.5 rounded-full ${c.dot}`} />
+        {children}
+      </span>
+    );
   }
-
+  if (variant === "outline") {
+    return (
+      <span title={title} className={`${base} ${SIZE[size]} bg-white text-[#0a0a0a] ${className}`}>
+        {children}
+      </span>
+    );
+  }
+  if (variant === "soft") {
+    return (
+      <span title={title} className={`${base} ${SIZE[size]} ${c.soft} ${className}`}>
+        {children}
+      </span>
+    );
+  }
+  // solid
   return (
-    <span title={title} className={`${base} ${SIZE_CLS[size]} ${cls} ${className}`}>
+    <span title={title} className={`${base} ${SIZE[size]} ${c.solid} ${className}`}>
       {children}
     </span>
   );
 }
 
-/**
- * 카테고리 → tone 매핑. 분야/단계/등급 등 무수한 카테고리를 의미 기반 5톤으로 압축.
- */
+/** 카테고리 → tone 매핑 (압축 5톤) */
 export const FIELD_TONE: Record<string, BadgeTone> = {
-  "F&B":      "amber",
-  "패션":     "danger",   // rose
-  "리빙":     "success",  // emerald
+  "F&B":      "warning",
+  "패션":     "danger",
+  "리빙":     "success",
   "뷰티":     "danger",
-  "IP":       "brand",    // violet
-  "체험/전시": "info",     // blue
+  "IP":       "brand",
+  "체험/전시": "info",
 };
 
 export const STAGE_TONE: Record<string, BadgeTone> = {
@@ -94,7 +93,7 @@ export const STAGE_TONE: Record<string, BadgeTone> = {
 };
 
 export const GRADE_TONE: Record<string, BadgeTone> = {
-  A: "warning",   // amber — 핵심
+  A: "warning",
   B: "neutral",
   N: "neutral",
 };

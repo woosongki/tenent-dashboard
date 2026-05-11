@@ -1,16 +1,22 @@
 /**
- * 보고용/인쇄용 하단 마크.
- * 사이드바가 빠지는 PDF/스크린샷 상황에서 페이지 정체성을 보존.
+ * Brutalist 보고용/인쇄용 하단 마크.
  */
 export default function AppFooter() {
   const today = new Date();
   const ymd = today.toLocaleDateString("ko-KR", { year: "numeric", month: "long", day: "numeric" });
   return (
-    <footer className="mt-12 border-t border-slate-200 pt-5 pb-2 px-1 flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-400">
-      <p>
-        © {today.getFullYear()} 이랜드리테일 · <span className="font-semibold text-slate-500">lifestyle 대시보드</span>
+    <footer className="mt-12 flex flex-wrap items-center justify-between gap-3 border-t-[3px] border-[#0a0a0a] pt-5">
+      <div className="flex items-center gap-3">
+        <span className="inline-block border-[2px] border-[#0a0a0a] bg-[#0a0a0a] text-white px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-[.18em]">
+          lifestyle
+        </span>
+        <p className="text-[11px] font-medium text-[#0a0a0a]/65">
+          © {today.getFullYear()} 이랜드리테일 · 컨텐츠 운영 대시보드
+        </p>
+      </div>
+      <p className="text-[11px] font-bold tabular-nums uppercase tracking-wider text-[#0a0a0a]">
+        DATA · {ymd}
       </p>
-      <p className="tabular-nums">데이터 기준 {ymd}</p>
     </footer>
   );
 }
