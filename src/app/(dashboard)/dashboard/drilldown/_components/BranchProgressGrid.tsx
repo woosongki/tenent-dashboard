@@ -6,9 +6,7 @@ import { ATTRACTION_BRANCHES } from "@/types/attraction";
 
 interface Props {
   rows: AttractionRow[];
-  /** 선택된 지점명 — null이면 미선택 */
   selectedBranch?: string | null;
-  /** 셀 클릭 시 호출. 같은 지점을 다시 누르면 null로 토글하라는 뜻으로 부모가 처리 */
   onSelectBranch?: (branch: string | null) => void;
 }
 
@@ -28,45 +26,45 @@ export default function BranchProgressGrid({
   }, [rows]);
 
   function color(pct: number | null) {
-    if (pct === null) return "bg-slate-50 text-slate-300 border-[#0a0a0a]/10";
-    if (pct === 100)  return "bg-violet-600 text-white border-violet-700";
-    if (pct >= 70)    return "bg-violet-100 text-violet-700 border-violet-200";
-    if (pct >= 40)    return "bg-amber-50 text-amber-700 border-amber-200";
-    return "bg-rose-50 text-rose-700 border-rose-200";
+    if (pct === null) return "bg-[#F1ECDB] text-[#0a0a0a]/30";
+    if (pct === 100)  return "bg-violet-500 text-white";
+    if (pct >= 70)    return "bg-emerald-400 text-emerald-950";
+    if (pct >= 40)    return "bg-yellow-300 text-[#0a0a0a]";
+    return "bg-rose-500 text-white";
   }
 
   return (
-    <div className="brutal bg-white">
-      <div className="mb-3 flex items-center justify-between">
-        <h3 className="text-sm font-bold text-slate-800">
-          지점별 입점 진행률
-          <span className="ml-2 text-[11px] font-normal text-slate-400">
-            지점 클릭 시 아래 표를 해당 지점으로 필터
-          </span>
-        </h3>
-        <div className="flex items-center gap-2 text-[10px] text-slate-400">
-          <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-rose-300" />0–39%</span>
-          <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-amber-300" />40–69%</span>
-          <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-violet-300" />70–99%</span>
-          <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-violet-600" />완료</span>
+    <div className="brutal bg-white p-5">
+      <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
+        <div className="inline-block border-[2px] border-[#0a0a0a] bg-[#F1ECDB] px-3 py-1.5">
+          <h3 className="font-display text-[16px] leading-none text-[#0a0a0a]">지점별 입점 진행률</h3>
+          <p className="mt-1 text-[10px] font-bold uppercase tracking-wider text-[#0a0a0a]/65">
+            지점 클릭 시 표 필터링
+          </p>
+        </div>
+        <div className="flex flex-wrap items-center gap-2 text-[10px] font-bold uppercase tracking-wider text-[#0a0a0a]/70">
+          <span className="inline-flex items-center gap-1"><span className="h-2.5 w-2.5 border-[1.5px] border-[#0a0a0a] bg-rose-500" />0–39%</span>
+          <span className="inline-flex items-center gap-1"><span className="h-2.5 w-2.5 border-[1.5px] border-[#0a0a0a] bg-yellow-300" />40–69%</span>
+          <span className="inline-flex items-center gap-1"><span className="h-2.5 w-2.5 border-[1.5px] border-[#0a0a0a] bg-emerald-400" />70–99%</span>
+          <span className="inline-flex items-center gap-1"><span className="h-2.5 w-2.5 border-[1.5px] border-[#0a0a0a] bg-violet-500" />완료</span>
         </div>
       </div>
-      <div className="grid grid-cols-7 gap-1.5 sm:grid-cols-9 md:grid-cols-12">
+      <div className="grid grid-cols-7 gap-2 sm:grid-cols-9 md:grid-cols-12">
         {stats.map((s) => {
           const clickable = s.total > 0 && !!onSelectBranch;
           const selected = selectedBranch === s.branch;
-          const baseCls = `flex flex-col items-center justify-center rounded-lg border px-1 py-2 transition-all ${color(s.pct)}`;
+          const baseCls = `flex flex-col items-center justify-center border-[2px] border-[#0a0a0a] px-1 py-2.5 transition-all ${color(s.pct)}`;
           const interactCls = clickable
-            ? "cursor-pointer hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
+            ? "cursor-pointer hover:translate-x-[-1px] hover:translate-y-[-1px] hover:shadow-[3px_3px_0_0_#0a0a0a]"
             : "cursor-default opacity-90";
           const selectedCls = selected
-            ? "ring-2 ring-violet-500 ring-offset-1 scale-[1.04]"
+            ? "shadow-[3px_3px_0_0_#0a0a0a] translate-x-[-1px] translate-y-[-1px]"
             : "";
 
           const inner = (
             <>
-              <div className="text-[10px] font-semibold leading-tight truncate max-w-full">{s.branch.replace("점", "")}</div>
-              <div className="text-[10px] tabular-nums opacity-80">{s.pct === null ? "—" : `${s.pct}%`}</div>
+              <div className="text-[10px] font-extrabold uppercase leading-tight truncate max-w-full">{s.branch.replace("점", "")}</div>
+              <div className="font-mono text-[11px] font-extrabold tabular-nums">{s.pct === null ? "—" : `${s.pct}%`}</div>
             </>
           );
 
