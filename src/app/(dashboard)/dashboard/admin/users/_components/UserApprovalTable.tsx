@@ -64,20 +64,20 @@ export default function UserApprovalTable({ rows }: { rows: UserRow[] }) {
           value={q}
           onChange={(e) => setQ(e.target.value)}
           placeholder="이메일·이름 검색"
-          className="ml-auto h-8 w-64 rounded-lg border-[2px] border-[#0a0a0a] bg-white px-3 text-[12px] placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500/40"
+          className="ml-auto h-9 w-64 border-[2px] border-[#0a0a0a] bg-white px-3 text-[12px] font-medium placeholder:text-[#0a0a0a]/40 shadow-[2px_2px_0_0_#0a0a0a] focus:outline-none focus:translate-x-[-1px] focus:translate-y-[-1px] focus:shadow-[3px_3px_0_0_#0a0a0a] transition-all"
         />
       </div>
 
       <div className="overflow-hidden brutal bg-white">
         <div className="overflow-x-auto">
           <table className="min-w-[820px] w-full text-[13px]">
-            <thead className="text-[11px] tracking-tight text-slate-500 bg-[#F1ECDB] border-b border-[#0a0a0a]/10">
+            <thead className="bg-[#F1ECDB] border-b-[2px] border-[#0a0a0a]">
               <tr>
-                <th className="text-left py-2 px-3 font-medium">사용자</th>
-                <th className="text-left py-2 px-3 font-medium w-24">권한</th>
-                <th className="text-left py-2 px-3 font-medium w-28">상태</th>
-                <th className="text-left py-2 px-3 font-medium">처리 정보</th>
-                <th className="text-right py-2 px-3 font-medium w-48">관리</th>
+                <TH>사용자</TH>
+                <TH className="w-24">권한</TH>
+                <TH className="w-28">상태</TH>
+                <TH>처리 정보</TH>
+                <TH align="right" className="w-48">관리</TH>
               </tr>
             </thead>
             <tbody>
@@ -94,7 +94,7 @@ export default function UserApprovalTable({ rows }: { rows: UserRow[] }) {
                   </td>
                 </tr>
               ) : (
-                filtered.map((r) => <UserRowItem key={r.id} row={r} />)
+                filtered.map((r, i) => <UserRowItem key={r.id} row={r} zebra={i % 2 === 1} />)
               )}
             </tbody>
           </table>
@@ -104,7 +104,18 @@ export default function UserApprovalTable({ rows }: { rows: UserRow[] }) {
   );
 }
 
-function UserRowItem({ row }: { row: UserRow }) {
+function TH({
+  children, align = "left", className = "",
+}: { children: React.ReactNode; align?: "left" | "right" | "center"; className?: string }) {
+  const a = align === "right" ? "text-right" : align === "center" ? "text-center" : "text-left";
+  return (
+    <th className={`px-3 py-3 ${a} text-[11px] font-extrabold uppercase tracking-[.12em] text-[#0a0a0a] whitespace-nowrap ${className}`}>
+      {children}
+    </th>
+  );
+}
+
+function UserRowItem({ row, zebra = false }: { row: UserRow; zebra?: boolean }) {
   const [pending, start] = useTransition();
 
   function onApprove() {
@@ -140,51 +151,55 @@ function UserRowItem({ row }: { row: UserRow }) {
       ? { label: "거부됨", tone: "danger" }
       : { label: "대기 중", tone: "warning" };
 
+  const bgCls = zebra ? "bg-[#FAF7EC]/40" : "bg-white";
+
   return (
-    <tr className={`border-b border-[#0a0a0a]/10 last:border-0 hover:bg-slate-50/60 ${pending ? "opacity-50" : ""}`}>
-      <td className="py-2 px-3">
-        <div className="font-medium text-slate-900 break-all">
+    <tr className={`border-b border-[#0a0a0a]/10 last:border-0 ${bgCls} hover:bg-yellow-100 ${pending ? "opacity-50" : ""}`}>
+      <td className="py-3 px-3">
+        <div className="font-extrabold text-[#0a0a0a] break-all">
           {row.email}
           {row.isMe && (
-            <span className="ml-1.5 text-[10px] text-violet-600">(나)</span>
+            <span className="ml-1.5 inline-block border-[1.5px] border-[#0a0a0a] bg-violet-500 px-1 py-0 text-[9px] font-extrabold uppercase tracking-wider text-white">나</span>
           )}
         </div>
-        {row.fullName && <div className="text-[11px] text-slate-500">{row.fullName}</div>}
-        <div className="text-[10px] text-slate-400">가입 {fmtDate(row.createdAt)}</div>
+        {row.fullName && <div className="text-[11px] font-medium text-[#0a0a0a]/65">{row.fullName}</div>}
+        <div className="font-mono text-[10px] font-bold text-[#0a0a0a]/50 mt-0.5">가입 {fmtDate(row.createdAt)}</div>
       </td>
-      <td className="py-2 px-3">
+      <td className="py-3 px-3">
         {row.role ? (
           <Badge tone={ROLE_TONE[row.role]} size="xs">
-            <span className="font-semibold">{row.role}</span>
+            {row.role}
           </Badge>
         ) : (
-          <span className="text-[10px] text-slate-400">조직 미배정</span>
+          <span className="text-[10px] font-bold uppercase tracking-wider text-[#0a0a0a]/40">조직 미배정</span>
         )}
       </td>
-      <td className="py-2 px-3">
+      <td className="py-3 px-3">
         <Badge tone={status.tone} size="sm" variant="dot">{status.label}</Badge>
       </td>
-      <td className="py-2 px-3 text-[11px] text-slate-500">
-        {row.isApproved && row.approvedAt && <>승인 {fmtDate(row.approvedAt)}</>}
+      <td className="py-3 px-3">
+        {row.isApproved && row.approvedAt && (
+          <p className="font-mono text-[11px] font-medium text-[#0a0a0a]/65">승인 {fmtDate(row.approvedAt)}</p>
+        )}
         {!row.isApproved && row.rejectedAt && (
           <>
-            거부 {fmtDate(row.rejectedAt)}
+            <p className="font-mono text-[11px] font-medium text-[#0a0a0a]/65">거부 {fmtDate(row.rejectedAt)}</p>
             {row.rejectionReason && (
-              <div className="text-[10px] text-rose-600 truncate max-w-[260px]" title={row.rejectionReason}>
+              <div className="mt-1 text-[10px] font-bold text-rose-700 truncate max-w-[260px]" title={row.rejectionReason}>
                 사유: {row.rejectionReason}
               </div>
             )}
           </>
         )}
       </td>
-      <td className="py-2 px-3 text-right">
-        <div className="inline-flex items-center gap-1">
+      <td className="py-3 px-3 text-right">
+        <div className="inline-flex items-center gap-1.5">
           {!row.isApproved && (
             <button
               type="button"
               onClick={onApprove}
               disabled={pending || row.isMe}
-              className="text-[11px] px-2 py-1 rounded bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-50"
+              className="text-[11px] font-extrabold uppercase tracking-wider px-2.5 py-1 border-[2px] border-[#0a0a0a] bg-emerald-400 text-emerald-950 shadow-[2px_2px_0_0_#0a0a0a] hover:translate-x-[-1px] hover:translate-y-[-1px] hover:shadow-[3px_3px_0_0_#0a0a0a] disabled:opacity-50 transition-all"
             >
               승인
             </button>
@@ -194,7 +209,7 @@ function UserRowItem({ row }: { row: UserRow }) {
               type="button"
               onClick={onRevoke}
               disabled={pending}
-              className="text-[11px] px-2 py-1 rounded bg-slate-100 text-slate-700 hover:bg-slate-200 disabled:opacity-50"
+              className="text-[11px] font-extrabold uppercase tracking-wider px-2.5 py-1 border-[2px] border-[#0a0a0a] bg-white text-[#0a0a0a] hover:bg-yellow-300 disabled:opacity-50 transition-colors"
             >
               승인 박탈
             </button>
@@ -204,7 +219,7 @@ function UserRowItem({ row }: { row: UserRow }) {
               type="button"
               onClick={onReject}
               disabled={pending || row.isMe}
-              className="text-[11px] px-2 py-1 rounded border border-rose-200 text-rose-700 hover:bg-rose-50 disabled:opacity-50"
+              className="text-[11px] font-extrabold uppercase tracking-wider px-2.5 py-1 border-[2px] border-[#0a0a0a] bg-rose-500 text-white shadow-[2px_2px_0_0_#0a0a0a] hover:translate-x-[-1px] hover:translate-y-[-1px] hover:shadow-[3px_3px_0_0_#0a0a0a] disabled:opacity-50 transition-all"
             >
               거부
             </button>
@@ -216,9 +231,7 @@ function UserRowItem({ row }: { row: UserRow }) {
 }
 
 function Chip({
-  active,
-  onClick,
-  children,
+  active, onClick, children,
 }: {
   active: boolean;
   onClick: () => void;
@@ -228,10 +241,10 @@ function Chip({
     <button
       type="button"
       onClick={onClick}
-      className={`text-[12px] px-3 py-1.5 rounded-full border transition-colors ${
+      className={`text-[11px] font-extrabold uppercase tracking-wider px-3 py-1.5 border-[2px] border-[#0a0a0a] transition-all ${
         active
-          ? "bg-slate-900 text-white border-slate-900"
-          : "bg-white border-[#0a0a0a] text-slate-700 hover:bg-slate-50"
+          ? "bg-[#0a0a0a] text-white shadow-[2px_2px_0_0_#0a0a0a]"
+          : "bg-white text-[#0a0a0a] hover:bg-yellow-300"
       }`}
     >
       {children}
