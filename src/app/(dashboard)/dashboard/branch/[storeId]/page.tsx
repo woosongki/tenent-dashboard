@@ -61,12 +61,12 @@ export default async function StoreDetailPage({
         {/* Header */}
         <div>
           <div className="flex items-center gap-2">
-            <span className={`inline-block px-2 py-0.5 text-[10px] font-medium rounded border ${BRAND_BADGE[store.brand]}`}>
+            <span className={`inline-block border-[1.5px] border-[#0a0a0a] bg-[#0a0a0a] text-white px-2 py-0 text-[10px] font-extrabold uppercase tracking-wider`}>
               {store.brand}
             </span>
-            <span className="text-[11px] text-slate-400">{store.type}</span>
+            <span className="text-[11px] font-bold uppercase tracking-wider text-[#0a0a0a]/55">{store.type}</span>
             {store.hasKimsclub && (
-              <span className="text-[10px] text-slate-500 px-1.5 py-0.5 rounded border border-slate-200">
+              <span className="inline-block border-[1.5px] border-[#0a0a0a] bg-yellow-300 px-1.5 py-0 text-[10px] font-extrabold uppercase tracking-wider text-[#0a0a0a]">
                 킴스클럽 입점
               </span>
             )}
@@ -74,9 +74,9 @@ export default async function StoreDetailPage({
           <h1 className="mt-1.5 text-[22px] font-extrabold tracking-tight text-slate-900">
             {store.name}
           </h1>
-          <p className="mt-1 text-[13px] text-slate-500">
+          <p className="mt-1 text-[13px] font-medium text-[#0a0a0a]/65">
             {store.address}
-            {store.phone && <span className="ml-3 text-slate-400">· {store.phone}</span>}
+            {store.phone && <span className="ml-3 font-mono text-[#0a0a0a]/55">· {store.phone}</span>}
           </p>
         </div>
 
@@ -105,11 +105,11 @@ export default async function StoreDetailPage({
               <>
                 <div className="flex items-center gap-2 mb-3">
                   <span
-                    className={`inline-block px-2 py-0.5 text-[11px] font-semibold rounded border ${TRADE_AREA_BADGE[tradeArea.tradeAreaType] ?? TRADE_AREA_BADGE["복합 상권"]}`}
+                    className={`inline-block border-[1.5px] border-[#0a0a0a] bg-violet-300 px-2 py-0 text-[11px] font-extrabold uppercase tracking-wider text-violet-950`}
                   >
                     {tradeArea.tradeAreaType}
                   </span>
-                  <span className="text-[11px] text-slate-500 tabular-nums">
+                  <span className="font-mono text-[11px] font-extrabold tabular-nums text-[#0a0a0a]">
                     총 {tradeArea.total.toLocaleString()}개 점포
                   </span>
                 </div>
@@ -124,21 +124,21 @@ export default async function StoreDetailPage({
                 </div>
 
                 {tradeArea.competitorCount > 0 && (
-                  <div className="mt-4 rounded-lg bg-rose-50 border border-rose-200 px-3 py-2 text-[12px]">
-                    <span className="font-semibold text-rose-900">⚠ 경쟁점 {tradeArea.competitorCount}개</span>
-                    <p className="text-[10px] text-rose-700 mt-0.5">반경 내 백화점·아울렛·대형마트·복합쇼핑센터</p>
+                  <div className="mt-4 border-[2px] border-[#0a0a0a] bg-rose-100 px-3 py-2 text-[12px] shadow-[3px_3px_0_0_#0a0a0a]">
+                    <span className="font-extrabold uppercase tracking-wider text-rose-700">⚠ 경쟁점 {tradeArea.competitorCount}개</span>
+                    <p className="text-[10px] font-medium text-rose-700 mt-0.5">반경 내 백화점·아울렛·대형마트·복합쇼핑센터</p>
                   </div>
                 )}
 
-                <p className="mt-3 text-[10px] text-slate-400">
+                <p className="mt-3 text-[10px] font-bold uppercase tracking-wider text-[#0a0a0a]/55">
                   출처: 소상공인시장진흥공단 상가업소 OpenAPI · 수집{" "}
                   {new Date(tradeArea.fetchedAt).toLocaleDateString("ko-KR")}
                 </p>
               </>
             ) : (
-              <div className="rounded-lg bg-slate-50 border border-slate-200 p-3 text-[12px]">
-                <p className="text-slate-700">상권 데이터 수집 전</p>
-                <p className="mt-1 text-[11px] text-slate-500 leading-relaxed">
+              <div className="border-[2px] border-[#0a0a0a] bg-[#F1ECDB] p-3 text-[12px]">
+                <p className="font-extrabold uppercase tracking-wider text-[#0a0a0a]">상권 데이터 수집 전</p>
+                <p className="mt-1 text-[11px] font-medium text-[#0a0a0a]/70 leading-relaxed">
                   <code className="px-1 py-0.5 rounded bg-slate-200 text-[10px]">node scripts/fetch-trade-area.mjs --only {store.id}</code>{" "}
                   실행 후 새로고침
                 </p>
@@ -152,7 +152,7 @@ export default async function StoreDetailPage({
             className="lg:col-span-3"
           >
             <div className="flex items-center gap-2 mb-3 flex-wrap">
-              <span className="inline-block px-2 py-0.5 text-[10px] font-medium rounded border border-slate-200 bg-slate-50 text-slate-700">
+              <span className="inline-block border-[1.5px] border-[#0a0a0a] bg-[#F1ECDB] px-2 py-0 text-[10px] font-extrabold uppercase tracking-wider text-[#0a0a0a]">
                 {rent.scope}
               </span>
               {rent.level !== "lawd" && (
@@ -184,13 +184,13 @@ export default async function StoreDetailPage({
               />
             </div>
 
-            <p className="mt-3 text-[10px] text-slate-400 leading-relaxed">
+            <p className="mt-3 text-[10px] font-bold uppercase tracking-wider text-[#0a0a0a]/55 leading-relaxed">
               출처:{" "}
               <a
                 href={rentSource.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="underline hover:text-slate-600"
+                className="underline hover:text-[#0a0a0a] font-bold"
               >
                 {rentSource.publisher} {rentSource.report}
               </a>{" "}
@@ -236,14 +236,14 @@ export default async function StoreDetailPage({
                 />
               </div>
 
-              <div className="rounded-lg bg-slate-50 px-4 py-3 mb-4">
-                <p className="text-[11px] text-slate-500 mb-1">
-                  점포 밀도 백분위 <span className="text-slate-400">(cohort 내)</span>
+              <div className="border-[2px] border-[#0a0a0a] bg-[#F1ECDB] px-4 py-3 mb-4 shadow-[3px_3px_0_0_#0a0a0a]">
+                <p className="text-[11px] font-extrabold uppercase tracking-[.12em] text-[#0a0a0a] mb-2">
+                  점포 밀도 백분위 <span className="font-mono text-[#0a0a0a]/65">(cohort 내)</span>
                 </p>
                 <div className="flex items-center gap-3">
-                  <div className="flex-1 h-2 rounded-full bg-slate-200 overflow-hidden">
+                  <div className="flex-1 h-3 border-[1.5px] border-[#0a0a0a] bg-white overflow-hidden">
                     <div
-                      className="h-full bg-slate-900 transition-all"
+                      className="h-full bg-[#0a0a0a] transition-all"
                       style={{ width: `${cohort.totalPercentile}%` }}
                     />
                   </div>
@@ -251,14 +251,14 @@ export default async function StoreDetailPage({
                     {cohort.totalPercentile}%
                   </span>
                 </div>
-                <p className="text-[10px] text-slate-400 mt-1">
+                <p className="text-[10px] font-medium text-[#0a0a0a]/55 mt-1.5">
                   cohort {cohort.cohortSize}개 매장 중 점포 수 기준 백분위 (0=최저, 100=최고)
                 </p>
               </div>
 
               {cohort.peers.length > 0 && (
                 <div>
-                  <p className="text-[11px] font-medium text-slate-700 mb-2">
+                  <p className="text-[11px] font-extrabold uppercase tracking-[.12em] text-[#0a0a0a] mb-2">
                     유사 점포 밀도 매장
                   </p>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
@@ -266,11 +266,11 @@ export default async function StoreDetailPage({
                       <Link
                         key={p.id}
                         href={`/dashboard/branch/${p.id}`}
-                        className="rounded-lg border border-slate-200 bg-white px-3 py-2 hover:border-slate-400 transition-colors"
+                        className="border-[2px] border-[#0a0a0a] bg-white px-3 py-2 hover:bg-yellow-300 hover:translate-x-[-1px] hover:translate-y-[-1px] hover:shadow-[3px_3px_0_0_#0a0a0a] transition-all"
                       >
-                        <p className="text-[11px] text-slate-500">{p.brand}</p>
+                        <p className="text-[10px] font-extrabold uppercase tracking-wider text-[#0a0a0a]/55">{p.brand}</p>
                         <p className="text-[12px] font-medium text-slate-900">{p.name}</p>
-                        <p className="text-[10px] text-slate-500 tabular-nums mt-0.5">
+                        <p className="font-mono text-[10px] font-extrabold tabular-nums text-[#0a0a0a]/70 mt-1">
                           {p.total.toLocaleString()}개 · 경쟁점 {p.competitorCount}
                         </p>
                       </Link>
@@ -281,10 +281,10 @@ export default async function StoreDetailPage({
             </Section>
           ) : (
             <Section title="같은 상권 유형 매장 비교" className="lg:col-span-3">
-              <p className="text-[13px] text-slate-500">
+              <p className="text-[13px] font-bold uppercase tracking-wider text-[#0a0a0a]/65">
                 cohort 비교 데이터 준비 중입니다.
               </p>
-              <p className="mt-1 text-[11px] text-slate-400">
+              <p className="mt-1 text-[11px] font-bold uppercase tracking-wider text-[#0a0a0a]/55">
                 상권 데이터가 수집된 점포가 충분히 모이면 활성화됩니다.
               </p>
             </Section>
@@ -306,7 +306,7 @@ export default async function StoreDetailPage({
 
                 <div className="overflow-x-auto -mx-5 px-5">
                   <table className="min-w-[640px] w-full text-[13px]">
-                    <thead className="text-[11px] tracking-tight text-slate-500">
+                    <thead className="text-[11px] font-extrabold uppercase tracking-[.12em] text-[#0a0a0a]">
                       <tr className="border-b border-[#0a0a0a]/10 bg-[#F1ECDB]">
                         <th className="text-left py-2 px-3 font-medium tracking-tight">건물명</th>
                         <th className="text-left py-2 px-3 font-medium tracking-tight">동</th>
@@ -321,16 +321,16 @@ export default async function StoreDetailPage({
                         <tr key={i} className="border-b border-[#0a0a0a]/10">
                           <td className="py-2 px-3 text-slate-900">{item.name || "-"}</td>
                           <td className="py-2 px-3 text-slate-500">{item.district}</td>
-                          <td className="py-2 px-3 text-right tabular-nums text-slate-700">
+                          <td className="py-2 px-3 text-right font-mono tabular-nums text-[#0a0a0a]">
                             {item.area_m2}㎡
                           </td>
-                          <td className="py-2 px-3 text-right tabular-nums text-slate-700">
+                          <td className="py-2 px-3 text-right font-mono tabular-nums text-[#0a0a0a]">
                             {item.floor}층
                           </td>
                           <td className="py-2 px-3 text-right tabular-nums font-medium text-slate-900">
                             {formatPrice10k(item.price_10k)}
                           </td>
-                          <td className="py-2 px-3 text-right text-slate-500 tabular-nums">
+                          <td className="py-2 px-3 text-right font-mono tabular-nums text-[#0a0a0a]/65">
                             {item.deal_date}
                           </td>
                         </tr>
@@ -339,16 +339,16 @@ export default async function StoreDetailPage({
                   </table>
                 </div>
                 {trade.items.length > 30 && (
-                  <p className="mt-2 text-[11px] text-slate-400 text-center">
+                  <p className="mt-2 text-[11px] font-bold uppercase tracking-wider text-[#0a0a0a]/55 text-center">
                     총 {trade.items.length}건 중 최근 30건 표시
                   </p>
                 )}
-                <p className="mt-3 text-[10px] text-slate-400">
+                <p className="mt-3 text-[10px] font-bold uppercase tracking-wider text-[#0a0a0a]/55">
                   출처: 국토교통부 상업용 부동산 실거래가 신고 (k-skill-proxy 캐시)
                 </p>
               </>
             ) : (
-              <p className="text-[13px] text-slate-500">
+              <p className="text-[13px] font-bold uppercase tracking-wider text-[#0a0a0a]/65">
                 해당 기간 내 거래 신고 내역이 없습니다.
               </p>
             )}
@@ -447,7 +447,7 @@ function Bar({
   return (
     <div>
       <div className="flex items-baseline justify-between text-[11px] mb-0.5">
-        <span className="text-slate-700">{label}</span>
+        <span className="font-extrabold uppercase tracking-wider text-[#0a0a0a]">{label}</span>
         <span className="text-slate-500 tabular-nums">
           {count.toLocaleString()} <span className="text-slate-400">({pct}%)</span>
         </span>
