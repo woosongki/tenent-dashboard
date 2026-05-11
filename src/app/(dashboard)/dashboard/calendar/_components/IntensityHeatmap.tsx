@@ -42,14 +42,14 @@ export default function IntensityHeatmap({ weeks, onWeekClick }: Props) {
           <div className="grid grid-cols-[36px_repeat(12,minmax(0,1fr))] gap-1.5 items-center">
             <span />
             {MONTHS.map((m) => (
-              <div key={m} className="text-[10px] font-semibold text-slate-500 text-center">{m}</div>
+              <div key={m} className="text-[10px] font-extrabold uppercase tracking-wider text-[#0a0a0a] text-center">{m}</div>
             ))}
           </div>
 
           {/* 4주 행 */}
           {[1, 2, 3, 4].map((wkNo) => (
             <div key={wkNo} className="grid grid-cols-[36px_repeat(12,minmax(0,1fr))] gap-1.5 items-center">
-              <span className="text-[10px] text-slate-400 text-right pr-1">{wkNo}주</span>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-[#0a0a0a]/55 text-right pr-1">{wkNo}주</span>
               {MONTHS.map((m) => {
                 const w = lookup.get(`${m}|${String(wkNo)}`);
                 return (
@@ -86,16 +86,16 @@ function cellCls(intensity?: "high" | "mid" | "low") {
     case "high": return "bg-rose-500/85 hover:bg-rose-500";
     case "mid":  return "bg-amber-400/85 hover:bg-amber-400";
     case "low":  return "bg-emerald-500/80 hover:bg-emerald-500";
-    default:     return "bg-slate-100 cursor-default";
+    default:     return "bg-[#F1ECDB] cursor-default";
   }
 }
 
 function Legend({ color, label, count }: { color: string; label: string; count: number }) {
   return (
     <span className="inline-flex items-center gap-1.5">
-      <span className={`h-3 w-3 rounded ${color}`} />
-      <span className="text-slate-600 font-medium">{label}</span>
-      <span className="text-slate-400 tabular-nums">{count}주</span>
+      <span className={`h-3 w-3 border-[1.5px] border-[#0a0a0a] ${color}`} />
+      <span className="font-bold uppercase tracking-wider text-[#0a0a0a]">{label}</span>
+      <span className="font-mono font-extrabold text-[#0a0a0a]/70 tabular-nums">{count}주</span>
     </span>
   );
 }

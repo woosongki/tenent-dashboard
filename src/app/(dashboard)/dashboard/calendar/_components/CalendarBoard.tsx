@@ -84,7 +84,7 @@ export default function CalendarBoard({ weeks, matches, contacts, assignments, c
             {INTENSITY_LABEL[g]}
           </Chip>
         ))}
-        <label className="ml-2 inline-flex items-center gap-1.5 text-[12px] text-slate-600">
+        <label className="ml-2 inline-flex items-center gap-1.5 text-[12px] text-[#0a0a0a]/75">
           <input
             type="checkbox"
             checked={onlyMatched}
@@ -111,14 +111,14 @@ export default function CalendarBoard({ weeks, matches, contacts, assignments, c
         return (
           <section key={mo} className="brutal bg-white p-5">
             <header className="flex flex-wrap items-center gap-3 pb-2 mb-3 border-b border-[#0a0a0a]/10">
-              <h2 className="text-[18px] font-extrabold tracking-tight text-slate-900">{mo}</h2>
+              <h2 className="font-display text-[18px] leading-none text-[#0a0a0a]">{mo}</h2>
               <span
-                className="inline-block px-2 py-0.5 text-[11px] font-semibold rounded-full"
+                className="inline-block border-[1.5px] border-[#0a0a0a] px-2 py-0 text-[10px] font-extrabold uppercase tracking-wider"
                 style={{ background: sty.bg, color: sty.tx }}
               >
                 {head.season}
               </span>
-              <span className="text-[11px] text-slate-500 leading-relaxed">{head.monthKw}</span>
+              <span className="text-[11px] text-[#0a0a0a]/65 leading-relaxed">{head.monthKw}</span>
             </header>
             <div className="grid gap-3 grid-cols-1 md:grid-cols-2 xl:grid-cols-4">
               {ws.map((w) => (
@@ -183,21 +183,21 @@ function WeekCard({
       {/* 헤더 */}
       <div className="px-3 py-2.5 border-b border-[#0a0a0a]/10">
         <div className="flex items-center gap-1.5 mb-1">
-          <span className="text-[10px] font-semibold text-slate-400">{week.month} {week.weekNo}주</span>
+          <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#0a0a0a]/55">{week.month} {week.weekNo}주</span>
           <span className={`inline-block w-1.5 h-1.5 rounded-full ${ic.dot}`} />
           <span className="text-[10px] text-amber-500">{week.grade}</span>
           {canEditWeek && (
             <button
               type="button"
               onClick={onEdit}
-              className="ml-auto text-[10px] text-slate-400 hover:text-violet-600"
+              className="ml-auto text-[10px] font-bold uppercase tracking-wider text-[#0a0a0a]/55 hover:text-violet-600"
               title="주차 편집"
             >
               ✏️ 편집
             </button>
           )}
         </div>
-        <p className="text-[12.5px] font-bold text-slate-900 leading-tight whitespace-pre-line">
+        <p className="text-[12.5px] font-extrabold text-[#0a0a0a] leading-tight whitespace-pre-line">
           {week.concept}
         </p>
       </div>
@@ -244,7 +244,7 @@ function WeekCard({
                   key={m.contact.no}
                   href={`/dashboard/goals?tab=popup`}
                   className={`inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded border ${
-                    m.contact.stage ? STAGE_BADGE[m.contact.stage] ?? "bg-slate-50 text-slate-700 border-slate-200" : "bg-slate-50 text-slate-700 border-slate-200"
+                    m.contact.stage ? STAGE_BADGE[m.contact.stage] ?? "bg-slate-50 text-[#0a0a0a] border-slate-200" : "bg-slate-50 text-[#0a0a0a] border-slate-200"
                   } hover:underline`}
                   title={`${m.contact.brand} · ${m.contact.stage ?? "단계 미상"} · ${m.contact.field ?? ""}`}
                 >
@@ -253,7 +253,7 @@ function WeekCard({
                 </Link>
               ))}
               {matches.length > 8 && (
-                <span className="text-[10px] text-slate-400">+{matches.length - 8}</span>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-[#0a0a0a]/55">+{matches.length - 8}</span>
               )}
             </div>
           </Section>
@@ -272,9 +272,9 @@ function WeekCard({
         {week.extEvents.length > 0 && (
           <Section title="📅 외부 이벤트">
             {week.extEvents.map((e, i) => (
-              <div key={i} className="text-[10.5px] text-slate-600">
-                <span className="font-medium text-slate-700">{e.label}</span>
-                <span className="text-slate-500 ml-1 whitespace-pre-line">{e.text}</span>
+              <div key={i} className="text-[10.5px] font-medium text-[#0a0a0a]/75">
+                <span className="font-extrabold text-[#0a0a0a]">{e.label}</span>
+                <span className="text-[#0a0a0a]/65 ml-1 whitespace-pre-line">{e.text}</span>
               </div>
             ))}
           </Section>
@@ -283,12 +283,12 @@ function WeekCard({
         {/* 단일 이벤트/핫소스/베스트 */}
         {week.item && (
           <Section title="🎯 단일대상">
-            <p className="text-[10.5px] text-slate-600 whitespace-pre-line">{week.item}</p>
+            <p className="text-[10.5px] font-medium text-[#0a0a0a]/75 whitespace-pre-line">{week.item}</p>
           </Section>
         )}
         {week.bestCat && (
           <Section title="🏆 베스트 카테고리">
-            <p className="text-[10.5px] text-slate-600 whitespace-pre-line">{week.bestCat}</p>
+            <p className="text-[10.5px] font-medium text-[#0a0a0a]/75 whitespace-pre-line">{week.bestCat}</p>
           </Section>
         )}
       </div>
@@ -299,7 +299,7 @@ function WeekCard({
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div>
-      <p className="text-[9px] font-bold tracking-tight text-slate-400 mb-1">{title}</p>
+      <p className="text-[9px] font-extrabold uppercase tracking-[.14em] text-[#0a0a0a]/65 mb-1">{title}</p>
       <div className="space-y-1">{children}</div>
     </div>
   );
@@ -309,7 +309,7 @@ function Item({ label, color, text }: { label: string; color?: string; text: str
   return (
     <div className="text-[10.5px]">
       <span
-        className="inline-block px-1 py-0 rounded text-[9px] font-semibold mr-1 align-middle"
+        className="inline-block border-[1px] border-[#0a0a0a] px-1 py-0 text-[9px] font-extrabold uppercase tracking-wider mr-1 align-middle"
         style={{
           background: color ? `${color}1a` : "#f1f5f9",
           color: color ?? "#475569",
@@ -317,7 +317,7 @@ function Item({ label, color, text }: { label: string; color?: string; text: str
       >
         {label}
       </span>
-      <span className="text-slate-600 whitespace-pre-line">{text}</span>
+      <span className="text-[#0a0a0a]/75 whitespace-pre-line">{text}</span>
     </div>
   );
 }
@@ -376,15 +376,15 @@ function WeekEditModal({ week, onClose }: { week: CalendarWeek; onClose: () => v
         onClick={(e) => e.stopPropagation()}
       >
         {/* 헤더 */}
-        <div className="px-5 py-3 border-b border-slate-200 flex items-center gap-2">
-          <h3 className="text-[15px] font-bold text-slate-900">
+        <div className="px-5 py-3 border-b-[2px] border-[#0a0a0a] bg-[#F1ECDB] flex items-center gap-2">
+          <h3 className="font-display text-[18px] leading-none text-[#0a0a0a]">
             {week.month} {week.weekNo}주 편집
           </h3>
-          <span className="text-[11px] text-slate-400">{week.season}</span>
+          <span className="text-[11px] text-[#0a0a0a]/55">{week.season}</span>
           <button
             type="button"
             onClick={onClose}
-            className="ml-auto text-slate-400 hover:text-slate-700"
+            className="ml-auto text-[#0a0a0a]/55 hover:text-[#0a0a0a]"
             aria-label="닫기"
           >
             ✕
@@ -481,7 +481,7 @@ function WeekEditModal({ week, onClose }: { week: CalendarWeek; onClose: () => v
         </div>
 
         {/* 푸터 */}
-        <div className="px-5 py-3 border-t border-slate-200 bg-slate-50 flex items-center justify-end gap-2">
+        <div className="px-5 py-3 border-t-[2px] border-[#0a0a0a] bg-[#F1ECDB] flex items-center justify-end gap-2">
           <button
             type="button"
             onClick={onClose}
@@ -510,9 +510,9 @@ const inputCls =
 function Field({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) {
   return (
     <div>
-      <label className="block text-[11px] font-semibold text-slate-600 mb-1">
+      <label className="block text-[11px] font-extrabold uppercase tracking-[.12em] text-[#0a0a0a] mb-1">
         {label}
-        {hint && <span className="ml-2 font-normal text-slate-400">{hint}</span>}
+        {hint && <span className="ml-2 font-medium text-[#0a0a0a]/55">{hint}</span>}
       </label>
       {children}
     </div>
@@ -530,7 +530,6 @@ function PinChip({
 }) {
   const [pending, start] = useTransition();
   const stage = contact?.stage ?? null;
-  const cls = stage ? STAGE_BADGE[stage] ?? "bg-amber-50 text-amber-700 border-amber-200" : "bg-amber-50 text-amber-700 border-amber-200";
 
   function onRemove() {
     if (!canEdit) return;
@@ -544,23 +543,23 @@ function PinChip({
 
   return (
     <span
-      className={`inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded border ${cls} ${
+      className={`inline-flex items-center gap-1 text-[10px] font-extrabold uppercase tracking-wider px-1.5 py-0.5 border-[1.5px] border-[#0a0a0a] bg-yellow-200 text-[#0a0a0a] ${
         pending ? "opacity-50" : ""
       }`}
       title={`${assignment.contactBrand}${stage ? " · " + stage : ""}${contact?.field ? " · " + contact.field : ""}`}
     >
-      <span className="text-amber-700 font-bold">📍</span>
-      <Link href={`/dashboard/goals?tab=popup`} className="font-medium hover:underline">
+      <span>📍</span>
+      <Link href={`/dashboard/goals?tab=popup`} className="hover:underline">
         {assignment.contactBrand}
       </Link>
-      {stage && <span className="text-[9px] opacity-70">{stage}</span>}
+      {stage && <span className="text-[9px] font-bold opacity-65">{stage}</span>}
       {canEdit && (
         <button
           type="button"
           onClick={onRemove}
           disabled={pending}
           aria-label="핀 해제"
-          className="ml-0.5 text-slate-400 hover:text-rose-600"
+          className="ml-0.5 h-3.5 w-3.5 inline-flex items-center justify-center border-[1.5px] border-[#0a0a0a] bg-white text-[#0a0a0a] hover:bg-rose-500 hover:text-white transition-colors"
         >
           ✕
         </button>
@@ -611,7 +610,7 @@ function AddContactPicker({
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="text-[10px] px-1.5 py-0.5 rounded border border-dashed border-slate-300 text-slate-500 hover:border-violet-400 hover:text-violet-700"
+        className="text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 border-[2px] border-dashed border-[#0a0a0a] bg-white text-[#0a0a0a] hover:bg-yellow-300"
       >
         + 컨텍판 추가
       </button>
@@ -623,11 +622,11 @@ function AddContactPicker({
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder="브랜드·업체 검색"
-            className="h-7 w-full rounded border border-slate-200 px-2 text-[11px] focus:outline-none focus:ring-2 focus:ring-violet-500/40"
+            className="h-7 w-full border-[2px] border-[#0a0a0a] bg-white px-2 text-[11px] font-medium shadow-[2px_2px_0_0_#0a0a0a] focus:outline-none focus:translate-x-[-1px] focus:translate-y-[-1px] focus:shadow-[3px_3px_0_0_#0a0a0a] transition-all"
           />
           <ul className="mt-1 max-h-56 overflow-y-auto">
             {candidates.length === 0 ? (
-              <li className="text-[11px] text-slate-400 px-2 py-3 text-center">결과 없음</li>
+              <li className="text-[11px] font-bold uppercase tracking-wider text-[#0a0a0a]/40 px-2 py-3 text-center">결과 없음</li>
             ) : (
               candidates.map((c) => (
                 <li key={c.no}>
@@ -638,18 +637,18 @@ function AddContactPicker({
                     className="w-full text-left px-2 py-1.5 border-l-[3px] border-transparent text-[11px] hover:bg-yellow-300 hover:border-[#0a0a0a] disabled:opacity-50 transition-colors"
                   >
                     <div className="flex items-center justify-between gap-2">
-                      <span className="font-medium text-slate-800 truncate">{c.brand}</span>
+                      <span className="font-extrabold text-[#0a0a0a] truncate">{c.brand}</span>
                       {c.stage && (
                         <span
                           className={`shrink-0 text-[9px] px-1 py-0 rounded border ${
-                            STAGE_BADGE[c.stage] ?? "bg-slate-50 text-slate-700 border-slate-200"
+                            STAGE_BADGE[c.stage] ?? "bg-slate-50 text-[#0a0a0a] border-slate-200"
                           }`}
                         >
                           {c.stage}
                         </span>
                       )}
                     </div>
-                    <div className="text-[9.5px] text-slate-400 truncate">
+                    <div className="text-[9.5px] font-bold uppercase tracking-wider text-[#0a0a0a]/55 truncate">
                       {c.field ?? "-"}
                       {c.company && c.company !== c.brand ? ` · ${c.company}` : ""}
                     </div>
@@ -661,7 +660,7 @@ function AddContactPicker({
           <button
             type="button"
             onClick={() => { setOpen(false); setQ(""); }}
-            className="mt-1 w-full text-[10px] text-slate-400 hover:text-slate-600"
+            className="mt-1 w-full text-[10px] font-extrabold uppercase tracking-wider text-[#0a0a0a]/55 hover:text-[#0a0a0a] hover:bg-yellow-100 transition-colors"
           >
             닫기
           </button>
@@ -683,7 +682,7 @@ function Chip({
   return (
     <button
       onClick={onClick}
-      className={`text-[12px] px-3 py-1.5 rounded-full border transition-colors inline-flex items-center ${
+      className={`text-[11px] font-extrabold uppercase tracking-wider px-3 py-1.5 border-[2px] transition-all inline-flex items-center ${
         active
           ? "bg-[#0a0a0a] text-white border-[#0a0a0a] shadow-[2px_2px_0_0_#0a0a0a]"
           : "bg-white border-[#0a0a0a] text-[#0a0a0a] hover:bg-yellow-300"
