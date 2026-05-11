@@ -3,8 +3,7 @@ import { redirect } from "next/navigation";
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import { getAttractionRows, getAttractionStats } from "@/lib/attraction/queries";
-import AttractionTable from "./_components/AttractionTable";
-import BranchProgressGrid from "./_components/BranchProgressGrid";
+import BranchAttractionView from "./_components/BranchAttractionView";
 import TopBar from "@/components/layout/TopBar";
 import PageHeader from "@/components/ui/PageHeader";
 import AppFooter from "@/components/ui/AppFooter";
@@ -82,11 +81,8 @@ async function AttractionContent() {
         </div>
       </div>
 
-      {/* Branch heatmap */}
-      <BranchProgressGrid rows={rows} />
-
-      {/* Table */}
-      <AttractionTable rows={rows} />
+      {/* Branch heatmap + Table — 지점 셀 클릭 시 표 필터 연동 */}
+      <BranchAttractionView rows={rows} />
     </div>
   );
 }

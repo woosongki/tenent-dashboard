@@ -251,9 +251,13 @@ function RowModal({ row, onClose }: ModalProps) {
 // ── Main Table ───────────────────────────────────────────────
 interface Props {
   rows: AttractionRow[];
+  /** 외부(BranchProgressGrid)에서 선택된 지점 — 표를 해당 지점으로 필터 */
+  branchFilter?: string | null;
+  /** 표 안의 지점 칩에서 X 누르면 부모 상태 초기화 */
+  onClearBranch?: () => void;
 }
 
-export default function AttractionTable({ rows }: Props) {
+export default function AttractionTable({ rows, branchFilter = null, onClearBranch }: Props) {
   const [filterCat,    setFilterCat]    = useState<string>("전체");
   const [filterStatus, setFilterStatus] = useState<string>("전체");
   const [editRow,      setEditRow]      = useState<Partial<AttractionRow> | null | undefined>(undefined);
@@ -263,7 +267,8 @@ export default function AttractionTable({ rows }: Props) {
     const catOk    = filterCat    === "전체" || r.category === filterCat;
     const statusOk = filterStatus === "전체" ||
       (filterStatus === "완료" ? r.is_completed : !r.is_completed);
-    return catOk && statusOk;
+    const branchOk = !branchFilter || r.branch === branchFilter;
+    return catOk && statusOk && branchOk;
   });
 
   function handleDelete(id: string, name: string) {
@@ -332,9 +337,31 @@ export default function AttractionTable({ rows }: Props) {
         </button>
       </div>
 
+      {/* Active branch chip */}
+      {branchFilter && (
+        <div className="flex items-center gap-2">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-violet-50 px-3 py-1 text-xs font-medium text-violet-700 border border-violet-200">
+            지점: {branchFilter}
+            {onClearBranch && (
+              <button
+                type="button"
+                onClick={onClearBranch}
+                aria-label={`${branchFilter} 필터 해제`}
+                className="ml-0.5 rounded-full p-0.5 text-violet-500 hover:bg-violet-100 hover:text-violet-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400"
+              >
+                <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            )}
+          </span>
+        </div>
+      )}
+
       {/* Count summary */}
       <p className="text-xs text-slate-400">
         총 <span className="font-semibold text-slate-600">{filtered.length}</span>건
+        {branchFilter && ` · ${branchFilter}`}
         {filterCat !== "전체" && ` · ${filterCat}`}
         {filterStatus !== "전체" && ` · ${filterStatus}`}
       </p>

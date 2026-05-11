@@ -1,5 +1,5 @@
 /**
- * 매출 성장 순위 — 매출액 Top5 + 성장률 Top5 듀얼 패널.
+ * 매출 성장 순위 — 매출액 성장 Top5 + 성장률 Top5 듀얼 패널.
  * 데이터 소스: data/sales/brand-sales.json (CSV 변환)
  */
 
@@ -7,23 +7,33 @@ import { GROUP_COLOR, shortBrandName, formatKRWCompact } from "@/lib/sales/forma
 import type { BrandRecord } from "@/lib/sales/csvData";
 
 interface Props {
-  byRevenue: BrandRecord[];
+  byGrowthAmount: BrandRecord[];
   byGrowth: BrandRecord[];
 }
 
-export default function SalesRankingDual({ byRevenue, byGrowth }: Props) {
+/** 매출 성장액(원): current − prev */
+function growthAmount(b: BrandRecord): number {
+  const cur = b.summary.revenue_current ?? 0;
+  const prev = b.summary.revenue_prev ?? 0;
+  return cur - prev;
+}
+
+export default function SalesRankingDual({ byGrowthAmount, byGrowth }: Props) {
   return (
     <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
       <RankingCard
-        title="매출액 Top 5"
-        subtitle="현재 기간(올해) 누적 매출 기준"
-        items={byRevenue}
-        valueOf={(b) => formatKRWCompact(b.summary.revenue_current)}
+        title="매출액 성장 베스트 5"
+        subtitle="전년 동기 대비 증가액 (원)"
+        items={byGrowthAmount}
+        valueOf={(b) => `+${formatKRWCompact(growthAmount(b))}`}
+        valueClass="text-emerald-600"
+        // 좌측 카드: 막대 길이는 증가액 기준으로 정규화
+        barValueOf={(b) => growthAmount(b)}
         showGrowth
       />
       <RankingCard
-        title="성장률 Top 5"
-        subtitle="작년 동기 대비 +%"
+        title="매출성장율 베스트 5"
+        subtitle="전년 동기 대비 +%"
         items={byGrowth}
         valueOf={(b) =>
           b.summary.revenue_growth !== null
@@ -31,6 +41,8 @@ export default function SalesRankingDual({ byRevenue, byGrowth }: Props) {
             : "—"
         }
         valueClass="text-emerald-600"
+        // 우측 카드: 막대 길이는 성장률 기준으로 정규화
+        barValueOf={(b) => b.summary.revenue_growth ?? 0}
       />
     </div>
   );
@@ -42,6 +54,7 @@ function RankingCard({
   items,
   valueOf,
   valueClass = "text-slate-900",
+  barValueOf,
   showGrowth = false,
 }: {
   title: string;
@@ -49,10 +62,12 @@ function RankingCard({
   items: BrandRecord[];
   valueOf: (b: BrandRecord) => string;
   valueClass?: string;
+  /** 막대 길이 정규화에 쓸 값 — 카드별로 의미가 달라 외부 주입 */
+  barValueOf: (b: BrandRecord) => number;
   showGrowth?: boolean;
 }) {
-  const maxRevenue = Math.max(
-    ...items.map((b) => b.summary.revenue_current ?? 0),
+  const maxBar = Math.max(
+    ...items.map((b) => Math.abs(barValueOf(b))),
     1,
   );
 
@@ -73,8 +88,8 @@ function RankingCard({
             const rankLabel = ["🥇", "🥈", "🥉", "4", "5"][i] ?? `${i + 1}`;
             const isMedal = i < 3;
             const c = GROUP_COLOR[b.groupCode] ?? { bg: "bg-slate-50", text: "text-slate-600", hex: "#94a3b8" };
-            const rev = b.summary.revenue_current ?? 0;
-            const barWidth = Math.max(2, Math.round((rev / maxRevenue) * 100));
+            const barAbs = Math.abs(barValueOf(b));
+            const barWidth = Math.max(2, Math.round((barAbs / maxBar) * 100));
             const growth = b.summary.revenue_growth ?? 0;
             const isPositive = growth >= 0;
 

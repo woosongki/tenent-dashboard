@@ -46,7 +46,7 @@ async function SummarySection() {
       <SectionCard
         eyebrow="GROWTH"
         title="매출 성장 순위"
-        description="전월 대비 매출/성장률 상위 브랜드"
+        description="전년 동기 대비 매출액 성장 베스트 5 / 매출성장율 베스트 5"
         action={
           <a
             href="/dashboard/sales"
@@ -59,7 +59,7 @@ async function SummarySection() {
           </a>
         }
       >
-        <SalesRankingDual byRevenue={summary.topByRevenue} byGrowth={summary.topByGrowth} />
+        <SalesRankingDual byGrowthAmount={summary.topByGrowthAmount} byGrowth={summary.topByGrowth} />
       </SectionCard>
     </>
   );

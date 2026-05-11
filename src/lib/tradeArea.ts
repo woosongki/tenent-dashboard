@@ -6,51 +6,27 @@
  * - 식음·소매·생활서비스·의료·교육·관광 6대 분류
  * - 경쟁점(백화점/아울렛/대형마트) 카운트
  * - 자동 상권 라벨링 ("음식 중심 상권", "학세권" 등)
+ *
+ * ⚠ node:fs 를 쓰므로 server-only. 클라이언트 컴포넌트는
+ *   `@/lib/tradeAreaTypes` 에서 타입·TRADE_AREA_BADGE 만 import.
  */
 
+import "server-only";
 import fs from "node:fs";
 import path from "node:path";
 
+import type {
+  TradeAreaIndexItem,
+  TradeAreaBreakdown,
+  TradeAreaDetail,
+  CohortStat,
+} from "./tradeAreaTypes";
+
+// Re-export types and the badge token for backward compatibility.
+export type { TradeAreaIndexItem, TradeAreaBreakdown, TradeAreaDetail, CohortStat };
+export { TRADE_AREA_BADGE } from "./tradeAreaTypes";
+
 const DATA_DIR = path.join(process.cwd(), "data/trade-area");
-
-export interface TradeAreaIndexItem {
-  id: string;
-  brand: string;
-  name: string;
-  lawdCd: string;
-  region: string;
-  radius: number;
-  total: number;
-  tradeAreaType: string;
-  foodPct: number;
-  retailPct: number;
-  competitorCount: number;
-}
-
-export interface TradeAreaBreakdown {
-  food: { count: number; pct: number };
-  retail: { count: number; pct: number };
-  lifeService: { count: number; pct: number };
-  medical: { count: number; pct: number };
-  education: { count: number; pct: number };
-  leisure: { count: number; pct: number };
-}
-
-export interface TradeAreaDetail {
-  storeId: string;
-  storeName: string;
-  center: { lat: number; lng: number; address: string };
-  radius: number;
-  fetchedAt: string;
-  tradeAreaType: string;
-  total: number;
-  breakdown: TradeAreaBreakdown;
-  competitorCount: number;
-  topL: [string, number][];   // 대분류 top
-  topM: [string, number][];   // 중분류 top
-  topS: [string, number][];   // 소분류 top
-  // rawStores 는 의도적으로 로딩 시 제외 (용량)
-}
 
 interface IndexFile {
   generatedAt: string;
@@ -84,23 +60,6 @@ export function getTradeArea(storeId: string): TradeAreaDetail | null {
   } catch {
     return null;
   }
-}
-
-export interface CohortStat {
-  /** 같은 상권 유형 매장 수 */
-  cohortSize: number;
-  /** 동일 상권 유형 매장의 평균 점포 수 */
-  avgTotal: number;
-  /** 동일 상권 유형 매장의 평균 음식 비중 */
-  avgFoodPct: number;
-  /** 동일 상권 유형 매장의 평균 소매 비중 */
-  avgRetailPct: number;
-  /** 동일 상권 유형 매장의 평균 경쟁점 */
-  avgCompetitor: number;
-  /** 현재 매장의 cohort 내 백분위 (점포 수 기준, 0=최저, 100=최고) */
-  totalPercentile: number;
-  /** cohort 내 다른 매장 ID 리스트 (같은 매장 제외, 최대 6개) */
-  peers: { id: string; brand: string; name: string; total: number; competitorCount: number }[];
 }
 
 /** 매장이 속한 상권 유형 cohort 통계 + 비교 매장 */
@@ -144,13 +103,3 @@ export function getCohortStat(storeId: string): CohortStat | null {
   };
 }
 
-/** 라벨링용 색상 매핑 (Slate 팔레트) */
-export const TRADE_AREA_BADGE: Record<string, string> = {
-  "음식 중심 상권":   "bg-orange-50 text-orange-700 border-orange-200",
-  "소매 중심 상권":   "bg-blue-50 text-blue-700 border-blue-200",
-  "학세권/교육 상권": "bg-violet-50 text-violet-700 border-violet-200",
-  "의료 인접 상권":   "bg-pink-50 text-pink-700 border-pink-200",
-  "관광/여가 상권":   "bg-teal-50 text-teal-700 border-teal-200",
-  "복합 상권":        "bg-slate-50 text-slate-700 border-slate-200",
-  "저밀도 상권":      "bg-zinc-50 text-zinc-600 border-zinc-200",
-};

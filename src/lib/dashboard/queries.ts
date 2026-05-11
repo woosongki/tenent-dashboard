@@ -3,10 +3,11 @@ import type { DashboardSummary, OrgRow, CategoryGroup, CategoryStat } from "@/ty
 import { getPopupContactCount } from "@/lib/popupContacts";
 import {
   getGroups as getSalesGroups,
-  getTopByRevenue,
+  getTopByGrowthAmount,
   getTopByGrowth,
 } from "@/lib/sales/csvData";
 import { getAttractionStats } from "@/lib/attraction/queries";
+import { getVacancyResolvedCount, getVacancyRows } from "@/lib/vacancy";
 
 /** 대시보드 Summary 지표 */
 export async function getDashboardSummary(): Promise<DashboardSummary> {
@@ -38,11 +39,15 @@ export async function getDashboardSummary(): Promise<DashboardSummary> {
 
   // ── 매출 데이터 (CSV 변환본) ─────────────────────────
   const salesGroups = getSalesGroups();
-  const topByRevenue = getTopByRevenue(5);
+  const topByGrowthAmount = getTopByGrowthAmount(5);
   const topByGrowth = getTopByGrowth(5);
 
   // ── 입점계획 통계 (attraction_status — 사이드바 "입점계획(26년)"과 동일 소스) ──
   const attraction = await getAttractionStats();
+
+  // ── 공실해결 통계 (정적 CSV — 사이드바 "공실해결"과 동일 소스) ──
+  const vacancyResolved = getVacancyResolvedCount();
+  const vacancyTotal = getVacancyRows().length;
 
   const mrr = (mrrRes.data ?? []).reduce((s, r) => s + Number(r.amount), 0);
   const prevMrr = (prevMrrRes.data ?? []).reduce((s, r) => s + Number(r.amount), 0);
@@ -71,7 +76,7 @@ export async function getDashboardSummary(): Promise<DashboardSummary> {
     pendingInvitations: invitationsRes.count ?? 0,
     mrr,
     mrrChange,
-    topByRevenue,
+    topByGrowthAmount,
     topByGrowth,
     contentPoolCount,
     contentPoolBreakdown,
@@ -79,6 +84,10 @@ export async function getDashboardSummary(): Promise<DashboardSummary> {
       total: attraction.total,
       completed: attraction.completed,
       inProgress: attraction.inProgress,
+    },
+    vacancy: {
+      resolved: vacancyResolved,
+      total: vacancyTotal,
     },
     categoryStats,
   };

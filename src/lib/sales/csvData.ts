@@ -116,5 +116,25 @@ export function getTopByGrowth(limit = 5): BrandRecord[] {
     .slice(0, limit);
 }
 
+/**
+ * 매출액 성장(증가액) 상위 N개 — current - prev 가 가장 큰 브랜드.
+ * 작년/올해 모두 데이터 있어야 비교 의미가 있음 (신규 브랜드 제외).
+ */
+export function getTopByGrowthAmount(limit = 5): BrandRecord[] {
+  return file.brands
+    .filter((b) => {
+      const s = b.summary;
+      return s.revenue_current !== null && s.revenue_prev !== null;
+    })
+    .map((b) => ({
+      brand: b,
+      delta: (b.summary.revenue_current ?? 0) - (b.summary.revenue_prev ?? 0),
+    }))
+    .filter((x) => x.delta > 0)
+    .sort((a, b) => b.delta - a.delta)
+    .slice(0, limit)
+    .map((x) => x.brand);
+}
+
 // 색상 토큰/포매터/이름 잘림 보정 등 순수 유틸은 src/lib/sales/format.ts 로 분리됨.
 // Client Component 는 그쪽을 import 해야 217 브랜드 JSON 이 클라이언트 번들에 안 실립니다.

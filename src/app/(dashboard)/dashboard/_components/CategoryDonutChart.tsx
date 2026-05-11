@@ -92,8 +92,8 @@ export default function CategoryDonutChart({ stats }: Props) {
 
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
         {/* 도넛 차트 */}
-        <div className="h-[200px] w-full sm:w-[220px] shrink-0">
-          <ResponsiveContainer width="100%" height="100%">
+        <div className="h-[200px] w-full min-w-0 sm:w-[220px] shrink-0">
+          <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
             <PieChart>
               <Pie
                 data={data}

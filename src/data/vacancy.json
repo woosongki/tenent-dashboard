@@ -1,0 +1,6428 @@
+{
+  "source": "공실4월3주.CSV",
+  "importedAt": "2026-05-07T13:37:28.538Z",
+  "count": 374,
+  "resolvedCount": 9,
+  "records": [
+    {
+      "headquarters": "영업4본부",
+      "branch": "강북점",
+      "floor": "3층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "공실",
+      "altBrands": [
+        "레포크",
+        "행사장"
+      ],
+      "areaPy": 10.9,
+      "category": "여성",
+      "stage": "4단계",
+      "note": "레포크 오픈완료(4/15)",
+      "mdOpinion": null
+    },
+    {
+      "headquarters": "영업1본부",
+      "branch": "부천점",
+      "floor": "5층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "몽벨",
+      "altBrands": [
+        "내셔널지오그래픽"
+      ],
+      "areaPy": 27,
+      "category": "스포츠",
+      "stage": "4단계",
+      "note": "내셔널 입정 확정/ 자리 조정 중 26년 FW신규 입점 목표로 협의중 / 현재 웨스트우드 팝업",
+      "mdOpinion": "내셔널 입정 확정/ 자리 조정 중 26년 FW신규 입점 목표로 협의중 / 현재 웨스트우드 팝업"
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "순천점",
+      "floor": "본관 6층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "공실(더영스터)",
+      "altBrands": [
+        "수아팜"
+      ],
+      "areaPy": 16,
+      "category": "아동",
+      "stage": "4단계",
+      "note": "수아팜 4/16오픈",
+      "mdOpinion": null
+    },
+    {
+      "headquarters": "영업2본부",
+      "branch": "야탑점",
+      "floor": "1층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "자주",
+      "altBrands": [
+        "메트로시티",
+        "조에벨"
+      ],
+      "areaPy": 17.9,
+      "category": "잡화",
+      "stage": "4단계",
+      "note": "메트로시티 4월15일 오픈 완료",
+      "mdOpinion": null
+    },
+    {
+      "headquarters": "영업1본부",
+      "branch": "인천점",
+      "floor": "3층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "비지트인뉴욕",
+      "altBrands": [
+        "르샵",
+        "잇미샤"
+      ],
+      "areaPy": 9.7,
+      "category": "영캐주얼",
+      "stage": "4단계",
+      "note": "틸버리 오픈완료(4/10)",
+      "mdOpinion": "미동의(틸버리 추진중)"
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "전주점",
+      "floor": "2층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "공실(ab.f.z)",
+      "altBrands": [
+        "에잇컨셉"
+      ],
+      "areaPy": 19.6,
+      "category": "영캐주얼",
+      "stage": "4단계",
+      "note": "에잇컨셉 오픈완료(4/16)",
+      "mdOpinion": "동의"
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "창원점",
+      "floor": "4층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "컬리수(",
+      "altBrands": [
+        "오즈키즈"
+      ],
+      "areaPy": 9.5,
+      "category": "아동",
+      "stage": "4단계",
+      "note": "오즈키즈 4/16 오픈",
+      "mdOpinion": null
+    },
+    {
+      "headquarters": "영업2본부",
+      "branch": "평택점",
+      "floor": "1층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "미샤",
+      "altBrands": [
+        "더샘"
+      ],
+      "areaPy": 7.9,
+      "category": "잡화",
+      "stage": "4단계",
+      "note": "더샘 4월15일 오픈 완료",
+      "mdOpinion": null
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "해운대점",
+      "floor": "B1층",
+      "segments": [
+        "비패션"
+      ],
+      "currentBrand": "1001안경",
+      "altBrands": [
+        "바디프랜드",
+        "빵집오빠"
+      ],
+      "areaPy": 9,
+      "category": "리징",
+      "stage": "4단계",
+      "note": "바디프랜드 입점 완료",
+      "mdOpinion": "동의"
+    },
+    {
+      "headquarters": "영업4본부",
+      "branch": "구미점",
+      "floor": "6층",
+      "segments": [
+        "비패션"
+      ],
+      "currentBrand": "공실(샤또가구)",
+      "altBrands": [
+        "흙침대"
+      ],
+      "areaPy": 19.4,
+      "category": "리빙",
+      "stage": "3단계",
+      "note": "아르페지오 입점 확정",
+      "mdOpinion": "미동의(컨텐츠 협의중)"
+    },
+    {
+      "headquarters": "영업1본부",
+      "branch": "인천점",
+      "floor": "2층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "리트머스",
+      "altBrands": [
+        "지오다노"
+      ],
+      "areaPy": 14.3,
+      "category": "캐주얼",
+      "stage": "3단계",
+      "note": "5.1 신규컨텐츠 '에픽스' 팝업 오픈 협의",
+      "mdOpinion": "지오다노 내부 검토 중"
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "청주점",
+      "floor": "4층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "클라이드",
+      "altBrands": [
+        "라이프멜로우"
+      ],
+      "areaPy": 15.4,
+      "category": "캐주얼",
+      "stage": "3단계",
+      "note": "5.1 라이프멜로우 팝업 오픈 협의",
+      "mdOpinion": null
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "충장점",
+      "floor": "7층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "공실(구 오후)",
+      "altBrands": [
+        "프로젝트키즈"
+      ],
+      "areaPy": 8,
+      "category": "아동",
+      "stage": "3단계",
+      "note": "AWK 이동",
+      "mdOpinion": "탤런트클로젯 이동"
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "충장점",
+      "floor": "7층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "페리미츠(장기공실)",
+      "altBrands": [],
+      "areaPy": 8,
+      "category": "아동",
+      "stage": "3단계",
+      "note": "AWK 이동",
+      "mdOpinion": "탤런트클로젯 이동"
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "해운대점",
+      "floor": "10층",
+      "segments": [
+        "비패션"
+      ],
+      "currentBrand": "문화센타",
+      "altBrands": [
+        "트니트니 플러스"
+      ],
+      "areaPy": 147,
+      "category": "리징",
+      "stage": "3단계",
+      "note": "트니트니 플러스 입점 확정",
+      "mdOpinion": "동의"
+    },
+    {
+      "headquarters": "영업4본부",
+      "branch": "경산점",
+      "floor": "2층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "장기공실",
+      "altBrands": [
+        "파샤디골프"
+      ],
+      "areaPy": 12.1,
+      "category": "신사",
+      "stage": "2단계",
+      "note": "창고형약국 입점 작업",
+      "mdOpinion": "동의"
+    },
+    {
+      "headquarters": "영업2본부",
+      "branch": "동수원",
+      "floor": "B1층",
+      "segments": [
+        "외식"
+      ],
+      "currentBrand": "공실",
+      "altBrands": [
+        "호두앤미",
+        "와플샵"
+      ],
+      "areaPy": 3.8,
+      "category": "F&B",
+      "stage": "2단계",
+      "note": "호두앤미 상담, 예비점주 구인중 및 메가번 팝업행사 진행",
+      "mdOpinion": "미동의(1안 미동의, 2안 동의)"
+    },
+    {
+      "headquarters": "영업2본부",
+      "branch": "분당점",
+      "floor": "3층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "린",
+      "altBrands": [
+        "미샤",
+        "데무"
+      ],
+      "areaPy": 10.8,
+      "category": "여성",
+      "stage": "2단계",
+      "note": "미샤 확정",
+      "mdOpinion": null
+    },
+    {
+      "headquarters": "영업4본부",
+      "branch": "수성점",
+      "floor": "4층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "공실",
+      "altBrands": [
+        "JDX"
+      ],
+      "areaPy": 11.4,
+      "category": "신사",
+      "stage": "2단계",
+      "note": "디즈니골프 현장 실측",
+      "mdOpinion": "동의(JDX/핑 추진중)"
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "유성점",
+      "floor": "6층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "오후",
+      "altBrands": [
+        "마크곤잘레스키즈",
+        "내셔널지오그래픽키즈"
+      ],
+      "areaPy": 9.6,
+      "category": "아동",
+      "stage": "2단계",
+      "note": "JCB 제안",
+      "mdOpinion": "미동의, 마크곤잘레스키즈"
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "전주점",
+      "floor": "2층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "공실(행사장)",
+      "altBrands": [
+        "에어워크주니어"
+      ],
+      "areaPy": 12,
+      "category": "아동",
+      "stage": "2단계",
+      "note": "확정(매니저구인중)",
+      "mdOpinion": "동의"
+    },
+    {
+      "headquarters": "영업2본부",
+      "branch": "평택점",
+      "floor": "11층",
+      "segments": [
+        "비패션"
+      ],
+      "currentBrand": "장기공실",
+      "altBrands": [
+        "임대매장"
+      ],
+      "areaPy": 85,
+      "category": "리징",
+      "stage": "2단계",
+      "note": "게임캠프 확정",
+      "mdOpinion": null
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "해운대점",
+      "floor": "6층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "슈펜키즈",
+      "altBrands": [
+        "오션스카이"
+      ],
+      "areaPy": 8.4,
+      "category": "아동",
+      "stage": "2단계",
+      "note": "미동의, JCB",
+      "mdOpinion": null
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "해운대점",
+      "floor": "6층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "무드앤디디",
+      "altBrands": [
+        "오션스카이"
+      ],
+      "areaPy": 8.2,
+      "category": "아동",
+      "stage": "2단계",
+      "note": "미동의, jcb",
+      "mdOpinion": null
+    },
+    {
+      "headquarters": "영업2본부",
+      "branch": "평택점",
+      "floor": "11층",
+      "segments": [
+        "비패션"
+      ],
+      "currentBrand": "장기공실",
+      "altBrands": [
+        "임대매장"
+      ],
+      "areaPy": 120,
+      "category": "리징",
+      "stage": "1단계",
+      "note": "레저로파크골프 투자자 구인중",
+      "mdOpinion": null
+    },
+    {
+      "headquarters": "영업1본부",
+      "branch": "강서점",
+      "floor": "6층",
+      "segments": [
+        "비패션"
+      ],
+      "currentBrand": "한샘키즈",
+      "altBrands": [
+        "슬고"
+      ],
+      "areaPy": 29,
+      "category": "리징",
+      "stage": "4단계",
+      "note": "슬코입점",
+      "mdOpinion": "동의"
+    },
+    {
+      "headquarters": "영업4본부",
+      "branch": "경산점",
+      "floor": "2층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "인디고뱅크(장기공실)",
+      "altBrands": [
+        "M할리데이"
+      ],
+      "areaPy": 13.4,
+      "category": "캐주얼",
+      "stage": "4단계",
+      "note": "인터크루 이동 오픈 완료",
+      "mdOpinion": "인터크루 이동, 인터크루 위치(8.2평) 엠할리데이 제안"
+    },
+    {
+      "headquarters": "영업4본부",
+      "branch": "구미점",
+      "floor": "3층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "공실(코인코즈)",
+      "altBrands": [
+        "로엠",
+        "제시뉴욕"
+      ],
+      "areaPy": 10.8,
+      "category": "여성",
+      "stage": "4단계",
+      "note": "튜브 오픈완료(3/25)",
+      "mdOpinion": "미동의(오픈클로젯/꾸즈 추진)"
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "부산대점",
+      "floor": "3층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "이프네",
+      "altBrands": [
+        "멜로디가든(팝업)"
+      ],
+      "areaPy": 11.1,
+      "category": "영캐주얼",
+      "stage": "4단계",
+      "note": "멜로디가든 오픈 완료(4/3일)",
+      "mdOpinion": "동의"
+    },
+    {
+      "headquarters": "영업2본부",
+      "branch": "송파점",
+      "floor": null,
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "첨이첨이",
+      "altBrands": [
+        "리틀밥독"
+      ],
+      "areaPy": 17.4,
+      "category": "아동",
+      "stage": "4단계",
+      "note": "3/31 오픈 완료",
+      "mdOpinion": null
+    },
+    {
+      "headquarters": "영업4본부",
+      "branch": "쇼핑점",
+      "floor": "1층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "슈펜",
+      "altBrands": [
+        "이월드 캐릭터샵"
+      ],
+      "areaPy": 16.5,
+      "category": "잡화",
+      "stage": "4단계",
+      "note": "4월4일 오픈완료 / 후속 발리스윗 진행 합의",
+      "mdOpinion": "동의"
+    },
+    {
+      "headquarters": "영업4본부",
+      "branch": "수성점",
+      "floor": "2층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "메종블랑쉬",
+      "altBrands": [
+        "오프리미츠",
+        "무자크"
+      ],
+      "areaPy": 18.3,
+      "category": "영캐주얼",
+      "stage": "4단계",
+      "note": "메종블랑쉬복합관 오픈완료(3/20)",
+      "mdOpinion": "메종블랑쉬 재입점 협의중"
+    },
+    {
+      "headquarters": "영업4본부",
+      "branch": "울산2점",
+      "floor": "3층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "파파야",
+      "altBrands": [
+        "오픈클로젯",
+        "멜로디가든"
+      ],
+      "areaPy": 18.1,
+      "category": "영캐주얼",
+      "stage": "4단계",
+      "note": "오픈클로젯 오픈완료(4/1)",
+      "mdOpinion": "동의"
+    },
+    {
+      "headquarters": "영업1본부",
+      "branch": "인천점",
+      "floor": "2층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "에드호크",
+      "altBrands": [
+        "브랜드 미정"
+      ],
+      "areaPy": 27,
+      "category": "캐주얼",
+      "stage": "4단계",
+      "note": "그루브라임플레이 오픈",
+      "mdOpinion": "그루브라임 이동"
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "전주점",
+      "floor": "2층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "공실(비지트인뉴욕)",
+      "altBrands": [
+        "오프리미츠"
+      ],
+      "areaPy": 23.2,
+      "category": "영캐주얼",
+      "stage": "4단계",
+      "note": "오프리미츠 오픈완료(4/8)",
+      "mdOpinion": "동의"
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "창원점",
+      "floor": "3층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "에디션",
+      "altBrands": [
+        "PAT"
+      ],
+      "areaPy": 10.3,
+      "category": "신사",
+      "stage": "4단계",
+      "note": "PAT 오픈(4/3)",
+      "mdOpinion": null
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "창원점",
+      "floor": "3층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "세르지오",
+      "altBrands": [
+        "PAT"
+      ],
+      "areaPy": 10.3,
+      "category": "신사",
+      "stage": "4단계",
+      "note": "PAT 오픈(4/3)",
+      "mdOpinion": null
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "창원점",
+      "floor": "지하1층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "닉스(장기공실)",
+      "altBrands": [
+        "더블에잇"
+      ],
+      "areaPy": 10.8,
+      "category": "캐주얼",
+      "stage": "4단계",
+      "note": "더블에잇 오픈 완료",
+      "mdOpinion": "4.3 더블에이트 이동"
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "청주점",
+      "floor": "5층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "공실(링스)",
+      "altBrands": [
+        "벤제프"
+      ],
+      "areaPy": 10,
+      "category": "신사",
+      "stage": "4단계",
+      "note": "런던포그 오픈(4/8)",
+      "mdOpinion": "미동의(팜스프링 추진중)"
+    },
+    {
+      "headquarters": "영업2본부",
+      "branch": "평택점",
+      "floor": "2층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "제이빔",
+      "altBrands": [
+        "오픈클로젯",
+        "엔코코"
+      ],
+      "areaPy": 7.6,
+      "category": "영캐주얼",
+      "stage": "4단계",
+      "note": "멜로디가든 확장오픈완료(3/18)",
+      "mdOpinion": "동의"
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "해운대점",
+      "floor": "1층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "탠디",
+      "altBrands": [
+        "금강아울렛(팝업)"
+      ],
+      "areaPy": 13.4,
+      "category": "잡화",
+      "stage": "4단계",
+      "note": "금강아울렛 3월27일 오픈 예정",
+      "mdOpinion": "금강아울렛 협의 완료"
+    },
+    {
+      "headquarters": "영업2본부",
+      "branch": "강남점",
+      "floor": "1관3층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "아디다스키즈",
+      "altBrands": [
+        "아트박스",
+        "버터"
+      ],
+      "areaPy": 9.5,
+      "category": "리징",
+      "stage": "3단계",
+      "note": "캘리클럽 입점 확정",
+      "mdOpinion": "카테고리 조율 필요"
+    },
+    {
+      "headquarters": "영업2본부",
+      "branch": "강남점",
+      "floor": "1관3층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "레고",
+      "altBrands": [
+        "아트박스",
+        "버터"
+      ],
+      "areaPy": 12.5,
+      "category": "리징",
+      "stage": "3단계",
+      "note": "캘리클럽 입점 확정",
+      "mdOpinion": "카테고리 조율 필요"
+    },
+    {
+      "headquarters": "영업2본부",
+      "branch": "강남점",
+      "floor": "B1층",
+      "segments": [
+        "외식"
+      ],
+      "currentBrand": "소요산회",
+      "altBrands": [
+        "베스킨라빈스",
+        "서브웨이"
+      ],
+      "areaPy": 11,
+      "category": "F&B",
+      "stage": "3단계",
+      "note": "찬합 LOI",
+      "mdOpinion": "찬합 LOI 수령"
+    },
+    {
+      "headquarters": "영업2본부",
+      "branch": "강남점",
+      "floor": "1관3층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "플레이키즈프로(장기공실)",
+      "altBrands": [
+        "에어워크"
+      ],
+      "areaPy": 9.1,
+      "category": "아동",
+      "stage": "3단계",
+      "note": "미동의, 지프키즈",
+      "mdOpinion": null
+    },
+    {
+      "headquarters": "영업2본부",
+      "branch": "강남점",
+      "floor": "1관3층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "셀덴",
+      "altBrands": [
+        "더데이걸",
+        "밀리밤"
+      ],
+      "areaPy": 7.5,
+      "category": "아동",
+      "stage": "3단계",
+      "note": "일로딜로 이동",
+      "mdOpinion": null
+    },
+    {
+      "headquarters": "영업4본부",
+      "branch": "경산점",
+      "floor": "2층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "이동수골프(장기공실)",
+      "altBrands": [
+        "팜스프링"
+      ],
+      "areaPy": 12.1,
+      "category": "신사",
+      "stage": "3단계",
+      "note": "쿠기 확정 / 매니저 구인 중",
+      "mdOpinion": "동의"
+    },
+    {
+      "headquarters": "영업4본부",
+      "branch": "경산점",
+      "floor": "5층",
+      "segments": [
+        "비패션"
+      ],
+      "currentBrand": "장기공실",
+      "altBrands": [
+        "픽스팟"
+      ],
+      "areaPy": 2,
+      "category": "리징",
+      "stage": "3단계",
+      "note": "픽스팟 확정",
+      "mdOpinion": "동의"
+    },
+    {
+      "headquarters": "영업4본부",
+      "branch": "경산점",
+      "floor": "5층",
+      "segments": [
+        "비패션"
+      ],
+      "currentBrand": "장기공실",
+      "altBrands": [
+        "디오엠"
+      ],
+      "areaPy": 2,
+      "category": "리징",
+      "stage": "3단계",
+      "note": "디오엠 확정",
+      "mdOpinion": "동의"
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "덕천점",
+      "floor": null,
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "블랙야크키즈",
+      "altBrands": [
+        "페리미츠"
+      ],
+      "areaPy": 9.3,
+      "category": "아동",
+      "stage": "3단계",
+      "note": "페리미츠 4/21 계획",
+      "mdOpinion": null
+    },
+    {
+      "headquarters": "영업2본부",
+      "branch": "동수원",
+      "floor": "4층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "에드호크",
+      "altBrands": [
+        "마인드브릿지(확장)"
+      ],
+      "areaPy": 11.8,
+      "category": "캐주얼",
+      "stage": "3단계",
+      "note": "마인드브릿지 5월1주 오픈 협의",
+      "mdOpinion": null
+    },
+    {
+      "headquarters": "영업2본부",
+      "branch": "동수원",
+      "floor": "7층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "위드에이스(장기공실)",
+      "altBrands": [
+        "크록스",
+        "미즈노"
+      ],
+      "areaPy": 27,
+      "category": "스포츠",
+      "stage": "3단계",
+      "note": "마운티아 팝업 확정 / 매니저 구인중",
+      "mdOpinion": "동의"
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "부산대점",
+      "floor": "1층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "푸마",
+      "altBrands": [
+        "ABC마트 팝업"
+      ],
+      "areaPy": 21.9,
+      "category": "스포츠",
+      "stage": "3단계",
+      "note": "ABC마트 팝업",
+      "mdOpinion": "동의"
+    },
+    {
+      "headquarters": "영업1본부",
+      "branch": "불광점",
+      "floor": "3층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "오조크",
+      "altBrands": [
+        "미엘로"
+      ],
+      "areaPy": 10.4,
+      "category": "영캐주얼",
+      "stage": "3단계",
+      "note": "미엘로 이동(4/22)",
+      "mdOpinion": "미엘로 이동후 기존 미엘로 자리에 패션랜드복합관 입점추진"
+    },
+    {
+      "headquarters": "영업2본부",
+      "branch": "송파점",
+      "floor": "4층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "클라이드",
+      "altBrands": [
+        "마레드"
+      ],
+      "areaPy": 21.5,
+      "category": "캐주얼",
+      "stage": "3단계",
+      "note": "4. 28 마레드 오픈 협의",
+      "mdOpinion": null
+    },
+    {
+      "headquarters": "영업4본부",
+      "branch": "수성점",
+      "floor": "5층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "위드에이스(장기공실)",
+      "altBrands": [
+        "오닐"
+      ],
+      "areaPy": 16.4,
+      "category": "스포츠",
+      "stage": "3단계",
+      "note": "마운티아 팝업 확정 / 매니저 구인중",
+      "mdOpinion": "미동의 / 스케쳐스 확정시 콜핑 이동"
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "순천점",
+      "floor": "3층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "로렌",
+      "altBrands": [
+        "아일로"
+      ],
+      "areaPy": 14.1,
+      "category": "여성",
+      "stage": "3단계",
+      "note": "아일로 입점 확정(4/15일 오픈 예정)",
+      "mdOpinion": "동의"
+    },
+    {
+      "headquarters": "영업4본부",
+      "branch": "엑스코점",
+      "floor": "2층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "미즈노(장기공실)",
+      "altBrands": [
+        "오닐"
+      ],
+      "areaPy": 14.6,
+      "category": "스포츠",
+      "stage": "3단계",
+      "note": "쿠기 확정 / 매니저 구인 중",
+      "mdOpinion": "동의"
+    },
+    {
+      "headquarters": "영업4본부",
+      "branch": "울산2점",
+      "floor": "4층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "공실",
+      "altBrands": [
+        "요하넥스",
+        "데미안"
+      ],
+      "areaPy": 12.5,
+      "category": "여성",
+      "stage": "3단계",
+      "note": "블랑듀 확정(4/27)",
+      "mdOpinion": "동의"
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "유성점",
+      "floor": "5층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "23구골프",
+      "altBrands": [
+        "팜스프링"
+      ],
+      "areaPy": 22.3,
+      "category": "신사",
+      "stage": "3단계",
+      "note": "팜스프링 오픈일 확정(4/22)",
+      "mdOpinion": "미동의(PAT/런던포그 제안)"
+    },
+    {
+      "headquarters": "영업1본부",
+      "branch": "인천점",
+      "floor": "3층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "알토메가샵",
+      "altBrands": [
+        "패션랜드복합관"
+      ],
+      "areaPy": 22,
+      "category": "영캐주얼",
+      "stage": "3단계",
+      "note": "라인 이동확정(5/8)",
+      "mdOpinion": "지점동의시 브랜드제안"
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "전주점",
+      "floor": "2층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "공실(코인코즈)",
+      "altBrands": [
+        "앤코코"
+      ],
+      "areaPy": 21.4,
+      "category": "영캐주얼",
+      "stage": "3단계",
+      "note": "엔코코 확정(4/22)",
+      "mdOpinion": "동의"
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "전주점",
+      "floor": "B1층",
+      "segments": [
+        "비패션"
+      ],
+      "currentBrand": "공실(F&B)",
+      "altBrands": [
+        "게임캠프"
+      ],
+      "areaPy": 18.4,
+      "category": "리징",
+      "stage": "3단계",
+      "note": "확정(오픈목표 5월초)",
+      "mdOpinion": null
+    },
+    {
+      "headquarters": "영업2본부",
+      "branch": "중계점",
+      "floor": "1층",
+      "segments": [
+        "외식"
+      ],
+      "currentBrand": "제주스",
+      "altBrands": [
+        "에그몬",
+        "호밥붕"
+      ],
+      "areaPy": 3.8,
+      "category": "F&B",
+      "stage": "3단계",
+      "note": "발도스커피 LOI",
+      "mdOpinion": "발도스커피"
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "창원점",
+      "floor": "2층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "지센",
+      "altBrands": [
+        "레포크",
+        "리펜스튜디오"
+      ],
+      "areaPy": 15,
+      "category": "여성",
+      "stage": "3단계",
+      "note": "레포크 확정(4/29)",
+      "mdOpinion": "동의"
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "청주점",
+      "floor": "B1층",
+      "segments": [
+        "외식"
+      ],
+      "currentBrand": "공실(타로라멘옆 4)",
+      "altBrands": [
+        "금용",
+        "홍콩반점"
+      ],
+      "areaPy": 9,
+      "category": "F&B",
+      "stage": "3단계",
+      "note": "금용(돌짜장) 입점 협의",
+      "mdOpinion": "동의"
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "충장점",
+      "floor": "6층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "공실",
+      "altBrands": [],
+      "areaPy": 15.2,
+      "category": "아동",
+      "stage": "3단계",
+      "note": "탑텐키즈(확장)",
+      "mdOpinion": null
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "충장점",
+      "floor": "7층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "셀덴(장기공실)",
+      "altBrands": [],
+      "areaPy": 8.4,
+      "category": "아동",
+      "stage": "3단계",
+      "note": "에스핏(이동)",
+      "mdOpinion": null
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "충장점",
+      "floor": "7층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "코코리따",
+      "altBrands": [],
+      "areaPy": 10,
+      "category": "아동",
+      "stage": "3단계",
+      "note": "에스핏(이동)",
+      "mdOpinion": null
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "해운대점",
+      "floor": "2층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "엠벨라",
+      "altBrands": [
+        "레포크"
+      ],
+      "areaPy": 8.5,
+      "category": "여성",
+      "stage": "3단계",
+      "note": "레포크 확정(4/29)",
+      "mdOpinion": "동의"
+    },
+    {
+      "headquarters": "영업2본부",
+      "branch": "강남점",
+      "floor": "1관3층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "오후",
+      "altBrands": [
+        "에스핏",
+        "밀리밤"
+      ],
+      "areaPy": 9.9,
+      "category": "아동",
+      "stage": "2단계",
+      "note": "탑텐키즈",
+      "mdOpinion": "동의"
+    },
+    {
+      "headquarters": "영업2본부",
+      "branch": "강남점",
+      "floor": "1관3층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "레노마주니어(장기공실)",
+      "altBrands": [
+        "밀리밤",
+        "신디키즈"
+      ],
+      "areaPy": 9.9,
+      "category": "아동",
+      "stage": "2단계",
+      "note": "탑텐키즈",
+      "mdOpinion": "동의"
+    },
+    {
+      "headquarters": "영업2본부",
+      "branch": "강남점",
+      "floor": "4층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "엘르골프",
+      "altBrands": [
+        "에디션 이동"
+      ],
+      "areaPy": 12.2,
+      "category": "신사",
+      "stage": "2단계",
+      "note": "르꼬끄골프 확정",
+      "mdOpinion": "미동의(르꼬끄 골프 추진)"
+    },
+    {
+      "headquarters": "영업2본부",
+      "branch": "강남점",
+      "floor": "1관3층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "꾸시꾸시(장기공실)",
+      "altBrands": [
+        "리틀킹",
+        "롤리팝"
+      ],
+      "areaPy": 4,
+      "category": "아동",
+      "stage": "2단계",
+      "note": "유니프랜드",
+      "mdOpinion": "동의"
+    },
+    {
+      "headquarters": "영업2본부",
+      "branch": "강남점",
+      "floor": "1관3층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "꾸시꾸시(장기공실)",
+      "altBrands": [
+        "리틀킹",
+        "롤리팝"
+      ],
+      "areaPy": 4,
+      "category": "아동",
+      "stage": "2단계",
+      "note": "유니프랜드",
+      "mdOpinion": "미동의, 유니프랜드"
+    },
+    {
+      "headquarters": "영업2본부",
+      "branch": "강남점",
+      "floor": "1관3층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "탤런트(장기공실)",
+      "altBrands": [
+        "아가방플렉스",
+        "플레이타임"
+      ],
+      "areaPy": 7.8,
+      "category": "아동",
+      "stage": "2단계",
+      "note": "비패션 컨텐츠",
+      "mdOpinion": "리징:비패션 컨텐츠 협의"
+    },
+    {
+      "headquarters": "영업2본부",
+      "branch": "강남점",
+      "floor": "1관3층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "행텐주니어",
+      "altBrands": [],
+      "areaPy": 12.4,
+      "category": "아동",
+      "stage": "2단계",
+      "note": "비패션 컨텐츠",
+      "mdOpinion": "리징:비패션 컨텐츠 협의"
+    },
+    {
+      "headquarters": "영업2본부",
+      "branch": "강남점",
+      "floor": "1관3층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "게임기(장기공실)",
+      "altBrands": [],
+      "areaPy": 10.3,
+      "category": "아동",
+      "stage": "2단계",
+      "note": "비패션 컨텐츠",
+      "mdOpinion": "리징:비패션 컨텐츠 협의"
+    },
+    {
+      "headquarters": "영업2본부",
+      "branch": "강남점",
+      "floor": "1관3층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "장기공실",
+      "altBrands": [],
+      "areaPy": 5.9,
+      "category": "아동",
+      "stage": "2단계",
+      "note": "페리미츠",
+      "mdOpinion": null
+    },
+    {
+      "headquarters": "영업2본부",
+      "branch": "강남점",
+      "floor": null,
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "레고",
+      "altBrands": [
+        "탑텐"
+      ],
+      "areaPy": 30,
+      "category": "아동",
+      "stage": "2단계",
+      "note": "비패션 컨텐츠",
+      "mdOpinion": null
+    },
+    {
+      "headquarters": "영업2본부",
+      "branch": "강남점",
+      "floor": "1관3층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "래핑차일드",
+      "altBrands": [
+        "한세팩토리",
+        "플레이키즈프로"
+      ],
+      "areaPy": 26.2,
+      "category": "아동",
+      "stage": "2단계",
+      "note": "미동의, 스파오키즈",
+      "mdOpinion": "동의"
+    },
+    {
+      "headquarters": "영업2본부",
+      "branch": "강남점",
+      "floor": "1관3층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "게스키즈",
+      "altBrands": [
+        "스타일노리터",
+        "폴햄키즈"
+      ],
+      "areaPy": 10.4,
+      "category": "아동",
+      "stage": "2단계",
+      "note": "리틀킹",
+      "mdOpinion": "미동의, 에스핏 제안"
+    },
+    {
+      "headquarters": "영업4본부",
+      "branch": "강북점",
+      "floor": "2층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "에잇 컨셉",
+      "altBrands": [
+        "에스핏",
+        "행사장"
+      ],
+      "areaPy": 10.2,
+      "category": "아동",
+      "stage": "2단계",
+      "note": "에스핏",
+      "mdOpinion": null
+    },
+    {
+      "headquarters": "영업4본부",
+      "branch": "강북점",
+      "floor": "2층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "제이빔",
+      "altBrands": [
+        "에어워크주니어",
+        "행사장"
+      ],
+      "areaPy": 9,
+      "category": "아동",
+      "stage": "2단계",
+      "note": "미동의, 아가방",
+      "mdOpinion": null
+    },
+    {
+      "headquarters": "영업1본부",
+      "branch": "강서점",
+      "floor": "3층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "앤클라인",
+      "altBrands": [
+        "협의중"
+      ],
+      "areaPy": null,
+      "category": "기타",
+      "stage": "2단계",
+      "note": "블랑듀 팝업 확정",
+      "mdOpinion": "이규헌/블랑듀 단기팝업 협의중"
+    },
+    {
+      "headquarters": "영업1본부",
+      "branch": "강서점",
+      "floor": "10층",
+      "segments": [
+        "외식"
+      ],
+      "currentBrand": "(구)오프닛",
+      "altBrands": [
+        "라스베이커리",
+        "밀화당"
+      ],
+      "areaPy": 95.9,
+      "category": "기타",
+      "stage": "2단계",
+      "note": "브랜드에서 팝업으로 우선 추진 제안",
+      "mdOpinion": "동의"
+    },
+    {
+      "headquarters": "영업1본부",
+      "branch": "강서점",
+      "floor": "3층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "룸나인",
+      "altBrands": [],
+      "areaPy": 10.9,
+      "category": "기타",
+      "stage": "2단계",
+      "note": "막스마리오 팝업확정",
+      "mdOpinion": "이규헌 보류중"
+    },
+    {
+      "headquarters": "영업4본부",
+      "branch": "경산점",
+      "floor": "5층",
+      "segments": [
+        "외식"
+      ],
+      "currentBrand": "아시아문",
+      "altBrands": [
+        "테루"
+      ],
+      "areaPy": 43.8,
+      "category": "기타",
+      "stage": "2단계",
+      "note": "투자자 구인되어, 인허가 설비 확인 중",
+      "mdOpinion": "동의_ 테루 인테이어 견적 중"
+    },
+    {
+      "headquarters": "영업1본부",
+      "branch": "광명점",
+      "floor": "5층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "슈펜키즈",
+      "altBrands": [
+        "유니프랜드",
+        "탤런트키즈"
+      ],
+      "areaPy": 10.2,
+      "category": "기타",
+      "stage": "2단계",
+      "note": null,
+      "mdOpinion": "미동의, JCB 제안 / 매니저 구인 중"
+    },
+    {
+      "headquarters": "영업1본부",
+      "branch": "광명점",
+      "floor": null,
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "행사장",
+      "altBrands": [
+        "리틀밥독"
+      ],
+      "areaPy": 8.5,
+      "category": "기타",
+      "stage": "2단계",
+      "note": null,
+      "mdOpinion": null
+    },
+    {
+      "headquarters": "영업1본부",
+      "branch": "광명점",
+      "floor": null,
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "탑텐키즈",
+      "altBrands": [
+        "에스핏"
+      ],
+      "areaPy": 28,
+      "category": "기타",
+      "stage": "2단계",
+      "note": "매니저 면접 예정",
+      "mdOpinion": null
+    },
+    {
+      "headquarters": "영업4본부",
+      "branch": "구미점",
+      "floor": "5층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "공실(잭니클라우스)",
+      "altBrands": [
+        "마코"
+      ],
+      "areaPy": 15.8,
+      "category": "기타",
+      "stage": "2단계",
+      "note": "마코스포츠 입점 확정",
+      "mdOpinion": "동의"
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "덕천점",
+      "floor": "5층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "행사장",
+      "altBrands": [
+        "스파오키즈"
+      ],
+      "areaPy": 9,
+      "category": "기타",
+      "stage": "2단계",
+      "note": null,
+      "mdOpinion": "미동의, 롤리팝 제안"
+    },
+    {
+      "headquarters": "영업2본부",
+      "branch": "동수원",
+      "floor": "6층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "더영스터",
+      "altBrands": [
+        "캉골키즈",
+        "지프키즈"
+      ],
+      "areaPy": 9.3,
+      "category": "기타",
+      "stage": "2단계",
+      "note": "오션스카이",
+      "mdOpinion": "미동의, 오션스카이"
+    },
+    {
+      "headquarters": "영업1본부",
+      "branch": "부천점",
+      "floor": "3층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "멜본",
+      "altBrands": [
+        "지고트"
+      ],
+      "areaPy": 15,
+      "category": "기타",
+      "stage": "2단계",
+      "note": "지고트 확정",
+      "mdOpinion": "동의"
+    },
+    {
+      "headquarters": "영업1본부",
+      "branch": "부천점",
+      "floor": null,
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "컬리수(장기공실)",
+      "altBrands": [
+        "마크곤잘레스키즈"
+      ],
+      "areaPy": 7,
+      "category": "기타",
+      "stage": "2단계",
+      "note": null,
+      "mdOpinion": null
+    },
+    {
+      "headquarters": "영업1본부",
+      "branch": "부천점",
+      "floor": null,
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "컬리수(장기공실)",
+      "altBrands": [
+        "마크곤잘레스키즈"
+      ],
+      "areaPy": 7,
+      "category": "기타",
+      "stage": "2단계",
+      "note": null,
+      "mdOpinion": null
+    },
+    {
+      "headquarters": "영업1본부",
+      "branch": "산본점",
+      "floor": "3층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "컬리수(장기공실)",
+      "altBrands": [
+        "폴햄키즈",
+        "프로젝트키즈"
+      ],
+      "areaPy": 11.8,
+      "category": "기타",
+      "stage": "2단계",
+      "note": "신디키즈",
+      "mdOpinion": "미동의, 리틀밥독"
+    },
+    {
+      "headquarters": "영업2본부",
+      "branch": "송파점",
+      "floor": "3층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "알토",
+      "altBrands": [
+        "케네스 레이디",
+        "올리브데올리브"
+      ],
+      "areaPy": 16.4,
+      "category": "기타",
+      "stage": "2단계",
+      "note": "오프리미츠 확정",
+      "mdOpinion": "동의"
+    },
+    {
+      "headquarters": "영업2본부",
+      "branch": "송파점",
+      "floor": "3층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "오조크",
+      "altBrands": [
+        "오프리미츠",
+        "레코브(이동)"
+      ],
+      "areaPy": 11,
+      "category": "기타",
+      "stage": "2단계",
+      "note": "오프리미츠 확정",
+      "mdOpinion": null
+    },
+    {
+      "headquarters": "영업2본부",
+      "branch": "송파점",
+      "floor": "4층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "알래스카",
+      "altBrands": [
+        "그루브라임플레이"
+      ],
+      "areaPy": 12.2,
+      "category": "기타",
+      "stage": "2단계",
+      "note": "그루브라임플레이 확정",
+      "mdOpinion": null
+    },
+    {
+      "headquarters": "영업4본부",
+      "branch": "쇼핑점",
+      "floor": "3층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "공실(제이빔)",
+      "altBrands": [
+        "데이텀(확장)"
+      ],
+      "areaPy": 11.3,
+      "category": "기타",
+      "stage": "2단계",
+      "note": "에이비에프지 확정",
+      "mdOpinion": "미동의(밸리걸/꾸즈 추진)"
+    },
+    {
+      "headquarters": "영업4본부",
+      "branch": "쇼핑점",
+      "floor": "5층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "나이키(팝업)",
+      "altBrands": [
+        "S마켓"
+      ],
+      "areaPy": 60,
+      "category": "기타",
+      "stage": "2단계",
+      "note": "S마켓",
+      "mdOpinion": "동의"
+    },
+    {
+      "headquarters": "영업4본부",
+      "branch": "수성점",
+      "floor": "6층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "장기공실",
+      "altBrands": [
+        "오션스카이"
+      ],
+      "areaPy": 5.9,
+      "category": "기타",
+      "stage": "2단계",
+      "note": "매니저 구인 중",
+      "mdOpinion": "동의"
+    },
+    {
+      "headquarters": "영업4본부",
+      "branch": "수성점",
+      "floor": "6층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "장기공실",
+      "altBrands": [
+        "오션스카이"
+      ],
+      "areaPy": 7.3,
+      "category": "기타",
+      "stage": "2단계",
+      "note": "매니저 구인 중",
+      "mdOpinion": "동의"
+    },
+    {
+      "headquarters": "영업4본부",
+      "branch": "수성점",
+      "floor": "6충",
+      "segments": [
+        "비패션"
+      ],
+      "currentBrand": "블럭버스",
+      "altBrands": [
+        "타카슬라임"
+      ],
+      "areaPy": 19,
+      "category": "기타",
+      "stage": "2단계",
+      "note": "타카슬라임확정",
+      "mdOpinion": "동의"
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "순천점",
+      "floor": "별관 B1층",
+      "segments": [
+        "비패션"
+      ],
+      "currentBrand": "장기공실(구 별관 푸드)",
+      "altBrands": [
+        "파크스크린골프"
+      ],
+      "areaPy": 113,
+      "category": "기타",
+      "stage": "2단계",
+      "note": "볼링장 조건 협의중",
+      "mdOpinion": "미동의(컨텐츠 협의중)"
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "순천점",
+      "floor": "별관 B1층",
+      "segments": [
+        "비패션"
+      ],
+      "currentBrand": "장기공실(구 장기공실)",
+      "altBrands": [
+        "필라테스",
+        "요가"
+      ],
+      "areaPy": 56.5,
+      "category": "기타",
+      "stage": "2단계",
+      "note": "볼링장 조건 협의중",
+      "mdOpinion": "미동의(컨텐츠 협의중)"
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "순천점",
+      "floor": "본관 6층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "쁘띠앙팡(장기공실)",
+      "altBrands": [
+        "행텐틴즈"
+      ],
+      "areaPy": 8.7,
+      "category": "기타",
+      "stage": "2단계",
+      "note": "행텐틴즈 확장 이동 제안",
+      "mdOpinion": "미동의, 행텐틴즈"
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "순천점",
+      "floor": "본관 4층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "공실(구 갤럭시캐주얼)",
+      "altBrands": [
+        "런던포그해리티지",
+        "란찌"
+      ],
+      "areaPy": 14.3,
+      "category": "기타",
+      "stage": "2단계",
+      "note": "런던포그 입점 확정",
+      "mdOpinion": "동의(런던포그 매니저 구인중)"
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "순천점",
+      "floor": "별관 B1층",
+      "segments": [
+        "비패션"
+      ],
+      "currentBrand": "장기공실(구 킴스클럽)",
+      "altBrands": [
+        "볼링장"
+      ],
+      "areaPy": 404.5,
+      "category": "기타",
+      "stage": "2단계",
+      "note": "볼링장 조건 협의중",
+      "mdOpinion": "미동의(컨텐츠 협의중)"
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "순천점",
+      "floor": "본관 6층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "베네통키즈",
+      "altBrands": [
+        "행텐틴즈"
+      ],
+      "areaPy": 8.7,
+      "category": "기타",
+      "stage": "2단계",
+      "note": "행텐틴즈 확장 이동 제안",
+      "mdOpinion": null
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "순천점",
+      "floor": "본관 5층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "클라이드",
+      "altBrands": [
+        "뱅뱅"
+      ],
+      "areaPy": 12.7,
+      "category": "기타",
+      "stage": "2단계",
+      "note": "뱅뱅 제안/ 그루브라임 이동, 그루브라임 위치 마인드브릿지 여성 팝업 제안",
+      "mdOpinion": null
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "순천점",
+      "floor": "2층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "플라스틱아일랜드(팝업)",
+      "altBrands": [
+        "밀스튜디오(팝업)",
+        "멜로디가든(팝업)"
+      ],
+      "areaPy": 15.9,
+      "category": "기타",
+      "stage": "2단계",
+      "note": "abfz 입점 확정(4/22일 예정)",
+      "mdOpinion": "동의"
+    },
+    {
+      "headquarters": "영업2본부",
+      "branch": "신구로점",
+      "floor": "4층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "장기공실",
+      "altBrands": [
+        "유니프랜드"
+      ],
+      "areaPy": 7.5,
+      "category": "기타",
+      "stage": "2단계",
+      "note": null,
+      "mdOpinion": null
+    },
+    {
+      "headquarters": "영업4본부",
+      "branch": "울산2점",
+      "floor": "5층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "오후",
+      "altBrands": [
+        "폴햄키즈",
+        "소이"
+      ],
+      "areaPy": 14.9,
+      "category": "기타",
+      "stage": "2단계",
+      "note": "매니저 구인중",
+      "mdOpinion": "미동의, 2안동의"
+    },
+    {
+      "headquarters": "영업4본부",
+      "branch": "울산점",
+      "floor": "5층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "공실(란찌)",
+      "altBrands": [
+        "비버리힐즈폴로클럽",
+        "런던포그"
+      ],
+      "areaPy": 17.6,
+      "category": "기타",
+      "stage": "2단계",
+      "note": "팜스프링 입점 확정",
+      "mdOpinion": "동의"
+    },
+    {
+      "headquarters": "영업4본부",
+      "branch": "울산점",
+      "floor": "B1층",
+      "segments": [
+        "비패션"
+      ],
+      "currentBrand": "장기공실",
+      "altBrands": [
+        "리징(다이소)",
+        "리징(서점/대형약국)"
+      ],
+      "areaPy": 520,
+      "category": "기타",
+      "stage": "2단계",
+      "note": "인테리어 도면 설계 진행중",
+      "mdOpinion": "동의"
+    },
+    {
+      "headquarters": "영업4본부",
+      "branch": "울산점",
+      "floor": "4층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "공실(멜본)",
+      "altBrands": [
+        "쉬즈미스"
+      ],
+      "areaPy": 6.8,
+      "category": "기타",
+      "stage": "2단계",
+      "note": "그라피 확정",
+      "mdOpinion": null
+    },
+    {
+      "headquarters": "영업4본부",
+      "branch": "울산점",
+      "floor": "6층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "공실(그루브라임키즈)",
+      "altBrands": [
+        "스파오키즈"
+      ],
+      "areaPy": 14.3,
+      "category": "기타",
+      "stage": "2단계",
+      "note": "26년 2분기목표",
+      "mdOpinion": "미동의, 앙팡스"
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "유성점",
+      "floor": "5층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "엘르골프",
+      "altBrands": [
+        "마코스포츠"
+      ],
+      "areaPy": 24.7,
+      "category": "기타",
+      "stage": "2단계",
+      "note": "마코스포츠 입점 확정",
+      "mdOpinion": null
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "유성점",
+      "floor": "5층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "챌린저",
+      "altBrands": [
+        "런던포그"
+      ],
+      "areaPy": 28.3,
+      "category": "기타",
+      "stage": "2단계",
+      "note": "런던포그 입점 확정",
+      "mdOpinion": null
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "유성점",
+      "floor": null,
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "레고",
+      "altBrands": [
+        "MLB키즈"
+      ],
+      "areaPy": 30.5,
+      "category": "기타",
+      "stage": "2단계",
+      "note": "MLB키즈",
+      "mdOpinion": "26 FW MD"
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "유성점",
+      "floor": "5층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "PGA/LPGA골프",
+      "altBrands": [
+        "크로커다일"
+      ],
+      "areaPy": 26.5,
+      "category": "기타",
+      "stage": "2단계",
+      "note": "크로커다일 입점 확정",
+      "mdOpinion": null
+    },
+    {
+      "headquarters": "영업1본부",
+      "branch": "인천점",
+      "floor": "10층",
+      "segments": [
+        "외식"
+      ],
+      "currentBrand": "JVL부대찌개",
+      "altBrands": [
+        "한옥마을",
+        "오뎅식당"
+      ],
+      "areaPy": 41,
+      "category": "기타",
+      "stage": "2단계",
+      "note": "경몽루(중식) 제안",
+      "mdOpinion": "코리아부대찌개"
+    },
+    {
+      "headquarters": "영업1본부",
+      "branch": "인천점",
+      "floor": "7층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "더영스터",
+      "altBrands": [
+        "NBA키즈",
+        "에꼴리에"
+      ],
+      "areaPy": 9.6,
+      "category": "기타",
+      "stage": "2단계",
+      "note": "오션스카이 매니저 구인중",
+      "mdOpinion": "미동의 페리미츠/오션스카이/롤리팝 제안"
+    },
+    {
+      "headquarters": "영업1본부",
+      "branch": "인천점",
+      "floor": "11층",
+      "segments": [
+        "비패션"
+      ],
+      "currentBrand": "펫피플",
+      "altBrands": [
+        "포쉬네일",
+        "반디인하우스"
+      ],
+      "areaPy": 9.5,
+      "category": "기타",
+      "stage": "2단계",
+      "note": "포쉬네일 투자자 거절로 구인중",
+      "mdOpinion": "동의(포쉬네일 입점불가로 반디로 추진중)"
+    },
+    {
+      "headquarters": "영업1본부",
+      "branch": "일산점",
+      "floor": "2층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "알토",
+      "altBrands": [
+        "써스데이 아일랜드",
+        "나이스클랍"
+      ],
+      "areaPy": 10.8,
+      "category": "기타",
+      "stage": "2단계",
+      "note": "이즈멜본 이동 추진(지점/사내은행 준비) + 로엠 확장)",
+      "mdOpinion": "미동의(르샵 추진)"
+    },
+    {
+      "headquarters": "영업2본부",
+      "branch": "중계점",
+      "floor": "지하1층",
+      "segments": [
+        "외식"
+      ],
+      "currentBrand": "(구)파리바게트",
+      "altBrands": [
+        "아프리카 안경",
+        "스태프 핫도그"
+      ],
+      "areaPy": 9.3,
+      "category": "기타",
+      "stage": "2단계",
+      "note": "F&B 부문 확인 필요, 스포츠 마운티아 팝업 확정",
+      "mdOpinion": "동의 / 아프리카 기퇴점으로 불가, 추가 대안 협의 중"
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "중앙로점",
+      "floor": "4층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "샙",
+      "altBrands": [
+        "다이소"
+      ],
+      "areaPy": 13.3,
+      "category": "기타",
+      "stage": "2단계",
+      "note": "다이소 조건/일정 협의중 - 진행시 상반기 착공예상",
+      "mdOpinion": "동의"
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "중앙로점",
+      "floor": "4층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "(구)NC픽스",
+      "altBrands": [
+        "다이소"
+      ],
+      "areaPy": 37.9,
+      "category": "기타",
+      "stage": "2단계",
+      "note": "다이소 조건/일정 협의중 - 진행시 상반기 착공예상",
+      "mdOpinion": "동의"
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "중앙로점",
+      "floor": "4층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "(구)레드페이스+콜핑",
+      "altBrands": [
+        "다이소"
+      ],
+      "areaPy": 30.4,
+      "category": "기타",
+      "stage": "2단계",
+      "note": "다이소 조건/일정 협의중 - 진행시 상반기 착공예상",
+      "mdOpinion": "동의"
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "중앙로점",
+      "floor": "4층",
+      "segments": [
+        "비패션"
+      ],
+      "currentBrand": "노아샵(애견미용/용품)",
+      "altBrands": [
+        "다이소"
+      ],
+      "areaPy": 11.9,
+      "category": "기타",
+      "stage": "2단계",
+      "note": "다이소 조건/일정 협의중 - 진행시 상반기 착공예상",
+      "mdOpinion": "동의"
+    },
+    {
+      "headquarters": "영업2본부",
+      "branch": "천호2점",
+      "floor": "3층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "유닛",
+      "altBrands": [
+        "발렌시아",
+        "더아이잗"
+      ],
+      "areaPy": 9.6,
+      "category": "기타",
+      "stage": "2단계",
+      "note": "지센 확정",
+      "mdOpinion": "동의"
+    },
+    {
+      "headquarters": "영업2본부",
+      "branch": "천호2점",
+      "floor": "3층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "아이니스",
+      "altBrands": [
+        "올리비아로렌",
+        "조이너스"
+      ],
+      "areaPy": 8.2,
+      "category": "기타",
+      "stage": "2단계",
+      "note": "조이너스 확정",
+      "mdOpinion": "2안 조이너스 추진"
+    },
+    {
+      "headquarters": "영업2본부",
+      "branch": "천호2점",
+      "floor": "4층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "키즈덤(장기공실)",
+      "altBrands": [
+        "JCB"
+      ],
+      "areaPy": 12,
+      "category": "기타",
+      "stage": "2단계",
+      "note": "매니저 구인중",
+      "mdOpinion": null
+    },
+    {
+      "headquarters": "영업2본부",
+      "branch": "천호2점",
+      "floor": "B1층",
+      "segments": [
+        "비패션"
+      ],
+      "currentBrand": "안경",
+      "altBrands": [
+        "하나투어"
+      ],
+      "areaPy": 5.2,
+      "category": "기타",
+      "stage": "2단계",
+      "note": "현장확인 및 컨텐츠 제안",
+      "mdOpinion": "동의"
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "청주점",
+      "floor": "4층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "플랙/ 장기공실",
+      "altBrands": [
+        "뱅뱅"
+      ],
+      "areaPy": 16.3,
+      "category": "기타",
+      "stage": "2단계",
+      "note": "뱅뱅 입점 협의",
+      "mdOpinion": null
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "청주점",
+      "floor": "5층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "컬럼비아(장기공실)",
+      "altBrands": [
+        "트렉스타",
+        "마운티아"
+      ],
+      "areaPy": 10,
+      "category": "기타",
+      "stage": "2단계",
+      "note": "마운티아 팝업임점 확정 / 매니저 구인중",
+      "mdOpinion": "미동의(마운티아 추진중)"
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "청주점",
+      "floor": "4층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "엠할리데이(장기공실)",
+      "altBrands": [
+        "엠할리데이"
+      ],
+      "areaPy": 8.3,
+      "category": "기타",
+      "stage": "2단계",
+      "note": "멤버헐리데이 협의",
+      "mdOpinion": "동의 / 위치 추후 협의"
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "청주점",
+      "floor": "B1층",
+      "segments": [
+        "외식"
+      ],
+      "currentBrand": "공실(타로라멘옆 1)",
+      "altBrands": [
+        "할매원조 양평해장국"
+      ],
+      "areaPy": 12.8,
+      "category": "기타",
+      "stage": "2단계",
+      "note": "할매원조 LOI",
+      "mdOpinion": "미동의/ 1안 브라운돈까스"
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "청주점",
+      "floor": "4층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "인디고뱅크(장기공실)",
+      "altBrands": [
+        "위라이크"
+      ],
+      "areaPy": 14.3,
+      "category": "기타",
+      "stage": "2단계",
+      "note": "위라이크 확정",
+      "mdOpinion": null
+    },
+    {
+      "headquarters": "영업1본부",
+      "branch": "평촌2점",
+      "floor": "2층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "앤디스클라인",
+      "altBrands": [
+        "기비키이스"
+      ],
+      "areaPy": 13.9,
+      "category": "기타",
+      "stage": "2단계",
+      "note": "기비키이스 확정",
+      "mdOpinion": "동의"
+    },
+    {
+      "headquarters": "영업1본부",
+      "branch": "평촌2점",
+      "floor": "5층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "벤셔먼",
+      "altBrands": [
+        "슬로우템포"
+      ],
+      "areaPy": 11.7,
+      "category": "기타",
+      "stage": "2단계",
+      "note": "슬로우템포 협의(구인 중)",
+      "mdOpinion": "어노이드 제안"
+    },
+    {
+      "headquarters": "영업1본부",
+      "branch": "평촌2점",
+      "floor": "7층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "공실(지오다노주니어)",
+      "altBrands": [
+        "휠라키즈"
+      ],
+      "areaPy": 14.3,
+      "category": "기타",
+      "stage": "2단계",
+      "note": "휠라키즈 확정",
+      "mdOpinion": null
+    },
+    {
+      "headquarters": "영업1본부",
+      "branch": "평촌2점",
+      "floor": "5층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "클라이드",
+      "altBrands": [
+        "뱅뱅"
+      ],
+      "areaPy": 13.7,
+      "category": "기타",
+      "stage": "2단계",
+      "note": "뱅뱅 입점 협의",
+      "mdOpinion": null
+    },
+    {
+      "headquarters": "영업2본부",
+      "branch": "평택점",
+      "floor": "3층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "막스마리오",
+      "altBrands": [
+        "BCBG",
+        "더레노마"
+      ],
+      "areaPy": 12,
+      "category": "기타",
+      "stage": "2단계",
+      "note": "레포크 확정(CM큐브 병행 추진)",
+      "mdOpinion": "미동의(마레몬떼 추진)"
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "해운대점",
+      "floor": "3층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "플라스틱아일랜드",
+      "altBrands": [
+        "베네통"
+      ],
+      "areaPy": 11,
+      "category": "기타",
+      "stage": "2단계",
+      "note": "르니앤맥코이 팝업 확정",
+      "mdOpinion": "베네통 협의중"
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "해운대점",
+      "floor": "6층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "스타일노리터",
+      "altBrands": [
+        "압소바",
+        "오즈키즈"
+      ],
+      "areaPy": 17.4,
+      "category": "기타",
+      "stage": "2단계",
+      "note": "압소바",
+      "mdOpinion": null
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "해운대점",
+      "floor": "2층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "튜브",
+      "altBrands": [],
+      "areaPy": 16.2,
+      "category": "기타",
+      "stage": "2단계",
+      "note": "튜브 재입점",
+      "mdOpinion": "튜브 재입점"
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "해운대점",
+      "floor": "3층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "파파야",
+      "altBrands": [
+        "멜로디가든(팝업)"
+      ],
+      "areaPy": 9.5,
+      "category": "기타",
+      "stage": "2단계",
+      "note": "멜로디가든 확정",
+      "mdOpinion": null
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "해운대점",
+      "floor": "5층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "위드에이스(장기공실)",
+      "altBrands": [
+        "르까프",
+        "오닐"
+      ],
+      "areaPy": 16,
+      "category": "기타",
+      "stage": "2단계",
+      "note": "르까프 브랜드 합의, 매니저 구인 중",
+      "mdOpinion": "미동의 / 르까프 협의중"
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "해운대점",
+      "floor": "6층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "첨이첨이",
+      "altBrands": [
+        "탈렌트클로젯"
+      ],
+      "areaPy": 9.7,
+      "category": "기타",
+      "stage": "2단계",
+      "note": "매니저 구인중",
+      "mdOpinion": "미동의, 탤런트클로젯"
+    },
+    {
+      "headquarters": "영업4본부",
+      "branch": "강북점",
+      "floor": "4층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "장기공실",
+      "altBrands": [
+        "인터크루",
+        "행사장"
+      ],
+      "areaPy": 8.1,
+      "category": "기타",
+      "stage": "1단계",
+      "note": "인터크루 제안",
+      "mdOpinion": "동의"
+    },
+    {
+      "headquarters": "영업1본부",
+      "branch": "강서점",
+      "floor": "2층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "올리브데올리브 공실",
+      "altBrands": [],
+      "areaPy": 11.7,
+      "category": "기타",
+      "stage": "1단계",
+      "note": "지점과 조율 필요",
+      "mdOpinion": "손병기/MD전까지 단기팝업/임시행사장 운영"
+    },
+    {
+      "headquarters": "영업1본부",
+      "branch": "강서점",
+      "floor": "2층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "제이빔 / 현 공실",
+      "altBrands": [
+        "NC픽스 이동"
+      ],
+      "areaPy": 13.5,
+      "category": "기타",
+      "stage": "1단계",
+      "note": "지점과 조율 필요",
+      "mdOpinion": "이규헌/MD전까지 단기팝업/임시행사장 운영"
+    },
+    {
+      "headquarters": "영업1본부",
+      "branch": "강서점",
+      "floor": "2층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "알토 / 현 공실",
+      "altBrands": [
+        "NC픽스 이동"
+      ],
+      "areaPy": 13.5,
+      "category": "기타",
+      "stage": "1단계",
+      "note": "지점과 조율 필요",
+      "mdOpinion": "이규헌/MD전까지 단기팝업/임시행사장 운영"
+    },
+    {
+      "headquarters": "영업1본부",
+      "branch": "강서점",
+      "floor": "2층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "마인드브릿지우먼 공실",
+      "altBrands": [],
+      "areaPy": 20.2,
+      "category": "기타",
+      "stage": "1단계",
+      "note": "지점과 조율 필요",
+      "mdOpinion": "손병기/MD전까지 단기팝업/임시행사장 운영"
+    },
+    {
+      "headquarters": "영업4본부",
+      "branch": "경산점",
+      "floor": "2층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "머렐(장기공실)",
+      "altBrands": [
+        "마운티아"
+      ],
+      "areaPy": 25.4,
+      "category": "기타",
+      "stage": "1단계",
+      "note": "약국오픈계획 / 레드페이스 이동제안",
+      "mdOpinion": "레드페이스 이동 제안"
+    },
+    {
+      "headquarters": "영업4본부",
+      "branch": "경산점",
+      "floor": "1층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "공실(첼로)",
+      "altBrands": [
+        "무크",
+        "오브엠"
+      ],
+      "areaPy": 11.3,
+      "category": "기타",
+      "stage": "1단계",
+      "note": null,
+      "mdOpinion": "무크/오브엠 동의"
+    },
+    {
+      "headquarters": "영업4본부",
+      "branch": "경산점",
+      "floor": "1층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "공실",
+      "altBrands": [
+        "키플링"
+      ],
+      "areaPy": 8.1,
+      "category": "기타",
+      "stage": "1단계",
+      "note": null,
+      "mdOpinion": "키플링 동의"
+    },
+    {
+      "headquarters": "영업4본부",
+      "branch": "경산점",
+      "floor": "1층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "장기공실",
+      "altBrands": [],
+      "areaPy": 8.1,
+      "category": "기타",
+      "stage": "1단계",
+      "note": null,
+      "mdOpinion": "대안 브랜드 검토"
+    },
+    {
+      "headquarters": "영업4본부",
+      "branch": "경산점",
+      "floor": "5층",
+      "segments": [
+        "외식"
+      ],
+      "currentBrand": "공실",
+      "altBrands": [
+        "반궁",
+        "중식"
+      ],
+      "areaPy": 43.3,
+      "category": "기타",
+      "stage": "1단계",
+      "note": null,
+      "mdOpinion": "한식 업체 컨텍 중"
+    },
+    {
+      "headquarters": "영업4본부",
+      "branch": "경산점",
+      "floor": "5층",
+      "segments": [
+        "외식"
+      ],
+      "currentBrand": "한식",
+      "altBrands": [
+        "스시"
+      ],
+      "areaPy": 45.5,
+      "category": "기타",
+      "stage": "1단계",
+      "note": null,
+      "mdOpinion": "스시 업체 컨택 중"
+    },
+    {
+      "headquarters": "영업1본부",
+      "branch": "고잔점",
+      "floor": "B1층",
+      "segments": [
+        "외식"
+      ],
+      "currentBrand": "유천냉면",
+      "altBrands": [
+        "델리바이애슐리"
+      ],
+      "areaPy": 20.3,
+      "category": "기타",
+      "stage": "1단계",
+      "note": "왁버거 협의 중",
+      "mdOpinion": "동의"
+    },
+    {
+      "headquarters": "영업1본부",
+      "branch": "고잔점",
+      "floor": "1층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "미샤 화장품",
+      "altBrands": [
+        "올리브영"
+      ],
+      "areaPy": 6.5,
+      "category": "기타",
+      "stage": "1단계",
+      "note": "지점에서 올리브영 제안",
+      "mdOpinion": "동의 / 올리브영 기업대기업 협의 중"
+    },
+    {
+      "headquarters": "영업1본부",
+      "branch": "고잔점",
+      "floor": "4층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "트렉스타",
+      "altBrands": [
+        "디스커버리",
+        "내셔널지오그래픽"
+      ],
+      "areaPy": 58.5,
+      "category": "기타",
+      "stage": "1단계",
+      "note": "지점에서 2안 내셔널지오그래픽 제안",
+      "mdOpinion": "동의"
+    },
+    {
+      "headquarters": "영업1본부",
+      "branch": "고잔점",
+      "floor": "3층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "아웃도어프로덕트",
+      "altBrands": [
+        "슬로우템포"
+      ],
+      "areaPy": 12.3,
+      "category": "기타",
+      "stage": "1단계",
+      "note": "슬로우템포 제안",
+      "mdOpinion": null
+    },
+    {
+      "headquarters": "영업1본부",
+      "branch": "광명점",
+      "floor": "6층",
+      "segments": [
+        "비패션"
+      ],
+      "currentBrand": "장기공실",
+      "altBrands": [
+        "트니트니 플레이",
+        "리턴마켓"
+      ],
+      "areaPy": 46.5,
+      "category": "기타",
+      "stage": "1단계",
+      "note": "트니트니 플레이 제안 중",
+      "mdOpinion": "미동의"
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "괴정점",
+      "floor": "4층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "오후",
+      "altBrands": [
+        "스파오키즈"
+      ],
+      "areaPy": 12,
+      "category": "기타",
+      "stage": "1단계",
+      "note": null,
+      "mdOpinion": "미동의, 에꼴리에, 롤리팝 제안"
+    },
+    {
+      "headquarters": "영업4본부",
+      "branch": "구미점",
+      "floor": "6층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "레노마키즈(장기공실)",
+      "altBrands": [
+        "AWK"
+      ],
+      "areaPy": 17,
+      "category": "기타",
+      "stage": "1단계",
+      "note": "매니저 구인중",
+      "mdOpinion": "미동의, 아가방"
+    },
+    {
+      "headquarters": "영업4본부",
+      "branch": "구미점",
+      "floor": "2층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "장기공실(헤라설화수)",
+      "altBrands": [
+        "엔프라니",
+        "페이머스피플"
+      ],
+      "areaPy": 12,
+      "category": "기타",
+      "stage": "1단계",
+      "note": null,
+      "mdOpinion": "동의 / 2안 협의 중"
+    },
+    {
+      "headquarters": "영업4본부",
+      "branch": "구미점",
+      "floor": "4층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "공실(후라밍고)",
+      "altBrands": [
+        "더레노마",
+        "파올라"
+      ],
+      "areaPy": 13,
+      "category": "기타",
+      "stage": "1단계",
+      "note": null,
+      "mdOpinion": "동의(2안 추진)"
+    },
+    {
+      "headquarters": "영업4본부",
+      "branch": "구미점",
+      "floor": "5층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "공실(엘르골프)",
+      "altBrands": [
+        "디즈니골프"
+      ],
+      "areaPy": 12.3,
+      "category": "기타",
+      "stage": "1단계",
+      "note": null,
+      "mdOpinion": "동의"
+    },
+    {
+      "headquarters": "영업4본부",
+      "branch": "구미점",
+      "floor": "5층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "에디션",
+      "altBrands": [
+        "트레몰로"
+      ],
+      "areaPy": 17,
+      "category": "기타",
+      "stage": "1단계",
+      "note": "트레몰로 제안",
+      "mdOpinion": null
+    },
+    {
+      "headquarters": "영업2본부",
+      "branch": "동수원",
+      "floor": "4층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "플랙(장기공실)",
+      "altBrands": [
+        "슬로우템포",
+        "MLB"
+      ],
+      "areaPy": 12.3,
+      "category": "기타",
+      "stage": "1단계",
+      "note": "슬로우템포 구인 중/ 라이프멜로우 제안",
+      "mdOpinion": "동의"
+    },
+    {
+      "headquarters": "영업2본부",
+      "branch": "동수원",
+      "floor": "8층",
+      "segments": [
+        "외식"
+      ],
+      "currentBrand": "아시아문",
+      "altBrands": [
+        "강남쌀국수",
+        "사이공본가"
+      ],
+      "areaPy": 29.8,
+      "category": "기타",
+      "stage": "1단계",
+      "note": null,
+      "mdOpinion": "사이공본가 입점제안"
+    },
+    {
+      "headquarters": "영업2본부",
+      "branch": "동수원",
+      "floor": "9층",
+      "segments": [
+        "외식"
+      ],
+      "currentBrand": "브라운돈까스",
+      "altBrands": [
+        "로운"
+      ],
+      "areaPy": 35.4,
+      "category": "기타",
+      "stage": "1단계",
+      "note": null,
+      "mdOpinion": "지점안 동의 / 2인 샤브로21"
+    },
+    {
+      "headquarters": "영업2본부",
+      "branch": "동수원",
+      "floor": "9층",
+      "segments": [
+        "외식"
+      ],
+      "currentBrand": "만권화밥",
+      "altBrands": [],
+      "areaPy": 37.8,
+      "category": "기타",
+      "stage": "1단계",
+      "note": null,
+      "mdOpinion": "지점안 동의/ 2안 시래정"
+    },
+    {
+      "headquarters": "영업2본부",
+      "branch": "동수원",
+      "floor": "9층",
+      "segments": [
+        "비패션"
+      ],
+      "currentBrand": "문화센터",
+      "altBrands": [
+        "트니트니플러스"
+      ],
+      "areaPy": 109.5,
+      "category": "기타",
+      "stage": "1단계",
+      "note": "트니트니, 상상플러스 제안중",
+      "mdOpinion": "동의(컨텐츠 협의중)"
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "부산대점",
+      "floor": "3층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "클라이드",
+      "altBrands": [
+        "UCLA"
+      ],
+      "areaPy": 15.7,
+      "category": "기타",
+      "stage": "1단계",
+      "note": "UCLA 제안",
+      "mdOpinion": null
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "부산대점",
+      "floor": "5층",
+      "segments": [
+        "외식"
+      ],
+      "currentBrand": "더카페",
+      "altBrands": [],
+      "areaPy": 65.3,
+      "category": "기타",
+      "stage": "1단계",
+      "note": "26.03.22(일) 퇴점",
+      "mdOpinion": "카페 컨텐츠 컨택중"
+    },
+    {
+      "headquarters": "영업1본부",
+      "branch": "부평점",
+      "floor": "1층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "험멜(장기공실)",
+      "altBrands": [
+        "웨스트우드"
+      ],
+      "areaPy": 25.6,
+      "category": "기타",
+      "stage": "1단계",
+      "note": "웨스트우드 불가 / 신규업체 도전",
+      "mdOpinion": "웨스트우드 불가 / 신규업체 도전중"
+    },
+    {
+      "headquarters": "영업1본부",
+      "branch": "부평점",
+      "floor": "1층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "브랑누아",
+      "altBrands": [
+        "무크"
+      ],
+      "areaPy": 8.1,
+      "category": "기타",
+      "stage": "1단계",
+      "note": "자산재설계 PJ 종료 후 추가",
+      "mdOpinion": "미소페/무크 협의중"
+    },
+    {
+      "headquarters": "영업1본부",
+      "branch": "부평점",
+      "floor": "1층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "네이처리퍼블릭",
+      "altBrands": [
+        "뷰티아울렛"
+      ],
+      "areaPy": 9.1,
+      "category": "기타",
+      "stage": "1단계",
+      "note": "자산재설계 PJ 종료 후 추가",
+      "mdOpinion": "뷰티아울렛 협의중"
+    },
+    {
+      "headquarters": "영업1본부",
+      "branch": "부평점",
+      "floor": "2층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "타마라",
+      "altBrands": [],
+      "areaPy": 10,
+      "category": "기타",
+      "stage": "1단계",
+      "note": "자산재설계 PJ 종료 후 추가",
+      "mdOpinion": "레포크 협의중"
+    },
+    {
+      "headquarters": "영업1본부",
+      "branch": "부평점",
+      "floor": "2층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "알래스카(장기공실)",
+      "altBrands": [
+        "인터크루"
+      ],
+      "areaPy": 14.2,
+      "category": "기타",
+      "stage": "1단계",
+      "note": "라이프멜로우 제안",
+      "mdOpinion": "1안)리트머스 제안, 2안)라이프멜로우 제안"
+    },
+    {
+      "headquarters": "영업1본부",
+      "branch": "부평점",
+      "floor": "3층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "신디키즈",
+      "altBrands": [
+        "리틀밥독"
+      ],
+      "areaPy": 7.2,
+      "category": "기타",
+      "stage": "1단계",
+      "note": "자산재설계 PJ 종료 후 추가",
+      "mdOpinion": null
+    },
+    {
+      "headquarters": "영업1본부",
+      "branch": "산본점",
+      "floor": "1층",
+      "segments": [
+        "외식"
+      ],
+      "currentBrand": "F&B 공실",
+      "altBrands": [
+        "송사부고로케",
+        "크리스피도넛"
+      ],
+      "areaPy": 9.6,
+      "category": "기타",
+      "stage": "1단계",
+      "note": null,
+      "mdOpinion": "미동의(1안 와플샵, 2안 호두앤미)"
+    },
+    {
+      "headquarters": "영업1본부",
+      "branch": "산본점",
+      "floor": "2층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "인터크루",
+      "altBrands": [
+        "비지트인뉴욕",
+        "숲"
+      ],
+      "areaPy": 11.5,
+      "category": "기타",
+      "stage": "1단계",
+      "note": "스테파니 추진",
+      "mdOpinion": "동의"
+    },
+    {
+      "headquarters": "영업2본부",
+      "branch": "송파점",
+      "floor": "3층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "EN",
+      "altBrands": [
+        "온앤온(확장)"
+      ],
+      "areaPy": 11,
+      "category": "기타",
+      "stage": "1단계",
+      "note": "브랜드 제안",
+      "mdOpinion": null
+    },
+    {
+      "headquarters": "영업2본부",
+      "branch": "송파점",
+      "floor": "5층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "엘르골프",
+      "altBrands": [
+        "루이까스텔"
+      ],
+      "areaPy": 13.4,
+      "category": "기타",
+      "stage": "1단계",
+      "note": "루이까스텔 제안",
+      "mdOpinion": null
+    },
+    {
+      "headquarters": "영업4본부",
+      "branch": "쇼핑점",
+      "floor": "12층",
+      "segments": [
+        "비패션"
+      ],
+      "currentBrand": "공실(애슐리퀸즈)",
+      "altBrands": [
+        "파크골프"
+      ],
+      "areaPy": 202,
+      "category": "기타",
+      "stage": "1단계",
+      "note": "업체 제안 중이나 지점 협의필요(공간 이슈)",
+      "mdOpinion": "지점의견(현재 층별 불법 적재공간있어 해당공간 사용)"
+    },
+    {
+      "headquarters": "영업4본부",
+      "branch": "수성점",
+      "floor": "5층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "프로스팩스",
+      "altBrands": [
+        "벨롭"
+      ],
+      "areaPy": 15.3,
+      "category": "기타",
+      "stage": "1단계",
+      "note": "르까프 제안",
+      "mdOpinion": "미동의 / 스케쳐스 확장 오픈 도전"
+    },
+    {
+      "headquarters": "영업4본부",
+      "branch": "수성점",
+      "floor": "1층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "에스콰이어",
+      "altBrands": [
+        "소다",
+        "Y컨셉"
+      ],
+      "areaPy": 15,
+      "category": "기타",
+      "stage": "1단계",
+      "note": null,
+      "mdOpinion": "동의 / 1안, 2안 + 추가브랜드 협의 중"
+    },
+    {
+      "headquarters": "영업4본부",
+      "branch": "수성점",
+      "floor": "2층",
+      "segments": [
+        "외식"
+      ],
+      "currentBrand": "공실",
+      "altBrands": [
+        "베이커리"
+      ],
+      "areaPy": 35,
+      "category": "기타",
+      "stage": "1단계",
+      "note": "2분기 진행",
+      "mdOpinion": "미동의"
+    },
+    {
+      "headquarters": "영업4본부",
+      "branch": "수성점",
+      "floor": "5층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "인디고뱅크(장기공실)",
+      "altBrands": [
+        "발란스"
+      ],
+      "areaPy": 9.4,
+      "category": "기타",
+      "stage": "1단계",
+      "note": "멤버헐리데이 제안",
+      "mdOpinion": "미동의/ 1안) 그루브라임플레이"
+    },
+    {
+      "headquarters": "영업4본부",
+      "branch": "수성점",
+      "floor": "8층",
+      "segments": [
+        "외식"
+      ],
+      "currentBrand": "엔텐프레즐",
+      "altBrands": [
+        "남산돈까스",
+        "테루"
+      ],
+      "areaPy": 23,
+      "category": "기타",
+      "stage": "1단계",
+      "note": "투자자 선구인 후 진행 2분기",
+      "mdOpinion": "미동의 / 1안 이디야카페 2안 컴포즈"
+    },
+    {
+      "headquarters": "영업4본부",
+      "branch": "수성점",
+      "floor": "8층",
+      "segments": [
+        "외식"
+      ],
+      "currentBrand": "예궁",
+      "altBrands": [
+        "중화요리"
+      ],
+      "areaPy": 40.1,
+      "category": "기타",
+      "stage": "1단계",
+      "note": "투자자 선구인 후 진행 2분기",
+      "mdOpinion": "미동의 / 1안 교동짬뽕 2안 남산돈까스"
+    },
+    {
+      "headquarters": "영업4본부",
+      "branch": "수성점",
+      "floor": "6층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "쇼콜라 공실",
+      "altBrands": [
+        "폴햄키즈"
+      ],
+      "areaPy": 12.3,
+      "category": "기타",
+      "stage": "1단계",
+      "note": "2분기",
+      "mdOpinion": "미동의, 오즈키즈,미니도우 제안"
+    },
+    {
+      "headquarters": "영업4본부",
+      "branch": "수성점",
+      "floor": "5층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "클라이드(장기공실)",
+      "altBrands": [
+        "에드호크"
+      ],
+      "areaPy": 10.3,
+      "category": "기타",
+      "stage": "1단계",
+      "note": "에드호크 제안",
+      "mdOpinion": null
+    },
+    {
+      "headquarters": "영업4본부",
+      "branch": "수성점",
+      "floor": "2층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "파파야",
+      "altBrands": [
+        "오프리미츠",
+        "패션랜드복합관"
+      ],
+      "areaPy": 19,
+      "category": "기타",
+      "stage": "1단계",
+      "note": "브랜드 제안",
+      "mdOpinion": "동의"
+    },
+    {
+      "headquarters": "영업2본부",
+      "branch": "수원터미널점",
+      "floor": "5층",
+      "segments": [
+        "외식"
+      ],
+      "currentBrand": "아비꼬",
+      "altBrands": [
+        "강경불고기",
+        "낙원타코"
+      ],
+      "areaPy": 47.2,
+      "category": "기타",
+      "stage": "1단계",
+      "note": "짬뽕관 제안중",
+      "mdOpinion": "미동의(1안 명가코다리 한상)"
+    },
+    {
+      "headquarters": "영업2본부",
+      "branch": "수원터미널점",
+      "floor": "5층",
+      "segments": [
+        "외식"
+      ],
+      "currentBrand": "홍짜장",
+      "altBrands": [
+        "교동짬뽕",
+        "이비가짬뽕"
+      ],
+      "areaPy": 23,
+      "category": "기타",
+      "stage": "1단계",
+      "note": "전체 원상복구",
+      "mdOpinion": "동의"
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "순천점",
+      "floor": "별관 1층",
+      "segments": [
+        "비패션"
+      ],
+      "currentBrand": "장기공실(구 별관 전자랜드)",
+      "altBrands": [
+        "창고형 약국",
+        "휘트니스"
+      ],
+      "areaPy": 80,
+      "category": "기타",
+      "stage": "1단계",
+      "note": "지점 1,2안 제안/ 투자자 구인중",
+      "mdOpinion": "미동의(컨텐츠 협의중)"
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "순천점",
+      "floor": "별관 2층",
+      "segments": [
+        "비패션"
+      ],
+      "currentBrand": "장기공실(구 별관 패션)",
+      "altBrands": [
+        "헤어샵"
+      ],
+      "areaPy": 144,
+      "category": "기타",
+      "stage": "1단계",
+      "note": "투자자 구인중",
+      "mdOpinion": "미동의(컨텐츠 협의중)"
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "순천점",
+      "floor": "본관 1층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "허시파피",
+      "altBrands": [
+        "트랜드팝업",
+        "JAJU"
+      ],
+      "areaPy": 11.3,
+      "category": "기타",
+      "stage": "1단계",
+      "note": null,
+      "mdOpinion": "동의 2안 협의 중"
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "순천점",
+      "floor": "본관 1층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "슈스파",
+      "altBrands": [
+        "트랜드팝업",
+        "JAJU"
+      ],
+      "areaPy": 11.2,
+      "category": "기타",
+      "stage": "1단계",
+      "note": null,
+      "mdOpinion": "동의 2안 협의 중"
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "순천점",
+      "floor": "본관 4층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "폴로골프(장기공실)",
+      "altBrands": [
+        "까스텔바작"
+      ],
+      "areaPy": 12.3,
+      "category": "기타",
+      "stage": "1단계",
+      "note": "지점 브랜드 제안",
+      "mdOpinion": "동의"
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "순천점",
+      "floor": "3층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "장기공실(비꼴리끄 단기)",
+      "altBrands": [
+        "지고트",
+        "모조"
+      ],
+      "areaPy": 17,
+      "category": "기타",
+      "stage": "1단계",
+      "note": "시즌 단기협의",
+      "mdOpinion": "동의"
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "순천점",
+      "floor": "2층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "지컷",
+      "altBrands": [
+        "듀엘",
+        "abfz"
+      ],
+      "areaPy": 12.6,
+      "category": "기타",
+      "stage": "1단계",
+      "note": "브랜드쪽 도면 제안",
+      "mdOpinion": "동의"
+    },
+    {
+      "headquarters": "영업2본부",
+      "branch": "신구로점",
+      "floor": "3층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "지오다노(장기공실)",
+      "altBrands": [
+        "캉골",
+        "바버샵"
+      ],
+      "areaPy": 30,
+      "category": "기타",
+      "stage": "1단계",
+      "note": "슬로우템포, 체이스플러스 제안",
+      "mdOpinion": "미동의/ 1안) 뱅뱅, 2안) 더블제이디"
+    },
+    {
+      "headquarters": "영업2본부",
+      "branch": "신구로점",
+      "floor": "4층",
+      "segments": [
+        "비패션"
+      ],
+      "currentBrand": "엘빈즈",
+      "altBrands": [
+        "베베드피노",
+        "토박스"
+      ],
+      "areaPy": 28.7,
+      "category": "기타",
+      "stage": "1단계",
+      "note": null,
+      "mdOpinion": "미동의, 지프키즈"
+    },
+    {
+      "headquarters": "영업2본부",
+      "branch": "신구로점",
+      "floor": "3층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "젝니콜라우스",
+      "altBrands": [
+        "팬텀골프"
+      ],
+      "areaPy": 14.7,
+      "category": "기타",
+      "stage": "1단계",
+      "note": null,
+      "mdOpinion": "미동의/레노마골프 추진"
+    },
+    {
+      "headquarters": "영업2본부",
+      "branch": "신구로점",
+      "floor": "5층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "아식스",
+      "altBrands": [
+        "파도가 파충류",
+        "전자랜드(팝업)"
+      ],
+      "areaPy": 40,
+      "category": "기타",
+      "stage": "1단계",
+      "note": "트니트니 플레이 제안 중",
+      "mdOpinion": "동의"
+    },
+    {
+      "headquarters": "영업2본부",
+      "branch": "야탑점",
+      "floor": "5층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "오후",
+      "altBrands": [
+        "일로딜로 무빙(MLB키즈 입점 시)",
+        "행텐틴즈 무빙"
+      ],
+      "areaPy": 10.1,
+      "category": "기타",
+      "stage": "1단계",
+      "note": "스케쳐스키즈 협의",
+      "mdOpinion": "미동의, 스케쳐스키즈"
+    },
+    {
+      "headquarters": "영업4본부",
+      "branch": "엑스코점",
+      "floor": "2층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "에드윈(장기공실)",
+      "altBrands": [
+        "더블제이디"
+      ],
+      "areaPy": 20.4,
+      "category": "기타",
+      "stage": "1단계",
+      "note": "더블제이디 제안",
+      "mdOpinion": "동의"
+    },
+    {
+      "headquarters": "영업4본부",
+      "branch": "엑스코점",
+      "floor": "2층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "어스앤뎀(장기공실)",
+      "altBrands": [
+        "NBA"
+      ],
+      "areaPy": 23.2,
+      "category": "기타",
+      "stage": "1단계",
+      "note": "NBA 제안",
+      "mdOpinion": "동의"
+    },
+    {
+      "headquarters": "영업4본부",
+      "branch": "엑스코점",
+      "floor": "2층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "인디고뱅크(장기공실)",
+      "altBrands": [
+        "버커루"
+      ],
+      "areaPy": 21.1,
+      "category": "기타",
+      "stage": "1단계",
+      "note": "버커루 제안",
+      "mdOpinion": "동의"
+    },
+    {
+      "headquarters": "영업4본부",
+      "branch": "엑스코점",
+      "floor": "2층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "레겐보겐(장기공실)",
+      "altBrands": [
+        "더블에잇"
+      ],
+      "areaPy": 14.8,
+      "category": "기타",
+      "stage": "1단계",
+      "note": "더블에이트 제안",
+      "mdOpinion": "동의"
+    },
+    {
+      "headquarters": "영업4본부",
+      "branch": "엑스코점",
+      "floor": "2층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "애드호크(장기공실)",
+      "altBrands": [
+        "비너스"
+      ],
+      "areaPy": 30,
+      "category": "기타",
+      "stage": "1단계",
+      "note": "비너스",
+      "mdOpinion": "동의"
+    },
+    {
+      "headquarters": "영업4본부",
+      "branch": "엑스코점",
+      "floor": "1층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "첼로제화",
+      "altBrands": [
+        "제옥스"
+      ],
+      "areaPy": 13,
+      "category": "기타",
+      "stage": "1단계",
+      "note": null,
+      "mdOpinion": "추가 브랜드 협의중"
+    },
+    {
+      "headquarters": "영업4본부",
+      "branch": "엑스코점",
+      "floor": "2층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "르까프(장기공실)",
+      "altBrands": [
+        "크록스"
+      ],
+      "areaPy": 13.8,
+      "category": "기타",
+      "stage": "1단계",
+      "note": null,
+      "mdOpinion": "미동의 / 나이키병행 팝업"
+    },
+    {
+      "headquarters": "영업4본부",
+      "branch": "엑스코점",
+      "floor": "2층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "아식스(장기공실)",
+      "altBrands": [
+        "크록스"
+      ],
+      "areaPy": 13.8,
+      "category": "기타",
+      "stage": "1단계",
+      "note": null,
+      "mdOpinion": "미동의 / 나이키병행 팝업"
+    },
+    {
+      "headquarters": "영업4본부",
+      "branch": "엑스코점",
+      "floor": "2층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "머렐(장기공실)",
+      "altBrands": [
+        "밀레"
+      ],
+      "areaPy": 22.2,
+      "category": "기타",
+      "stage": "1단계",
+      "note": "수영복 브랜드 제안",
+      "mdOpinion": "미동의 / 대안필요"
+    },
+    {
+      "headquarters": "영업4본부",
+      "branch": "엑스코점",
+      "floor": "3층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "엘르골프",
+      "altBrands": [
+        "마코스포츠",
+        "벤제프"
+      ],
+      "areaPy": 14.6,
+      "category": "기타",
+      "stage": "1단계",
+      "note": "지점 브랜드 제안",
+      "mdOpinion": "동의"
+    },
+    {
+      "headquarters": "영업4본부",
+      "branch": "울산2점",
+      "floor": "6층",
+      "segments": [
+        "비패션"
+      ],
+      "currentBrand": "공실",
+      "altBrands": [
+        "파크골프"
+      ],
+      "areaPy": 58.5,
+      "category": "기타",
+      "stage": "1단계",
+      "note": "파크야 파크골프 제안중",
+      "mdOpinion": "동의"
+    },
+    {
+      "headquarters": "영업4본부",
+      "branch": "울산2점",
+      "floor": "5층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "인디고키즈(장기공실)",
+      "altBrands": [
+        "인디고키즈",
+        "아가방"
+      ],
+      "areaPy": 8.1,
+      "category": "기타",
+      "stage": "1단계",
+      "note": null,
+      "mdOpinion": "미동의, 롤리팝 제안"
+    },
+    {
+      "headquarters": "영업4본부",
+      "branch": "울산2점",
+      "floor": "4층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "공실",
+      "altBrands": [
+        "조이너스",
+        "블랑듀"
+      ],
+      "areaPy": 10.1,
+      "category": "기타",
+      "stage": "1단계",
+      "note": "지점 2안 브랜드 제안",
+      "mdOpinion": "동의"
+    },
+    {
+      "headquarters": "영업4본부",
+      "branch": "울산2점",
+      "floor": "4층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "공실",
+      "altBrands": [
+        "프로월드컵",
+        "크로커다일남성"
+      ],
+      "areaPy": 17.9,
+      "category": "기타",
+      "stage": "1단계",
+      "note": null,
+      "mdOpinion": "동의"
+    },
+    {
+      "headquarters": "영업4본부",
+      "branch": "울산2점",
+      "floor": "4층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "공실",
+      "altBrands": [
+        "바찌",
+        "행사장"
+      ],
+      "areaPy": 8.6,
+      "category": "기타",
+      "stage": "1단계",
+      "note": null,
+      "mdOpinion": "동의(바찌/엘르셔츠/크로커다일 협의중)"
+    },
+    {
+      "headquarters": "영업4본부",
+      "branch": "울산점",
+      "floor": "11층",
+      "segments": [
+        "비패션"
+      ],
+      "currentBrand": "장기공실",
+      "altBrands": [
+        "리징(병원)",
+        "리징(보험사)"
+      ],
+      "areaPy": 448,
+      "category": "기타",
+      "stage": "1단계",
+      "note": "투자자 선구인 후 진행",
+      "mdOpinion": "지방점 부동산 도움"
+    },
+    {
+      "headquarters": "영업4본부",
+      "branch": "울산점",
+      "floor": "1층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "장기공실",
+      "altBrands": [
+        "스케쳐스",
+        "F&B(카페)"
+      ],
+      "areaPy": 25,
+      "category": "기타",
+      "stage": "1단계",
+      "note": "26년 2분기목표/투자자 선구인 후 진행",
+      "mdOpinion": "스포츠 공실 아님 / 기타로 변경"
+    },
+    {
+      "headquarters": "영업4본부",
+      "branch": "울산점",
+      "floor": "2층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "공실(NC베이직)",
+      "altBrands": [
+        "애드호크",
+        "위라이크"
+      ],
+      "areaPy": 18.1,
+      "category": "기타",
+      "stage": "1단계",
+      "note": "에드호크,위라이크 제안",
+      "mdOpinion": "동의"
+    },
+    {
+      "headquarters": "영업4본부",
+      "branch": "울산점",
+      "floor": "4층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "피가로(장기공실)",
+      "altBrands": [
+        "팜스프링",
+        "디즈니골프"
+      ],
+      "areaPy": 9.8,
+      "category": "기타",
+      "stage": "1단계",
+      "note": null,
+      "mdOpinion": "동의"
+    },
+    {
+      "headquarters": "영업4본부",
+      "branch": "울산점",
+      "floor": "6층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "공실(바니키즈)",
+      "altBrands": [
+        "슈펜키즈",
+        "휠라키즈"
+      ],
+      "areaPy": 20.7,
+      "category": "기타",
+      "stage": "1단계",
+      "note": "26년 2분기목표",
+      "mdOpinion": "미동의, 에어워크주니어"
+    },
+    {
+      "headquarters": "영업1본부",
+      "branch": "인천점",
+      "floor": "B1층",
+      "segments": [
+        "외식"
+      ],
+      "currentBrand": "쇼부라멘",
+      "altBrands": [
+        "드럭스토어",
+        "자주(JAJU)"
+      ],
+      "areaPy": 12.1,
+      "category": "기타",
+      "stage": "1단계",
+      "note": "업체 제안중(팩토리약국)_현재사이트미정리",
+      "mdOpinion": "F&B 동의"
+    },
+    {
+      "headquarters": "영업1본부",
+      "branch": "인천점",
+      "floor": "B1층",
+      "segments": [
+        "외식"
+      ],
+      "currentBrand": "별난만두",
+      "altBrands": [],
+      "areaPy": 4.6,
+      "category": "기타",
+      "stage": "1단계",
+      "note": "업체 제안중(팩토리약국)_현재사이트미정리",
+      "mdOpinion": "F&B 동의"
+    },
+    {
+      "headquarters": "영업1본부",
+      "branch": "인천점",
+      "floor": "B1층",
+      "segments": [
+        "외식"
+      ],
+      "currentBrand": "제퍼빈스",
+      "altBrands": [],
+      "areaPy": 5.3,
+      "category": "기타",
+      "stage": "1단계",
+      "note": "업체 제안중(팩토리약국)_현재사이트미정리",
+      "mdOpinion": "F&B 동의"
+    },
+    {
+      "headquarters": "영업1본부",
+      "branch": "인천점",
+      "floor": "B1층",
+      "segments": [
+        "외식"
+      ],
+      "currentBrand": "스시코리아",
+      "altBrands": [],
+      "areaPy": 16.8,
+      "category": "기타",
+      "stage": "1단계",
+      "note": "업체 제안중(팩토리약국)_현재사이트미정리",
+      "mdOpinion": "F&B 동의"
+    },
+    {
+      "headquarters": "영업1본부",
+      "branch": "일산점",
+      "floor": "B1층",
+      "segments": [
+        "외식"
+      ],
+      "currentBrand": "공실",
+      "altBrands": [
+        "대보손칼국수",
+        "시래정"
+      ],
+      "areaPy": 8.9,
+      "category": "기타",
+      "stage": "1단계",
+      "note": "경몽루(중식) 제안",
+      "mdOpinion": "동의"
+    },
+    {
+      "headquarters": "영업1본부",
+      "branch": "일산점",
+      "floor": "2층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "에고이스트(팝업)",
+      "altBrands": [
+        "밀스튜디오(팝업)",
+        "반에이크(팝업)"
+      ],
+      "areaPy": 12.3,
+      "category": "기타",
+      "stage": "1단계",
+      "note": "르니앤맥코이 제안",
+      "mdOpinion": null
+    },
+    {
+      "headquarters": "영업1본부",
+      "branch": "일산점",
+      "floor": "9층",
+      "segments": [
+        "비패션"
+      ],
+      "currentBrand": "공실(현 행사장 운영)",
+      "altBrands": [
+        "테팔팩토리"
+      ],
+      "areaPy": 72.6,
+      "category": "기타",
+      "stage": "1단계",
+      "note": "추가컨텐츠 소통중",
+      "mdOpinion": "동의"
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "중앙로점",
+      "floor": "5층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "탤런트(장기공실)",
+      "altBrands": [
+        "페리미츠",
+        "휠라키즈"
+      ],
+      "areaPy": 5.2,
+      "category": "기타",
+      "stage": "1단계",
+      "note": "탤런트+앙떼떼 터서 10.2평으로 8월말 MD추진",
+      "mdOpinion": "동의"
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "중앙로점",
+      "floor": "1층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "장기공실(더페이스샵)",
+      "altBrands": [
+        "올리브영",
+        "특정카페"
+      ],
+      "areaPy": 9.1,
+      "category": "기타",
+      "stage": "1단계",
+      "note": "팝업 진행 후 8월말 MD시 올리브영 추진",
+      "mdOpinion": "동의 / 27년 올리브영 도전, 현재 뷰티아울렛 팝업 연장"
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "중앙로점",
+      "floor": "1층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "미샤(화장품)",
+      "altBrands": [
+        "올리브영",
+        "특정카페"
+      ],
+      "areaPy": 9.1,
+      "category": "기타",
+      "stage": "1단계",
+      "note": "팝업 진행 후 8월말 MD시 올리브영 추진",
+      "mdOpinion": "동의 / 27년 올리브영 도전, 현재 뷰티아울렛 팝업 연장"
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "중앙로점",
+      "floor": "1층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "장기공실(로이드)",
+      "altBrands": [
+        "올리브영",
+        "특정카페"
+      ],
+      "areaPy": 9.5,
+      "category": "기타",
+      "stage": "1단계",
+      "note": "현재 창고 운영중, 8월말 MD시 올리브영 추진",
+      "mdOpinion": "동의 / 27년 올리브영 도전, 현재 뷰티아울렛 팝업 연장"
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "중앙로점",
+      "floor": "1층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "장기공실(더바디샵)",
+      "altBrands": [
+        "올리브영",
+        "특정카페"
+      ],
+      "areaPy": 13.4,
+      "category": "기타",
+      "stage": "1단계",
+      "note": "현재 고객 휴게실 운영중, 8월말 MD시 올리브영 추진",
+      "mdOpinion": "동의 / 27년 올리브영 도전, 현재 뷰티아울렛 팝업 연장"
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "중앙로점",
+      "floor": "5층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "코코리따(장기공실)",
+      "altBrands": [
+        "신디키즈 이동"
+      ],
+      "areaPy": 14.3,
+      "category": "기타",
+      "stage": "1단계",
+      "note": "신디키즈 이동 협의 중",
+      "mdOpinion": null
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "중앙로점",
+      "floor": "2층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "모노앤밀키",
+      "altBrands": [
+        "오픈클로젯",
+        "오프리미츠"
+      ],
+      "areaPy": 25.2,
+      "category": "기타",
+      "stage": "1단계",
+      "note": "브랜드 제안",
+      "mdOpinion": "동의"
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "창원점",
+      "floor": "5층",
+      "segments": [
+        "외식"
+      ],
+      "currentBrand": "샤브정",
+      "altBrands": [
+        "짱오락실",
+        "가챠파크"
+      ],
+      "areaPy": 29.8,
+      "category": "기타",
+      "stage": "1단계",
+      "note": "26년 2분기 목표",
+      "mdOpinion": null
+    },
+    {
+      "headquarters": "영업2본부",
+      "branch": "천호2점",
+      "floor": "2층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "클라이드",
+      "altBrands": [
+        "버커루",
+        "더블제이디"
+      ],
+      "areaPy": 8.1,
+      "category": "기타",
+      "stage": "1단계",
+      "note": "대안 브랜드 인터크루 제안",
+      "mdOpinion": "1안 동의 / 2안 미동의"
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "청주점",
+      "floor": "B1층",
+      "segments": [
+        "외식"
+      ],
+      "currentBrand": "공실(타로라멘옆 3)",
+      "altBrands": [
+        "동남집"
+      ],
+      "areaPy": 6.3,
+      "category": "기타",
+      "stage": "1단계",
+      "note": "26년 3월 오픈 목표",
+      "mdOpinion": "궁채 2차 제안"
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "청주점",
+      "floor": "4층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "공실(잠뱅이옆)",
+      "altBrands": [
+        "뱅뱅"
+      ],
+      "areaPy": 10.9,
+      "category": "기타",
+      "stage": "1단계",
+      "note": "UCLA 제안",
+      "mdOpinion": "동의 / 위치 추후 협의"
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "청주점",
+      "floor": "4층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "공실(인까사+옆)/장기공실",
+      "altBrands": [
+        "탑텐밸런스"
+      ],
+      "areaPy": 9.5,
+      "category": "기타",
+      "stage": "1단계",
+      "note": "슬로우템포 제안",
+      "mdOpinion": null
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "청주점",
+      "floor": "B1층",
+      "segments": [
+        "외식"
+      ],
+      "currentBrand": "공실(타로라멘옆 5)",
+      "altBrands": [
+        "제순식당",
+        "롤링파스타"
+      ],
+      "areaPy": 4,
+      "category": "기타",
+      "stage": "1단계",
+      "note": "제순식당,롤링파스타 제안",
+      "mdOpinion": "동의(김밥 제외)"
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "청주점",
+      "floor": "1층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "LF종합관(장기공실)",
+      "altBrands": [
+        "아식스",
+        "스파오"
+      ],
+      "areaPy": 40,
+      "category": "기타",
+      "stage": "1단계",
+      "note": "26년 3월 오픈 목표",
+      "mdOpinion": "미동의 / 아식스 올해 오픈 불가, 스파오제안"
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "청주점",
+      "floor": "1층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "LF종합관(장기공실)",
+      "altBrands": [
+        "오니츠카타이거",
+        "스파오"
+      ],
+      "areaPy": 40,
+      "category": "기타",
+      "stage": "1단계",
+      "note": "26년 3월 오픈 목표",
+      "mdOpinion": "미동의 / 오니츠카타이거 올해 오픈 불가, 스파오제안"
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "청주점",
+      "floor": "1층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "행사장",
+      "altBrands": [
+        "로이드",
+        "페이머스피플"
+      ],
+      "areaPy": 11.4,
+      "category": "기타",
+      "stage": "1단계",
+      "note": null,
+      "mdOpinion": "동의 / 2안 협의 중"
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "청주점",
+      "floor": "2층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "공실(제이플러스)",
+      "altBrands": [
+        "로이드"
+      ],
+      "areaPy": 12.2,
+      "category": "기타",
+      "stage": "1단계",
+      "note": null,
+      "mdOpinion": "동의"
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "청주점",
+      "floor": "3층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "공실(애니바디앞)",
+      "altBrands": [
+        "엘르언더웨어"
+      ],
+      "areaPy": 11.8,
+      "category": "기타",
+      "stage": "1단계",
+      "note": null,
+      "mdOpinion": "미동의(예스언더웨어 협의중)"
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "청주점",
+      "floor": "5층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "아디다스(장기공실)",
+      "altBrands": [
+        "S마켓"
+      ],
+      "areaPy": 35,
+      "category": "기타",
+      "stage": "1단계",
+      "note": null,
+      "mdOpinion": "미동의 / 프로월드컵 제안"
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "청주점",
+      "floor": "5층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "S마켓키즈(장기공실)",
+      "altBrands": [
+        "르까프"
+      ],
+      "areaPy": 10.9,
+      "category": "기타",
+      "stage": "1단계",
+      "note": null,
+      "mdOpinion": "동의"
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "청주점",
+      "floor": "B1층",
+      "segments": [
+        "외식"
+      ],
+      "currentBrand": "공실(타로라멘옆 2)",
+      "altBrands": [
+        "능두네"
+      ],
+      "areaPy": 6.3,
+      "category": "기타",
+      "stage": "1단계",
+      "note": "눙두네 현장미팅 제안",
+      "mdOpinion": "1안 동의 / 2안 진짜국밥"
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "청주점",
+      "floor": "8층",
+      "segments": [
+        "비패션"
+      ],
+      "currentBrand": "공실",
+      "altBrands": [
+        "레저로"
+      ],
+      "areaPy": 29.5,
+      "category": "기타",
+      "stage": "1단계",
+      "note": "26년 3월 오픈 목표 (투자자 구인중)",
+      "mdOpinion": "동의"
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "청주점",
+      "floor": "4층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "잠뱅이(장기공실)",
+      "altBrands": [
+        "UCLA"
+      ],
+      "areaPy": 10.9,
+      "category": "기타",
+      "stage": "1단계",
+      "note": "UCLA 제안",
+      "mdOpinion": null
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "충장점",
+      "floor": "2층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "레겐보겐(장기공실)",
+      "altBrands": [
+        "그루브라임플레이"
+      ],
+      "areaPy": 18.3,
+      "category": "기타",
+      "stage": "1단계",
+      "note": "에드호크 제안",
+      "mdOpinion": null
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "충장점",
+      "floor": "2층",
+      "segments": [
+        "비패션"
+      ],
+      "currentBrand": "공실(구 레겐보겐)",
+      "altBrands": [
+        "반다이가샤폰"
+      ],
+      "areaPy": 14.4,
+      "category": "기타",
+      "stage": "1단계",
+      "note": "픽스팟 제안 중",
+      "mdOpinion": "미동의"
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "충장점",
+      "floor": "9층",
+      "segments": [
+        "외식"
+      ],
+      "currentBrand": "공실(구 앤티앤즈)",
+      "altBrands": [
+        "39치떡"
+      ],
+      "areaPy": 7.7,
+      "category": "기타",
+      "stage": "1단계",
+      "note": "투자자 선 구인 후 진행",
+      "mdOpinion": "동의"
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "충장점",
+      "floor": "9층",
+      "segments": [
+        "외식"
+      ],
+      "currentBrand": "공실(구 더벤티)",
+      "altBrands": [
+        "벌크커피"
+      ],
+      "areaPy": 6,
+      "category": "기타",
+      "stage": "1단계",
+      "note": "투자자 선 구인 후 진행",
+      "mdOpinion": "동의"
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "충장점",
+      "floor": "6층",
+      "segments": [
+        "비패션"
+      ],
+      "currentBrand": "공실(구 레핑차일드)",
+      "altBrands": [
+        "트니트니"
+      ],
+      "areaPy": 15.2,
+      "category": "기타",
+      "stage": "1단계",
+      "note": "업체 제안중",
+      "mdOpinion": "미동의"
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "충장점",
+      "floor": "9층",
+      "segments": [
+        "비패션"
+      ],
+      "currentBrand": "공실(구 박준상 헤어)",
+      "altBrands": [
+        "박공헤어"
+      ],
+      "areaPy": 39.4,
+      "category": "기타",
+      "stage": "1단계",
+      "note": "투자자 선 구인 후 진행",
+      "mdOpinion": "동의"
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "충장점",
+      "floor": "7층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "공실(구 탤런트클로젯)",
+      "altBrands": [
+        "수아팜"
+      ],
+      "areaPy": 9.8,
+      "category": "기타",
+      "stage": "1단계",
+      "note": "미동의, 롤리팝 제안",
+      "mdOpinion": "미동의, 에어워크주니어 이동"
+    },
+    {
+      "headquarters": "영업1본부",
+      "branch": "평촌2점",
+      "floor": "7층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "닥스키즈팝업",
+      "altBrands": [
+        "이디야커피",
+        "스트릿츄러스"
+      ],
+      "areaPy": 14.3,
+      "category": "기타",
+      "stage": "1단계",
+      "note": "브랜드 컨택중(우지커피)",
+      "mdOpinion": "1안 동의 / 2안 미동의 와플샵"
+    },
+    {
+      "headquarters": "영업1본부",
+      "branch": "평촌2점",
+      "floor": "1층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "핏플랍",
+      "altBrands": [
+        "닥스핸드백",
+        "LF핸드백 종합관"
+      ],
+      "areaPy": 15.2,
+      "category": "기타",
+      "stage": "1단계",
+      "note": null,
+      "mdOpinion": "동의 / LF 종합관 이슈 협의 중"
+    },
+    {
+      "headquarters": "영업1본부",
+      "branch": "평촌2점",
+      "floor": "4층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "코인코즈",
+      "altBrands": [
+        "바인드",
+        "바인드"
+      ],
+      "areaPy": 13.4,
+      "category": "기타",
+      "stage": "1단계",
+      "note": null,
+      "mdOpinion": "지점,카테고리(여성) 합의 필요"
+    },
+    {
+      "headquarters": "영업1본부",
+      "branch": "평촌2점",
+      "floor": "6층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "슈페리어",
+      "altBrands": [
+        "젠사이",
+        "프랑코페라로"
+      ],
+      "areaPy": 10.4,
+      "category": "기타",
+      "stage": "1단계",
+      "note": null,
+      "mdOpinion": "동의(프랑코페라로/슈페리어 제안)"
+    },
+    {
+      "headquarters": "영업2본부",
+      "branch": "평택점",
+      "floor": "9층",
+      "segments": [
+        "외식"
+      ],
+      "currentBrand": "장기공실",
+      "altBrands": [
+        "대보칼국수",
+        "한옥집김치찜"
+      ],
+      "areaPy": 30,
+      "category": "기타",
+      "stage": "1단계",
+      "note": "경몽루 협의 중",
+      "mdOpinion": "미동의 (투자자 선구인후 진행)"
+    },
+    {
+      "headquarters": "영업2본부",
+      "branch": "평택점",
+      "floor": "7층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "치크(장기공실)",
+      "altBrands": [
+        "뉴발란스키즈",
+        "휠라키즈"
+      ],
+      "areaPy": 8.5,
+      "category": "기타",
+      "stage": "1단계",
+      "note": "페리미츠",
+      "mdOpinion": "미동의, 페리미츠"
+    },
+    {
+      "headquarters": "영업2본부",
+      "branch": "평택점",
+      "floor": "6층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "아식스(장기공실)",
+      "altBrands": [
+        "벨롭",
+        "뮬라웨어"
+      ],
+      "areaPy": 15,
+      "category": "기타",
+      "stage": "1단계",
+      "note": null,
+      "mdOpinion": "동의"
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "해운대점",
+      "floor": "6층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "베리클로젯",
+      "altBrands": [
+        "JCB"
+      ],
+      "areaPy": 93,
+      "category": "기타",
+      "stage": "1단계",
+      "note": "미동의, 오즈키즈",
+      "mdOpinion": null
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "해운대점",
+      "floor": "2층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "보에띠",
+      "altBrands": [
+        "요하넥스"
+      ],
+      "areaPy": 13,
+      "category": "기타",
+      "stage": "1단계",
+      "note": "브랜드 제안",
+      "mdOpinion": "동의"
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "해운대점",
+      "floor": "3층",
+      "segments": [
+        "외식"
+      ],
+      "currentBrand": "더카페",
+      "altBrands": [
+        "이디야커피"
+      ],
+      "areaPy": 14.1,
+      "category": "기타",
+      "stage": "1단계",
+      "note": "26.02.28 퇴점예정",
+      "mdOpinion": "이디야커피 입점제안"
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "해운대점",
+      "floor": "2층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "프렐린",
+      "altBrands": [
+        "마리끌레르 핸드백(층간이동)"
+      ],
+      "areaPy": 9.5,
+      "category": "기타",
+      "stage": "1단계",
+      "note": "카테고리 변경",
+      "mdOpinion": null
+    },
+    {
+      "headquarters": "영업2본부",
+      "branch": "강남점",
+      "floor": "2관4층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "그루브라임플레이(장기공실)",
+      "altBrands": [
+        "아웃도어프로덕트",
+        "라이프워크"
+      ],
+      "areaPy": 14.4,
+      "category": "기타",
+      "stage": null,
+      "note": "브랜드풀 지점 협의 중",
+      "mdOpinion": "미동의/ 1안) 나인마이너스투, 2안) 위라이크"
+    },
+    {
+      "headquarters": "영업4본부",
+      "branch": "강북점",
+      "floor": "1층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "베네통(양말)",
+      "altBrands": [
+        "센텔리안"
+      ],
+      "areaPy": 6.1,
+      "category": "기타",
+      "stage": null,
+      "note": "자산재설계 지점 2차 추가",
+      "mdOpinion": null
+    },
+    {
+      "headquarters": "영업4본부",
+      "branch": "강북점",
+      "floor": "3층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "공실",
+      "altBrands": [
+        "데스틸",
+        "행사장"
+      ],
+      "areaPy": 10.1,
+      "category": "기타",
+      "stage": null,
+      "note": "자산재설계 지점 2차 추가",
+      "mdOpinion": null
+    },
+    {
+      "headquarters": "영업4본부",
+      "branch": "강북점",
+      "floor": "8층",
+      "segments": [
+        "비패션"
+      ],
+      "currentBrand": "공실",
+      "altBrands": [
+        "푸드"
+      ],
+      "areaPy": 27,
+      "category": "기타",
+      "stage": null,
+      "note": "자산재설계 지점 2차 추가",
+      "mdOpinion": null
+    },
+    {
+      "headquarters": "영업1본부",
+      "branch": "강서점",
+      "floor": "2층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "온앤온",
+      "altBrands": [
+        "플라스틱아일랜드"
+      ],
+      "areaPy": 13.4,
+      "category": "기타",
+      "stage": null,
+      "note": "올리브영 -> H&M 공간 MD계획으로 기존 영캐주얼 카테고리로 변경",
+      "mdOpinion": "김병은/동의 / 1안 협의 중"
+    },
+    {
+      "headquarters": "영업1본부",
+      "branch": "강서점",
+      "floor": "3층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "빈디(카페)",
+      "altBrands": [
+        "패션"
+      ],
+      "areaPy": 9.1,
+      "category": "기타",
+      "stage": null,
+      "note": "지점: 패션브랜드 입점 요청",
+      "mdOpinion": "이규헌/미동의(행사장/팝업 운영)"
+    },
+    {
+      "headquarters": "영업1본부",
+      "branch": "강서점",
+      "floor": "2층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "위시드 /렙쇼메이스튜디오(팝업)",
+      "altBrands": [
+        "에잇세컨즈",
+        "잇미샤"
+      ],
+      "areaPy": 26,
+      "category": "기타",
+      "stage": null,
+      "note": null,
+      "mdOpinion": "이규헌/미동의(현재 LSMY 영업중)"
+    },
+    {
+      "headquarters": "영업1본부",
+      "branch": "강서점",
+      "floor": "6층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "스파오키즈",
+      "altBrands": [
+        "캉골키즈"
+      ],
+      "areaPy": 17.8,
+      "category": "기타",
+      "stage": null,
+      "note": null,
+      "mdOpinion": "미동의, 베베드피노"
+    },
+    {
+      "headquarters": "영업4본부",
+      "branch": "경산점",
+      "floor": "지하1층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "오후(장기공실)",
+      "altBrands": [
+        "리틀밥독"
+      ],
+      "areaPy": 10.3,
+      "category": "기타",
+      "stage": null,
+      "note": null,
+      "mdOpinion": null
+    },
+    {
+      "headquarters": "영업4본부",
+      "branch": "경산점",
+      "floor": "지하1층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "컬리수(장기공실)",
+      "altBrands": [
+        "리틀브렌"
+      ],
+      "areaPy": 11.4,
+      "category": "기타",
+      "stage": null,
+      "note": null,
+      "mdOpinion": null
+    },
+    {
+      "headquarters": "영업4본부",
+      "branch": "경산점",
+      "floor": "지하1층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "쁘띠앙팡(장기공실)",
+      "altBrands": [
+        "탤런트"
+      ],
+      "areaPy": 7.8,
+      "category": "기타",
+      "stage": null,
+      "note": null,
+      "mdOpinion": null
+    },
+    {
+      "headquarters": "영업4본부",
+      "branch": "경산점",
+      "floor": "1층",
+      "segments": [
+        "비패션"
+      ],
+      "currentBrand": "장기공실",
+      "altBrands": [
+        "피부�+네일",
+        "핸드폰"
+      ],
+      "areaPy": 13.8,
+      "category": "기타",
+      "stage": null,
+      "note": "지점 2차 추가",
+      "mdOpinion": null
+    },
+    {
+      "headquarters": "영업1본부",
+      "branch": "고잔점",
+      "floor": "B1",
+      "segments": [
+        "외식"
+      ],
+      "currentBrand": "퀴즈노스",
+      "altBrands": [
+        "델리바이애슐리"
+      ],
+      "areaPy": 28.6,
+      "category": "기타",
+      "stage": null,
+      "note": "26.02.28 퇴점예정",
+      "mdOpinion": null
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "광주역점",
+      "floor": "1",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "장기공실(슈펜)",
+      "altBrands": [
+        "에스마켓"
+      ],
+      "areaPy": 183,
+      "category": "기타",
+      "stage": null,
+      "note": "자산재설계 지점 2차 추가",
+      "mdOpinion": null
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "광주역점",
+      "floor": "1",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "장기공실(갤러리워치)",
+      "altBrands": [
+        "아트리아"
+      ],
+      "areaPy": 5.9,
+      "category": "기타",
+      "stage": null,
+      "note": "자산재설계 지점 2차 추가",
+      "mdOpinion": null
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "광주역점",
+      "floor": "1",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "장기공실(스틸럭스&지스카)",
+      "altBrands": [
+        "아트리아"
+      ],
+      "areaPy": 5.9,
+      "category": "기타",
+      "stage": null,
+      "note": "자산재설계 지점 2차 추가",
+      "mdOpinion": null
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "광주역점",
+      "floor": "1",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "장기공실(피에르가르뎅핸드백)",
+      "altBrands": [
+        "뷰티아울렛"
+      ],
+      "areaPy": 8.6,
+      "category": "기타",
+      "stage": null,
+      "note": "자산재설계 지점 2차 추가",
+      "mdOpinion": null
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "광주역점",
+      "floor": "2",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "오프리미츠(장기공실)",
+      "altBrands": [],
+      "areaPy": 10.2,
+      "category": "기타",
+      "stage": null,
+      "note": "자산재설계 지점 2차 추가",
+      "mdOpinion": null
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "광주역점",
+      "floor": "2",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "ST프렌치(장기공실)",
+      "altBrands": [],
+      "areaPy": 10,
+      "category": "기타",
+      "stage": null,
+      "note": "자산재설계 지점 2차 추가",
+      "mdOpinion": "손병기/브랜드 입점 추진"
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "광주역점",
+      "floor": "2",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "엔비플러스(장기공실)",
+      "altBrands": [],
+      "areaPy": 13.4,
+      "category": "기타",
+      "stage": null,
+      "note": "자산재설계 지점 2차 추가",
+      "mdOpinion": "손병기/브랜드 입점 추진"
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "광주역점",
+      "floor": "2",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "블로스문(장기공실)",
+      "altBrands": [],
+      "areaPy": 9.5,
+      "category": "기타",
+      "stage": null,
+      "note": "자산재설계 지점 2차 추가",
+      "mdOpinion": "손병기/브랜드 입점 추진"
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "광주역점",
+      "floor": "2",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "마이티지(장기공실)",
+      "altBrands": [],
+      "areaPy": 9.3,
+      "category": "기타",
+      "stage": null,
+      "note": "자산재설계 지점 2차 추가",
+      "mdOpinion": "손병기/브랜드 입점 추진"
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "광주역점",
+      "floor": "2",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "제이케이(장기공실)",
+      "altBrands": [],
+      "areaPy": 11.5,
+      "category": "기타",
+      "stage": null,
+      "note": "자산재설계 지점 2차 추가",
+      "mdOpinion": "손병기/브랜드 입점 추진"
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "광주역점",
+      "floor": "3",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "베스띠벨리(장기공실)",
+      "altBrands": [],
+      "areaPy": 14,
+      "category": "기타",
+      "stage": null,
+      "note": "자산재설계 지점 2차 추가",
+      "mdOpinion": "손병기/브랜드 입점 추진"
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "광주역점",
+      "floor": "3",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "모라도(장기공실)",
+      "altBrands": [],
+      "areaPy": 11,
+      "category": "기타",
+      "stage": null,
+      "note": "자산재설계 지점 2차 추가",
+      "mdOpinion": "손병기/브랜드 입점 추진"
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "광주역점",
+      "floor": "3",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "타마라(장기공실)",
+      "altBrands": [],
+      "areaPy": 8.4,
+      "category": "기타",
+      "stage": null,
+      "note": "자산재설계 지점 2차 추가",
+      "mdOpinion": "손병기/브랜드 입점 추진"
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "광주역점",
+      "floor": "3",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "몬테밀라노(장기공실)",
+      "altBrands": [],
+      "areaPy": 13.7,
+      "category": "기타",
+      "stage": null,
+      "note": "자산재설계 지점 2차 추가",
+      "mdOpinion": "손병기/브랜드 입점 추진"
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "광주역점",
+      "floor": "3",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "물드린",
+      "altBrands": [],
+      "areaPy": 11,
+      "category": "기타",
+      "stage": null,
+      "note": "자산재설계 지점 2차 추가",
+      "mdOpinion": "손병기/브랜드 입점 추진"
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "광주역점",
+      "floor": "3",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "정호진",
+      "altBrands": [],
+      "areaPy": 8.4,
+      "category": "기타",
+      "stage": null,
+      "note": "자산재설계 지점 2차 추가",
+      "mdOpinion": "손병기/브랜드 입점 추진"
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "광주역점",
+      "floor": "9",
+      "segments": [
+        "외식"
+      ],
+      "currentBrand": "애슐리",
+      "altBrands": [
+        "애슐리"
+      ],
+      "areaPy": 212,
+      "category": "F&B",
+      "stage": null,
+      "note": "자산재설계 지점 2차 추가",
+      "mdOpinion": null
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "광주역점",
+      "floor": "9",
+      "segments": [
+        "외식"
+      ],
+      "currentBrand": "더카페",
+      "altBrands": [
+        "더카페"
+      ],
+      "areaPy": 35,
+      "category": "F&B",
+      "stage": null,
+      "note": "자산재설계 지점 2차 추가",
+      "mdOpinion": null
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "괴정점",
+      "floor": "4층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "레노마키즈",
+      "altBrands": [
+        "리틀브렌"
+      ],
+      "areaPy": 15,
+      "category": "아동",
+      "stage": null,
+      "note": null,
+      "mdOpinion": null
+    },
+    {
+      "headquarters": "영업4본부",
+      "branch": "구미점",
+      "floor": "1층",
+      "segments": [
+        "비패션"
+      ],
+      "currentBrand": "공실(킴스)",
+      "altBrands": [
+        "킴스마켓"
+      ],
+      "areaPy": 60,
+      "category": "기타",
+      "stage": null,
+      "note": null,
+      "mdOpinion": null
+    },
+    {
+      "headquarters": "영업4본부",
+      "branch": "구미점",
+      "floor": "2층",
+      "segments": [
+        "비패션"
+      ],
+      "currentBrand": "공실(무크)",
+      "altBrands": [
+        "이디야커피",
+        "애니바디"
+      ],
+      "areaPy": 38,
+      "category": "F&B",
+      "stage": null,
+      "note": null,
+      "mdOpinion": null
+    },
+    {
+      "headquarters": "영업2본부",
+      "branch": "동수원",
+      "floor": "3층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "유닛",
+      "altBrands": [
+        "미엘로 이동"
+      ],
+      "areaPy": null,
+      "category": "영캐주얼",
+      "stage": null,
+      "note": "지점 추가",
+      "mdOpinion": "동의"
+    },
+    {
+      "headquarters": "영업2본부",
+      "branch": "동수원",
+      "floor": "3층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "이프네",
+      "altBrands": [
+        "베네통"
+      ],
+      "areaPy": null,
+      "category": "영캐주얼",
+      "stage": null,
+      "note": "지점 추가",
+      "mdOpinion": "동의"
+    },
+    {
+      "headquarters": "영업2본부",
+      "branch": "동수원",
+      "floor": "10층",
+      "segments": [
+        "비패션"
+      ],
+      "currentBrand": "스포츠센터",
+      "altBrands": [
+        "스포츠센터"
+      ],
+      "areaPy": 852,
+      "category": "리징",
+      "stage": null,
+      "note": "수영장 없는 휘트니스 요청으로 입점 난항중",
+      "mdOpinion": "스포츠센터 불가로 인한 담당카테고리 변경 요청"
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "부산대점",
+      "floor": "6층",
+      "segments": [
+        "비패션"
+      ],
+      "currentBrand": "문화센터",
+      "altBrands": [],
+      "areaPy": 97.6,
+      "category": "기타",
+      "stage": null,
+      "note": "법무 이슈로 투자자 확보 후 추진 가능",
+      "mdOpinion": "임대계약(임대차보호법) 리스크로 인한 변경요청"
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "부산대점",
+      "floor": "6층",
+      "segments": [
+        "외식"
+      ],
+      "currentBrand": "기소야",
+      "altBrands": [],
+      "areaPy": 28.3,
+      "category": "F&B",
+      "stage": null,
+      "note": "법무 이슈로 투자자 확보 후 추진 가능",
+      "mdOpinion": null
+    },
+    {
+      "headquarters": "영업1본부",
+      "branch": "부평점",
+      "floor": "지하1층",
+      "segments": [
+        "외식"
+      ],
+      "currentBrand": "모노치즈",
+      "altBrands": [
+        "테넌트 / 카페, 델리"
+      ],
+      "areaPy": 6,
+      "category": "F&B",
+      "stage": null,
+      "note": "자산재설계 PJ 종료 후 추가",
+      "mdOpinion": "건물 재계약 이슈(26년 10월 만료)"
+    },
+    {
+      "headquarters": "영업1본부",
+      "branch": "부평점",
+      "floor": "지하1층",
+      "segments": [
+        "비패션"
+      ],
+      "currentBrand": "장기공실",
+      "altBrands": [
+        "테넌트 일반 임대"
+      ],
+      "areaPy": 23.2,
+      "category": "리징",
+      "stage": null,
+      "note": "자산재설계 PJ 종료 후 추가",
+      "mdOpinion": "임대계약(임대차보호법) 리스크로 인한 변경요청"
+    },
+    {
+      "headquarters": "영업1본부",
+      "branch": "부평점",
+      "floor": "1",
+      "segments": [
+        "비패션"
+      ],
+      "currentBrand": "장기공실",
+      "altBrands": [
+        "테넌트 일반 임대"
+      ],
+      "areaPy": 32.4,
+      "category": "리징",
+      "stage": null,
+      "note": "자산재설계 PJ 종료 후 추가",
+      "mdOpinion": "임대계약(임대차보호법) 리스크로 인한 변경요청"
+    },
+    {
+      "headquarters": "영업1본부",
+      "branch": "부평점",
+      "floor": "1",
+      "segments": [
+        "비패션"
+      ],
+      "currentBrand": "할리스커피",
+      "altBrands": [
+        "테넌트 까페"
+      ],
+      "areaPy": 41.7,
+      "category": "F&B",
+      "stage": null,
+      "note": "자산재설계 지점 2차 추가",
+      "mdOpinion": null
+    },
+    {
+      "headquarters": "영업1본부",
+      "branch": "부평점",
+      "floor": "1",
+      "segments": [
+        "비패션"
+      ],
+      "currentBrand": "장기공실",
+      "altBrands": [
+        "휴대폰, 여행사 등"
+      ],
+      "areaPy": 8.5,
+      "category": "리징",
+      "stage": null,
+      "note": "자산재설계 PJ 종료 후 추가",
+      "mdOpinion": "임대계약(임대차보호법) 리스크로 인한 변경요청"
+    },
+    {
+      "headquarters": "영업1본부",
+      "branch": "부평점",
+      "floor": "4",
+      "segments": [
+        "외식"
+      ],
+      "currentBrand": "신기소",
+      "altBrands": [
+        "테넌트 / 외식컨탠츠"
+      ],
+      "areaPy": 24.2,
+      "category": "F&B",
+      "stage": null,
+      "note": "자산재설계 PJ 종료 후 추가",
+      "mdOpinion": "건물 재계약 이슈(26년 10월 만료)"
+    },
+    {
+      "headquarters": "영업1본부",
+      "branch": "부평점",
+      "floor": "4",
+      "segments": [
+        "외식"
+      ],
+      "currentBrand": "홍짜장",
+      "altBrands": [
+        "테넌트 / 외식컨탠츠"
+      ],
+      "areaPy": 28.1,
+      "category": "F&B",
+      "stage": null,
+      "note": "자산재설계 PJ 종료 후 추가",
+      "mdOpinion": "건물 재계약 이슈(26년 10월 만료)"
+    },
+    {
+      "headquarters": "영업1본부",
+      "branch": "부평점",
+      "floor": "4",
+      "segments": [
+        "외식"
+      ],
+      "currentBrand": "고궁수라간",
+      "altBrands": [
+        "테넌트 / 외식컨탠츠"
+      ],
+      "areaPy": 24,
+      "category": "F&B",
+      "stage": null,
+      "note": "자산재설계 PJ 종료 후 추가",
+      "mdOpinion": "건물 재계약 이슈(26년 10월 만료)"
+    },
+    {
+      "headquarters": "영업1본부",
+      "branch": "부평점",
+      "floor": "4",
+      "segments": [
+        "외식"
+      ],
+      "currentBrand": "후원",
+      "altBrands": [
+        "테넌트 / 외식컨탠츠"
+      ],
+      "areaPy": 23.9,
+      "category": "F&B",
+      "stage": null,
+      "note": "자산재설계 PJ 종료 후 추가",
+      "mdOpinion": "건물 재계약 이슈(26년 10월 만료)"
+    },
+    {
+      "headquarters": "영업1본부",
+      "branch": "부평점",
+      "floor": "4",
+      "segments": [
+        "외식"
+      ],
+      "currentBrand": "파이포쌀국수",
+      "altBrands": [
+        "테넌트 / 외식컨탠츠"
+      ],
+      "areaPy": 24,
+      "category": "F&B",
+      "stage": null,
+      "note": "자산재설계 PJ 종료 후 추가",
+      "mdOpinion": "건물 재계약 이슈(26년 10월 만료)"
+    },
+    {
+      "headquarters": "영업1본부",
+      "branch": "부평점",
+      "floor": "4",
+      "segments": [
+        "외식"
+      ],
+      "currentBrand": "디핀다트",
+      "altBrands": [
+        "테넌트 / 간단한 델리"
+      ],
+      "areaPy": 3,
+      "category": "F&B",
+      "stage": null,
+      "note": "자산재설계 PJ 종료 후 추가",
+      "mdOpinion": "건물 재계약 이슈(26년 10월 만료)"
+    },
+    {
+      "headquarters": "영업1본부",
+      "branch": "부평점",
+      "floor": "4",
+      "segments": [
+        "외식"
+      ],
+      "currentBrand": "남촌 칼국수",
+      "altBrands": [
+        "테넌트 / 외식컨탠츠"
+      ],
+      "areaPy": 28.4,
+      "category": "F&B",
+      "stage": null,
+      "note": "자산재설계 PJ 종료 후 추가",
+      "mdOpinion": "건물 재계약 이슈(26년 10월 만료)"
+    },
+    {
+      "headquarters": "영업1본부",
+      "branch": "부평점",
+      "floor": "4",
+      "segments": [
+        "외식"
+      ],
+      "currentBrand": "초밥365",
+      "altBrands": [
+        "테넌트 / 외식컨탠츠"
+      ],
+      "areaPy": 33.2,
+      "category": "F&B",
+      "stage": null,
+      "note": "자산재설계 PJ 종료 후 추가",
+      "mdOpinion": "건물 재계약 이슈(26년 10월 만료)"
+    },
+    {
+      "headquarters": "영업1본부",
+      "branch": "부평점",
+      "floor": "1",
+      "segments": [
+        "비패션"
+      ],
+      "currentBrand": "장기공실",
+      "altBrands": [
+        "테넌트 일반 임대"
+      ],
+      "areaPy": 15.9,
+      "category": "리징",
+      "stage": null,
+      "note": "자산재설계 PJ 종료 후 추가",
+      "mdOpinion": "임대계약(임대차보호법) 리스크로 인한 변경요청"
+    },
+    {
+      "headquarters": "영업1본부",
+      "branch": "부평점",
+      "floor": "4",
+      "segments": [
+        "비패션"
+      ],
+      "currentBrand": "문화센터",
+      "altBrands": [
+        "애슐리퀸즈"
+      ],
+      "areaPy": 146.7,
+      "category": "리징",
+      "stage": null,
+      "note": "자산재설계 지점 2차 추가",
+      "mdOpinion": null
+    },
+    {
+      "headquarters": "영업1본부",
+      "branch": "부평점",
+      "floor": "4",
+      "segments": [
+        "외식"
+      ],
+      "currentBrand": "블럭버스",
+      "altBrands": [
+        "테넌트 / 외식컨탠츠"
+      ],
+      "areaPy": 25,
+      "category": "F&B",
+      "stage": null,
+      "note": "자산재설계 PJ 종료 후 추가",
+      "mdOpinion": "건물 재계약 이슈(26년 10월 만료)"
+    },
+    {
+      "headquarters": "영업1본부",
+      "branch": "산본점",
+      "floor": null,
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "스파오키즈",
+      "altBrands": [
+        "에스마켓키즈"
+      ],
+      "areaPy": 16.9,
+      "category": "아동",
+      "stage": null,
+      "note": "지점에서 에스마켓 키즈 제안",
+      "mdOpinion": null
+    },
+    {
+      "headquarters": "영업1본부",
+      "branch": "산본점",
+      "floor": null,
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "신디키즈",
+      "altBrands": [
+        "에스마켓키즈"
+      ],
+      "areaPy": 7.9,
+      "category": "아동",
+      "stage": null,
+      "note": "지점에서 에스마켓 키즈 제안",
+      "mdOpinion": null
+    },
+    {
+      "headquarters": "영업2본부",
+      "branch": "송파점",
+      "floor": "6층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "임시 행사장",
+      "altBrands": [
+        "베베드피노",
+        "마르디메크르디 키즈"
+      ],
+      "areaPy": 15.6,
+      "category": "아동",
+      "stage": null,
+      "note": null,
+      "mdOpinion": "동의"
+    },
+    {
+      "headquarters": "영업4본부",
+      "branch": "쇼핑점",
+      "floor": "8층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "장기공실",
+      "altBrands": [
+        "리틀브렌"
+      ],
+      "areaPy": 7.2,
+      "category": "아동",
+      "stage": null,
+      "note": null,
+      "mdOpinion": null
+    },
+    {
+      "headquarters": "영업4본부",
+      "branch": "수성점",
+      "floor": "B1층",
+      "segments": [
+        "비패션"
+      ],
+      "currentBrand": "공실",
+      "altBrands": [
+        "창고형 약국",
+        "사브 뷔페"
+      ],
+      "areaPy": 203,
+      "category": "기타",
+      "stage": null,
+      "note": "파크골프 입점 후 추가 공간",
+      "mdOpinion": null
+    },
+    {
+      "headquarters": "영업2본부",
+      "branch": "수원터미널점",
+      "floor": "1층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "네파키즈",
+      "altBrands": [
+        "뉴발란스키즈",
+        "오프라벨(NC픽스키즈)"
+      ],
+      "areaPy": 9.3,
+      "category": "아동",
+      "stage": null,
+      "note": "픽스키즈 오픈 동의",
+      "mdOpinion": null
+    },
+    {
+      "headquarters": "영업2본부",
+      "branch": "수원터미널점",
+      "floor": "6층",
+      "segments": [
+        "외식"
+      ],
+      "currentBrand": "공차",
+      "altBrands": [
+        "하나투어",
+        "노랑풍선"
+      ],
+      "areaPy": 27.5,
+      "category": "F&B",
+      "stage": null,
+      "note": "구. 공차 공실로 리징 컨텐츠 입점 어려움(인테리어 및 철거 미진행)",
+      "mdOpinion": null
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "순천점",
+      "floor": "별관 1층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "공실(구 별관 전자랜드)",
+      "altBrands": [
+        "NC픽스"
+      ],
+      "areaPy": 220,
+      "category": "기타",
+      "stage": null,
+      "note": null,
+      "mdOpinion": null
+    },
+    {
+      "headquarters": "영업2본부",
+      "branch": "신구로점",
+      "floor": "4층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "드마르비",
+      "altBrands": [
+        "행사장"
+      ],
+      "areaPy": 7.5,
+      "category": "행사장",
+      "stage": null,
+      "note": null,
+      "mdOpinion": null
+    },
+    {
+      "headquarters": "영업4본부",
+      "branch": "엑스코점",
+      "floor": "1층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "안지크",
+      "altBrands": [
+        "샤트렌"
+      ],
+      "areaPy": 12.4,
+      "category": "여성",
+      "stage": null,
+      "note": null,
+      "mdOpinion": "동의"
+    },
+    {
+      "headquarters": "영업4본부",
+      "branch": "엑스코점",
+      "floor": "1층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "베스띠벨리",
+      "altBrands": [
+        "안지크"
+      ],
+      "areaPy": 12.2,
+      "category": "여성",
+      "stage": null,
+      "note": null,
+      "mdOpinion": "동의"
+    },
+    {
+      "headquarters": "영업4본부",
+      "branch": "엑스코점",
+      "floor": "1층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "보에띠",
+      "altBrands": [
+        "더레노마"
+      ],
+      "areaPy": 14,
+      "category": "여성",
+      "stage": null,
+      "note": null,
+      "mdOpinion": "동의"
+    },
+    {
+      "headquarters": "영업4본부",
+      "branch": "엑스코점",
+      "floor": "1층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "앤디스클라인",
+      "altBrands": [
+        "룸나인"
+      ],
+      "areaPy": 15.7,
+      "category": "여성",
+      "stage": null,
+      "note": null,
+      "mdOpinion": "동의"
+    },
+    {
+      "headquarters": "영업4본부",
+      "branch": "엑스코점",
+      "floor": "1층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "알토",
+      "altBrands": [
+        "리스트",
+        "르니엔멕코이"
+      ],
+      "areaPy": 14.4,
+      "category": "영캐주얼",
+      "stage": null,
+      "note": null,
+      "mdOpinion": "동의"
+    },
+    {
+      "headquarters": "영업4본부",
+      "branch": "엑스코점",
+      "floor": "2층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "에블린",
+      "altBrands": [
+        "쌍방울"
+      ],
+      "areaPy": 18.5,
+      "category": "여성",
+      "stage": null,
+      "note": null,
+      "mdOpinion": "동의"
+    },
+    {
+      "headquarters": "영업4본부",
+      "branch": "엑스코점",
+      "floor": "3층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "셀덴",
+      "altBrands": [
+        "지프키즈"
+      ],
+      "areaPy": 9.6,
+      "category": "아동",
+      "stage": null,
+      "note": null,
+      "mdOpinion": null
+    },
+    {
+      "headquarters": "영업4본부",
+      "branch": "울산2점",
+      "floor": "6층",
+      "segments": [
+        "외식"
+      ],
+      "currentBrand": "애슐리",
+      "altBrands": [
+        "특정 다이닝(샤브/뷔페)"
+      ],
+      "areaPy": 118.3,
+      "category": "F&B",
+      "stage": null,
+      "note": null,
+      "mdOpinion": "미동의"
+    },
+    {
+      "headquarters": "영업4본부",
+      "branch": "울산점",
+      "floor": "8층",
+      "segments": [
+        "외식"
+      ],
+      "currentBrand": "장기공실",
+      "altBrands": [
+        "F&B(식당가)"
+      ],
+      "areaPy": 71,
+      "category": "F&B",
+      "stage": null,
+      "note": "투자자 선구인 후 진행",
+      "mdOpinion": "동의(투자자 구인후 진행)"
+    },
+    {
+      "headquarters": "영업4본부",
+      "branch": "울산점",
+      "floor": "8층",
+      "segments": [
+        "외식"
+      ],
+      "currentBrand": "장기공실",
+      "altBrands": [
+        "F&B(식당가)"
+      ],
+      "areaPy": 71,
+      "category": "F&B",
+      "stage": null,
+      "note": "투자자 선구인 후 진행",
+      "mdOpinion": "동의(투자자 구인후 진행)"
+    },
+    {
+      "headquarters": "영업1본부",
+      "branch": "일산점",
+      "floor": "5층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "트루젠",
+      "altBrands": [
+        "NC픽스",
+        "LF신사관"
+      ],
+      "areaPy": 13.1,
+      "category": "기타",
+      "stage": null,
+      "note": "컨텐츠 협의중 (확정 시 MD진행)",
+      "mdOpinion": null
+    },
+    {
+      "headquarters": "영업1본부",
+      "branch": "일산점",
+      "floor": "6층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "더영스터",
+      "altBrands": [
+        "스파오키즈(이동)",
+        "플레이키즈"
+      ],
+      "areaPy": 10.4,
+      "category": "아동",
+      "stage": null,
+      "note": "앙떼� 이동으로 지점 합의",
+      "mdOpinion": "미동의,앙떼떼"
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "전주점",
+      "floor": "2층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "공실(밀스튜디오)",
+      "altBrands": [
+        "프로젝트M 이동",
+        "빈티지샵"
+      ],
+      "areaPy": 19.8,
+      "category": "영캐주얼",
+      "stage": null,
+      "note": "특정협의중",
+      "mdOpinion": null
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "전주점",
+      "floor": "2층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "공실(트랜드컬렉션)",
+      "altBrands": [
+        "프로젝트M 이동",
+        "빈티지샵"
+      ],
+      "areaPy": 29.8,
+      "category": "영캐주얼",
+      "stage": null,
+      "note": "특정협의중",
+      "mdOpinion": null
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "전주점",
+      "floor": "3층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "공실(수아팜)",
+      "altBrands": [
+        "앙떼떼",
+        "행사장"
+      ],
+      "areaPy": 14.2,
+      "category": "아동",
+      "stage": null,
+      "note": "앙떼떼 브랜드 종료이슈 재고소진매장후보에서 제외됨/임시행사장 운영",
+      "mdOpinion": null
+    },
+    {
+      "headquarters": "영업2본부",
+      "branch": "중계점",
+      "floor": "지하1층",
+      "segments": [
+        "외식"
+      ],
+      "currentBrand": "호두앤미",
+      "altBrands": [
+        "창고(이후 전관행사장 편입)"
+      ],
+      "areaPy": 3.8,
+      "category": "행사장",
+      "stage": null,
+      "note": "단독 매장 유지 어려워 창고 활용 후 전관 편입",
+      "mdOpinion": "F&B 동의"
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "중앙로점",
+      "floor": "3층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "앤디스클라인",
+      "altBrands": [
+        "세르지오 이동"
+      ],
+      "areaPy": 13.3,
+      "category": "여성",
+      "stage": null,
+      "note": "신사 -> 여성 카테고리로 이동",
+      "mdOpinion": null
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "중앙로점",
+      "floor": "5층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "삐삐롱(장기공실)",
+      "altBrands": [],
+      "areaPy": 4,
+      "category": "아동",
+      "stage": null,
+      "note": null,
+      "mdOpinion": null
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "중앙로점",
+      "floor": "5층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "오후",
+      "altBrands": [
+        "스파오키즈",
+        "지오다노주니어"
+      ],
+      "areaPy": 7.3,
+      "category": "아동",
+      "stage": null,
+      "note": "신키+로걸+오후 터서 21.2PY으로 추진",
+      "mdOpinion": null
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "청주점",
+      "floor": "7층",
+      "segments": [
+        "외식"
+      ],
+      "currentBrand": "공실(마라퀸)",
+      "altBrands": [
+        "해탄",
+        "옥된장"
+      ],
+      "areaPy": 23.1,
+      "category": "F&B",
+      "stage": null,
+      "note": "26년 3월 오픈 목표",
+      "mdOpinion": "미동의 (1안 시래정 2안 윤훈식농가쌈밥)"
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "청주점",
+      "floor": "B1층",
+      "segments": [
+        "외식"
+      ],
+      "currentBrand": "공실(맘스터치)",
+      "altBrands": [
+        "쿼드커피"
+      ],
+      "areaPy": 30,
+      "category": "F&B",
+      "stage": null,
+      "note": "26년 1월 오픈 목표",
+      "mdOpinion": "동의"
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "청주점",
+      "floor": "B1층",
+      "segments": [
+        "외식"
+      ],
+      "currentBrand": "공실(곤트란)",
+      "altBrands": [
+        "달다곰이베이커리",
+        "라스베이글"
+      ],
+      "areaPy": 22.7,
+      "category": "F&B",
+      "stage": null,
+      "note": "26년 3월 오픈 목표",
+      "mdOpinion": "동의"
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "충장점",
+      "floor": "2층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "공실(구 앤띵스)",
+      "altBrands": [
+        "라이프워크"
+      ],
+      "areaPy": 43.6,
+      "category": "기타",
+      "stage": null,
+      "note": "카테고리 조정 필요",
+      "mdOpinion": "카테고리 협의 필요"
+    },
+    {
+      "headquarters": "영업1본부",
+      "branch": "평촌2점",
+      "floor": "4층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "알토",
+      "altBrands": [
+        "행사장",
+        "행사장"
+      ],
+      "areaPy": 18.8,
+      "category": "행사장",
+      "stage": null,
+      "note": null,
+      "mdOpinion": null
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "해운대점",
+      "floor": "1층",
+      "segments": [
+        "패션"
+      ],
+      "currentBrand": "미샤",
+      "altBrands": [
+        "AB팝업존"
+      ],
+      "areaPy": 11.1,
+      "category": "행사장",
+      "stage": null,
+      "note": null,
+      "mdOpinion": null
+    },
+    {
+      "headquarters": "영업3본부",
+      "branch": "해운대점",
+      "floor": "B2층",
+      "segments": [
+        "비패션"
+      ],
+      "currentBrand": "송사부고로께",
+      "altBrands": [
+        "피자몰(확대)"
+      ],
+      "areaPy": 9.1,
+      "category": "F&B",
+      "stage": null,
+      "note": "26년 2월 예정",
+      "mdOpinion": null
+    }
+  ]
+}

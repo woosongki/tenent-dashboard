@@ -90,8 +90,8 @@ export default function StackedBarChart({ data }: Props) {
         </div>
       </div>
 
-      <div className="h-[180px] sm:h-[220px] lg:h-[260px]">
-        <ResponsiveContainer width="100%" height="100%">
+      <div className="h-[180px] w-full min-w-0 sm:h-[220px] lg:h-[260px]">
+        <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
           <BarChart data={chartData} margin={{ top: 4, right: 8, left: 0, bottom: 0 }} barSize={10}>
             <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" vertical={false} />
             <XAxis

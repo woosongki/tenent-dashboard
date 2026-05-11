@@ -80,13 +80,12 @@ export default function SummaryCards({ summary }: Props) {
   return (
     <div className="grid grid-cols-2 gap-5 xl:grid-cols-4">
       <Kpi
-        href="/dashboard/drilldown"
-        accent="teal"
+        href="/dashboard/vacancy"
+        accent="violet"
         label="공실 해결"
-        value={summary.totalMembers.toLocaleString()}
+        value={summary.vacancy.resolved.toLocaleString()}
         unit="건"
-        caption="입점 진척 추적"
-        trend={{ direction: "up", value: `${summary.pendingInvitations}`, label: " 대기" }}
+        caption={`담당 리징·리빙 × 진척 3·4단계 / 전체 공실 ${summary.vacancy.total.toLocaleString()}건`}
       />
       <Kpi
         href="/dashboard/goals"
@@ -106,7 +105,7 @@ export default function SummaryCards({ summary }: Props) {
       />
       <Kpi
         href="/dashboard/drilldown"
-        accent="violet"
+        accent="teal"
         label="입점 완료율"
         value={completionRate.toString()}
         unit="%"
