@@ -50,20 +50,23 @@ export default async function SalesPage() {
 
         {/* 그룹별 표 */}
         <section className="space-y-3">
-          <h2 className="text-[14px] font-bold text-slate-800">구매그룹별 매출</h2>
+          <div className="inline-block border-[2px] border-[#0a0a0a] bg-yellow-300 px-3 py-1 shadow-[2px_2px_0_0_#0a0a0a]">
+            <h2 className="font-display text-[18px] leading-none text-[#0a0a0a]">구매그룹별 매출</h2>
+          </div>
           <GroupComparisonTable groups={groups} />
         </section>
 
         {/* 브랜드 표 (전체) */}
         <section className="space-y-3">
-          <h2 className="text-[14px] font-bold text-slate-800">
-            브랜드별 매출 ({brands.length}개)
-          </h2>
+          <div className="inline-flex items-center gap-2 border-[2px] border-[#0a0a0a] bg-yellow-300 px-3 py-1 shadow-[2px_2px_0_0_#0a0a0a]">
+            <h2 className="font-display text-[18px] leading-none text-[#0a0a0a]">브랜드별 매출</h2>
+            <span className="font-mono text-[12px] font-extrabold tabular-nums text-[#0a0a0a]">{brands.length}</span>
+          </div>
           <BrandComparisonTable brands={brands} />
         </section>
 
-          <p className="text-[10px] text-slate-400">
-            데이터 출처: {meta.compiledAt} 변환 · CSV 원본 일매출 2기간 비교분석
+          <p className="text-[10px] font-bold uppercase tracking-wider text-[#0a0a0a]/55">
+            데이터 출처 <span className="font-mono">{meta.compiledAt}</span> 변환 · CSV 일매출 2기간 비교
           </p>
 
           <AppFooter />
