@@ -9,11 +9,11 @@ import type { CategoryStat } from "@/types/dashboard";
 const KRW = new Intl.NumberFormat("ko-KR", { style: "currency", currency: "KRW", maximumFractionDigits: 0 });
 
 const CAT_COLORS: Record<string, string> = {
-  // CSV 매출 그룹 (구매그룹 코드 기준 색상)
-  "모던 특정":   "#8b5cf6", // FAA — violet
-  "가정문화":     "#10b981", // EFA — emerald
-  "테넌트일반":  "#0ea5e9", // EGA — sky
-  "취미/라이프": "#f59e0b", // EBA — amber
+  // CSV 매출 그룹
+  "모던 특정":   "#8b5cf6",
+  "가정문화":     "#10b981",
+  "테넌트일반":  "#0ea5e9",
+  "취미/라이프": "#f59e0b",
   // 기존 brand_performance 카테고리 (호환용)
   "팬시/굿즈":   "#d946ef",
   "가전":         "#3b82f6",
@@ -44,18 +44,18 @@ function CustomTooltip({ active, payload }: { active?: boolean; payload?: Toolti
   if (!active || !payload?.length) return null;
   const d = payload[0].payload;
   return (
-    <div className=" border-[2px] border-[#0a0a0a] bg-white px-3.5 py-2.5 shadow-lg text-[12px]">
-      <div className="flex items-center gap-2 mb-1">
+    <div className="border-[2px] border-[#0a0a0a] bg-white px-3.5 py-2.5 shadow-[3px_3px_0_0_#0a0a0a] text-[12px]">
+      <div className="flex items-center gap-2 mb-1.5">
         <span
-          className="inline-block h-2.5 w-2.5 rounded-full"
+          className="inline-block h-2.5 w-2.5 border-[1.5px] border-[#0a0a0a]"
           style={{ background: getColor(d.category) }}
         />
-        <span className="font-semibold text-slate-800">{d.category}</span>
+        <span className="font-extrabold uppercase tracking-wider text-[#0a0a0a]">{d.category}</span>
       </div>
-      <div className="space-y-0.5 text-slate-500">
-        <p>브랜드 수 <span className="font-semibold text-slate-700">{d.count}개</span></p>
-        <p>매출 합계 <span className="font-semibold text-slate-700">{KRW.format(d.revenue)}</span></p>
-        <p>비중 <span className="font-semibold text-violet-600">{d.pct.toFixed(1)}%</span></p>
+      <div className="space-y-0.5 text-[#0a0a0a]/70 font-medium">
+        <p>브랜드 <span className="font-mono font-extrabold tabular-nums text-[#0a0a0a]">{d.count}</span></p>
+        <p>매출 <span className="font-mono font-extrabold tabular-nums text-[#0a0a0a]">{KRW.format(d.revenue)}</span></p>
+        <p>비중 <span className="font-mono font-extrabold tabular-nums text-[#0a0a0a]">{d.pct.toFixed(1)}%</span></p>
       </div>
     </div>
   );
@@ -76,39 +76,36 @@ export default function CategoryDonutChart({ stats }: Props) {
   }
 
   return (
-    <div className="relative overflow-hidden brutal bg-white">
-      {/* 상단 accent */}
-      <div className="absolute inset-x-0 top-0 h-[3px] rounded-t-xl bg-gradient-to-r from-violet-600 via-fuchsia-400 to-rose-400" />
-
-      <div className="mb-4 flex items-center justify-between">
-        <div>
-          <p className="text-[13px] font-bold text-slate-800">카테고리별 매출 분포</p>
-          <p className="text-[11px] text-slate-400">브랜드 수 및 매출 기준</p>
-        </div>
-        <span className="rounded-lg bg-violet-50 px-2.5 py-1 text-[11px] font-semibold text-violet-600">
-          전체 {KRW.format(totalRevenue)}
+    <div>
+      {/* 상단 요약 칩 */}
+      <div className="mb-5 flex items-center justify-end">
+        <span className="inline-flex items-center gap-2 border-[2px] border-[#0a0a0a] bg-yellow-300 px-3 py-1 text-[11px] font-extrabold uppercase tracking-wider text-[#0a0a0a] shadow-[2px_2px_0_0_#0a0a0a]">
+          <span>TOTAL</span>
+          <span className="font-mono tabular-nums">{KRW.format(totalRevenue)}</span>
         </span>
       </div>
 
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+      <div className="flex flex-col gap-6 sm:flex-row sm:items-center">
         {/* 도넛 차트 */}
-        <div className="h-[200px] w-full min-w-0 sm:w-[220px] shrink-0">
+        <div className="h-[220px] w-full min-w-0 sm:w-[240px] shrink-0">
           <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
             <PieChart>
               <Pie
                 data={data}
                 cx="50%"
                 cy="50%"
-                innerRadius={55}
-                outerRadius={90}
+                innerRadius={60}
+                outerRadius={95}
                 paddingAngle={2}
                 dataKey="revenue"
                 nameKey="category"
                 onClick={handleSliceClick}
                 className="cursor-pointer"
+                stroke="#0a0a0a"
+                strokeWidth={2}
               >
                 {data.map((entry) => (
-                  <Cell key={entry.category} fill={getColor(entry.category)} strokeWidth={0} />
+                  <Cell key={entry.category} fill={getColor(entry.category)} />
                 ))}
               </Pie>
               <Tooltip content={<CustomTooltip />} />
@@ -116,35 +113,36 @@ export default function CategoryDonutChart({ stats }: Props) {
           </ResponsiveContainer>
         </div>
 
-        {/* 범례 + 상세 — 클릭 시 매출분석으로 */}
+        {/* 범례 + 진행률 */}
         <div className="flex flex-1 flex-col gap-1.5">
           {data.map((d) => (
             <button
               key={d.category}
               type="button"
               onClick={() => router.push("/dashboard/sales")}
-              className="group flex w-full items-center gap-2.5 rounded-lg px-1 py-0.5 text-left transition-colors hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-violet-400"
+              className="group flex w-full items-center gap-2.5 border-l-[3px] border-transparent px-2 py-1.5 text-left transition-colors hover:border-[#0a0a0a] hover:bg-yellow-100"
               title={`${d.category} 매출분석 보기`}
             >
               <span
-                className="h-2.5 w-2.5 shrink-0 rounded-full"
+                className="h-3 w-3 shrink-0 border-[1.5px] border-[#0a0a0a]"
                 style={{ background: getColor(d.category) }}
               />
-              <span className="w-20 text-[12px] font-medium text-slate-600 group-hover:text-violet-700 transition-colors">{d.category}</span>
-              <div className="flex-1 h-[5px] overflow-hidden rounded-full bg-slate-100">
+              <span className="w-24 text-[12px] font-extrabold uppercase tracking-wider text-[#0a0a0a]">
+                {d.category}
+              </span>
+              <div className="flex-1 h-[6px] overflow-hidden border-[1.5px] border-[#0a0a0a] bg-white">
                 <div
-                  className="h-full rounded-full transition-all duration-700"
+                  className="h-full transition-all duration-700"
                   style={{
                     width: `${d.pct}%`,
                     background: getColor(d.category),
-                    opacity: 0.85,
                   }}
                 />
               </div>
-              <span className="w-10 text-right text-[11px] tabular-nums text-slate-400">
+              <span className="w-12 text-right font-mono text-[12px] font-extrabold tabular-nums text-[#0a0a0a]">
                 {d.pct.toFixed(1)}%
               </span>
-              <span className="w-8 text-right text-[11px] font-semibold tabular-nums text-slate-600">
+              <span className="w-10 text-right font-mono text-[11px] font-bold tabular-nums text-[#0a0a0a]/60">
                 {d.count}개
               </span>
             </button>

@@ -18,13 +18,13 @@ export const metadata: Metadata = { title: "대시보드 — lifestyle" };
 function SummarySkeleton() {
   return (
     <div className="animate-pulse space-y-8">
-      <div className="grid grid-cols-2 gap-4 xl:grid-cols-4">
+      <div className="grid grid-cols-2 gap-5 xl:grid-cols-4">
         {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="h-36  bg-white border border-slate-200" />
+          <div key={i} className="h-36 brutal bg-[#F1ECDB]" />
         ))}
       </div>
-      <div className="h-56  bg-white border border-slate-200" />
-      <div className="h-72  bg-white border border-slate-200" />
+      <div className="h-56 brutal bg-[#F1ECDB]" />
+      <div className="h-72 brutal bg-[#F1ECDB]" />
     </div>
   );
 }
@@ -50,7 +50,7 @@ async function SummarySection() {
         action={
           <a
             href="/dashboard/sales"
-            className="inline-flex items-center gap-1 text-[12px] font-medium text-violet-600 hover:text-violet-800 transition-colors"
+            className="inline-flex items-center gap-1 text-[11px] font-extrabold uppercase tracking-wider px-3 py-1.5 border-[2px] border-[#0a0a0a] bg-white text-[#0a0a0a] shadow-[2px_2px_0_0_#0a0a0a] hover:bg-yellow-300 hover:translate-x-[-1px] hover:translate-y-[-1px] hover:shadow-[3px_3px_0_0_#0a0a0a] transition-all"
           >
             전체 보기
             <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
