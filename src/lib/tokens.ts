@@ -70,9 +70,9 @@ export const TOKENS = {
  * 한국어 본문 가독성 유지 + 영문/숫자는 디스플레이/모노 강조.
  */
 export const TYPO = {
-  pageTitle:    "font-display text-[44px] sm:text-[52px] leading-[.95] tracking-tight text-[#0a0a0a] uppercase",
+  pageTitle:    "font-display text-[42px] sm:text-[52px] leading-[1] text-[#0a0a0a]",
   pageSubtitle: "text-[14px] leading-relaxed text-[#0a0a0a]/70 font-medium",
-  sectionTitle: "text-[20px] font-extrabold tracking-tight text-[#0a0a0a] uppercase",
+  sectionTitle: "font-display text-[22px] leading-[1.1] text-[#0a0a0a]",
   sectionDesc:  "text-[13px] text-[#0a0a0a]/70",
   cardTitle:    "text-[16px] font-extrabold text-[#0a0a0a]",
   body:         "text-[14px] leading-relaxed text-[#0a0a0a]",

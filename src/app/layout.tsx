@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { JetBrains_Mono, Archivo_Black } from "next/font/google";
+import { JetBrains_Mono, Archivo_Black, Black_Han_Sans } from "next/font/google";
 import { Toaster } from "sonner";
 import "./globals.css";
 
@@ -10,8 +10,15 @@ const jetbrains = JetBrains_Mono({
   weight: ["400", "500", "700", "800"],
 });
 
-// 디스플레이 — 큰 헤드라인 (영문)
+// 디스플레이 — 큰 헤드라인 영문 fallback
 const archivoBlack = Archivo_Black({
+  variable: "--font-display-en",
+  subsets: ["latin"],
+  weight: "400",
+});
+
+// 디스플레이 — 한국어 헤드라인 (brutalist 메인)
+const blackHanSans = Black_Han_Sans({
   variable: "--font-display",
   subsets: ["latin"],
   weight: "400",
@@ -30,7 +37,7 @@ export default function RootLayout({
   return (
     <html
       lang="ko"
-      className={`${jetbrains.variable} ${archivoBlack.variable} h-full antialiased`}
+      className={`${jetbrains.variable} ${archivoBlack.variable} ${blackHanSans.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-[#FAF7EC] text-[#0a0a0a]">
         {children}

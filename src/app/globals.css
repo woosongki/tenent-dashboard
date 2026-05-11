@@ -69,9 +69,15 @@ body {
 .chip-ink      { background: var(--ink);            color: #fff; }
 .chip-paper    { background: var(--paper-soft);     color: #0a0a0a; }
 
-/* 디스플레이 헤드라인 (영문/숫자) */
+/* 디스플레이 헤드라인 (한국어 우선 — Black Han Sans, 영문/숫자도 동일) */
 .font-display {
-  font-family: var(--font-display), "Pretendard", system-ui, sans-serif;
+  font-family: var(--font-display), var(--font-display-en), "Pretendard", "Apple SD Gothic Neo", system-ui, sans-serif;
+  font-weight: 400;
+  letter-spacing: -0.005em;
+}
+/* 라틴 디스플레이 (영문 전용 강조가 필요할 때) */
+.font-display-en {
+  font-family: var(--font-display-en), "Pretendard", system-ui, sans-serif;
   letter-spacing: -0.01em;
 }
 .font-mono {
