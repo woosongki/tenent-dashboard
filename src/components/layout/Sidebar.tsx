@@ -186,8 +186,8 @@ export default function Sidebar({
           </div>
           {!collapsed && (
             <div className="flex-1 min-w-0">
-              <div className={`text-[14px] font-extrabold uppercase tracking-wider ${t.text}`}>lifestyle</div>
-              <div className={`text-[10px] font-bold ${t.textMuted} uppercase tracking-[.14em]`}>이랜드리테일</div>
+              <div className={`font-display text-[18px] leading-none ${t.text}`}>lifestyle</div>
+              <div className={`mt-1 text-[10px] font-bold ${t.textMuted} uppercase tracking-[.14em]`}>이랜드리테일</div>
             </div>
           )}
           {onClose && !collapsed && (
@@ -313,13 +313,13 @@ export default function Sidebar({
             {initial}
           </div>
         ) : (
-          <div className={`flex items-center gap-2 ${t.userBg} px-2 py-2 shadow-[3px_3px_0_0_#0a0a0a]`}>
-            <div className="flex h-[32px] w-[32px] shrink-0 items-center justify-center border-[2px] border-[#0a0a0a] bg-cyan-400 text-[#0a0a0a] text-[13px] font-extrabold">
+          <div className={`flex items-center gap-2 ${t.userBg} px-2.5 py-2 shadow-[3px_3px_0_0_#0a0a0a]`}>
+            <div className="flex h-[34px] w-[34px] shrink-0 items-center justify-center border-[2px] border-[#0a0a0a] bg-cyan-400 text-[#0a0a0a] font-mono text-[14px] font-extrabold">
               {initial}
             </div>
             <div className="min-w-0 flex-1">
-              <p className={`truncate text-[11.5px] font-bold ${theme === "dark" ? "text-white" : "text-[#0a0a0a]"}`}>{userEmail}</p>
-              <p className={`text-[10px] font-bold uppercase tracking-[.14em] ${t.textMuted}`}>ADMIN</p>
+              <p className={`truncate text-[11.5px] font-extrabold font-mono ${theme === "dark" ? "text-white" : "text-[#0a0a0a]"}`}>{userEmail}</p>
+              <p className={`text-[9.5px] font-extrabold uppercase tracking-[.16em] mt-0.5 ${t.textMuted}`}>· ADMIN</p>
             </div>
             <form action={signOutAction}>
               <button

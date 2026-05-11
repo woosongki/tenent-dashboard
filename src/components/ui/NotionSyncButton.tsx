@@ -57,20 +57,22 @@ export default function NotionSyncButton({
   );
 
   if (variant === "sidebar") {
-    const baseColor = themeIsLight ? "text-slate-600 hover:bg-slate-100" : "text-slate-400 hover:bg-white/5";
+    const baseColor = themeIsLight
+      ? "text-[#0a0a0a]/75 hover:bg-yellow-200"
+      : "text-white/75 hover:bg-white/10";
     return (
       <button
         type="button"
         onClick={trigger}
         disabled={pending}
         title={pending ? "동기화 중..." : "노션에서 최신 데이터 가져오기"}
-        className={`flex w-full items-center rounded-[8px] px-2 py-2 transition-colors disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500/60 ${baseColor} ${
+        className={`flex w-full items-center px-2 py-2 border-l-[3px] border-transparent transition-colors disabled:opacity-50 ${baseColor} ${
           collapsed ? "justify-center" : "gap-2"
         }`}
       >
         {Icon}
         {!collapsed && (
-          <span className="text-[12px] font-medium">{pending ? "동기화 중..." : "노션 동기화"}</span>
+          <span className="text-[11px] font-extrabold uppercase tracking-wider">{pending ? "동기화 중" : "Sync"}</span>
         )}
       </button>
     );
@@ -82,10 +84,10 @@ export default function NotionSyncButton({
       onClick={trigger}
       disabled={pending}
       title="노션에서 최신 데이터 가져오기"
-      className="flex h-8 items-center gap-1.5 rounded-lg border-[2px] border-[#0a0a0a] bg-white px-3 text-xs font-medium text-slate-600 hover:bg-slate-50 hover:border-violet-300 hover:text-violet-700 disabled:opacity-50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400"
+      className="inline-flex items-center gap-1.5 h-9 text-[11px] font-extrabold uppercase tracking-wider px-3 border-[2px] border-[#0a0a0a] bg-white text-[#0a0a0a] shadow-[2px_2px_0_0_#0a0a0a] hover:translate-x-[-1px] hover:translate-y-[-1px] hover:bg-yellow-300 hover:shadow-[3px_3px_0_0_#0a0a0a] disabled:opacity-50 transition-all"
     >
       {Icon}
-      {pending ? "동기화 중..." : "노션 동기화"}
+      {pending ? "동기화 중" : "노션 Sync"}
     </button>
   );
 }
