@@ -28,7 +28,7 @@ export default function BranchProgressGrid({
   }, [rows]);
 
   function color(pct: number | null) {
-    if (pct === null) return "bg-slate-50 text-slate-300 border-[#f1f5f9]";
+    if (pct === null) return "bg-slate-50 text-slate-300 border-[#0a0a0a]/10";
     if (pct === 100)  return "bg-violet-600 text-white border-violet-700";
     if (pct >= 70)    return "bg-violet-100 text-violet-700 border-violet-200";
     if (pct >= 40)    return "bg-amber-50 text-amber-700 border-amber-200";
@@ -36,7 +36,7 @@ export default function BranchProgressGrid({
   }
 
   return (
-    <div className="rounded-xl border border-[#e8ecf0] bg-white p-4 shadow-[0_1px_3px_rgba(0,0,0,.04)]">
+    <div className="brutal bg-white">
       <div className="mb-3 flex items-center justify-between">
         <h3 className="text-sm font-bold text-slate-800">
           지점별 입점 진행률

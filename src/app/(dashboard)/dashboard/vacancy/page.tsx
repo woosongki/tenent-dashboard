@@ -109,7 +109,7 @@ function Stat({
   accent: "violet" | "emerald" | "rose" | "slate";
 }) {
   return (
-    <div className="relative overflow-hidden rounded-2xl border border-slate-200/70 bg-white p-5 shadow-[0_1px_2px_rgba(15,23,42,.04)]">
+    <div className="relative overflow-hidden  border border-slate-200/70 bg-white p-5 shadow-[0_1px_2px_rgba(15,23,42,.04)]">
       <span className={`absolute inset-x-0 top-0 h-[3px] ${ACCENT_BAR[accent]}`} />
       <p className="text-[11px] font-semibold uppercase tracking-[.1em] text-slate-500">{label}</p>
       <p className="mt-2 text-[32px] font-bold tabular-nums leading-none text-slate-900">

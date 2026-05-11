@@ -44,7 +44,7 @@ function CustomTooltip({ active, payload }: { active?: boolean; payload?: Toolti
   if (!active || !payload?.length) return null;
   const d = payload[0].payload;
   return (
-    <div className="rounded-xl border border-[#e8ecf0] bg-white px-3.5 py-2.5 shadow-lg text-[12px]">
+    <div className=" border-[2px] border-[#0a0a0a] bg-white px-3.5 py-2.5 shadow-lg text-[12px]">
       <div className="flex items-center gap-2 mb-1">
         <span
           className="inline-block h-2.5 w-2.5 rounded-full"
@@ -76,7 +76,7 @@ export default function CategoryDonutChart({ stats }: Props) {
   }
 
   return (
-    <div className="relative overflow-hidden rounded-xl border border-[#e8ecf0] bg-white p-5 shadow-[0_1px_3px_rgba(0,0,0,.04)]">
+    <div className="relative overflow-hidden brutal bg-white">
       {/* 상단 accent */}
       <div className="absolute inset-x-0 top-0 h-[3px] rounded-t-xl bg-gradient-to-r from-violet-600 via-fuchsia-400 to-rose-400" />
 

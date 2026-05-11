@@ -34,7 +34,7 @@ export default function KebabMenu({ onEdit, onDelete, extra = [] }: Props) {
       </button>
 
       {open && (
-        <div className="absolute right-0 top-8 z-50 w-32 overflow-hidden rounded-xl border border-[#e8ecf0] bg-white py-1 shadow-lg animate-in fade-in slide-in-from-top-1 duration-100">
+        <div className="absolute right-0 top-8 z-50 w-32 overflow-hidden  border-[2px] border-[#0a0a0a] bg-white py-1 shadow-lg animate-in fade-in slide-in-from-top-1 duration-100">
           {onEdit && (
             <button
               onClick={() => { setOpen(false); onEdit(); }}

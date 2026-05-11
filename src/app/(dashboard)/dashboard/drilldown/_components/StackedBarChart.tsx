@@ -62,14 +62,14 @@ export default function StackedBarChart({ data }: Props) {
 
   if (!data.length) {
     return (
-      <div className="rounded-xl border border-gray-100 bg-white px-4 py-16 shadow-sm text-center">
+      <div className=" border border-gray-100 bg-white px-4 py-16 shadow-sm text-center">
         <p className="text-sm text-gray-400">일별 데이터가 없습니다.</p>
       </div>
     );
   }
 
   return (
-    <div className="rounded-xl border border-gray-100 bg-white px-3 py-4 shadow-sm sm:px-6 sm:py-5">
+    <div className=" border border-gray-100 bg-white px-3 py-4 shadow-sm sm:px-6 sm:py-5">
       <div className="mb-3 flex flex-wrap items-center justify-between gap-2 sm:mb-4">
         <p className="text-sm font-medium text-gray-700">브랜드별 일별 누적</p>
         <div className="flex gap-1">

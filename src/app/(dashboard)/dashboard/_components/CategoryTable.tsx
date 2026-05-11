@@ -42,7 +42,7 @@ export default function CategoryTable({ groups }: Props) {
 
   if (groups.length === 0) {
     return (
-      <div className="rounded-2xl bg-white ring-1 ring-gray-200 p-10 text-center text-sm text-gray-400">
+      <div className=" bg-white ring-1 ring-gray-200 p-10 text-center text-sm text-gray-400">
         등록된 조직이 없습니다.
       </div>
     );
@@ -56,7 +56,7 @@ export default function CategoryTable({ groups }: Props) {
         return (
           <section
             key={group.planName}
-            className="overflow-hidden rounded-2xl bg-white ring-1 ring-gray-200"
+            className="overflow-hidden  bg-white ring-1 ring-gray-200"
           >
             {/* ── Group Header ── */}
             <button

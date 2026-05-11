@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Sidebar from "./Sidebar";
 import SearchPalette from "@/components/ui/SearchPalette";
 import { useSidebarTheme } from "@/hooks/useSidebarTheme";
+import { useReportMode } from "@/hooks/useReportMode";
 
 interface Props {
   userEmail: string;
@@ -32,6 +33,7 @@ export default function AppShell({ userEmail, role = null, children }: Props) {
   const [collapsed,  setCollapsed]    = useState(false);
   const [searchOpen, setSearchOpen]   = useState(false);
   const [theme, setTheme]             = useSidebarTheme();
+  const [reportMode, setReportMode]   = useReportMode();
 
   // 페이지 이동 시 모바일 메뉴 자동 닫기
   useEffect(() => {
@@ -86,6 +88,8 @@ export default function AppShell({ userEmail, role = null, children }: Props) {
           onToggleCollapse={() => setCollapsed((v) => !v)}
           theme={theme}
           onToggleTheme={() => setTheme(theme === "dark" ? "light" : "dark")}
+          reportMode={reportMode}
+          onToggleReportMode={() => setReportMode(!reportMode)}
         />
       </div>
 
@@ -93,7 +97,7 @@ export default function AppShell({ userEmail, role = null, children }: Props) {
       <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
 
         {/* 모바일 전용 상단 바 */}
-        <div className="flex h-12 shrink-0 items-center justify-between border-b border-[#e8ecf0] bg-white px-4 md:hidden">
+        <div className="flex h-12 shrink-0 items-center justify-between border-b border-[#0a0a0a] bg-white px-4 md:hidden">
           <div className="flex items-center gap-3">
             <button
               onClick={() => setMobileOpen(true)}

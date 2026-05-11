@@ -8,7 +8,7 @@ interface Props {
 export default function GroupComparisonTable({ groups }: Props) {
   if (groups.length === 0) {
     return (
-      <div className="rounded-xl border border-[#e8ecf0] bg-white py-8 text-center text-[12px] text-slate-400">
+      <div className=" border-[2px] border-[#0a0a0a] bg-white py-8 text-center text-[12px] text-slate-400">
         그룹 데이터 없음
       </div>
     );
@@ -17,9 +17,9 @@ export default function GroupComparisonTable({ groups }: Props) {
   const totalCurrent = groups.reduce((s, g) => s + (g.revenue_current ?? 0), 0);
 
   return (
-    <div className="overflow-x-auto rounded-xl border border-[#e8ecf0] bg-white shadow-[0_1px_3px_rgba(0,0,0,.04)]">
+    <div className="overflow-x-auto brutal bg-white">
       <table className="w-full text-[13px]">
-        <thead className="bg-[#f8fafc] text-[10px] uppercase tracking-wider text-slate-500">
+        <thead className="bg-[#F1ECDB] text-[10px] uppercase tracking-wider text-slate-500">
           <tr>
             <th className="px-4 py-2.5 text-left font-medium">구매그룹</th>
             <th className="px-4 py-2.5 text-right font-medium">브랜드 수</th>

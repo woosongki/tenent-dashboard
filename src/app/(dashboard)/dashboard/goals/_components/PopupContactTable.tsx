@@ -86,15 +86,15 @@ export default function PopupContactTable({ rows, importedAt, pinsByContact = {}
           value={q}
           onChange={(e) => setQ(e.target.value)}
           placeholder="브랜드·업체·담당자 검색"
-          className="ml-auto h-8 w-64 rounded-lg border border-[#e8ecf0] bg-white px-3 text-[12px] placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500/40"
+          className="ml-auto h-8 w-64 rounded-lg border-[2px] border-[#0a0a0a] bg-white px-3 text-[12px] placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500/40"
         />
       </div>
 
       {/* 표 */}
       <div className="overflow-x-auto -mx-1 px-1">
-        <div className="overflow-hidden rounded-xl border border-[#e8ecf0] bg-white shadow-[0_1px_3px_rgba(0,0,0,.04)]">
+        <div className="overflow-hidden brutal bg-white">
           <table className="min-w-[960px] w-full text-[13px]">
-            <thead className="text-[11px] tracking-tight text-slate-500 bg-[#f8fafc] border-b border-[#f1f5f9]">
+            <thead className="text-[11px] tracking-tight text-slate-500 bg-[#F1ECDB] border-b border-[#0a0a0a]/10">
               <tr>
                 <th className="text-left py-2 px-3 font-medium w-12">No.</th>
                 <th className="text-left py-2 px-3 font-medium">브랜드</th>
@@ -121,7 +121,7 @@ export default function PopupContactTable({ rows, importedAt, pinsByContact = {}
                 </tr>
               ) : (
                 filtered.map((r) => (
-                  <tr key={r.no} className="border-b border-[#f8fafc] last:border-0 hover:bg-slate-50/60">
+                  <tr key={r.no} className="border-b border-[#0a0a0a]/10 last:border-0 hover:bg-slate-50/60">
                     <td className="py-2 px-3 tabular-nums text-slate-400">{r.no}</td>
                     <td className="py-2 px-3 font-medium text-slate-900">
                       <div className="flex items-center gap-1.5 flex-wrap">
@@ -208,7 +208,7 @@ function Chip({
       className={`text-[12px] px-3 py-1.5 rounded-full border transition-colors ${
         active
           ? "bg-slate-900 text-white border-slate-900"
-          : "bg-white border-[#e8ecf0] text-slate-700 hover:bg-slate-50"
+          : "bg-white border-[#0a0a0a] text-slate-700 hover:bg-slate-50"
       }`}
     >
       {children}
@@ -228,7 +228,7 @@ function SelectChip({
   options: string[];
 }) {
   return (
-    <label className="inline-flex items-center gap-1.5 rounded-lg border border-[#e8ecf0] bg-white pl-3 pr-1 py-1 text-[12px]">
+    <label className="inline-flex items-center gap-1.5 rounded-lg border-[2px] border-[#0a0a0a] bg-white pl-3 pr-1 py-1 text-[12px]">
       <span className="text-slate-500">{label}</span>
       <select
         value={value ?? ""}

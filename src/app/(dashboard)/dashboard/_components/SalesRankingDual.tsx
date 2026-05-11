@@ -72,7 +72,7 @@ function RankingCard({
   );
 
   return (
-    <div className="rounded-xl border border-[#e8ecf0] bg-white p-5 shadow-[0_1px_3px_rgba(0,0,0,.04)]">
+    <div className="brutal bg-white">
       <div className="mb-4 flex items-baseline justify-between">
         <div>
           <h3 className="text-[14px] font-bold text-slate-800">{title}</h3>

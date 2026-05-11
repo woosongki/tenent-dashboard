@@ -75,7 +75,7 @@ function StatPill({
   accent?: string;
 }) {
   return (
-    <div className="rounded-xl border border-[#e8ecf0] bg-white px-4 py-2 shadow-[0_1px_3px_rgba(0,0,0,.04)]">
+    <div className=" border-[2px] border-[#0a0a0a] bg-white px-4 py-2">
       <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">{label}</p>
       <p className={`text-[15px] font-bold tabular-nums ${accent}`}>
         {value}

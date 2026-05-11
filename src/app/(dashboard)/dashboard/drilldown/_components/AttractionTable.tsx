@@ -73,7 +73,7 @@ function KebabMenu({
       </button>
 
       {open && (
-        <div className="absolute right-0 top-8 z-50 w-28 overflow-hidden rounded-xl border border-[#e8ecf0] bg-white py-1 shadow-lg">
+        <div className="absolute right-0 top-8 z-50 w-28 overflow-hidden  border-[2px] border-[#0a0a0a] bg-white py-1 shadow-lg">
           <button
             onClick={() => { setOpen(false); onEdit(); }}
             className="flex w-full items-center gap-2 px-3 py-2 text-xs font-medium text-slate-600 hover:bg-violet-50 hover:text-violet-700 transition-colors"
@@ -104,7 +104,7 @@ interface ModalProps {
   onClose: () => void;
 }
 
-const INPUT_CLS = "w-full rounded-lg border border-[#e8ecf0] px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400 focus-visible:border-transparent";
+const INPUT_CLS = "w-full rounded-lg border-[2px] border-[#0a0a0a] px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400 focus-visible:border-transparent";
 const LABEL_CLS = "mb-1 block text-xs font-medium text-slate-500";
 
 function RowModal({ row, onClose }: ModalProps) {
@@ -150,10 +150,10 @@ function RowModal({ row, onClose }: ModalProps) {
       onClick={onClose}
     >
       <div
-        className="w-full max-w-lg rounded-2xl bg-white shadow-xl"
+        className="w-full max-w-lg  bg-white shadow-xl"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between border-b border-[#e8ecf0] px-6 py-4">
+        <div className="flex items-center justify-between border-b border-[#0a0a0a] px-6 py-4">
           <h2 className="text-sm font-semibold text-slate-800">
             {isNew ? "브랜드 추가" : "브랜드 수정"}
           </h2>
@@ -226,7 +226,7 @@ function RowModal({ row, onClose }: ModalProps) {
             <button
               type="button"
               onClick={onClose}
-              className="rounded-lg border border-[#e8ecf0] px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400"
+              className="rounded-lg border-[2px] border-[#0a0a0a] px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400"
             >취소</button>
             <button
               type="submit"
@@ -303,7 +303,7 @@ export default function AttractionTable({ rows, branchFilter = null, onClearBran
                 className={`rounded-full px-3 py-1 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400 ${
                   filterCat === cat
                     ? "bg-violet-600 text-white"
-                    : "border border-[#e8ecf0] bg-white text-slate-500 hover:border-violet-300 hover:text-violet-600"
+                    : "border-[2px] border-[#0a0a0a] bg-white text-slate-500 hover:border-violet-300 hover:text-violet-600"
                 }`}
               >
                 {cat}
@@ -318,7 +318,7 @@ export default function AttractionTable({ rows, branchFilter = null, onClearBran
                 className={`rounded-full px-3 py-1 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400 ${
                   filterStatus === s
                     ? "bg-slate-800 text-white"
-                    : "border border-[#e8ecf0] bg-white text-slate-500 hover:border-slate-400"
+                    : "border-[2px] border-[#0a0a0a] bg-white text-slate-500 hover:border-slate-400"
                 }`}
               >
                 {s}
@@ -367,10 +367,10 @@ export default function AttractionTable({ rows, branchFilter = null, onClearBran
       </p>
 
       {/* Table */}
-      <div className="overflow-hidden rounded-xl border border-[#e8ecf0] bg-white shadow-[0_1px_3px_rgba(0,0,0,.04)] overflow-x-auto">
+      <div className="overflow-hidden brutal bg-white overflow-x-auto">
         <table className="w-full min-w-[700px] text-sm">
           <thead>
-            <tr className="border-b border-[#f1f5f9] bg-[#f8fafc] text-[11px] font-semibold uppercase tracking-[.05em] text-slate-400">
+            <tr className="border-b border-[#0a0a0a]/10 bg-[#F1ECDB] text-[11px] font-semibold uppercase tracking-[.05em] text-slate-400">
               <th className="px-4 py-3 text-left w-8">#</th>
               <th className="px-4 py-3 text-left">브랜드명</th>
               <th className="px-4 py-3 text-left">지점</th>

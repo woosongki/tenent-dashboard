@@ -48,9 +48,9 @@ export default function BrandComparisonTable({ brands }: Props) {
   }
 
   return (
-    <div className="rounded-xl border border-[#e8ecf0] bg-white shadow-[0_1px_3px_rgba(0,0,0,.04)] overflow-hidden">
+    <div className="brutal bg-white overflow-hidden">
       {/* 필터 바 */}
-      <div className="flex flex-wrap items-center gap-2 px-4 py-3 border-b border-[#f1f5f9]">
+      <div className="flex flex-wrap items-center gap-2 px-4 py-3 border-b border-[#0a0a0a]/10">
         <Chip active={!groupFilter} onClick={() => setGroupFilter(null)}>
           전체 {brands.length}
         </Chip>
@@ -73,13 +73,13 @@ export default function BrandComparisonTable({ brands }: Props) {
           placeholder="브랜드명 검색..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="ml-auto rounded-lg border border-[#e8ecf0] px-3 py-1.5 text-[12px] focus:border-violet-400 focus:outline-none focus:ring-1 focus:ring-violet-400"
+          className="ml-auto rounded-lg border-[2px] border-[#0a0a0a] px-3 py-1.5 text-[12px] focus:border-violet-400 focus:outline-none focus:ring-1 focus:ring-violet-400"
         />
       </div>
 
       <div className="overflow-x-auto">
         <table className="w-full text-[13px]">
-          <thead className="bg-[#f8fafc] text-[10px] uppercase tracking-wider text-slate-500">
+          <thead className="bg-[#F1ECDB] text-[10px] uppercase tracking-wider text-slate-500">
             <tr>
               <th className="px-4 py-2.5 text-left font-medium w-12">#</th>
               <th className="px-4 py-2.5 text-left font-medium">브랜드</th>
@@ -150,7 +150,7 @@ export default function BrandComparisonTable({ brands }: Props) {
         </table>
       </div>
       {filtered.length > 100 && (
-        <p className="px-4 py-2 text-[10px] text-slate-400 border-t border-[#f1f5f9]">
+        <p className="px-4 py-2 text-[10px] text-slate-400 border-t border-[#0a0a0a]/10">
           상위 100개 표시 · 검색어/필터로 좁혀보세요 (전체 {filtered.length}개)
         </p>
       )}
@@ -176,7 +176,7 @@ function Chip({
       className={`text-[11px] px-3 py-1 rounded-full border transition-colors ${
         active
           ? "text-white border-transparent"
-          : "bg-white border-[#e8ecf0] text-slate-600 hover:bg-slate-50"
+          : "bg-white border-[#0a0a0a] text-slate-600 hover:bg-slate-50"
       }`}
       style={active ? { backgroundColor: activeBg ?? "#0f172a" } : undefined}
     >

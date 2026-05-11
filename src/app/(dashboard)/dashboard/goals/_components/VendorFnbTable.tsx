@@ -49,7 +49,7 @@ function KebabMenu({ onEdit, onDelete }: { onEdit: () => void; onDelete: () => v
         <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20"><path d="M10 6a2 2 0 110-4 2 2 0 010 4zm0 6a2 2 0 110-4 2 2 0 010 4zm0 6a2 2 0 110-4 2 2 0 010 4z" /></svg>
       </button>
       {open && (
-        <div className="absolute right-0 top-8 z-50 w-28 overflow-hidden rounded-xl border border-[#e8ecf0] bg-white py-1 shadow-lg">
+        <div className="absolute right-0 top-8 z-50 w-28 overflow-hidden  border-[2px] border-[#0a0a0a] bg-white py-1 shadow-lg">
           <button onClick={() => { setOpen(false); onEdit(); }} className="flex w-full items-center gap-2 px-3 py-2 text-xs font-medium text-slate-600 hover:bg-violet-50 hover:text-violet-700 transition-colors">
             <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z" /></svg>
             수정
@@ -65,7 +65,7 @@ function KebabMenu({ onEdit, onDelete }: { onEdit: () => void; onDelete: () => v
 }
 
 // ── Modal ────────────────────────────────────────────────────
-const INPUT_CLS = "w-full rounded-lg border border-[#e8ecf0] px-3 py-2 text-sm text-slate-800 placeholder-slate-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400 focus-visible:border-transparent";
+const INPUT_CLS = "w-full rounded-lg border-[2px] border-[#0a0a0a] px-3 py-2 text-sm text-slate-800 placeholder-slate-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400 focus-visible:border-transparent";
 const LABEL_CLS = "mb-1 block text-xs font-medium text-slate-500";
 
 function RowModal({ row, onClose }: { row: Partial<VendorFnbRow> | null; onClose: () => void }) {
@@ -111,8 +111,8 @@ function RowModal({ row, onClose }: { row: Partial<VendorFnbRow> | null; onClose
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4" onClick={onClose}>
-      <div className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl bg-white shadow-xl" onClick={(e) => e.stopPropagation()}>
-        <div className="flex items-center justify-between border-b border-[#e8ecf0] px-6 py-4 sticky top-0 bg-white z-10">
+      <div className="w-full max-w-lg max-h-[90vh] overflow-y-auto  bg-white shadow-xl" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between border-b border-[#0a0a0a] px-6 py-4 sticky top-0 bg-white z-10">
           <h2 className="text-sm font-semibold text-slate-800">{isNew ? "F&B 업체 추가" : "F&B 업체 수정"}</h2>
           <button type="button" onClick={onClose} className="text-slate-300 hover:text-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400 rounded-lg p-1">
             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
@@ -182,7 +182,7 @@ function RowModal({ row, onClose }: { row: Partial<VendorFnbRow> | null; onClose
             <input
               id="is_checked" name="is_checked" type="checkbox" value="true"
               defaultChecked={row?.is_checked ?? false}
-              className="h-4 w-4 rounded border-[#e8ecf0] text-violet-600 focus:ring-violet-400"
+              className="h-4 w-4 rounded border-[#0a0a0a] text-violet-600 focus:ring-violet-400"
               onChange={(e) => {
                 const hidden = e.currentTarget.previousElementSibling as HTMLInputElement;
                 hidden.value = e.currentTarget.checked ? "true" : "false";
@@ -193,7 +193,7 @@ function RowModal({ row, onClose }: { row: Partial<VendorFnbRow> | null; onClose
 
           {error && <p className="text-xs text-rose-500">{error}</p>}
           <div className="flex justify-end gap-2 pt-1">
-            <button type="button" onClick={onClose} className="rounded-lg border border-[#e8ecf0] px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400">취소</button>
+            <button type="button" onClick={onClose} className="rounded-lg border-[2px] border-[#0a0a0a] px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400">취소</button>
             <button type="submit" disabled={pending} className="flex items-center gap-2 rounded-lg bg-violet-600 px-4 py-2 text-sm font-medium text-white hover:bg-violet-700 disabled:opacity-50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400">
               {pending && <svg className="h-3.5 w-3.5 animate-spin" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg>}
               {pending ? "저장 중..." : "저장"}
@@ -251,19 +251,19 @@ export default function VendorFnbTable({ rows: initialRows }: Props) {
   return (
     <>
       {/* 필터 바 */}
-      <div className="rounded-xl border border-[#e8ecf0] bg-white px-4 py-3 shadow-[0_1px_3px_rgba(0,0,0,.04)]">
+      <div className=" border-[2px] border-[#0a0a0a] bg-white px-4 py-3">
         <div className="flex flex-wrap items-center gap-2">
           <input
             value={q} onChange={(e) => setQ(e.target.value)}
             placeholder="업체명·키맨 검색…"
-            className="h-8 rounded-lg border border-[#e8ecf0] px-3 text-sm text-slate-700 placeholder-slate-300 focus:outline-none focus:ring-2 focus:ring-violet-300 flex-1 min-w-[160px] md:flex-none md:w-44"
+            className="h-8 rounded-lg border-[2px] border-[#0a0a0a] px-3 text-sm text-slate-700 placeholder-slate-300 focus:outline-none focus:ring-2 focus:ring-violet-300 flex-1 min-w-[160px] md:flex-none md:w-44"
           />
           <FilterDrawer activeCount={[fStatus, fType].filter(Boolean).length}>
-            <select value={fStatus} onChange={(e) => setFStatus(e.target.value)} className="h-8 rounded-lg border border-[#e8ecf0] px-2 text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-violet-300">
+            <select value={fStatus} onChange={(e) => setFStatus(e.target.value)} className="h-8 rounded-lg border-[2px] border-[#0a0a0a] px-2 text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-violet-300">
               <option value="">전체 상태</option>
               {VENDOR_STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
             </select>
-            <select value={fType} onChange={(e) => setFType(e.target.value)} className="h-8 rounded-lg border border-[#e8ecf0] px-2 text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-violet-300">
+            <select value={fType} onChange={(e) => setFType(e.target.value)} className="h-8 rounded-lg border-[2px] border-[#0a0a0a] px-2 text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-violet-300">
               <option value="">전체 유형</option>
               {VENDOR_TYPE_OPTIONS.map((t) => <option key={t} value={t}>{t}</option>)}
             </select>
@@ -282,15 +282,15 @@ export default function VendorFnbTable({ rows: initialRows }: Props) {
 
       {/* 테이블 */}
       {filtered.length === 0 ? (
-        <div className="flex flex-col items-center justify-center rounded-xl border border-[#e8ecf0] bg-white py-16 text-center shadow-[0_1px_3px_rgba(0,0,0,.04)]">
+        <div className="flex flex-col items-center justify-center  border-[2px] border-[#0a0a0a] bg-white py-16 text-center">
           <p className="text-sm text-slate-400">{q || fStatus || fType ? "조건에 맞는 업체가 없습니다" : "등록된 F&B 업체가 없습니다"}</p>
         </div>
       ) : (
-        <div className="overflow-hidden rounded-xl border border-[#e8ecf0] bg-white shadow-[0_1px_3px_rgba(0,0,0,.04)]">
+        <div className="overflow-hidden brutal bg-white">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-[#f1f5f9] bg-[#f8fafc]">
+                <tr className="border-b border-[#0a0a0a]/10 bg-[#F1ECDB]">
                   <TH>업체명</TH>
                   <TH>유형</TH>
                   <TH>상태</TH>

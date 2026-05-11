@@ -48,7 +48,7 @@ export default function ContentPoolTabs({ active }: Props) {
   }, [router, pathname, searchParams]);
 
   return (
-    <div className="flex items-center gap-1 rounded-xl border border-[#e8ecf0] bg-white p-1 shadow-[0_1px_3px_rgba(0,0,0,.04)]">
+    <div className="flex items-center gap-1 brutal bg-white">
       {TABS.map(({ key, icon }) => {
         const isActive = active === key;
         return (

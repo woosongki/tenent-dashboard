@@ -17,7 +17,7 @@ export function ChannelTable({ rows, basePath }: ChannelTableProps) {
   }
 
   return (
-    <div className="overflow-x-auto rounded-xl border border-gray-100 bg-white shadow-sm">
+    <div className="overflow-x-auto  border border-gray-100 bg-white shadow-sm">
       <table className="w-full min-w-[600px] text-sm">
         <thead>
           <tr className="border-b border-gray-100 text-left text-xs text-gray-500">
@@ -87,7 +87,7 @@ export function BrandTable({ rows, basePath }: BrandTableProps) {
   }
 
   return (
-    <div className="overflow-x-auto rounded-xl border border-gray-100 bg-white shadow-sm">
+    <div className="overflow-x-auto  border border-gray-100 bg-white shadow-sm">
       <table className="w-full min-w-[520px] text-sm">
         <thead>
           <tr className="border-b border-gray-100 text-left text-xs text-gray-500">
@@ -149,7 +149,7 @@ export function DailyTable({ rows }: DailyTableProps) {
   }
 
   return (
-    <div className="overflow-x-auto rounded-xl border border-gray-100 bg-white shadow-sm">
+    <div className="overflow-x-auto  border border-gray-100 bg-white shadow-sm">
       <table className="w-full min-w-[520px] text-sm">
         <thead>
           <tr className="border-b border-gray-100 text-left text-xs text-gray-500">

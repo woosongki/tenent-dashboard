@@ -6,19 +6,27 @@ interface Props {
   monthly: MonthSummary[];
 }
 
+type Accent = "violet" | "emerald" | "sky" | "amber";
+
+const ACCENT_BG: Record<Accent, string> = {
+  violet:  "bg-violet-500 text-white",
+  emerald: "bg-emerald-400 text-emerald-950",
+  sky:     "bg-cyan-400 text-cyan-950",
+  amber:   "bg-yellow-300 text-[#0a0a0a]",
+};
+
 export default function SalesSummaryCards({ overall, monthly }: Props) {
   if (!overall) return null;
 
-  // 가장 큰 월별 성장 / 가장 작은 월별 성장
   const sortedByGrowth = [...monthly].sort((a, b) => b.revenue_growth - a.revenue_growth);
   const best = sortedByGrowth[0];
   const worst = sortedByGrowth[sortedByGrowth.length - 1];
 
   return (
-    <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+    <div className="grid grid-cols-2 gap-5 lg:grid-cols-4">
       <Card
         accent="violet"
-        label="총 매출 (현재)"
+        label="총 매출"
         value={formatKRWCompact(overall.revenue_current)}
         sub={`전기 ${formatKRWCompact(overall.revenue_prev)}`}
       />
@@ -30,7 +38,7 @@ export default function SalesSummaryCards({ overall, monthly }: Props) {
             ? `${overall.revenue_growth >= 0 ? "▲" : "▼"} ${Math.abs(overall.revenue_growth).toFixed(1)}%`
             : "—"
         }
-        valueClass={(overall.revenue_growth ?? 0) >= 0 ? "text-emerald-600" : "text-rose-500"}
+        valueClass={(overall.revenue_growth ?? 0) >= 0 ? "text-emerald-700" : "text-rose-600"}
         sub="작년 동기 대비"
       />
       <Card
@@ -57,34 +65,28 @@ export default function SalesSummaryCards({ overall, monthly }: Props) {
   );
 }
 
-const ACCENT: Record<string, string> = {
-  violet:  "from-violet-500 to-violet-300",
-  emerald: "from-emerald-500 to-emerald-300",
-  sky:     "from-sky-500 to-sky-300",
-  amber:   "from-amber-500 to-amber-300",
-};
-
 function Card({
-  accent,
-  label,
-  value,
-  sub,
-  valueClass = "text-slate-900",
+  accent, label, value, sub, valueClass = "text-[#0a0a0a]",
 }: {
-  accent: keyof typeof ACCENT;
+  accent: Accent;
   label: string;
   value: string;
   sub?: string;
   valueClass?: string;
 }) {
   return (
-    <div className="relative overflow-hidden rounded-xl border border-[#e8ecf0] bg-white p-4 shadow-[0_1px_3px_rgba(0,0,0,.04)]">
-      <div className={`absolute inset-x-0 top-0 h-[3px] rounded-t-xl bg-gradient-to-r ${ACCENT[accent]}`} />
-      <p className="text-[11px] font-medium text-slate-500">{label}</p>
-      <p className={`mt-2 text-[20px] font-extrabold leading-tight tabular-nums ${valueClass}`}>
+    <div className="brutal bg-white p-5">
+      <div className={`flex items-center justify-between px-3 py-2 border-[2px] border-[#0a0a0a] ${ACCENT_BG[accent]}`}>
+        <span className="text-[10px] font-extrabold uppercase tracking-[.16em]">{label}</span>
+      </div>
+      <p className={`mt-4 font-mono text-[28px] font-extrabold leading-tight tabular-nums tracking-tight ${valueClass}`}>
         {value}
       </p>
-      {sub && <p className="mt-1 text-[10px] text-slate-400 tabular-nums">{sub}</p>}
+      {sub && (
+        <p className="mt-1.5 text-[11px] font-medium text-[#0a0a0a]/60 tabular-nums leading-tight">
+          {sub}
+        </p>
+      )}
     </div>
   );
 }

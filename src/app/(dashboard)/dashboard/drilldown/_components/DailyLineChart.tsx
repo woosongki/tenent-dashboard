@@ -58,7 +58,7 @@ export default function DailyLineChart({ data }: Props) {
   };
 
   return (
-    <div className="rounded-xl border border-gray-100 bg-white px-3 py-4 shadow-sm sm:px-6 sm:py-5">
+    <div className=" border border-gray-100 bg-white px-3 py-4 shadow-sm sm:px-6 sm:py-5">
       <div className="mb-3 flex flex-wrap items-center justify-between gap-2 sm:mb-4 sm:gap-3">
         <p className="text-sm font-medium text-gray-700">일별 추이</p>
         <div className="flex flex-wrap gap-1">

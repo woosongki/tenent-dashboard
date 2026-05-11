@@ -87,10 +87,10 @@ function FilterChip({
     <Link
       href={href}
       scroll={false}
-      className={`text-[12px] px-3 py-1.5 rounded-full border transition-colors ${
+      className={`inline-flex items-center text-[11px] font-extrabold uppercase tracking-wider px-3 py-1.5 border-[2px] transition-all ${
         active
-          ? "bg-slate-900 text-white border-slate-900"
-          : "bg-white border-[#e8ecf0] text-slate-700 hover:bg-slate-50"
+          ? "bg-[#0a0a0a] text-white border-[#0a0a0a] shadow-[3px_3px_0_0_#0a0a0a]"
+          : "bg-white text-[#0a0a0a] border-[#0a0a0a] hover:bg-yellow-300"
       }`}
     >
       {children}

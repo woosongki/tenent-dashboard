@@ -23,8 +23,8 @@ export default async function PendingApprovalPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#f4f6f9] px-6">
-      <div className="w-full max-w-md rounded-2xl border border-[#e8ecf0] bg-white p-8 shadow-[0_4px_20px_rgba(0,0,0,.04)]">
-        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-violet-600 to-indigo-500 text-[18px] font-black text-white shadow-[0_6px_18px_rgba(124,58,237,0.3)]">
+      <div className="w-full max-w-md  border-[2px] border-[#0a0a0a] bg-white p-8 shadow-[0_4px_20px_rgba(0,0,0,.04)]">
+        <div className="flex h-12 w-12 items-center justify-center  bg-gradient-to-br from-violet-600 to-indigo-500 text-[18px] font-black text-white shadow-[0_6px_18px_rgba(124,58,237,0.3)]">
           G
         </div>
         <h1 className="mt-5 text-[20px] font-extrabold tracking-tight text-slate-900">

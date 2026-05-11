@@ -83,3 +83,40 @@ body {
   outline: 3px solid var(--accent-yellow);
   outline-offset: 2px;
 }
+
+/*
+  ━━ MONO 모드 (임원 보고용 톤다운) ━━
+  body에 .mono 클래스가 붙으면 형광 액센트를 paper-soft/yellow-light로 강제 치환.
+  - 헤드라인/그림자/테두리는 그대로 유지 (brutalist 구조는 보존)
+  - 채도 낮은 흑백 + soft yellow accent
+*/
+.mono .chip-teal,
+.mono .chip-magenta,
+.mono .chip-violet,
+.mono .bg-cyan-400,
+.mono .bg-fuchsia-500,
+.mono .bg-violet-500,
+.mono .bg-violet-600 {
+  background: var(--paper-soft) !important;
+  color: var(--ink) !important;
+}
+.mono .chip-yellow,
+.mono .bg-yellow-300 {
+  background: #FEF3C7 !important; /* yellow-100 톤 */
+  color: var(--ink) !important;
+}
+/* trend 칩(KPI) — 형광은 죽이고 emerald/rose만 보존 */
+.mono .bg-emerald-400 { background: #D1FAE5 !important; color: #065f46 !important; }
+.mono .bg-rose-500    { background: #FECDD3 !important; color: #9f1239 !important; }
+.mono .bg-amber-300,
+.mono .bg-amber-400   { background: #FEF3C7 !important; color: #78350f !important; }
+
+/* 사이드바 active 노란 highlight를 더 부드럽게 */
+.mono [class*="bg-yellow-300"] { background: #FEF3C7 !important; }
+
+/* 상단 KPI 액센트 블록 안 글자도 ink로 통일 */
+.mono .chip-magenta,
+.mono .bg-fuchsia-500,
+.mono .bg-violet-500 {
+  color: var(--ink) !important;
+}

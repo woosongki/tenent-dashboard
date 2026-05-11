@@ -62,7 +62,7 @@ export default function FloorplansBrowser({
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder="지점명·브랜드·지역 검색 (예: 강남, NC, 서울)"
-            className="w-full rounded-lg border border-[#e8ecf0] bg-white pl-9 pr-9 py-2 text-sm placeholder-slate-400 shadow-[0_1px_2px_rgba(15,23,42,.04)] focus:border-violet-400 focus:outline-none focus:ring-2 focus:ring-violet-100"
+            className="w-full rounded-lg border-[2px] border-[#0a0a0a] bg-white pl-9 pr-9 py-2 text-sm placeholder-slate-400 shadow-[0_1px_2px_rgba(15,23,42,.04)] focus:border-violet-400 focus:outline-none focus:ring-2 focus:ring-violet-100"
           />
           {q && (
             <button
@@ -91,7 +91,7 @@ export default function FloorplansBrowser({
 
       {/* ── 브랜드별 섹션 ── */}
       {filtered.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-slate-200 bg-white p-12 text-center">
+        <div className=" border border-dashed border-slate-200 bg-white p-12 text-center">
           <p className="text-sm text-slate-500">
             검색어 <span className="font-medium text-slate-700">&quot;{q}&quot;</span>에 해당하는 점포가 없습니다.
           </p>
@@ -106,7 +106,7 @@ export default function FloorplansBrowser({
 
           return (
             <section key={brand} className="space-y-3">
-              <div className="flex items-center gap-2 border-b border-[#f1f5f9] pb-2">
+              <div className="flex items-center gap-2 border-b border-[#0a0a0a]/10 pb-2">
                 <span
                   className="inline-block h-2.5 w-2.5 rounded-sm"
                   style={{ backgroundColor: c?.hex ?? "#94a3b8" }}

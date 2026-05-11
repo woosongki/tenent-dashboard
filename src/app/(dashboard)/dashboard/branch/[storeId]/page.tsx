@@ -307,7 +307,7 @@ export default async function StoreDetailPage({
                 <div className="overflow-x-auto -mx-5 px-5">
                   <table className="min-w-[640px] w-full text-[13px]">
                     <thead className="text-[11px] tracking-tight text-slate-500">
-                      <tr className="border-b border-[#f1f5f9] bg-[#f8fafc]">
+                      <tr className="border-b border-[#0a0a0a]/10 bg-[#F1ECDB]">
                         <th className="text-left py-2 px-3 font-medium tracking-tight">건물명</th>
                         <th className="text-left py-2 px-3 font-medium tracking-tight">동</th>
                         <th className="text-right py-2 px-3 font-medium tracking-tight">면적</th>
@@ -318,7 +318,7 @@ export default async function StoreDetailPage({
                     </thead>
                     <tbody>
                       {trade.items.slice(0, 30).map((item, i) => (
-                        <tr key={i} className="border-b border-[#f8fafc]">
+                        <tr key={i} className="border-b border-[#0a0a0a]/10">
                           <td className="py-2 px-3 text-slate-900">{item.name || "-"}</td>
                           <td className="py-2 px-3 text-slate-500">{item.district}</td>
                           <td className="py-2 px-3 text-right tabular-nums text-slate-700">
@@ -369,10 +369,8 @@ function Section({
   className?: string;
 }) {
   return (
-    <section
-      className={`rounded-xl border border-[#e8ecf0] bg-white p-5 shadow-[0_1px_3px_rgba(0,0,0,.04)] ${className}`}
-    >
-      <h2 className="text-[11px] font-semibold tracking-tight text-slate-500 mb-3">
+    <section className={`brutal bg-white p-5 ${className}`}>
+      <h2 className="text-[11px] font-extrabold uppercase tracking-[.14em] text-[#0a0a0a] mb-4 inline-block border-[2px] border-[#0a0a0a] bg-yellow-300 px-2 py-0.5">
         {title}
       </h2>
       {children}
@@ -382,9 +380,9 @@ function Section({
 
 function Stat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-lg bg-slate-50 px-4 py-3">
-      <p className="text-[11px] tracking-tight text-slate-500">{label}</p>
-      <p className="mt-1 text-[18px] font-bold tabular-nums text-slate-900">{value}</p>
+    <div className="border-[2px] border-[#0a0a0a] bg-white px-4 py-3 shadow-[3px_3px_0_0_#0a0a0a]">
+      <p className="text-[10px] font-extrabold uppercase tracking-[.14em] text-[#0a0a0a]/65">{label}</p>
+      <p className="mt-1.5 font-mono text-[20px] font-extrabold tabular-nums text-[#0a0a0a]">{value}</p>
     </div>
   );
 }
@@ -409,22 +407,22 @@ function CompareStat({
   const isNegative = inverse ? delta > 0 : delta < 0;
   const sign = delta > 0 ? "+" : "";
   return (
-    <div className="rounded-lg bg-slate-50 px-4 py-3">
-      <p className="text-[11px] tracking-tight text-slate-500">{label}</p>
-      <p className="mt-1 text-[18px] font-bold tabular-nums text-slate-900">
+    <div className="border-[2px] border-[#0a0a0a] bg-white px-4 py-3 shadow-[3px_3px_0_0_#0a0a0a]">
+      <p className="text-[10px] font-extrabold uppercase tracking-[.14em] text-[#0a0a0a]/65">{label}</p>
+      <p className="mt-1.5 font-mono text-[20px] font-extrabold tabular-nums text-[#0a0a0a]">
         {myValue}
-        <span className="text-[11px] font-normal text-slate-500 ml-0.5">{unit}</span>
+        <span className="text-[11px] font-bold text-[#0a0a0a]/50 ml-0.5 font-sans">{unit}</span>
       </p>
-      <p className="mt-0.5 text-[10px] text-slate-500">
+      <p className="mt-1 text-[10px] font-medium text-[#0a0a0a]/65">
         평균 {cohortValue}
         {unit}{" "}
         <span
           className={
             isPositive
-              ? "text-emerald-600 font-medium"
+              ? "text-emerald-700 font-extrabold"
               : isNegative
-              ? "text-rose-600 font-medium"
-              : "text-slate-400"
+              ? "text-rose-700 font-extrabold"
+              : "text-[#0a0a0a]/40 font-bold"
           }
         >
           ({sign}

@@ -106,7 +106,7 @@ export default function TopBar({ crumbs, action, lastUpdated, onOpenSidebar }: P
           className="relative flex h-8 w-8 items-center justify-center border-[2px] border-[#0a0a0a] bg-white text-[#0a0a0a] transition-colors hover:bg-yellow-300"
         >
           <IconBell />
-          <span className="absolute -top-1 -right-1 h-2.5 w-2.5 border border-[#0a0a0a] bg-fuchsia-500" />
+          <span className="absolute -top-1 -right-1 h-2.5 w-2.5 border-[2px] border-[#0a0a0a] bg-fuchsia-500" />
         </button>
       </div>
     </div>

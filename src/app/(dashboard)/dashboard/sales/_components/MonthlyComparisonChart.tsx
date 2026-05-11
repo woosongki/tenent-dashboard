@@ -36,7 +36,7 @@ interface ChartPoint {
 export default function MonthlyComparisonChart({ monthly }: Props) {
   if (monthly.length === 0) {
     return (
-      <div className="rounded-xl border border-[#e8ecf0] bg-white p-6 text-center text-[12px] text-slate-400">
+      <div className=" border-[2px] border-[#0a0a0a] bg-white p-6 text-center text-[12px] text-slate-400">
         월별 데이터 없음
       </div>
     );
@@ -52,7 +52,7 @@ export default function MonthlyComparisonChart({ monthly }: Props) {
   }));
 
   return (
-    <div className="rounded-xl border border-[#e8ecf0] bg-white p-5 shadow-[0_1px_3px_rgba(0,0,0,.04)]">
+    <div className="brutal bg-white">
       <h3 className="text-[14px] font-bold text-slate-800 mb-3">월별 매출 비교 (작년 vs 올해)</h3>
       <div className="h-[280px] w-full min-w-0">
         <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>

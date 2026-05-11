@@ -31,9 +31,9 @@ export default function StoreFloorplansCard({ store, brandColor, initialFloors }
   }
 
   return (
-    <div className="flex flex-col rounded-xl border border-[#e8ecf0] bg-white shadow-[0_1px_3px_rgba(0,0,0,.04)]">
+    <div className="flex flex-col brutal bg-white">
       {/* 헤더 */}
-      <div className="flex items-start justify-between gap-3 border-b border-[#f1f5f9] px-4 py-3">
+      <div className="flex items-start justify-between gap-3 border-b border-[#0a0a0a]/10 px-4 py-3">
         <div className="min-w-0 flex-1">
           <div className="flex items-baseline gap-2">
             <span
@@ -83,7 +83,7 @@ export default function StoreFloorplansCard({ store, brandColor, initialFloors }
       </div>
 
       {/* storeId 표시 */}
-      <div className="border-t border-[#f1f5f9] px-3 py-1.5 text-right">
+      <div className="border-t border-[#0a0a0a]/10 px-3 py-1.5 text-right">
         <code className="text-[9px] font-mono text-slate-300">{store.id}</code>
       </div>
 
@@ -150,7 +150,7 @@ function FloorTile({
     <button
       type="button"
       onClick={onClick}
-      className="group relative flex aspect-[4/3] w-full overflow-hidden rounded-lg border border-[#e8ecf0] bg-slate-50 transition-all hover:border-violet-300 hover:shadow-md"
+      className="group relative flex aspect-[4/3] w-full overflow-hidden rounded-lg border-[2px] border-[#0a0a0a] bg-slate-50 transition-all hover:border-violet-300 hover:shadow-md"
     >
       {isPdf ? (
         <div className="flex h-full w-full flex-col items-center justify-center gap-1 bg-rose-50/50">
@@ -242,8 +242,8 @@ function UploadModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4" onClick={onClose}>
-      <div className="w-full max-w-md max-h-[90vh] overflow-y-auto rounded-2xl bg-white shadow-xl" onClick={(e) => e.stopPropagation()}>
-        <div className="flex items-center justify-between border-b border-[#e8ecf0] px-6 py-4 sticky top-0 bg-white z-10">
+      <div className="w-full max-w-md max-h-[90vh] overflow-y-auto  bg-white shadow-xl" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between border-b border-[#0a0a0a] px-6 py-4 sticky top-0 bg-white z-10">
           <div>
             <h2 className="text-sm font-semibold text-slate-800">도면 추가</h2>
             <p className="text-[11px] text-slate-400 mt-0.5">{storeName}</p>
@@ -264,7 +264,7 @@ function UploadModal({
               value={floorLabel}
               onChange={(e) => setFloorLabel(e.target.value)}
               placeholder="예: B1, 1F, 2F, RF"
-              className="w-full rounded-lg border border-[#e8ecf0] px-3 py-2 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-violet-400"
+              className="w-full rounded-lg border-[2px] border-[#0a0a0a] px-3 py-2 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-violet-400"
               autoFocus
             />
             <div className="mt-2 flex flex-wrap gap-1">
@@ -332,7 +332,7 @@ function UploadModal({
           {error && <p className="text-xs text-rose-500">{error}</p>}
 
           <div className="flex justify-end gap-2 pt-1">
-            <button type="button" onClick={onClose} className="rounded-lg border border-[#e8ecf0] px-4 py-2 text-sm text-slate-600 hover:bg-slate-50">취소</button>
+            <button type="button" onClick={onClose} className="rounded-lg border-[2px] border-[#0a0a0a] px-4 py-2 text-sm text-slate-600 hover:bg-slate-50">취소</button>
             <button type="submit" disabled={pending || !file || !floorLabel.trim()} className="flex items-center gap-2 rounded-lg bg-violet-600 px-4 py-2 text-sm font-medium text-white hover:bg-violet-700 disabled:opacity-50">
               {pending && (
                 <svg className="h-3.5 w-3.5 animate-spin" viewBox="0 0 24 24" fill="none">
@@ -371,8 +371,8 @@ function ViewerModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4" onClick={onClose}>
-      <div className="w-full max-w-5xl max-h-[95vh] overflow-hidden rounded-xl bg-white shadow-2xl flex flex-col" onClick={(e) => e.stopPropagation()}>
-        <div className="flex items-center justify-between border-b border-[#e8ecf0] px-5 py-3 bg-white">
+      <div className="w-full max-w-5xl max-h-[95vh] overflow-hidden  bg-white shadow-2xl flex flex-col" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between border-b border-[#0a0a0a] px-5 py-3 bg-white">
           <div>
             <p className="text-[11px] text-slate-400">{storeName}</p>
             <h2 className="text-sm font-bold text-slate-800">
@@ -385,7 +385,7 @@ function ViewerModal({
               href={floor.public_url}
               target="_blank"
               rel="noreferrer"
-              className="rounded-lg border border-[#e8ecf0] px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50"
+              className="rounded-lg border-[2px] border-[#0a0a0a] px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50"
             >
               원본 다운로드
             </a>

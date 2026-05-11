@@ -12,11 +12,11 @@ export default function AuthForm() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4">
-      <div className="w-full max-w-sm space-y-6 rounded-2xl bg-white p-8 shadow-sm ring-1 ring-gray-200">
+      <div className="w-full max-w-sm space-y-6  bg-white p-8 shadow-sm ring-1 ring-gray-200">
 
         {/* Logo / Title */}
         <div className="text-center">
-          <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-600">
+          <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center  bg-indigo-600">
             <span className="text-lg font-bold text-white">G</span>
           </div>
           <h1 className="text-xl font-semibold text-gray-900">

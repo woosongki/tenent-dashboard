@@ -98,7 +98,7 @@ export default function CalendarBoard({ weeks, matches, contacts, assignments, c
           value={q}
           onChange={(e) => setQ(e.target.value)}
           placeholder="컨셉·팝업·이벤트 검색"
-          className="ml-auto h-8 w-64 rounded-lg border border-[#e8ecf0] bg-white px-3 text-[12px] placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500/40"
+          className="ml-auto h-9 w-64 border-[2px] border-[#0a0a0a] bg-white px-3 text-[12px] font-medium placeholder:text-[#0a0a0a]/40 shadow-[3px_3px_0_0_#0a0a0a] focus:outline-none focus:translate-x-[-1px] focus:translate-y-[-1px] focus:shadow-[4px_4px_0_0_#0a0a0a] transition-all"
         />
       </div>
 
@@ -109,8 +109,8 @@ export default function CalendarBoard({ weeks, matches, contacts, assignments, c
         const head = ws[0];
         const sty = getSeasonStyle(head.season);
         return (
-          <section key={mo} className="rounded-xl border border-[#e8ecf0] bg-white p-4 shadow-[0_1px_3px_rgba(0,0,0,.04)]">
-            <header className="flex flex-wrap items-center gap-3 pb-2 mb-3 border-b border-[#f1f5f9]">
+          <section key={mo} className="brutal bg-white p-5">
+            <header className="flex flex-wrap items-center gap-3 pb-2 mb-3 border-b border-[#0a0a0a]/10">
               <h2 className="text-[18px] font-extrabold tracking-tight text-slate-900">{mo}</h2>
               <span
                 className="inline-block px-2 py-0.5 text-[11px] font-semibold rounded-full"
@@ -142,8 +142,8 @@ export default function CalendarBoard({ weeks, matches, contacts, assignments, c
       })}
 
       {filtered.length === 0 && (
-        <div className="rounded-xl bg-white py-16 text-center border border-[#e8ecf0]">
-          <p className="text-sm text-slate-400">조건에 맞는 주차가 없습니다.</p>
+        <div className="brutal bg-white py-16 text-center">
+          <p className="text-[14px] font-extrabold uppercase tracking-wider text-[#0a0a0a]/60">조건에 맞는 주차가 없습니다</p>
         </div>
       )}
 
@@ -179,9 +179,9 @@ function WeekCard({
   const ic = INTENSITY_COLOR[week.intensity];
   const pinnedNos = useMemo(() => new Set(pins.map((p) => p.assignment.contactNo)), [pins]);
   return (
-    <div className="rounded-lg border border-[#e8ecf0] bg-white overflow-hidden hover:border-violet-300 hover:shadow-[0_4px_12px_rgba(124,58,237,.06)] transition-all">
+    <div className="brutal-sm brutal-hover bg-white overflow-hidden">
       {/* 헤더 */}
-      <div className="px-3 py-2.5 border-b border-[#f1f5f9]">
+      <div className="px-3 py-2.5 border-b border-[#0a0a0a]/10">
         <div className="flex items-center gap-1.5 mb-1">
           <span className="text-[10px] font-semibold text-slate-400">{week.month} {week.weekNo}주</span>
           <span className={`inline-block w-1.5 h-1.5 rounded-full ${ic.dot}`} />
@@ -372,7 +372,7 @@ function WeekEditModal({ week, onClose }: { week: CalendarWeek; onClose: () => v
   return (
     <div className="fixed inset-0 z-40 flex items-start justify-center p-4 sm:p-8 bg-black/40" onClick={onClose}>
       <div
-        className="w-full max-w-2xl rounded-2xl bg-white shadow-2xl border border-slate-200 overflow-hidden"
+        className="w-full max-w-2xl brutal-lg bg-white overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         {/* 헤더 */}
@@ -486,7 +486,7 @@ function WeekEditModal({ week, onClose }: { week: CalendarWeek; onClose: () => v
             type="button"
             onClick={onClose}
             disabled={pending}
-            className="text-[13px] px-4 py-2 rounded-lg border border-slate-200 text-slate-700 hover:bg-white"
+            className="text-[12px] font-extrabold uppercase tracking-wider px-4 py-2 border-[2px] border-[#0a0a0a] bg-white text-[#0a0a0a] hover:bg-yellow-300 transition-colors"
           >
             취소
           </button>
@@ -494,7 +494,7 @@ function WeekEditModal({ week, onClose }: { week: CalendarWeek; onClose: () => v
             type="button"
             onClick={onSave}
             disabled={pending}
-            className="text-[13px] px-4 py-2 rounded-lg bg-slate-900 text-white hover:bg-slate-700 disabled:opacity-50"
+            className="text-[12px] font-extrabold uppercase tracking-wider px-4 py-2 border-[2px] border-[#0a0a0a] bg-[#0a0a0a] text-white shadow-[3px_3px_0_0_#0a0a0a] hover:translate-x-[-1px] hover:translate-y-[-1px] hover:shadow-[4px_4px_0_0_#0a0a0a] disabled:opacity-50 transition-all"
           >
             {pending ? "저장 중..." : "저장"}
           </button>
@@ -505,7 +505,7 @@ function WeekEditModal({ week, onClose }: { week: CalendarWeek; onClose: () => v
 }
 
 const inputCls =
-  "w-full rounded-lg border border-slate-200 px-3 py-2 text-[13px] focus:outline-none focus:ring-2 focus:ring-violet-500/40";
+  "w-full border-[2px] border-[#0a0a0a] bg-white px-3 py-2 text-[13px] shadow-[2px_2px_0_0_#0a0a0a] focus:outline-none focus:translate-x-[-1px] focus:translate-y-[-1px] focus:shadow-[3px_3px_0_0_#0a0a0a] transition-all";
 
 function Field({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) {
   return (
@@ -616,7 +616,7 @@ function AddContactPicker({
         + 컨텍판 추가
       </button>
       {open && (
-        <div className="absolute left-0 top-full mt-1 z-30 w-64 rounded-lg border border-slate-200 bg-white shadow-lg p-2">
+        <div className="absolute left-0 top-full mt-1 z-30 w-64 brutal bg-white p-2">
           <input
             autoFocus
             type="search"
@@ -635,7 +635,7 @@ function AddContactPicker({
                     type="button"
                     onClick={() => onPick(c)}
                     disabled={pending}
-                    className="w-full text-left px-2 py-1 rounded text-[11px] hover:bg-slate-50 disabled:opacity-50"
+                    className="w-full text-left px-2 py-1.5 border-l-[3px] border-transparent text-[11px] hover:bg-yellow-300 hover:border-[#0a0a0a] disabled:opacity-50 transition-colors"
                   >
                     <div className="flex items-center justify-between gap-2">
                       <span className="font-medium text-slate-800 truncate">{c.brand}</span>
@@ -685,8 +685,8 @@ function Chip({
       onClick={onClick}
       className={`text-[12px] px-3 py-1.5 rounded-full border transition-colors inline-flex items-center ${
         active
-          ? "bg-slate-900 text-white border-slate-900"
-          : "bg-white border-[#e8ecf0] text-slate-700 hover:bg-slate-50"
+          ? "bg-[#0a0a0a] text-white border-[#0a0a0a] shadow-[2px_2px_0_0_#0a0a0a]"
+          : "bg-white border-[#0a0a0a] text-[#0a0a0a] hover:bg-yellow-300"
       }`}
     >
       {children}

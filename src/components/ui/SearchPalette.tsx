@@ -195,11 +195,11 @@ export default function SearchPalette({ open, onClose }: Props) {
 
       {/* 팔레트 */}
       <div
-        className="relative w-full max-w-lg overflow-hidden rounded-2xl border border-[#e8ecf0] bg-white shadow-2xl"
+        className="relative w-full max-w-lg overflow-hidden  border-[2px] border-[#0a0a0a] bg-white shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         {/* 검색 입력 */}
-        <div className="flex items-center gap-3 border-b border-[#f1f5f9] px-4 py-3.5">
+        <div className="flex items-center gap-3 border-b border-[#0a0a0a]/10 px-4 py-3.5">
           <svg className="h-4 w-4 shrink-0 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
           </svg>
@@ -218,7 +218,7 @@ export default function SearchPalette({ open, onClose }: Props) {
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
             </svg>
           )}
-          <kbd className="hidden shrink-0 rounded border border-[#e8ecf0] px-1.5 py-0.5 text-[10px] font-medium text-slate-400 sm:inline">
+          <kbd className="hidden shrink-0 rounded border-[2px] border-[#0a0a0a] px-1.5 py-0.5 text-[10px] font-medium text-slate-400 sm:inline">
             ESC
           </kbd>
         </div>
@@ -265,17 +265,17 @@ export default function SearchPalette({ open, onClose }: Props) {
         </div>
 
         {/* 푸터 힌트 */}
-        <div className="flex items-center gap-3 border-t border-[#f1f5f9] px-4 py-2.5">
+        <div className="flex items-center gap-3 border-t border-[#0a0a0a]/10 px-4 py-2.5">
           <span className="flex items-center gap-1 text-[10px] text-slate-300">
-            <kbd className="rounded border border-[#e8ecf0] px-1 py-0.5 font-mono text-[9px]">↑↓</kbd>
+            <kbd className="rounded border-[2px] border-[#0a0a0a] px-1 py-0.5 font-mono text-[9px]">↑↓</kbd>
             탐색
           </span>
           <span className="flex items-center gap-1 text-[10px] text-slate-300">
-            <kbd className="rounded border border-[#e8ecf0] px-1 py-0.5 font-mono text-[9px]">Enter</kbd>
+            <kbd className="rounded border-[2px] border-[#0a0a0a] px-1 py-0.5 font-mono text-[9px]">Enter</kbd>
             이동
           </span>
           <span className="flex items-center gap-1 text-[10px] text-slate-300">
-            <kbd className="rounded border border-[#e8ecf0] px-1 py-0.5 font-mono text-[9px]">Esc</kbd>
+            <kbd className="rounded border-[2px] border-[#0a0a0a] px-1 py-0.5 font-mono text-[9px]">Esc</kbd>
             닫기
           </span>
         </div>

@@ -82,7 +82,7 @@ export default function NotionSyncButton({
       onClick={trigger}
       disabled={pending}
       title="노션에서 최신 데이터 가져오기"
-      className="flex h-8 items-center gap-1.5 rounded-lg border border-[#e8ecf0] bg-white px-3 text-xs font-medium text-slate-600 hover:bg-slate-50 hover:border-violet-300 hover:text-violet-700 disabled:opacity-50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400"
+      className="flex h-8 items-center gap-1.5 rounded-lg border-[2px] border-[#0a0a0a] bg-white px-3 text-xs font-medium text-slate-600 hover:bg-slate-50 hover:border-violet-300 hover:text-violet-700 disabled:opacity-50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400"
     >
       {Icon}
       {pending ? "동기화 중..." : "노션 동기화"}

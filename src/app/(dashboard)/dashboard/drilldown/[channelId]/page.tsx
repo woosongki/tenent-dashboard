@@ -90,16 +90,16 @@ async function BrandContent({
 function ContentSkeleton() {
   return (
     <div className="space-y-4 animate-pulse">
-      <div className="h-[312px] rounded-xl border border-gray-100 bg-white shadow-sm" />
+      <div className="h-[312px]  border border-gray-100 bg-white shadow-sm" />
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-3 lg:grid-cols-7">
         {Array.from({ length: 7 }).map((_, i) => (
-          <div key={i} className="h-16 rounded-xl bg-white border border-gray-100 shadow-sm" />
+          <div key={i} className="h-16  bg-white border border-gray-100 shadow-sm" />
         ))}
       </div>
       <div className="flex justify-end">
         <div className="h-8 w-32 rounded-lg bg-gray-100" />
       </div>
-      <div className="rounded-xl border border-gray-100 bg-white shadow-sm overflow-hidden">
+      <div className=" border border-gray-100 bg-white shadow-sm overflow-hidden">
         {Array.from({ length: 4 }).map((_, i) => (
           <div key={i} className="flex gap-8 border-b border-gray-50 px-4 py-3.5 last:border-0">
             <div className="h-4 w-28 rounded bg-gray-100" />
@@ -168,7 +168,7 @@ export default async function ChannelPage({
         </div>
 
         {!orgId ? (
-          <div className="rounded-xl bg-white py-16 text-center border border-gray-100 shadow-sm">
+          <div className=" bg-white py-16 text-center border border-gray-100 shadow-sm">
             <p className="text-sm text-gray-400">소속 조직이 없습니다.</p>
           </div>
         ) : (

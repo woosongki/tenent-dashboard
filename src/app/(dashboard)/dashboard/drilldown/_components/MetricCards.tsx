@@ -37,7 +37,7 @@ export default function MetricCards({
   return (
     <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-3 lg:grid-cols-7">
       {metrics.map((m) => (
-        <div key={m.label} className="rounded-xl border border-gray-100 bg-white px-3 py-2.5 shadow-sm sm:px-4 sm:py-3">
+        <div key={m.label} className=" border border-gray-100 bg-white px-3 py-2.5 shadow-sm sm:px-4 sm:py-3">
           <p className="text-xs text-gray-500">{m.label}</p>
           <p className="mt-1 text-sm font-semibold text-gray-900 leading-tight sm:text-base lg:text-lg tabular-nums">
             {m.value}

@@ -34,8 +34,8 @@ function GoalsTableSkeleton() {
         <div className="h-8 w-32 rounded-lg bg-slate-100" />
         <div className="h-8 w-28 rounded-lg bg-slate-100" />
       </div>
-      <div className="overflow-hidden rounded-xl border border-[#e8ecf0] bg-white shadow-[0_1px_3px_rgba(0,0,0,.04)]">
-        <div className="border-b border-[#f1f5f9] bg-[#f8fafc] px-4 py-3">
+      <div className="overflow-hidden brutal bg-white">
+        <div className="border-b border-[#0a0a0a]/10 bg-[#F1ECDB] px-4 py-3">
           <div className="flex gap-6">
             {Array.from({ length: 7 }).map((_, i) => (
               <div key={i} className="h-3 w-16 rounded bg-slate-100" />
@@ -43,7 +43,7 @@ function GoalsTableSkeleton() {
           </div>
         </div>
         {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="flex gap-6 border-b border-[#f8fafc] px-4 py-3.5 last:border-0">
+          <div key={i} className="flex gap-6 border-b border-[#0a0a0a]/10 px-4 py-3.5 last:border-0">
             <div className="h-4 w-32 rounded bg-slate-100" />
             <div className="h-4 w-14 rounded-full bg-slate-100" />
             <div className="h-4 w-16 rounded bg-slate-100" />

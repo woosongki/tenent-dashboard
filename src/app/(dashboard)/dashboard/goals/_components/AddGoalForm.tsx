@@ -74,9 +74,9 @@ export default function AddGoalForm({ organizationId, poolType }: Props) {
           className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 p-4 sm:items-center"
           onClick={(e) => e.target === e.currentTarget && setOpen(false)}
         >
-          <div className="w-full max-w-lg rounded-2xl bg-white shadow-xl">
+          <div className="w-full max-w-lg  bg-white shadow-xl">
             {/* 헤더 */}
-            <div className="flex items-center justify-between border-b border-[#e8ecf0] px-6 py-4">
+            <div className="flex items-center justify-between border-b border-[#0a0a0a] px-6 py-4">
               <h2 className="text-base font-semibold text-slate-900">
                 {POOL_TYPE_LABELS[poolType]} 항목 추가
               </h2>
@@ -158,7 +158,7 @@ export default function AddGoalForm({ organizationId, poolType }: Props) {
                 <button
                   type="button"
                   onClick={() => setOpen(false)}
-                  className="rounded-lg border border-[#e8ecf0] px-4 py-2 text-sm text-slate-600 hover:bg-slate-50"
+                  className="rounded-lg border-[2px] border-[#0a0a0a] px-4 py-2 text-sm text-slate-600 hover:bg-slate-50"
                 >
                   취소
                 </button>
@@ -179,7 +179,7 @@ export default function AddGoalForm({ organizationId, poolType }: Props) {
 }
 
 const inputCls =
-  "w-full rounded-lg border border-[#e8ecf0] px-3 py-2 text-sm text-slate-800 placeholder-slate-300 focus:border-violet-400 focus:outline-none focus:ring-2 focus:ring-violet-100";
+  "w-full rounded-lg border-[2px] border-[#0a0a0a] px-3 py-2 text-sm text-slate-800 placeholder-slate-300 focus:border-violet-400 focus:outline-none focus:ring-2 focus:ring-violet-100";
 
 function Field({
   label,
