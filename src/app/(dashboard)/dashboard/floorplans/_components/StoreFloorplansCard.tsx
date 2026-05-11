@@ -33,28 +33,28 @@ export default function StoreFloorplansCard({ store, brandColor, initialFloors }
   return (
     <div className="flex flex-col brutal bg-white">
       {/* 헤더 */}
-      <div className="flex items-start justify-between gap-3 border-b border-[#0a0a0a]/10 px-4 py-3">
+      <div className="flex items-start justify-between gap-3 border-b-[2px] border-[#0a0a0a] bg-[#FAF7EC] px-4 py-3">
         <div className="min-w-0 flex-1">
           <div className="flex items-baseline gap-2">
             <span
-              className={`inline-block rounded px-1.5 py-0.5 text-[9px] font-semibold ${
+              className={`inline-block border-[1.5px] border-[#0a0a0a] px-1.5 py-0 text-[9px] font-extrabold uppercase tracking-wider ${
                 brandColor?.bg ?? "bg-slate-50"
               } ${brandColor?.text ?? "text-slate-600"}`}
             >
               {store.brand}
             </span>
-            <h3 className="truncate text-[14px] font-bold text-slate-800">{store.name}</h3>
+            <h3 className="truncate text-[14px] font-extrabold text-[#0a0a0a]">{store.name}</h3>
             {store.hasKimsclub && (
-              <span className="shrink-0 rounded bg-amber-50 px-1.5 py-0.5 text-[9px] font-medium text-amber-700">
+              <span className="shrink-0 border-[1.5px] border-[#0a0a0a] bg-yellow-300 px-1.5 py-0 text-[9px] font-extrabold uppercase tracking-wider text-[#0a0a0a]">
                 킴스클럽
               </span>
             )}
           </div>
-          <p className="mt-0.5 truncate text-[11px] text-slate-500">{store.address}</p>
+          <p className="mt-0.5 truncate text-[11px] font-medium text-[#0a0a0a]/65">{store.address}</p>
         </div>
         <div className="text-right shrink-0">
-          <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">층 도면</p>
-          <p className="text-[14px] font-bold tabular-nums text-slate-700">{floors.length}</p>
+          <p className="text-[10px] font-extrabold uppercase tracking-[.14em] text-[#0a0a0a]/65">층 도면</p>
+          <p className="font-mono text-[18px] font-extrabold tabular-nums text-[#0a0a0a]">{floors.length}</p>
         </div>
       </div>
 
@@ -73,7 +73,7 @@ export default function StoreFloorplansCard({ store, brandColor, initialFloors }
         <button
           type="button"
           onClick={() => setAdding(true)}
-          className="flex aspect-[4/3] flex-col items-center justify-center gap-1 rounded-lg border-2 border-dashed border-slate-200 bg-slate-50/50 text-slate-400 transition-all hover:border-violet-300 hover:bg-violet-50 hover:text-violet-600"
+          className="flex aspect-[4/3] flex-col items-center justify-center gap-1 border-[2px] border-dashed border-[#0a0a0a] bg-white text-[#0a0a0a] transition-all hover:bg-yellow-300"
         >
           <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
@@ -83,8 +83,8 @@ export default function StoreFloorplansCard({ store, brandColor, initialFloors }
       </div>
 
       {/* storeId 표시 */}
-      <div className="border-t border-[#0a0a0a]/10 px-3 py-1.5 text-right">
-        <code className="text-[9px] font-mono text-slate-300">{store.id}</code>
+      <div className="border-t-[2px] border-[#0a0a0a] bg-[#FAF7EC] px-3 py-1.5 text-right">
+        <code className="text-[9px] font-mono text-[#0a0a0a]/40">{store.id}</code>
       </div>
 
       {/* 업로드 모달 */}
@@ -150,10 +150,10 @@ function FloorTile({
     <button
       type="button"
       onClick={onClick}
-      className="group relative flex aspect-[4/3] w-full overflow-hidden rounded-lg border-[2px] border-[#0a0a0a] bg-slate-50 transition-all hover:border-violet-300 hover:shadow-md"
+      className="group relative flex aspect-[4/3] w-full overflow-hidden border-[2px] border-[#0a0a0a] bg-[#FAF7EC] transition-all hover:translate-x-[-1px] hover:translate-y-[-1px] hover:shadow-[3px_3px_0_0_#0a0a0a]"
     >
       {isPdf ? (
-        <div className="flex h-full w-full flex-col items-center justify-center gap-1 bg-rose-50/50">
+        <div className="flex h-full w-full flex-col items-center justify-center gap-1 bg-rose-100">
           <svg className="h-7 w-7 text-rose-500" fill="currentColor" viewBox="0 0 20 20">
             <path d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" />
             <text x="10" y="14" textAnchor="middle" fontSize="6" fontWeight="bold" fill="white">PDF</text>
@@ -169,7 +169,7 @@ function FloorTile({
       )}
 
       {/* 층 라벨 배지 */}
-      <span className="absolute left-1.5 top-1.5 rounded bg-violet-600 px-1.5 py-0.5 text-[10px] font-bold text-white shadow-sm">
+      <span className="absolute left-1.5 top-1.5 border-[1.5px] border-[#0a0a0a] bg-violet-500 px-1.5 py-0 text-[10px] font-extrabold uppercase tracking-wider text-white">
         {floor.floor_label}
       </span>
 
@@ -179,7 +179,7 @@ function FloorTile({
         tabIndex={0}
         onClick={handleDelete}
         onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") handleDelete(e as unknown as React.MouseEvent); }}
-        className="absolute right-1.5 top-1.5 hidden h-5 w-5 items-center justify-center rounded-md bg-rose-500 text-white opacity-0 shadow-sm transition-opacity group-hover:flex group-hover:opacity-100 hover:bg-rose-600"
+        className="absolute right-1.5 top-1.5 hidden h-5 w-5 items-center justify-center border-[1.5px] border-[#0a0a0a] bg-rose-500 text-white opacity-0 transition-opacity group-hover:flex group-hover:opacity-100 hover:bg-rose-600"
         aria-label="삭제"
       >
         <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
@@ -242,13 +242,13 @@ function UploadModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4" onClick={onClose}>
-      <div className="w-full max-w-md max-h-[90vh] overflow-y-auto  bg-white shadow-xl" onClick={(e) => e.stopPropagation()}>
-        <div className="flex items-center justify-between border-b border-[#0a0a0a] px-6 py-4 sticky top-0 bg-white z-10">
+      <div className="w-full max-w-md max-h-[90vh] overflow-y-auto brutal-lg bg-white" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between border-b-[2px] border-[#0a0a0a] bg-[#F1ECDB] px-6 py-4 sticky top-0 z-10">
           <div>
-            <h2 className="text-sm font-semibold text-slate-800">도면 추가</h2>
-            <p className="text-[11px] text-slate-400 mt-0.5">{storeName}</p>
+            <h2 className="font-display text-[18px] leading-none text-[#0a0a0a]">도면 추가</h2>
+            <p className="text-[11px] font-bold uppercase tracking-wider text-[#0a0a0a]/65 mt-1">{storeName}</p>
           </div>
-          <button type="button" onClick={onClose} className="text-slate-300 hover:text-slate-500 rounded-lg p-1">
+          <button type="button" onClick={onClose} className="flex h-8 w-8 items-center justify-center border-[2px] border-[#0a0a0a] bg-white text-[#0a0a0a] hover:bg-yellow-300 transition-colors">
             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
             </svg>
@@ -258,13 +258,13 @@ function UploadModal({
         <form onSubmit={submit} className="px-6 py-5 space-y-4">
           {/* 층 라벨 */}
           <div>
-            <label className="mb-1 block text-xs font-medium text-slate-500">층 라벨 *</label>
+            <label className="mb-1.5 block text-[11px] font-extrabold uppercase tracking-[.12em] text-[#0a0a0a]">층 라벨 *</label>
             <input
               type="text"
               value={floorLabel}
               onChange={(e) => setFloorLabel(e.target.value)}
               placeholder="예: B1, 1F, 2F, RF"
-              className="w-full rounded-lg border-[2px] border-[#0a0a0a] px-3 py-2 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-violet-400"
+              className="w-full border-[2px] border-[#0a0a0a] bg-white px-3 py-2 text-sm text-[#0a0a0a] shadow-[2px_2px_0_0_#0a0a0a] focus:outline-none focus:translate-x-[-1px] focus:translate-y-[-1px] focus:shadow-[3px_3px_0_0_#0a0a0a] transition-all"
               autoFocus
             />
             <div className="mt-2 flex flex-wrap gap-1">
@@ -275,12 +275,12 @@ function UploadModal({
                     key={l}
                     type="button"
                     onClick={() => setFloorLabel(l)}
-                    className={`rounded-full px-2 py-0.5 text-[10px] font-medium transition-colors ${
+                    className={`border-[1.5px] border-[#0a0a0a] px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wider transition-colors ${
                       floorLabel === l
-                        ? "bg-violet-600 text-white"
+                        ? "bg-violet-500 text-white shadow-[1.5px_1.5px_0_0_#0a0a0a]"
                         : exists
-                        ? "bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
-                        : "bg-slate-100 text-slate-500 hover:bg-slate-200"
+                        ? "bg-emerald-200 text-emerald-950 hover:bg-emerald-300"
+                        : "bg-white text-[#0a0a0a] hover:bg-yellow-300"
                     }`}
                     title={exists ? "이미 등록된 층 — 클릭 시 교체" : ""}
                   >
@@ -290,13 +290,13 @@ function UploadModal({
               })}
             </div>
             {floorLabel && existingLabels.includes(floorLabel) && (
-              <p className="mt-1 text-[11px] text-amber-600">⚠ 기존 도면이 교체됩니다</p>
+              <p className="mt-1 text-[11px] font-bold text-amber-700">⚠ 기존 도면이 교체됩니다</p>
             )}
           </div>
 
           {/* 파일 */}
           <div>
-            <label className="mb-1 block text-xs font-medium text-slate-500">도면 파일 *</label>
+            <label className="mb-1.5 block text-[11px] font-extrabold uppercase tracking-[.12em] text-[#0a0a0a]">도면 파일 *</label>
             <input
               ref={fileRef}
               type="file"
@@ -307,15 +307,15 @@ function UploadModal({
             <button
               type="button"
               onClick={() => fileRef.current?.click()}
-              className="flex w-full flex-col items-center justify-center gap-1 rounded-lg border-2 border-dashed border-slate-200 bg-slate-50 px-4 py-6 text-slate-400 transition-all hover:border-violet-300 hover:bg-violet-50 hover:text-violet-600"
+              className="flex w-full flex-col items-center justify-center gap-1 border-[2px] border-dashed border-[#0a0a0a] bg-white px-4 py-6 text-[#0a0a0a]/70 transition-all hover:bg-yellow-300 hover:text-[#0a0a0a]"
             >
               {file ? (
                 <>
                   <svg className="h-5 w-5 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                   </svg>
-                  <p className="text-xs font-medium text-slate-700">{file.name}</p>
-                  <p className="text-[10px] text-slate-400">{Math.round(file.size / 1024)}KB</p>
+                  <p className="text-[12px] font-extrabold text-[#0a0a0a]">{file.name}</p>
+                  <p className="text-[10px] font-mono text-[#0a0a0a]/55">{Math.round(file.size / 1024)}KB</p>
                 </>
               ) : (
                 <>
@@ -323,17 +323,17 @@ function UploadModal({
                     <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
                   </svg>
                   <p className="text-xs font-medium">파일 선택 또는 드래그</p>
-                  <p className="text-[10px] text-slate-300">PNG · JPG · WEBP · SVG · PDF (최대 20MB)</p>
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-[#0a0a0a]/40">PNG · JPG · WEBP · SVG · PDF (최대 20MB)</p>
                 </>
               )}
             </button>
           </div>
 
-          {error && <p className="text-xs text-rose-500">{error}</p>}
+          {error && <p className="text-[11px] font-bold text-rose-600">{error}</p>}
 
           <div className="flex justify-end gap-2 pt-1">
-            <button type="button" onClick={onClose} className="rounded-lg border-[2px] border-[#0a0a0a] px-4 py-2 text-sm text-slate-600 hover:bg-slate-50">취소</button>
-            <button type="submit" disabled={pending || !file || !floorLabel.trim()} className="flex items-center gap-2 rounded-lg bg-violet-600 px-4 py-2 text-sm font-medium text-white hover:bg-violet-700 disabled:opacity-50">
+            <button type="button" onClick={onClose} className="text-[12px] font-extrabold uppercase tracking-wider px-4 py-2 border-[2px] border-[#0a0a0a] bg-white text-[#0a0a0a] hover:bg-yellow-300 transition-colors">취소</button>
+            <button type="submit" disabled={pending || !file || !floorLabel.trim()} className="text-[12px] font-extrabold uppercase tracking-wider px-4 py-2 border-[2px] border-[#0a0a0a] bg-[#0a0a0a] text-white shadow-[3px_3px_0_0_#0a0a0a] hover:translate-x-[-1px] hover:translate-y-[-1px] hover:shadow-[4px_4px_0_0_#0a0a0a] disabled:opacity-50 transition-all flex items-center gap-2">
               {pending && (
                 <svg className="h-3.5 w-3.5 animate-spin" viewBox="0 0 24 24" fill="none">
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
@@ -371,12 +371,12 @@ function ViewerModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4" onClick={onClose}>
-      <div className="w-full max-w-5xl max-h-[95vh] overflow-hidden  bg-white shadow-2xl flex flex-col" onClick={(e) => e.stopPropagation()}>
-        <div className="flex items-center justify-between border-b border-[#0a0a0a] px-5 py-3 bg-white">
+      <div className="w-full max-w-5xl max-h-[95vh] overflow-hidden brutal-lg bg-white flex flex-col" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between border-b-[2px] border-[#0a0a0a] bg-[#F1ECDB] px-5 py-3">
           <div>
             <p className="text-[11px] text-slate-400">{storeName}</p>
-            <h2 className="text-sm font-bold text-slate-800">
-              <span className="rounded bg-violet-100 px-2 py-0.5 text-violet-700 mr-2">{floor.floor_label}</span>
+            <h2 className="font-display text-[16px] leading-none text-[#0a0a0a]">
+              <span className="inline-block border-[1.5px] border-[#0a0a0a] bg-violet-500 px-2 py-0 text-white mr-2 uppercase tracking-wider">{floor.floor_label}</span>
               {Math.round(floor.size_bytes / 1024)}KB
             </h2>
           </div>
@@ -385,18 +385,18 @@ function ViewerModal({
               href={floor.public_url}
               target="_blank"
               rel="noreferrer"
-              className="rounded-lg border-[2px] border-[#0a0a0a] px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50"
+              className="text-[11px] font-extrabold uppercase tracking-wider px-3 py-1.5 border-[2px] border-[#0a0a0a] bg-white text-[#0a0a0a] hover:bg-yellow-300 transition-colors"
             >
               원본 다운로드
             </a>
-            <button onClick={onClose} className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100">
+            <button onClick={onClose} className="flex h-8 w-8 items-center justify-center border-[2px] border-[#0a0a0a] bg-white text-[#0a0a0a] hover:bg-yellow-300 transition-colors">
               <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
           </div>
         </div>
-        <div className="flex-1 overflow-auto bg-slate-50">
+        <div className="flex-1 overflow-auto bg-[#F1ECDB]">
           {isPdf ? (
             <iframe src={floor.public_url} className="h-full w-full min-h-[70vh]" title={floor.floor_label} />
           ) : (
