@@ -15,6 +15,7 @@
  */
 
 import fs from "node:fs/promises";
+import { readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -23,10 +24,24 @@ const ROOT = path.resolve(__dirname, "..");
 const RAW_PATH = path.join(ROOT, "data/stores/stores-raw.json");
 const OUT_PATH = path.join(ROOT, "data/stores/stores.json");
 
+// .env.local 자동 로드
+(function loadEnvLocal() {
+  try {
+    const txt = readFileSync(path.resolve(ROOT, ".env.local"), "utf8");
+    for (const line of txt.split(/\r?\n/)) {
+      const m = line.match(/^([A-Z_][A-Z0-9_]*)=(.*)$/);
+      if (m && !process.env[m[1]]) {
+        process.env[m[1]] = m[2].replace(/^["']|["']$/g, "");
+      }
+    }
+  } catch {}
+})();
+
 const KAKAO_KEY = process.env.KAKAO_REST_API_KEY;
 if (!KAKAO_KEY) {
   console.error("❌ KAKAO_REST_API_KEY 환경변수가 설정되지 않았습니다.");
-  console.error("   https://developers.kakao.com 에서 REST API 키를 발급받아 설정하세요.");
+  console.error("   .env.local 에 'KAKAO_REST_API_KEY=...' 추가 후 다시 실행하세요.");
+  console.error("   https://developers.kakao.com 에서 REST API 키를 발급받을 수 있습니다.");
   process.exit(1);
 }
 

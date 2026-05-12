@@ -18,6 +18,11 @@ import {
   formatPricePerM2,
   CAP_RATE_PERCENT,
 } from "@/lib/localRent";
+import {
+  findNearestHotspot,
+  fetchCongestionByAreaName,
+  CONGEST_BG,
+} from "@/lib/congestion/seoul";
 import KakaoStoreMap from "@/components/maps/KakaoStoreMap";
 
 // 첫 방문 시 동적 렌더 (3개 월 외부 API 호출이라 빌드 시 prerender 비효율)
@@ -59,6 +64,12 @@ export default async function StoreDetailPage({
     storeRegion3: store.region3,
     storeRegion2: store.region2,
   });
+
+  // 서울 핫스팟 매칭 + 실시간 혼잡도
+  const hotspotMatch = findNearestHotspot({ lat: store.lat, lng: store.lng }, 5000);
+  const congestion = hotspotMatch
+    ? await fetchCongestionByAreaName(hotspotMatch.hotspot.name)
+    : null;
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
@@ -157,6 +168,121 @@ export default async function StoreDetailPage({
               </div>
             )}
           </Section>
+
+          {/* 실시간 혼잡도 — 서울 핫스팟 매칭 (서울 점포만) */}
+          {congestion && hotspotMatch && (
+            <Section
+              title={`실시간 혼잡도 (${congestion.areaName})`}
+              className="lg:col-span-3"
+            >
+              <div className="flex items-center gap-2 mb-4 flex-wrap">
+                <span className={`inline-block border-[2px] border-[#0a0a0a] px-3 py-1 text-[13px] font-extrabold uppercase tracking-wider shadow-[2px_2px_0_0_#0a0a0a] ${CONGEST_BG[congestion.congestLvl] ?? "bg-[#F1ECDB] text-[#0a0a0a]"}`}>
+                  {congestion.congestLvl}
+                </span>
+                <span className="inline-block border-[1.5px] border-[#0a0a0a] bg-[#F1ECDB] px-2 py-0 text-[10px] font-extrabold uppercase tracking-wider text-[#0a0a0a]">
+                  {hotspotMatch.hotspot.name} · {Math.round(hotspotMatch.distanceM)}m
+                </span>
+                <span className="font-mono text-[10px] font-bold tabular-nums text-[#0a0a0a]/55">
+                  업데이트 {congestion.ppltnTime}
+                </span>
+              </div>
+
+              <p className="mb-4 text-[12px] font-medium text-[#0a0a0a]/75 leading-relaxed">
+                {congestion.congestMsg}
+              </p>
+
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <Stat
+                  label="현재 인구 (예상)"
+                  value={`${congestion.ppltnMin.toLocaleString()}~${congestion.ppltnMax.toLocaleString()}`}
+                />
+                <Stat
+                  label="남 / 여"
+                  value={`${congestion.maleRate}% / ${congestion.femaleRate}%`}
+                />
+                <Stat
+                  label="상주 / 방문"
+                  value={`${congestion.residentRate}% / ${congestion.nonResidentRate}%`}
+                />
+                <Stat
+                  label="피크 연령"
+                  value={(() => {
+                    const ages = Object.entries(congestion.ageRate);
+                    const top = ages.reduce((a, b) => (b[1] > a[1] ? b : a));
+                    const label = top[0].replace("_over", "+").replace("_", "~");
+                    return `${label}세 (${top[1]}%)`;
+                  })()}
+                />
+              </div>
+
+              {/* 연령 분포 */}
+              <div className="mt-5">
+                <p className="text-[10px] font-extrabold uppercase tracking-[.14em] text-[#0a0a0a]/65 mb-2">
+                  연령 분포
+                </p>
+                <div className="grid grid-cols-4 sm:grid-cols-8 gap-2">
+                  {[
+                    ["0_9",   "0~9"],
+                    ["10_19", "10대"],
+                    ["20_29", "20대"],
+                    ["30_39", "30대"],
+                    ["40_49", "40대"],
+                    ["50_59", "50대"],
+                    ["60_69", "60대"],
+                    ["70_over", "70+"],
+                  ].map(([key, label]) => {
+                    const rate = congestion.ageRate[key as keyof typeof congestion.ageRate];
+                    return (
+                      <div key={key} className="border-[2px] border-[#0a0a0a] bg-white px-2 py-2 shadow-[2px_2px_0_0_#0a0a0a]">
+                        <p className="text-[9px] font-bold uppercase tracking-wider text-[#0a0a0a]/55">{label}</p>
+                        <p className="mt-0.5 font-mono text-[15px] font-extrabold tabular-nums text-[#0a0a0a]">
+                          {rate}<span className="text-[10px] font-sans text-[#0a0a0a]/50">%</span>
+                        </p>
+                        <div className="mt-1 h-1.5 border-[1px] border-[#0a0a0a] bg-white overflow-hidden">
+                          <div className="h-full bg-violet-500" style={{ width: `${Math.min(rate * 5, 100)}%` }} />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* 12시간 예측 */}
+              {congestion.forecasts.length > 0 && (
+                <div className="mt-5">
+                  <p className="text-[10px] font-extrabold uppercase tracking-[.14em] text-[#0a0a0a]/65 mb-2">
+                    12시간 예측
+                  </p>
+                  <div className="overflow-x-auto -mx-1 px-1">
+                    <div className="flex gap-1.5 min-w-max">
+                      {congestion.forecasts.slice(0, 12).map((f, i) => {
+                        const hour = f.fcstTime.slice(11, 16); // HH:mm
+                        const cls = CONGEST_BG[f.fcstCongestLvl] ?? "bg-[#F1ECDB] text-[#0a0a0a]";
+                        return (
+                          <div key={i} className="flex-shrink-0 w-[68px] border-[2px] border-[#0a0a0a] bg-white shadow-[2px_2px_0_0_#0a0a0a]">
+                            <div className={`px-2 py-1 border-b-[1.5px] border-[#0a0a0a] text-[9.5px] font-extrabold uppercase tracking-wider text-center ${cls}`}>
+                              {f.fcstCongestLvl}
+                            </div>
+                            <div className="px-2 py-1.5 text-center">
+                              <p className="font-mono text-[10px] font-extrabold tabular-nums text-[#0a0a0a]">{hour}</p>
+                              <p className="font-mono text-[9px] tabular-nums text-[#0a0a0a]/55 mt-0.5">
+                                {Math.round((f.fcstPpltnMin + f.fcstPpltnMax) / 2 / 1000)}k
+                              </p>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <p className="mt-4 text-[10px] font-bold uppercase tracking-wider text-[#0a0a0a]/55 leading-relaxed">
+                ※ 출처: 서울 열린데이터광장 · 실시간 도시데이터 · 5분 갱신 ·
+                현재 점포에서 가장 가까운 핫스팟 권역 데이터입니다.
+              </p>
+            </Section>
+          )}
 
           {/* 1차상권(동일 행정동) 추정 임대료 — 매매 실거래가 환산 */}
           {localRent.sampleCount > 0 && (

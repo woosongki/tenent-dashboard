@@ -1,0 +1,975 @@
+{
+  "source": "서울 열린데이터광장 - 실시간 도시데이터 121장소 목록",
+  "importedAt": "2026-05-12T01:11:12.523Z",
+  "count": 121,
+  "records": [
+    {
+      "name": "강남 MICE 관광특구",
+      "code": "POI001",
+      "gu": null,
+      "category": null,
+      "lat": null,
+      "lng": null
+    },
+    {
+      "name": "동대문 관광특구",
+      "code": "POI002",
+      "gu": null,
+      "category": null,
+      "lat": 37.569193252641526,
+      "lng": 127.01282716149097
+    },
+    {
+      "name": "명동 관광특구",
+      "code": "POI003",
+      "gu": null,
+      "category": null,
+      "lat": 37.5626571977151,
+      "lng": 126.985209080382
+    },
+    {
+      "name": "이태원 관광특구",
+      "code": "POI004",
+      "gu": null,
+      "category": null,
+      "lat": 37.5349073364554,
+      "lng": 126.997388675434
+    },
+    {
+      "name": "잠실 관광특구",
+      "code": "POI005",
+      "gu": null,
+      "category": null,
+      "lat": null,
+      "lng": null
+    },
+    {
+      "name": "종로·청계 관광특구",
+      "code": "POI006",
+      "gu": null,
+      "category": null,
+      "lat": null,
+      "lng": null
+    },
+    {
+      "name": "홍대 관광특구",
+      "code": "POI007",
+      "gu": null,
+      "category": null,
+      "lat": null,
+      "lng": null
+    },
+    {
+      "name": "경복궁",
+      "code": "POI008",
+      "gu": null,
+      "category": null,
+      "lat": 37.577613288258206,
+      "lng": 126.97689786832184
+    },
+    {
+      "name": "광화문·덕수궁",
+      "code": "POI009",
+      "gu": null,
+      "category": null,
+      "lat": 37.5655638710672,
+      "lng": 126.974894754989
+    },
+    {
+      "name": "보신각",
+      "code": "POI010",
+      "gu": null,
+      "category": null,
+      "lat": 37.5697676518348,
+      "lng": 126.983645583112
+    },
+    {
+      "name": "서울 암사동 유적",
+      "code": "POI011",
+      "gu": null,
+      "category": null,
+      "lat": 37.5605464139303,
+      "lng": 127.130257802123
+    },
+    {
+      "name": "창덕궁·종묘",
+      "code": "POI012",
+      "gu": null,
+      "category": null,
+      "lat": 37.5761080433804,
+      "lng": 126.994212979827
+    },
+    {
+      "name": "가산디지털단지역",
+      "code": "POI013",
+      "gu": null,
+      "category": null,
+      "lat": 37.4803959660982,
+      "lng": 126.882661758356
+    },
+    {
+      "name": "강남역",
+      "code": "POI014",
+      "gu": null,
+      "category": null,
+      "lat": 37.49808633653005,
+      "lng": 127.02800140627488
+    },
+    {
+      "name": "건대입구역",
+      "code": "POI015",
+      "gu": null,
+      "category": null,
+      "lat": 37.54040751726388,
+      "lng": 127.06920291650829
+    },
+    {
+      "name": "고덕역",
+      "code": "POI016",
+      "gu": null,
+      "category": null,
+      "lat": 37.55504766830918,
+      "lng": 127.15416500963447
+    },
+    {
+      "name": "고속터미널역",
+      "code": "POI017",
+      "gu": null,
+      "category": null,
+      "lat": 37.50454885557265,
+      "lng": 127.00512100872538
+    },
+    {
+      "name": "교대역",
+      "code": "POI018",
+      "gu": null,
+      "category": null,
+      "lat": 37.4927431676548,
+      "lng": 127.013867969161
+    },
+    {
+      "name": "구로디지털단지역",
+      "code": "POI019",
+      "gu": null,
+      "category": null,
+      "lat": 37.4852605752505,
+      "lng": 126.901473080039
+    },
+    {
+      "name": "구로역",
+      "code": "POI020",
+      "gu": null,
+      "category": null,
+      "lat": 37.50334155631282,
+      "lng": 126.88230806229326
+    },
+    {
+      "name": "군자역",
+      "code": "POI021",
+      "gu": null,
+      "category": null,
+      "lat": 37.557151488837924,
+      "lng": 127.0795106156054
+    },
+    {
+      "name": "대림역",
+      "code": "POI023",
+      "gu": null,
+      "category": null,
+      "lat": 37.4933099444417,
+      "lng": 126.894931036051
+    },
+    {
+      "name": "동대문역",
+      "code": "POI024",
+      "gu": null,
+      "category": null,
+      "lat": 37.57166940579655,
+      "lng": 127.0106338108367
+    },
+    {
+      "name": "뚝섬역",
+      "code": "POI025",
+      "gu": null,
+      "category": null,
+      "lat": 37.547241554679,
+      "lng": 127.04738727881
+    },
+    {
+      "name": "미아사거리역",
+      "code": "POI026",
+      "gu": null,
+      "category": null,
+      "lat": 37.61327836400571,
+      "lng": 127.03008663628454
+    },
+    {
+      "name": "발산역",
+      "code": "POI027",
+      "gu": null,
+      "category": null,
+      "lat": 37.558677743241596,
+      "lng": 126.83773640693936
+    },
+    {
+      "name": "사당역",
+      "code": "POI029",
+      "gu": null,
+      "category": null,
+      "lat": 37.47656223234824,
+      "lng": 126.98155858357366
+    },
+    {
+      "name": "삼각지역",
+      "code": "POI030",
+      "gu": null,
+      "category": null,
+      "lat": 37.5344393447708,
+      "lng": 126.972922951307
+    },
+    {
+      "name": "서울대입구역",
+      "code": "POI031",
+      "gu": null,
+      "category": null,
+      "lat": 37.4812845080678,
+      "lng": 126.952713197762
+    },
+    {
+      "name": "서울식물원·마곡나루역",
+      "code": "POI032",
+      "gu": null,
+      "category": null,
+      "lat": 37.56635914919501,
+      "lng": 126.82723611271075
+    },
+    {
+      "name": "서울역",
+      "code": "POI033",
+      "gu": null,
+      "category": null,
+      "lat": 37.55332892758497,
+      "lng": 126.96974961781686
+    },
+    {
+      "name": "선릉역",
+      "code": "POI034",
+      "gu": null,
+      "category": null,
+      "lat": 37.504497373023206,
+      "lng": 127.04896282498558
+    },
+    {
+      "name": "성신여대입구역",
+      "code": "POI035",
+      "gu": null,
+      "category": null,
+      "lat": 37.59296812939267,
+      "lng": 127.0171260607647
+    },
+    {
+      "name": "수유역",
+      "code": "POI036",
+      "gu": null,
+      "category": null,
+      "lat": 37.63788539420793,
+      "lng": 127.02550910860451
+    },
+    {
+      "name": "신논현역·논현역",
+      "code": "POI037",
+      "gu": null,
+      "category": null,
+      "lat": 37.504811111562,
+      "lng": 127.025492036104
+    },
+    {
+      "name": "신도림역",
+      "code": "POI038",
+      "gu": null,
+      "category": null,
+      "lat": 37.508908482648,
+      "lng": 126.891312500851
+    },
+    {
+      "name": "신림역",
+      "code": "POI039",
+      "gu": null,
+      "category": null,
+      "lat": 37.484267135140364,
+      "lng": 126.9297453749671
+    },
+    {
+      "name": "신촌·이대역",
+      "code": "POI040",
+      "gu": null,
+      "category": null,
+      "lat": 37.557329672494916,
+      "lng": 126.9435997720125
+    },
+    {
+      "name": "양재역",
+      "code": "POI041",
+      "gu": null,
+      "category": null,
+      "lat": 37.48457681195669,
+      "lng": 127.03416413380752
+    },
+    {
+      "name": "역삼역",
+      "code": "POI042",
+      "gu": null,
+      "category": null,
+      "lat": 37.5006744185994,
+      "lng": 127.03646946847
+    },
+    {
+      "name": "연신내역",
+      "code": "POI043",
+      "gu": null,
+      "category": null,
+      "lat": 37.61920414913163,
+      "lng": 126.92110296894133
+    },
+    {
+      "name": "오목교역·목동운동장",
+      "code": "POI044",
+      "gu": null,
+      "category": null,
+      "lat": 37.5307291364642,
+      "lng": 126.882098732698
+    },
+    {
+      "name": "왕십리역",
+      "code": "POI045",
+      "gu": null,
+      "category": null,
+      "lat": 37.561268363317176,
+      "lng": 127.03710337610202
+    },
+    {
+      "name": "용산역",
+      "code": "POI046",
+      "gu": null,
+      "category": null,
+      "lat": 37.5300763645794,
+      "lng": 126.964824061815
+    },
+    {
+      "name": "이태원역",
+      "code": "POI047",
+      "gu": null,
+      "category": null,
+      "lat": 37.5345252050511,
+      "lng": 126.994333861918
+    },
+    {
+      "name": "장지역",
+      "code": "POI048",
+      "gu": null,
+      "category": null,
+      "lat": 37.4786316933099,
+      "lng": 127.12617656737
+    },
+    {
+      "name": "장한평역",
+      "code": "POI049",
+      "gu": null,
+      "category": null,
+      "lat": 37.5616038910656,
+      "lng": 127.06370373106944
+    },
+    {
+      "name": "천호역",
+      "code": "POI050",
+      "gu": null,
+      "category": null,
+      "lat": 37.5385112120297,
+      "lng": 127.12392845044
+    },
+    {
+      "name": "총신대입구(이수)역",
+      "code": "POI051",
+      "gu": null,
+      "category": null,
+      "lat": 37.48528852311765,
+      "lng": 126.98167629035197
+    },
+    {
+      "name": "충정로역",
+      "code": "POI052",
+      "gu": null,
+      "category": null,
+      "lat": 37.56042867918723,
+      "lng": 126.96303964820936
+    },
+    {
+      "name": "합정역",
+      "code": "POI053",
+      "gu": null,
+      "category": null,
+      "lat": 37.54991315995173,
+      "lng": 126.91445406513526
+    },
+    {
+      "name": "혜화역",
+      "code": "POI054",
+      "gu": null,
+      "category": null,
+      "lat": 37.58204391787134,
+      "lng": 127.00194500977393
+    },
+    {
+      "name": "홍대입구역(2호선)",
+      "code": "POI055",
+      "gu": null,
+      "category": null,
+      "lat": 37.5568707448873,
+      "lng": 126.923778562273
+    },
+    {
+      "name": "회기역",
+      "code": "POI056",
+      "gu": null,
+      "category": null,
+      "lat": 37.5897962196601,
+      "lng": 127.058048369273
+    },
+    {
+      "name": "가락시장",
+      "code": "POI058",
+      "gu": null,
+      "category": null,
+      "lat": 37.4938884413034,
+      "lng": 127.110927336635
+    },
+    {
+      "name": "가로수길",
+      "code": "POI059",
+      "gu": null,
+      "category": null,
+      "lat": 37.520819816124934,
+      "lng": 127.02272940977892
+    },
+    {
+      "name": "광장(전통)시장",
+      "code": "POI060",
+      "gu": null,
+      "category": null,
+      "lat": 37.55918176072071,
+      "lng": 126.9776267740439
+    },
+    {
+      "name": "김포공항",
+      "code": "POI061",
+      "gu": null,
+      "category": null,
+      "lat": 37.55867678737794,
+      "lng": 126.80278135337612
+    },
+    {
+      "name": "노량진",
+      "code": "POI063",
+      "gu": null,
+      "category": null,
+      "lat": 37.5136058564068,
+      "lng": 126.94539042276
+    },
+    {
+      "name": "덕수궁길·정동길",
+      "code": "POI064",
+      "gu": null,
+      "category": null,
+      "lat": null,
+      "lng": null
+    },
+    {
+      "name": "북촌한옥마을",
+      "code": "POI066",
+      "gu": null,
+      "category": null,
+      "lat": 37.581768153833444,
+      "lng": 126.98481245064092
+    },
+    {
+      "name": "서촌",
+      "code": "POI067",
+      "gu": null,
+      "category": null,
+      "lat": 37.578728818102,
+      "lng": 126.9731106965
+    },
+    {
+      "name": "성수카페거리",
+      "code": "POI068",
+      "gu": null,
+      "category": null,
+      "lat": 37.5464440372535,
+      "lng": 127.043028992489
+    },
+    {
+      "name": "쌍문역",
+      "code": "POI070",
+      "gu": null,
+      "category": null,
+      "lat": 37.6485426057036,
+      "lng": 127.03465609756
+    },
+    {
+      "name": "압구정로데오거리",
+      "code": "POI071",
+      "gu": null,
+      "category": null,
+      "lat": 37.5267558230172,
+      "lng": 127.039152029523
+    },
+    {
+      "name": "여의도",
+      "code": "POI072",
+      "gu": null,
+      "category": null,
+      "lat": 37.5250892160129,
+      "lng": 126.947545050571
+    },
+    {
+      "name": "연남동",
+      "code": "POI073",
+      "gu": null,
+      "category": null,
+      "lat": 37.5635638685226,
+      "lng": 126.921818160092
+    },
+    {
+      "name": "영등포 타임스퀘어",
+      "code": "POI074",
+      "gu": null,
+      "category": null,
+      "lat": 37.5172951503156,
+      "lng": 126.90393083403768
+    },
+    {
+      "name": "용리단길",
+      "code": "POI076",
+      "gu": null,
+      "category": null,
+      "lat": 37.5314514583385,
+      "lng": 126.972204479602
+    },
+    {
+      "name": "이태원 앤틱가구거리",
+      "code": "POI077",
+      "gu": null,
+      "category": null,
+      "lat": 37.5335268984122,
+      "lng": 126.994383719145
+    },
+    {
+      "name": "인사동",
+      "code": "POI078",
+      "gu": null,
+      "category": null,
+      "lat": 37.5745467832909,
+      "lng": 126.985591616819
+    },
+    {
+      "name": "창동 신경제 중심지",
+      "code": "POI079",
+      "gu": null,
+      "category": null,
+      "lat": null,
+      "lng": null
+    },
+    {
+      "name": "청담동 명품거리",
+      "code": "POI080",
+      "gu": null,
+      "category": null,
+      "lat": 37.5261262382238,
+      "lng": 127.046048046817
+    },
+    {
+      "name": "청량리 제기동 일대 전통시장",
+      "code": "POI081",
+      "gu": null,
+      "category": null,
+      "lat": null,
+      "lng": null
+    },
+    {
+      "name": "해방촌·경리단길",
+      "code": "POI082",
+      "gu": null,
+      "category": null,
+      "lat": 37.5392756606163,
+      "lng": 126.9875536196624
+    },
+    {
+      "name": "DDP(동대문디자인플라자)",
+      "code": "POI083",
+      "gu": null,
+      "category": null,
+      "lat": 37.5671843130818,
+      "lng": 127.009911013917
+    },
+    {
+      "name": "DMC(디지털미디어시티)",
+      "code": "POI084",
+      "gu": null,
+      "category": null,
+      "lat": 37.5761512717257,
+      "lng": 126.89876332752651
+    },
+    {
+      "name": "강서한강공원",
+      "code": "POI085",
+      "gu": null,
+      "category": null,
+      "lat": 37.58837414475718,
+      "lng": 126.81312520288417
+    },
+    {
+      "name": "고척돔",
+      "code": "POI086",
+      "gu": null,
+      "category": null,
+      "lat": 37.49821220764421,
+      "lng": 126.8670889679075
+    },
+    {
+      "name": "광나루한강공원",
+      "code": "POI087",
+      "gu": null,
+      "category": null,
+      "lat": 37.54413379806722,
+      "lng": 127.1183161576554
+    },
+    {
+      "name": "광화문광장",
+      "code": "POI088",
+      "gu": null,
+      "category": null,
+      "lat": 37.572602860810186,
+      "lng": 126.97691639601517
+    },
+    {
+      "name": "국립중앙박물관·용산가족공원",
+      "code": "POI089",
+      "gu": null,
+      "category": null,
+      "lat": 37.5216426639857,
+      "lng": 126.978511291988
+    },
+    {
+      "name": "난지한강공원",
+      "code": "POI090",
+      "gu": null,
+      "category": null,
+      "lat": 37.5670399093241,
+      "lng": 126.875607758973
+    },
+    {
+      "name": "남산공원",
+      "code": "POI091",
+      "gu": null,
+      "category": null,
+      "lat": 37.5524979951415,
+      "lng": 126.989316855952
+    },
+    {
+      "name": "노들섬",
+      "code": "POI092",
+      "gu": null,
+      "category": null,
+      "lat": 37.51766013568054,
+      "lng": 126.95803386590158
+    },
+    {
+      "name": "뚝섬한강공원",
+      "code": "POI093",
+      "gu": null,
+      "category": null,
+      "lat": 37.5292974433415,
+      "lng": 127.06892112991
+    },
+    {
+      "name": "망원한강공원",
+      "code": "POI094",
+      "gu": null,
+      "category": null,
+      "lat": 37.5517245459018,
+      "lng": 126.900027640945
+    },
+    {
+      "name": "반포한강공원",
+      "code": "POI095",
+      "gu": null,
+      "category": null,
+      "lat": 37.51081992690844,
+      "lng": 126.99716104081192
+    },
+    {
+      "name": "북서울꿈의숲",
+      "code": "POI096",
+      "gu": null,
+      "category": null,
+      "lat": 37.62360650548208,
+      "lng": 127.04157251496886
+    },
+    {
+      "name": "서리풀공원·몽마르뜨공원",
+      "code": "POI098",
+      "gu": null,
+      "category": null,
+      "lat": 37.4953712551069,
+      "lng": 127.003858379724
+    },
+    {
+      "name": "서울대공원",
+      "code": "POI100",
+      "gu": null,
+      "category": null,
+      "lat": 37.5495622092927,
+      "lng": 127.081093645129
+    },
+    {
+      "name": "서울숲공원",
+      "code": "POI101",
+      "gu": null,
+      "category": null,
+      "lat": 37.5443222301513,
+      "lng": 127.037617759165
+    },
+    {
+      "name": "아차산",
+      "code": "POI102",
+      "gu": null,
+      "category": null,
+      "lat": 37.55224917071854,
+      "lng": 127.08956495447913
+    },
+    {
+      "name": "양화한강공원",
+      "code": "POI103",
+      "gu": null,
+      "category": null,
+      "lat": 37.5378083426973,
+      "lng": 126.90293825104
+    },
+    {
+      "name": "어린이대공원",
+      "code": "POI104",
+      "gu": null,
+      "category": null,
+      "lat": 37.55147044344215,
+      "lng": 127.08378909469191
+    },
+    {
+      "name": "여의도한강공원",
+      "code": "POI105",
+      "gu": null,
+      "category": null,
+      "lat": 37.52638860108943,
+      "lng": 126.93512931714196
+    },
+    {
+      "name": "월드컵공원",
+      "code": "POI106",
+      "gu": null,
+      "category": null,
+      "lat": 37.5631939895966,
+      "lng": 126.897635431027
+    },
+    {
+      "name": "응봉산",
+      "code": "POI107",
+      "gu": null,
+      "category": null,
+      "lat": 37.5482528089186,
+      "lng": 127.029834156041
+    },
+    {
+      "name": "이촌한강공원",
+      "code": "POI108",
+      "gu": null,
+      "category": null,
+      "lat": 37.5172404421072,
+      "lng": 126.970526590861
+    },
+    {
+      "name": "잠실종합운동장",
+      "code": "POI109",
+      "gu": null,
+      "category": null,
+      "lat": 37.5145906150942,
+      "lng": 127.073024865801
+    },
+    {
+      "name": "잠실한강공원",
+      "code": "POI110",
+      "gu": null,
+      "category": null,
+      "lat": 37.5177992564873,
+      "lng": 127.082357837214
+    },
+    {
+      "name": "잠원한강공원",
+      "code": "POI111",
+      "gu": null,
+      "category": null,
+      "lat": 37.5273338139916,
+      "lng": 127.019046713623
+    },
+    {
+      "name": "청계산",
+      "code": "POI112",
+      "gu": null,
+      "category": null,
+      "lat": 37.44898005261383,
+      "lng": 127.0546981800968
+    },
+    {
+      "name": "북창동 먹자골목",
+      "code": "POI114",
+      "gu": null,
+      "category": null,
+      "lat": 37.5614811760833,
+      "lng": 126.978006379609
+    },
+    {
+      "name": "남대문시장",
+      "code": "POI115",
+      "gu": null,
+      "category": null,
+      "lat": 37.55918176072071,
+      "lng": 126.9776267740439
+    },
+    {
+      "name": "익선동",
+      "code": "POI116",
+      "gu": null,
+      "category": null,
+      "lat": 37.5734371942191,
+      "lng": 126.989775723896
+    },
+    {
+      "name": "신정네거리역",
+      "code": "POI117",
+      "gu": null,
+      "category": null,
+      "lat": 37.5202231231721,
+      "lng": 126.852889567642
+    },
+    {
+      "name": "잠실새내역",
+      "code": "POI118",
+      "gu": null,
+      "category": null,
+      "lat": 37.5116263587296,
+      "lng": 127.086314327913
+    },
+    {
+      "name": "잠실역",
+      "code": "POI119",
+      "gu": null,
+      "category": null,
+      "lat": 37.51331105877401,
+      "lng": 127.10023101886318
+    },
+    {
+      "name": "잠실롯데타워·석촌호수",
+      "code": "POI120",
+      "gu": null,
+      "category": null,
+      "lat": 37.5116212351376,
+      "lng": 127.105899949393
+    },
+    {
+      "name": "송리단길·호수단길",
+      "code": "POI121",
+      "gu": null,
+      "category": null,
+      "lat": null,
+      "lng": null
+    },
+    {
+      "name": "신촌 스타광장",
+      "code": "POI122",
+      "gu": null,
+      "category": null,
+      "lat": 37.5569792757261,
+      "lng": 126.93667142222
+    },
+    {
+      "name": "보라매공원",
+      "code": "POI123",
+      "gu": null,
+      "category": null,
+      "lat": 37.49328307697023,
+      "lng": 126.92051756183096
+    },
+    {
+      "name": "서대문독립공원",
+      "code": "POI124",
+      "gu": null,
+      "category": null,
+      "lat": 37.5744058898155,
+      "lng": 126.955398396095
+    },
+    {
+      "name": "안양천",
+      "code": "POI125",
+      "gu": null,
+      "category": null,
+      "lat": 37.5271859663193,
+      "lng": 126.881665362707
+    },
+    {
+      "name": "여의서로",
+      "code": "POI126",
+      "gu": null,
+      "category": null,
+      "lat": 37.5323563396306,
+      "lng": 126.923744684818
+    },
+    {
+      "name": "올림픽공원",
+      "code": "POI127",
+      "gu": null,
+      "category": null,
+      "lat": 37.5205340628851,
+      "lng": 127.120812783275
+    },
+    {
+      "name": "홍제폭포",
+      "code": "POI128",
+      "gu": null,
+      "category": null,
+      "lat": 37.580786747178536,
+      "lng": 126.93755129533662
+    },
+    {
+      "name": "송현녹지광장",
+      "code": "POI129",
+      "gu": null,
+      "category": null,
+      "lat": 37.5765680782914,
+      "lng": 126.981715077368
+    },
+    {
+      "name": "시의회 앞",
+      "code": "POI130",
+      "gu": null,
+      "category": null,
+      "lat": 36.3501712078434,
+      "lng": 127.384838607318
+    },
+    {
+      "name": "숭례문",
+      "code": "POI131",
+      "gu": null,
+      "category": null,
+      "lat": 37.5600030088843,
+      "lng": 126.975313124237
+    }
+  ]
+}
