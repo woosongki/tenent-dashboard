@@ -14,18 +14,16 @@ const securityHeaders = [
     key: "Content-Security-Policy",
     value: [
       "default-src 'self'",
-      // Next.js HMR + RSC payload + Kakao Maps SDK + Leaflet CDN (홈플 이슈맵)
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://dapi.kakao.com https://t1.daumcdn.net https://cdn.jsdelivr.net https://unpkg.com https://cdnjs.cloudflare.com",
-      // Tailwind inline styles + Recharts SVG + Kakao Maps inline styles + Leaflet/Pretendard CDN
-      "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://unpkg.com https://cdnjs.cloudflare.com",
+      // Next.js HMR + RSC payload + Kakao Maps SDK (dapi.kakao.com)
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://dapi.kakao.com https://t1.daumcdn.net",
+      // Tailwind inline styles + Recharts SVG + Kakao Maps inline styles
+      "style-src 'self' 'unsafe-inline'",
       // Supabase API + Storage + Kakao Maps tile/API XHR
       `connect-src 'self' ${process.env.NEXT_PUBLIC_SUPABASE_URL ?? "*"} wss://*.supabase.co https://dapi.kakao.com https://*.daumcdn.net`,
       // Kakao 지도 타일은 *.daumcdn.net 에서 로드 (https: 와일드카드로 이미 허용되지만 명시)
       "img-src 'self' data: blob: https:",
-      // Pretendard 폰트는 jsdelivr CDN
-      "font-src 'self' https://cdn.jsdelivr.net",
-      // 같은 origin iframe 허용 (예: /dashboard/homeplus → /homeplus-map.html)
-      "frame-ancestors 'self'",
+      "font-src 'self'",
+      "frame-ancestors 'none'",
     ].join("; "),
   },
 ];
