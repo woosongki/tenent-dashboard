@@ -48,3 +48,7 @@ next-env.d.ts
 .env.vercel.tmp
 dist/
 data/seoul-hotspots.xlsx
+
+# Claude Code — local 전용은 무시 (settings.json / MCP_SETUP.md는 공유)
+.claude/worktrees/
+.claude/settings.local.json
