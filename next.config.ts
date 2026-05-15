@@ -24,7 +24,8 @@ const securityHeaders = [
       "img-src 'self' data: blob: https:",
       // Pretendard 폰트는 jsdelivr CDN
       "font-src 'self' https://cdn.jsdelivr.net",
-      "frame-ancestors 'none'",
+      // 같은 origin iframe 허용 (예: /dashboard/homeplus → /homeplus-map.html)
+      "frame-ancestors 'self'",
     ].join("; "),
   },
 ];
