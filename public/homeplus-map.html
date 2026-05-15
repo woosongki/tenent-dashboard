@@ -1,0 +1,1043 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1280">
+<title>홈플러스 영업중단 × 이랜드리테일 상권 분석 지도</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+  :root {
+    --bg-deep:   #0a0e1a;
+    --bg-panel:  #131826;
+    --bg-card:   #1a2032;
+    --bg-hover:  #232b42;
+    --border:    #2a3349;
+    --text-1:    #e8ecf5;
+    --text-2:    #a0a8bc;
+    --text-3:    #6b7388;
+    --accent:    #ffd166;
+    --tier-1:    #ef476f;
+    --tier-2:    #ffb547;
+    --tier-3:    #06d6a0;
+    --tier-4:    #5a6378;
+    --tier-1-bg: rgba(239, 71, 111, 0.12);
+    --tier-2-bg: rgba(255, 181, 71, 0.12);
+    --tier-3-bg: rgba(6, 214, 160, 0.12);
+    --tier-4-bg: rgba(90, 99, 120, 0.12);
+    --cat-life:    #4cc9f0;
+    --cat-flower:  #f72585;
+    --cat-kids:    #b5179e;
+    --cat-sports:  #7209b7;
+    --cat-beauty:  #f3722c;
+    --cat-telecom: #43aa8b;
+    --cat-travel:  #f9c74f;
+    --cat-etc:     #6c757d;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0; height: 100vh; overflow: hidden;
+    font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg-deep); color: var(--text-1);
+    font-feature-settings: 'tnum';
+  }
+  body {
+    display: grid;
+    grid-template-columns: 280px 1fr 360px;
+    grid-template-rows: 64px 1fr;
+    grid-template-areas:
+      "header header header"
+      "left   map    right";
+    height: 100vh;
+  }
+
+  /* HEADER */
+  header {
+    grid-area: header;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 24px;
+    background: linear-gradient(180deg, var(--bg-panel) 0%, var(--bg-deep) 100%);
+    border-bottom: 1px solid var(--border);
+    z-index: 1000;
+  }
+  .brand {
+    display: flex; align-items: center; gap: 12px;
+  }
+  .brand-mark {
+    width: 32px; height: 32px;
+    background: linear-gradient(135deg, var(--accent) 0%, #ff8c42 100%);
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800; color: var(--bg-deep); font-size: 16px;
+  }
+  .brand-title {
+    font-size: 15px; font-weight: 700; letter-spacing: -0.02em;
+  }
+  .brand-sub {
+    font-size: 11px; color: var(--text-3); margin-top: 2px;
+    letter-spacing: 0.04em; text-transform: uppercase;
+  }
+  .stats-bar {
+    display: flex; gap: 28px; align-items: center;
+  }
+  .stat {
+    display: flex; flex-direction: column; align-items: flex-end;
+  }
+  .stat-num {
+    font-size: 18px; font-weight: 700; color: var(--text-1);
+    letter-spacing: -0.02em;
+  }
+  .stat-label {
+    font-size: 10px; color: var(--text-3);
+    letter-spacing: 0.06em; text-transform: uppercase;
+  }
+  .stat-num.danger  { color: var(--tier-1); }
+  .stat-num.warning { color: var(--tier-2); }
+  .stat-num.success { color: var(--tier-3); }
+
+  /* LEFT PANEL */
+  .panel-left {
+    grid-area: left;
+    background: var(--bg-panel);
+    border-right: 1px solid var(--border);
+    display: flex; flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* SIDEBAR TABS */
+  .sidebar-tabs {
+    display: flex;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .sidebar-tab {
+    flex: 1; padding: 13px 8px;
+    background: none; border: none;
+    border-bottom: 2px solid transparent;
+    color: var(--text-3);
+    font-family: inherit; font-size: 12px; font-weight: 600;
+    cursor: pointer; letter-spacing: 0.04em;
+    transition: all 0.15s;
+  }
+  .sidebar-tab:hover { color: var(--text-1); }
+  .sidebar-tab.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+    background: rgba(255, 209, 102, 0.04);
+  }
+  .tab-content {
+    display: none; overflow-y: auto; flex: 1; padding: 20px 18px;
+  }
+  .tab-content.active { display: block; }
+
+  .filter-section { margin-bottom: 24px; }
+  .filter-title {
+    font-size: 11px; font-weight: 700; color: var(--text-3);
+    letter-spacing: 0.1em; text-transform: uppercase;
+    margin-bottom: 10px; display: flex; justify-content: space-between;
+  }
+  .filter-title .clear-btn {
+    font-size: 10px; color: var(--accent); cursor: pointer;
+    text-transform: none; letter-spacing: 0; font-weight: 500;
+  }
+  .filter-title .clear-btn:hover { text-decoration: underline; }
+  .chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 7px 12px; margin: 0 6px 6px 0;
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 20px; cursor: pointer;
+    font-size: 12px; color: var(--text-2);
+    transition: all 0.15s;
+    user-select: none;
+  }
+  .chip:hover { background: var(--bg-hover); color: var(--text-1); }
+  .chip.active {
+    background: var(--accent); border-color: var(--accent);
+    color: var(--bg-deep); font-weight: 600;
+  }
+  .chip .dot {
+    width: 8px; height: 8px; border-radius: 50%;
+  }
+  .chip.tier-1 .dot { background: var(--tier-1); }
+  .chip.tier-2 .dot { background: var(--tier-2); }
+  .chip.tier-3 .dot { background: var(--tier-3); }
+  .chip.tier-4 .dot { background: var(--tier-4); }
+  .chip-count {
+    font-size: 10px; color: var(--text-3); margin-left: 4px;
+  }
+  .chip.active .chip-count { color: var(--bg-deep); opacity: 0.7; }
+
+  .layer-toggle {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 12px;
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 8px; margin-bottom: 8px; cursor: pointer;
+    transition: background 0.15s;
+  }
+  .layer-toggle:hover { background: var(--bg-hover); }
+  .layer-label {
+    display: flex; align-items: center; gap: 10px;
+    font-size: 13px; color: var(--text-1);
+  }
+  .layer-icon {
+    width: 18px; height: 18px; border-radius: 50%;
+    border: 2px solid var(--bg-deep);
+  }
+  .switch {
+    position: relative; width: 32px; height: 18px;
+    background: var(--bg-deep); border-radius: 9px;
+    transition: background 0.2s;
+  }
+  .switch::after {
+    content: ''; position: absolute; left: 2px; top: 2px;
+    width: 14px; height: 14px; background: var(--text-3);
+    border-radius: 50%; transition: all 0.2s;
+  }
+  .switch.on { background: var(--accent); }
+  .switch.on::after { left: 16px; background: var(--bg-deep); }
+
+  .brand-search {
+    width: 100%; padding: 10px 12px;
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 8px; color: var(--text-1); font-size: 12px;
+    font-family: inherit;
+  }
+  .brand-search:focus { outline: none; border-color: var(--accent); }
+  .brand-search::placeholder { color: var(--text-3); }
+
+  .radius-toggle { display: flex; gap: 6px; }
+  .radius-toggle .chip { flex: 1; justify-content: center; margin: 0; }
+
+  /* ISSUE TAB */
+  .issue-sort {
+    display: flex; gap: 6px; margin-bottom: 14px;
+  }
+  .sort-btn {
+    flex: 1; padding: 7px 6px;
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 6px; color: var(--text-3);
+    font-family: inherit; font-size: 11px; font-weight: 600;
+    cursor: pointer; transition: all 0.15s; letter-spacing: 0.02em;
+  }
+  .sort-btn:hover { background: var(--bg-hover); color: var(--text-1); }
+  .sort-btn.active { background: var(--accent); border-color: var(--accent); color: var(--bg-deep); }
+
+  .issue-card {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 8px; padding: 12px; margin-bottom: 8px;
+    cursor: pointer; transition: all 0.15s;
+    border-left: 3px solid transparent;
+  }
+  .issue-card:hover { background: var(--bg-hover); border-color: var(--text-3); }
+  .issue-card.tier-동일상권 { border-left-color: var(--tier-1); }
+  .issue-card.tier-인접상권 { border-left-color: var(--tier-2); }
+  .issue-card.tier-근접권   { border-left-color: var(--tier-3); }
+  .issue-card.tier-별도상권 { border-left-color: var(--tier-4); }
+  .issue-card.selected { border-color: var(--accent); background: rgba(255,209,102,0.06); }
+
+  .issue-card-top {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    margin-bottom: 8px;
+  }
+  .issue-store-name {
+    font-size: 13px; font-weight: 700; color: var(--text-1);
+    letter-spacing: -0.01em;
+  }
+  .issue-tier-badge {
+    font-size: 9px; font-weight: 700; padding: 2px 7px;
+    border-radius: 10px; letter-spacing: 0.04em; white-space: nowrap;
+    flex-shrink: 0; margin-left: 6px; margin-top: 1px;
+  }
+  .issue-tier-badge.tier-1 { background: var(--tier-1-bg); color: var(--tier-1); }
+  .issue-tier-badge.tier-2 { background: var(--tier-2-bg); color: var(--tier-2); }
+  .issue-tier-badge.tier-3 { background: var(--tier-3-bg); color: var(--tier-3); }
+  .issue-tier-badge.tier-4 { background: var(--tier-4-bg); color: var(--text-3); }
+
+  .issue-card-mid {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 6px;
+  }
+  .issue-eland {
+    font-size: 11px; color: var(--text-3);
+    display: flex; align-items: center; gap: 4px;
+  }
+  .issue-eland b { color: #4cc9f0; }
+  .issue-dist {
+    font-size: 11px; font-weight: 700; color: var(--accent);
+  }
+  .issue-cats {
+    display: flex; flex-wrap: wrap; gap: 4px;
+  }
+  .issue-cat-tag {
+    font-size: 10px; padding: 2px 7px;
+    background: var(--bg-deep); border: 1px solid var(--border);
+    border-radius: 10px; color: var(--text-3);
+    display: flex; align-items: center; gap: 4px;
+  }
+  .issue-cat-dot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
+  .issue-brand-count {
+    font-size: 10px; color: var(--text-3); margin-top: 6px;
+    padding-top: 6px; border-top: 1px solid var(--border);
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .issue-brand-count b { color: var(--accent); }
+
+  /* MAP */
+  #map { grid-area: map; background: #0e1118; }
+  .leaflet-container {
+    background: #0e1118 !important;
+    font-family: 'Pretendard', sans-serif !important;
+  }
+  .leaflet-tile { filter: invert(1) hue-rotate(180deg) brightness(0.85) saturate(0.8); }
+  .leaflet-popup-content-wrapper {
+    background: var(--bg-panel) !important;
+    color: var(--text-1) !important;
+    border: 1px solid var(--border);
+    border-radius: 8px !important;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.5) !important;
+  }
+  .leaflet-popup-tip { background: var(--bg-panel) !important; }
+  .leaflet-popup-close-button { color: var(--text-3) !important; }
+  .leaflet-control-zoom a {
+    background: var(--bg-panel) !important;
+    color: var(--text-1) !important;
+    border-color: var(--border) !important;
+  }
+  .leaflet-control-attribution {
+    background: rgba(10, 14, 26, 0.8) !important;
+    color: var(--text-3) !important;
+  }
+  .leaflet-control-attribution a { color: var(--text-2) !important; }
+
+  /* MAP MARKERS */
+  .hp-marker { background: transparent !important; border: none !important; }
+  .hp-marker-inner {
+    width: 100%; height: 100%; border-radius: 50%;
+    border: 2.5px solid #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 9px; font-weight: 800; color: #fff;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    cursor: pointer; transition: transform 0.15s;
+  }
+  .hp-marker-inner:hover { transform: scale(1.2); z-index: 1000; }
+  .hp-marker-inner.tier-1 { background: var(--tier-1); }
+  .hp-marker-inner.tier-2 { background: var(--tier-2); color: var(--bg-deep); }
+  .hp-marker-inner.tier-3 { background: var(--tier-3); color: var(--bg-deep); }
+  .hp-marker-inner.tier-4 { background: var(--tier-4); }
+  .hp-marker-inner.selected {
+    border-color: var(--accent); transform: scale(1.3); z-index: 1001;
+    box-shadow: 0 0 0 3px rgba(255, 209, 102, 0.4);
+  }
+  .el-marker { background: transparent !important; border: none !important; }
+  .el-marker-inner {
+    width: 100%; height: 100%;
+    background: #4cc9f0; border: 2px solid #fff;
+    transform: rotate(45deg);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+    cursor: pointer; transition: transform 0.15s;
+  }
+  .el-marker-inner:hover { transform: rotate(45deg) scale(1.2); }
+
+  /* HOVER TOOLTIP */
+  .hover-tooltip {
+    background: var(--bg-panel) !important;
+    border: 1px solid var(--border) !important;
+    border-radius: 8px !important;
+    padding: 0 !important;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5) !important;
+    color: var(--text-1) !important;
+    font-family: 'Pretendard', sans-serif !important;
+    min-width: 220px;
+  }
+  .hover-tooltip::before { display: none !important; }
+  .tt-head {
+    padding: 10px 14px 8px;
+    border-bottom: 1px solid var(--border);
+  }
+  .tt-store { font-size: 14px; font-weight: 700; color: var(--text-1); letter-spacing: -0.01em; }
+  .tt-tier {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 10px; margin-top: 4px; padding: 2px 8px; border-radius: 10px;
+  }
+  .tt-tier.tier-1 { background: var(--tier-1-bg); color: var(--tier-1); }
+  .tt-tier.tier-2 { background: var(--tier-2-bg); color: var(--tier-2); }
+  .tt-tier.tier-3 { background: var(--tier-3-bg); color: var(--tier-3); }
+  .tt-tier.tier-4 { background: var(--tier-4-bg); color: var(--text-2); }
+  .tt-body { padding: 8px 14px 12px; }
+  .tt-total { font-size: 11px; color: var(--text-3); margin-bottom: 6px; }
+  .tt-total b { color: var(--accent); font-size: 13px; }
+  .tt-cat-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 4px 0; font-size: 12px;
+  }
+  .tt-cat-name { display: flex; align-items: center; gap: 6px; color: var(--text-2); }
+  .tt-cat-dot { width: 6px; height: 6px; border-radius: 50%; }
+  .tt-cat-count { font-weight: 600; color: var(--text-1); }
+  .tt-hint {
+    font-size: 10px; color: var(--text-3); margin-top: 8px;
+    padding-top: 8px; border-top: 1px solid var(--border); text-align: center;
+  }
+
+  /* RIGHT DETAIL PANEL */
+  .panel-right {
+    grid-area: right;
+    background: var(--bg-panel);
+    border-left: 1px solid var(--border);
+    overflow-y: auto;
+    display: flex; flex-direction: column;
+  }
+  .empty-state {
+    flex: 1; display: flex; align-items: center; justify-content: center;
+    flex-direction: column; padding: 40px 24px; text-align: center;
+    color: var(--text-3);
+  }
+  .empty-icon {
+    width: 56px; height: 56px;
+    background: var(--bg-card); border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 16px; font-size: 24px;
+  }
+  .empty-title { font-size: 14px; color: var(--text-2); margin-bottom: 6px; font-weight: 600; }
+  .empty-desc { font-size: 12px; line-height: 1.6; }
+  .detail-head {
+    padding: 24px 24px 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .detail-tier {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 10px; padding: 4px 10px;
+    border-radius: 12px; font-weight: 600;
+    margin-bottom: 10px; letter-spacing: 0.04em;
+  }
+  .detail-tier.tier-1 { background: var(--tier-1-bg); color: var(--tier-1); }
+  .detail-tier.tier-2 { background: var(--tier-2-bg); color: var(--tier-2); }
+  .detail-tier.tier-3 { background: var(--tier-3-bg); color: var(--tier-3); }
+  .detail-tier.tier-4 { background: var(--tier-4-bg); color: var(--text-2); }
+  .detail-name { font-size: 24px; font-weight: 700; letter-spacing: -0.03em; margin-bottom: 6px; }
+  .detail-sub { font-size: 12px; color: var(--text-3); }
+  .detail-match {
+    margin-top: 14px; padding: 12px;
+    background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px;
+  }
+  .match-label { font-size: 10px; color: var(--text-3); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.06em; }
+  .match-store { font-size: 13px; color: var(--text-1); font-weight: 600; display: flex; justify-content: space-between; align-items: center; }
+  .match-dist { font-size: 12px; font-weight: 700; color: var(--accent); }
+  .detail-body { padding: 16px 24px 24px; flex: 1; }
+  .cat-block { margin-bottom: 18px; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+  .cat-head {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 10px 14px; background: var(--bg-card); cursor: pointer;
+  }
+  .cat-head:hover { background: var(--bg-hover); }
+  .cat-name { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: var(--text-1); }
+  .cat-bar { width: 3px; height: 14px; border-radius: 2px; }
+  .cat-count { background: var(--bg-deep); padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 700; color: var(--accent); }
+  .brand-list { padding: 8px 14px 12px; background: var(--bg-card); border-top: 1px solid var(--border); }
+  .brand-pill {
+    display: inline-block; margin: 3px 4px 3px 0;
+    padding: 4px 10px;
+    background: var(--bg-deep); border: 1px solid var(--border);
+    border-radius: 14px; font-size: 11px; color: var(--text-2);
+  }
+  .brand-pill.highlight { border-color: var(--accent); color: var(--accent); background: rgba(255, 209, 102, 0.06); }
+
+  /* MAP LEGEND */
+  .map-legend {
+    position: absolute; bottom: 24px; left: 24px;
+    background: rgba(19, 24, 38, 0.92);
+    backdrop-filter: blur(8px);
+    border: 1px solid var(--border); border-radius: 10px;
+    padding: 14px 16px; z-index: 500;
+    font-size: 11px; color: var(--text-2);
+    min-width: 200px;
+  }
+  .legend-title { font-size: 10px; color: var(--text-3); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 10px; font-weight: 700; }
+  .legend-item { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; }
+  .legend-dot { width: 10px; height: 10px; border-radius: 50%; border: 2px solid #fff; }
+  .legend-dot.diamond { border-radius: 0; transform: rotate(45deg); width: 8px; height: 8px; }
+  .legend-num { margin-left: auto; color: var(--text-3); font-size: 10px; }
+
+  .ccolor-life    { background: var(--cat-life); }
+  .ccolor-flower  { background: var(--cat-flower); }
+  .ccolor-kids    { background: var(--cat-kids); }
+  .ccolor-sports  { background: var(--cat-sports); }
+  .ccolor-beauty  { background: var(--cat-beauty); }
+  .ccolor-telecom { background: var(--cat-telecom); }
+  .ccolor-travel  { background: var(--cat-travel); }
+  .ccolor-etc     { background: var(--cat-etc); }
+
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--text-3); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <div class="brand-mark">E</div>
+    <div>
+      <div class="brand-title">홈플러스 영업중단 × 이랜드리테일 상권 분석</div>
+      <div class="brand-sub">Lifestyle Division · Strategic Map · 2026.05</div>
+    </div>
+  </div>
+  <div class="stats-bar">
+    <div class="stat">
+      <div class="stat-num" id="stat-hp">33</div>
+      <div class="stat-label">홈플 영업중단</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num" id="stat-el">41</div>
+      <div class="stat-label">이랜드 점포</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num danger" id="stat-t1">2</div>
+      <div class="stat-label">동일상권 (≤1km)</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num warning" id="stat-t2">5</div>
+      <div class="stat-label">인접상권 (1~3km)</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num success" id="stat-t3">8</div>
+      <div class="stat-label">근접권 (3~5km)</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num" id="stat-brand">168</div>
+      <div class="stat-label">총 입점 브랜드</div>
+    </div>
+  </div>
+</header>
+
+<aside class="panel-left">
+
+  <div class="sidebar-tabs">
+    <button class="sidebar-tab active" data-tab="filter">필터</button>
+    <button class="sidebar-tab" data-tab="issues">홈플 이슈</button>
+  </div>
+
+  <!-- 필터 탭 -->
+  <div id="tab-filter" class="tab-content active">
+
+    <div class="filter-section">
+      <div class="filter-title"><span>레이어</span></div>
+      <div class="layer-toggle" data-layer="homeplus">
+        <span class="layer-label">
+          <span class="layer-icon" style="background: var(--tier-1);"></span>
+          홈플 영업중단점
+        </span>
+        <span class="switch on"></span>
+      </div>
+      <div class="layer-toggle" data-layer="eland">
+        <span class="layer-label">
+          <span class="layer-icon" style="background: #4cc9f0; transform: rotate(45deg); border-radius: 0;"></span>
+          이랜드 점포
+        </span>
+        <span class="switch on"></span>
+      </div>
+      <div class="layer-toggle" data-layer="lines">
+        <span class="layer-label">
+          <span class="layer-icon" style="background: transparent; border: 2px dashed var(--accent);"></span>
+          매칭 연결선
+        </span>
+        <span class="switch on"></span>
+      </div>
+    </div>
+
+    <div class="filter-section">
+      <div class="filter-title">
+        <span>상권 구분</span>
+        <span class="clear-btn" onclick="clearFilter('tier')">초기화</span>
+      </div>
+      <div id="tier-chips">
+        <div class="chip tier-1 active" data-tier="동일상권">
+          <span class="dot"></span>동일 (≤1km)<span class="chip-count">2</span>
+        </div>
+        <div class="chip tier-2 active" data-tier="인접상권">
+          <span class="dot"></span>인접 (1~3km)<span class="chip-count">5</span>
+        </div>
+        <div class="chip tier-3 active" data-tier="근접권">
+          <span class="dot"></span>근접 (3~5km)<span class="chip-count">8</span>
+        </div>
+        <div class="chip tier-4 active" data-tier="별도상권">
+          <span class="dot"></span>별도<span class="chip-count">18</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="filter-section">
+      <div class="filter-title">
+        <span>카테고리 필터</span>
+        <span class="clear-btn" onclick="clearFilter('cat')">초기화</span>
+      </div>
+      <div id="cat-chips"></div>
+    </div>
+
+    <div class="filter-section">
+      <div class="filter-title"><span>상권원 표시 (반경)</span></div>
+      <div class="radius-toggle" id="radius-toggle">
+        <div class="chip" data-radius="0">없음</div>
+        <div class="chip active" data-radius="1">1km</div>
+        <div class="chip" data-radius="3">3km</div>
+        <div class="chip" data-radius="5">5km</div>
+      </div>
+    </div>
+
+    <div class="filter-section">
+      <div class="filter-title"><span>브랜드 검색</span></div>
+      <input type="text" class="brand-search" id="brand-search"
+             placeholder="예: 다이소, 하나투어, 아르페지오..." />
+    </div>
+
+  </div>
+
+  <!-- 홈플 이슈 탭 -->
+  <div id="tab-issues" class="tab-content">
+    <div class="issue-sort">
+      <button class="sort-btn active" data-sort="tier">위험순</button>
+      <button class="sort-btn" data-sort="brands">브랜드↓</button>
+      <button class="sort-btn" data-sort="dist">거리↑</button>
+      <button class="sort-btn" data-sort="name">가나다</button>
+    </div>
+    <div id="issue-list"></div>
+  </div>
+
+</aside>
+
+<div id="map"></div>
+
+<aside class="panel-right">
+  <div id="detail-content">
+    <div class="empty-state">
+      <div class="empty-icon">📍</div>
+      <div class="empty-title">매장을 선택하세요</div>
+      <div class="empty-desc">
+        지도 위의 홈플러스 영업중단 점포(원형 마커)에<br>
+        커서를 올리면 카테고리별 입점 현황이 표시됩니다.<br><br>
+        클릭하면 입점 브랜드 전체 리스트와<br>
+        매칭된 이랜드 점포 정보를 볼 수 있습니다.
+      </div>
+    </div>
+  </div>
+</aside>
+
+<script>
+(function loadLeaflet() {
+  const sources = [
+    'https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js',
+    'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js',
+    'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js',
+  ];
+  function tryLoad(i) {
+    if (i >= sources.length) {
+      document.body.innerHTML = '<div style="padding:40px;font-family:sans-serif;color:#fff;background:#0a0e1a;height:100vh;"><h2>지도 라이브러리(Leaflet) 로드 실패</h2><p>인터넷 연결 또는 방화벽이 차단되었을 수 있습니다.</p></div>';
+      return;
+    }
+    const s = document.createElement('script');
+    s.src = sources[i];
+    s.onload = function() { typeof L !== 'undefined' ? initMap() : tryLoad(i + 1); };
+    s.onerror = function() { tryLoad(i + 1); };
+    document.head.appendChild(s);
+  }
+  typeof L !== 'undefined' ? initMap() : tryLoad(0);
+})();
+
+function initMap() {
+
+const DATA = {"homeplus": [{"name": "중계점", "addr": "서울 노원구 중계동", "lat": 37.639815, "lng": 127.06864, "tier": "동일상권", "eland_id": 36, "eland_brand": "2001아울렛", "eland_name": "중계점", "eland_addr": "서울 노원구 동일로204가길 46", "distance": 0.18, "total_brands": 5, "categories": [{"category": "뷰티/헤어/네일", "brands": ["미플", "박공헤어"], "count": 2}, {"category": "생활/홈/리빙", "brands": ["다이소"], "count": 1}, {"category": "키즈/놀이/엔터", "brands": ["노리디지털키즈카페"], "count": 1}, {"category": "화훼/플라워", "brands": ["로즈플라워"], "count": 1}]}, {"name": "신내점", "addr": "서울 중랑구 신내동", "lat": 37.615754, "lng": 127.093753, "tier": "근접권", "eland_id": 36, "eland_brand": "2001아울렛", "eland_name": "중계점", "eland_addr": "서울 노원구 동일로204가길 46", "distance": 3.64, "total_brands": 4, "categories": [{"category": "뷰티/헤어/네일", "brands": ["준오헤어"], "count": 1}, {"category": "생활/홈/리빙", "brands": ["까사벨르", "다이소"], "count": 2}, {"category": "여행/서비스/기타", "brands": ["하나투어"], "count": 1}]}, {"name": "면목점", "addr": "서울 중랑구 면목동", "lat": 37.580511, "lng": 127.081936, "tier": "별도상권", "eland_id": 37, "eland_brand": "2001아울렛", "eland_name": "천호2점", "eland_addr": "서울 강동구 구천면로 189", "distance": 5.84, "total_brands": 2, "categories": [{"category": "여행/서비스/기타", "brands": ["하나투어"], "count": 1}, {"category": "통신/모바일", "brands": ["LG_U플러스"], "count": 1}]}, {"name": "잠실점", "addr": "서울 송파구 잠실동", "lat": 37.516228, "lng": 127.102999, "tier": "근접권", "eland_id": 37, "eland_brand": "2001아울렛", "eland_name": "천호2점", "eland_addr": "서울 강동구 구천면로 189", "distance": 3.44, "total_brands": 9, "categories": [{"category": "뷰티/헤어/네일", "brands": ["박승철헤어", "포쉬네일"], "count": 2}, {"category": "생활/홈/리빙", "brands": ["소잉팩토리"], "count": 1}, {"category": "스포츠/피트니스", "brands": ["코너스톤잠실아카데미"], "count": 1}, {"category": "여행/서비스/기타", "brands": ["마인드카페"], "count": 1}, {"category": "키즈/놀이/엔터", "brands": ["상상블럭", "오락카페", "캘리클럽"], "count": 3}, {"category": "화훼/플라워", "brands": ["플로리아트"], "count": 1}]}, {"name": "센텀시티점", "addr": "부산 해운대구 센텀", "lat": 35.170936, "lng": 129.13371, "tier": "근접권", "eland_id": 17, "eland_brand": "NC백화점", "eland_name": "해운대점", "eland_addr": "부산 해운대구 좌동 1467-4", "distance": 3.94, "total_brands": 17, "categories": [{"category": "뷰티/헤어/네일", "brands": ["준오헤어"], "count": 1}, {"category": "생활/홈/리빙", "brands": ["까사벨르", "다이소", "엘레강스파리", "이노센트"], "count": 4}, {"category": "스포츠/피트니스", "brands": ["신준골프아카데미", "핏플러스"], "count": 2}, {"category": "여행/서비스/기타", "brands": ["모두모임", "모두투어", "하나투어"], "count": 3}, {"category": "키즈/놀이/엔터", "brands": ["상상블럭", "시크릿쥬쥬"], "count": 2}, {"category": "통신/모바일", "brands": ["KT", "LGU+", "SKT"], "count": 3}, {"category": "화훼/플라워", "brands": ["그리니(행사)", "포시즌"], "count": 2}]}, {"name": "부산반여점", "addr": "부산 해운대구 반여동", "lat": 35.196186, "lng": 129.115601, "tier": "근접권", "eland_id": 5, "eland_brand": "NC백화점", "eland_name": "부산대점", "eland_addr": "부산 금정구 장전동 40", "distance": 4.92, "total_brands": 2, "categories": [{"category": "뷰티/헤어/네일", "brands": ["포쉬네일"], "count": 1}, {"category": "생활/홈/리빙", "brands": ["좋은숨"], "count": 1}]}, {"name": "영도점", "addr": "부산 영도구", "lat": 35.095925, "lng": 129.044258, "tier": "근접권", "eland_id": 21, "eland_brand": "뉴코아아울렛", "eland_name": "괴정점", "eland_addr": "부산 사하구 괴정동", "distance": 4.58, "total_brands": 1, "categories": [{"category": "여행/서비스/기타", "brands": ["모두투어"], "count": 1}]}, {"name": "서부산점", "addr": "부산 사상구", "lat": 35.164289, "lng": 128.977809, "tier": "별도상권", "eland_id": 22, "eland_brand": "뉴코아아울렛", "eland_name": "덕천점", "eland_addr": "부산 북구 덕천동", "distance": 5.87, "total_brands": 2, "categories": [{"category": "스포츠/피트니스", "brands": ["메디제이필라테스"], "count": 1}, {"category": "여행/서비스/기타", "brands": ["모두투어"], "count": 1}]}, {"name": "상인점", "addr": "대구 달서구 상인동", "lat": 35.817952, "lng": 128.533611, "tier": "별도상권", "eland_id": 40, "eland_brand": "동아백화점", "eland_name": "쇼핑점", "eland_addr": "대구 중구 달구벌대로 2085", "distance": 7.51, "total_brands": 5, "categories": [{"category": "스포츠/피트니스", "brands": ["위드컴퍼니", "윈드사커"], "count": 2}, {"category": "여행/서비스/기타", "brands": ["모두투어"], "count": 1}, {"category": "키즈/놀이/엔터", "brands": ["맥스라이더", "히어로플레이파크"], "count": 2}]}, {"name": "가좌점", "addr": "인천 서구 가좌동", "lat": 37.497669, "lng": 126.670669, "tier": "근접권", "eland_id": 33, "eland_brand": "2001아울렛", "eland_name": "부평점", "eland_addr": "인천 부평구 경원대로 1277", "distance": 3.57, "total_brands": 7, "categories": [{"category": "뷰티/헤어/네일", "brands": ["젤리네일"], "count": 1}, {"category": "생활/홈/리빙", "brands": ["다이소", "리눔아티카", "모던하우스", "좋은숨굿프렌드"], "count": 4}, {"category": "스포츠/피트니스", "brands": ["GDRKU골프아카데미"], "count": 1}, {"category": "여행/서비스/기타", "brands": ["하나투어"], "count": 1}]}, {"name": "인천연수점", "addr": "인천 연수구", "lat": 37.405979, "lng": 126.683703, "tier": "근접권", "eland_id": 28, "eland_brand": "뉴코아아울렛", "eland_name": "인천점", "eland_addr": "인천 남동구 인하로 485", "distance": 4.52, "total_brands": 9, "categories": [{"category": "뷰티/헤어/네일", "brands": ["네일퀸", "두쏠뷰티"], "count": 2}, {"category": "생활/홈/리빙", "brands": ["다이소", "좋은숨"], "count": 2}, {"category": "키즈/놀이/엔터", "brands": ["상상블럭", "원더4D", "짱죽", "챔피언"], "count": 4}, {"category": "화훼/플라워", "brands": ["연수블라썸"], "count": 1}]}, {"name": "인천송도점", "addr": "인천 연수구 송도", "lat": 37.38033, "lng": 126.65629, "tier": "별도상권", "eland_id": 28, "eland_brand": "뉴코아아울렛", "eland_name": "인천점", "eland_addr": "인천 남동구 인하로 485", "distance": 8.12, "total_brands": 18, "categories": [{"category": "기타", "brands": ["피티시모"], "count": 1}, {"category": "뷰티/헤어/네일", "brands": ["고연화에스테틱", "네일퀸", "준오헤어"], "count": 3}, {"category": "생활/홈/리빙", "brands": ["다이소", "아르페지오", "유에이치북 행사", "일룸"], "count": 4}, {"category": "여행/서비스/기타", "brands": ["모두투어", "하나투어"], "count": 2}, {"category": "키즈/놀이/엔터", "brands": ["베이비엔젤스", "상상블럭", "상상스케치", "시아북카페", "원더4D", "챔피언"], "count": 6}, {"category": "통신/모바일", "brands": ["SKT", "굿리치"], "count": 2}]}, {"name": "인천논현점", "addr": "인천 남동구 논현", "lat": 37.400273, "lng": 126.725193, "tier": "별도상권", "eland_id": 28, "eland_brand": "뉴코아아울렛", "eland_name": "인천점", "eland_addr": "인천 남동구 인하로 485", "distance": 5.35, "total_brands": 9, "categories": [{"category": "뷰티/헤어/네일", "brands": ["고정현헤어", "네일퀸"], "count": 2}, {"category": "생활/홈/리빙", "brands": ["다이소", "블루메코", "아르페지오"], "count": 3}, {"category": "스포츠/피트니스", "brands": ["아놀드홍"], "count": 1}, {"category": "여행/서비스/기타", "brands": ["웅진코웨이"], "count": 1}, {"category": "키즈/놀이/엔터", "brands": ["엔젤크루키즈스위밍"], "count": 1}, {"category": "화훼/플라워", "brands": ["데코플라워"], "count": 1}]}, {"name": "킨텍스점", "addr": "경기 고양시 일산서구", "lat": 37.667778, "lng": 126.752238, "tier": "인접상권", "eland_id": 29, "eland_brand": "뉴코아아울렛", "eland_name": "일산점", "eland_addr": "경기 고양시 일산동구 중앙로 1206", "distance": 2.62, "total_brands": 4, "categories": [{"category": "뷰티/헤어/네일", "brands": ["이가자헤어비스", "포쉬네일"], "count": 2}, {"category": "생활/홈/리빙", "brands": ["모던하우스"], "count": 1}, {"category": "여행/서비스/기타", "brands": ["여행이지"], "count": 1}]}, {"name": "고양터미널점", "addr": "경기 고양시 일산동구", "lat": 37.643233, "lng": 126.789699, "tier": "인접상권", "eland_id": 29, "eland_brand": "뉴코아아울렛", "eland_name": "일산점", "eland_addr": "경기 고양시 일산동구 중앙로 1206", "distance": 1.69, "total_brands": 4, "categories": [{"category": "뷰티/헤어/네일", "brands": ["바디닥터", "이철헤어커커"], "count": 2}, {"category": "생활/홈/리빙", "brands": ["다이소", "모모아이"], "count": 2}]}, {"name": "포천송우점", "addr": "경기 포천시", "lat": 37.824383, "lng": 127.14132, "tier": "별도상권", "eland_id": 36, "eland_brand": "2001아울렛", "eland_name": "중계점", "eland_addr": "서울 노원구 동일로204가길 46", "distance": 21.35, "total_brands": 5, "categories": [{"category": "뷰티/헤어/네일", "brands": ["두쏠헤어"], "count": 1}, {"category": "생활/홈/리빙", "brands": ["두원리퍼브"], "count": 1}, {"category": "스포츠/피트니스", "brands": ["FITIN365+"], "count": 1}, {"category": "키즈/놀이/엔터", "brands": ["맥스라이더"], "count": 1}, {"category": "화훼/플라워", "brands": ["프렌치메종"], "count": 1}]}, {"name": "남양주진접점", "addr": "경기 남양주시", "lat": 37.721502, "lng": 127.188792, "tier": "별도상권", "eland_id": 36, "eland_brand": "2001아울렛", "eland_name": "중계점", "eland_addr": "서울 노원구 동일로204가길 46", "distance": 13.88, "total_brands": 6, "categories": [{"category": "생활/홈/리빙", "brands": ["다이소", "모모아이"], "count": 2}, {"category": "스포츠/피트니스", "brands": ["피트인365+"], "count": 1}, {"category": "여행/서비스/기타", "brands": ["모두투어", "하나투어"], "count": 2}, {"category": "키즈/놀이/엔터", "brands": ["타요키즈카페"], "count": 1}]}, {"name": "경기하남점", "addr": "경기 하남시", "lat": 37.538278, "lng": 127.212432, "tier": "별도상권", "eland_id": 37, "eland_brand": "2001아울렛", "eland_name": "천호2점", "eland_addr": "서울 강동구 구천면로 189", "distance": 7.63, "total_brands": 3, "categories": [{"category": "뷰티/헤어/네일", "brands": ["이가자헤어비스"], "count": 1}, {"category": "생활/홈/리빙", "brands": ["까사벨르"], "count": 1}, {"category": "여행/서비스/기타", "brands": ["하나투어"], "count": 1}]}, {"name": "부천소사점", "addr": "경기 부천시 소사구", "lat": 37.484863, "lng": 126.814255, "tier": "별도상권", "eland_id": 24, "eland_brand": "뉴코아아울렛", "eland_name": "부천점", "eland_addr": "경기 부천시 송내대로 239", "distance": 5.49, "total_brands": 3, "categories": [{"category": "뷰티/헤어/네일", "brands": ["두쏠뷰티"], "count": 1}, {"category": "생활/홈/리빙", "brands": ["다이소", "좋은숨"], "count": 2}]}, {"name": "분당오리점", "addr": "경기 성남시 분당구 구미동", "lat": 37.340046, "lng": 127.106971, "tier": "인접상권", "eland_id": 34, "eland_brand": "2001아울렛", "eland_name": "분당점", "eland_addr": "경기 성남시 분당구 미금일로154번길 20", "distance": 1.0, "total_brands": 6, "categories": [{"category": "뷰티/헤어/네일", "brands": ["더모락", "이철헤어커커"], "count": 2}, {"category": "생활/홈/리빙", "brands": ["세사리빙", "한샘키친&바스"], "count": 2}, {"category": "여행/서비스/기타", "brands": ["모두투어", "하나투어"], "count": 2}]}, {"name": "동수원점", "addr": "경기 수원시 팔달구 인계동", "lat": 37.262536, "lng": 127.03044, "tier": "동일상권", "eland_id": 23, "eland_brand": "뉴코아아울렛", "eland_name": "동수원점", "eland_addr": "경기 수원시 팔달구 인계로 154", "distance": 0.55, "total_brands": 8, "categories": [{"category": "뷰티/헤어/네일", "brands": ["박승철헤어", "플러스인바디"], "count": 2}, {"category": "생활/홈/리빙", "brands": ["라라홈", "아르페지오", "좋은숨"], "count": 3}, {"category": "여행/서비스/기타", "brands": ["마인드카페"], "count": 1}, {"category": "화훼/플라워", "brands": ["진스플라워", "프렌치메종"], "count": 2}]}, {"name": "익산점", "addr": "전북 익산시", "lat": 35.95888, "lng": 126.972349, "tier": "별도상권", "eland_id": 13, "eland_brand": "NC백화점", "eland_name": "전주점", "eland_addr": "전북 전주시 완산구 고사동 105-3", "distance": 21.96, "total_brands": 2, "categories": [{"category": "키즈/놀이/엔터", "brands": ["맥스라이더", "타요키즈카페"], "count": 2}]}, {"name": "김제점", "addr": "전북 김제시", "lat": 35.799997, "lng": 126.903191, "tier": "별도상권", "eland_id": 13, "eland_brand": "NC백화점", "eland_name": "전주점", "eland_addr": "전북 전주시 완산구 고사동 105-3", "distance": 21.92, "total_brands": 1, "categories": [{"category": "생활/홈/리빙", "brands": ["누리홈_브륄리에"], "count": 1}]}, {"name": "목포점", "addr": "전남 목포시", "lat": 34.805938, "lng": 126.399654, "tier": "별도상권", "eland_id": 16, "eland_brand": "NC백화점", "eland_name": "충장점", "eland_addr": "광주 동구 충장로4가 29-2", "distance": 60.35, "total_brands": 2, "categories": [{"category": "생활/홈/리빙", "brands": ["브릴리에(침구)"], "count": 1}, {"category": "키즈/놀이/엔터", "brands": ["맥스라이더"], "count": 1}]}, {"name": "순천풍덕점", "addr": "전남 순천시 풍덕동", "lat": 34.939942, "lng": 127.508766, "tier": "근접권", "eland_id": 9, "eland_brand": "NC백화점", "eland_name": "순천점", "eland_addr": "전남 순천시 조례동 766", "distance": 3.78, "total_brands": 1, "categories": [{"category": "생활/홈/리빙", "brands": ["아르페지오"], "count": 1}]}, {"name": "경산점", "addr": "경북 경산시", "lat": 35.832761, "lng": 128.735654, "tier": "인접상권", "eland_id": 2, "eland_brand": "NC백화점", "eland_name": "경산점", "eland_addr": "경북 경산시 중방동 332-13", "distance": 1.28, "total_brands": 6, "categories": [{"category": "생활/홈/리빙", "brands": ["다이소", "리치랜드", "블루메코,하나침장", "아르페지오"], "count": 4}, {"category": "스포츠/피트니스", "brands": ["잇츠짐"], "count": 1}, {"category": "여행/서비스/기타", "brands": ["모두투어"], "count": 1}]}, {"name": "죽도점", "addr": "경북 포항시 북구 죽도동", "lat": 36.030881, "lng": 129.365104, "tier": "별도상권", "eland_id": 26, "eland_brand": "뉴코아아울렛", "eland_name": "울산2점", "eland_addr": "울산 중구 성남동", "distance": 53.13, "total_brands": 1, "categories": [{"category": "스포츠/피트니스", "brands": ["잇츠짐"], "count": 1}]}, {"name": "구미점", "addr": "경북 구미시", "lat": 36.102758, "lng": 128.36379, "tier": "인접상권", "eland_id": 39, "eland_brand": "동아백화점", "eland_name": "구미점", "eland_addr": "경북 구미시 송원동로 28", "distance": 2.33, "total_brands": 3, "categories": [{"category": "뷰티/헤어/네일", "brands": ["더모스트헤어"], "count": 1}, {"category": "생활/홈/리빙", "brands": ["클푸/나이스필"], "count": 1}, {"category": "키즈/놀이/엔터", "brands": ["바운스트램폴린파크"], "count": 1}]}, {"name": "밀양점", "addr": "경남 밀양시", "lat": 35.488966, "lng": 128.740756, "tier": "별도상권", "eland_id": 30, "eland_brand": "뉴코아아울렛", "eland_name": "창원점", "eland_addr": "경남 창원시 의창구 창원대로397번길 6", "distance": 29.67, "total_brands": 2, "categories": [{"category": "생활/홈/리빙", "brands": ["누리홈"], "count": 1}, {"category": "스포츠/피트니스", "brands": ["잇츠짐"], "count": 1}]}, {"name": "진주점", "addr": "경남 진주시", "lat": 35.187602, "lng": 128.117743, "tier": "별도상권", "eland_id": 30, "eland_brand": "뉴코아아울렛", "eland_name": "창원점", "eland_addr": "경남 창원시 의창구 창원대로397번길 6", "distance": 47.94, "total_brands": 3, "categories": [{"category": "뷰티/헤어/네일", "brands": ["티엠헤어"], "count": 1}, {"category": "생활/홈/리빙", "brands": ["다이소", "브릴리에"], "count": 2}]}, {"name": "마산점", "addr": "경남 창원시 마산회원구", "lat": 35.222657, "lng": 128.585752, "tier": "별도상권", "eland_id": 30, "eland_brand": "뉴코아아울렛", "eland_name": "창원점", "eland_addr": "경남 창원시 의창구 창원대로397번길 6", "distance": 5.3, "total_brands": 3, "categories": [{"category": "생활/홈/리빙", "brands": ["제우스가구"], "count": 1}, {"category": "스포츠/피트니스", "brands": ["더스포잇츠짐"], "count": 1}, {"category": "키즈/놀이/엔터", "brands": ["몬스터파크"], "count": 1}]}, {"name": "진해점", "addr": "경남 창원시 진해구", "lat": 35.153234, "lng": 128.691258, "tier": "별도상권", "eland_id": 30, "eland_brand": "뉴코아아울렛", "eland_name": "창원점", "eland_addr": "경남 창원시 의창구 창원대로397번길 6", "distance": 10.08, "total_brands": 5, "categories": [{"category": "뷰티/헤어/네일", "brands": ["라브릿지헤어"], "count": 1}, {"category": "생활/홈/리빙", "brands": ["까사벨르", "누리홈", "제우스가구"], "count": 3}, {"category": "스포츠/피트니스", "brands": ["잇츠짐"], "count": 1}]}, {"name": "김해점", "addr": "경남 김해시", "lat": 35.241827, "lng": 128.870178, "tier": "별도상권", "eland_id": 22, "eland_brand": "뉴코아아울렛", "eland_name": "덕천점", "eland_addr": "부산 북구 덕천동", "distance": 12.94, "total_brands": 10, "categories": [{"category": "뷰티/헤어/네일", "brands": ["두쏠헤어"], "count": 1}, {"category": "생활/홈/리빙", "brands": ["다이소", "모던하우스", "아르페지오", "엘레강스파리", "킹스톤 가구"], "count": 5}, {"category": "여행/서비스/기타", "brands": ["모두투어", "하나투어"], "count": 2}, {"category": "키즈/놀이/엔터", "brands": ["타카슬라임카페"], "count": 1}, {"category": "통신/모바일", "brands": ["알뜰폰"], "count": 1}]}], "eland": [{"id": 1, "brand": "NC백화점", "name": "강서점", "addr": "서울 강서구 등촌동 689", "dong": "등촌동", "lat": 37.559904, "lng": 126.840512}, {"id": 2, "brand": "NC백화점", "name": "경산점", "addr": "경북 경산시 중방동 332-13", "dong": "중방동", "lat": 35.821765, "lng": 128.731472}, {"id": 3, "brand": "NC백화점", "name": "고잔점", "addr": "경기 안산시 단원구 광덕대로 194", "dong": "고잔동", "lat": 37.313444, "lng": 126.831009}, {"id": 4, "brand": "NC백화점", "name": "광주역점", "addr": "광주 북구 신안동 6-1", "dong": "신안동", "lat": 35.161514, "lng": 126.907212}, {"id": 5, "brand": "NC백화점", "name": "부산대점", "addr": "부산 금정구 장전동 40", "dong": "장전동", "lat": 35.232298, "lng": 129.084245}, {"id": 6, "brand": "NC백화점", "name": "불광점", "addr": "서울 은평구 대조동 240", "dong": "대조동", "lat": 37.609712, "lng": 126.928852}, {"id": 7, "brand": "NC백화점", "name": "송파점", "addr": "서울 송파구 문정동 634", "dong": "문정동", "lat": 37.477406, "lng": 127.125741}, {"id": 8, "brand": "NC백화점", "name": "수원터미널점", "addr": "경기 수원시 권선구 권선동 1189", "dong": "권선동", "lat": 37.250182, "lng": 127.01989}, {"id": 9, "brand": "NC백화점", "name": "순천점", "addr": "전남 순천시 조례동 766", "dong": "조례동", "lat": 34.972477, "lng": 127.520939}, {"id": 10, "brand": "NC백화점", "name": "신구로점", "addr": "서울 구로구 구로중앙로 152", "dong": "구로동", "lat": 37.50106, "lng": 126.88268}, {"id": 11, "brand": "NC백화점", "name": "야탑점", "addr": "경기 성남시 분당구 야탑동 357-1", "dong": "야탑동", "lat": 37.410906, "lng": 127.127476}, {"id": 12, "brand": "NC백화점", "name": "엑스코점", "addr": "대구 북구 산격2동 1668", "dong": "산격동", "lat": 35.905265, "lng": 128.610443}, {"id": 13, "brand": "NC백화점", "name": "전주점", "addr": "전북 전주시 완산구 고사동 105-3", "dong": "고사동", "lat": 35.819538, "lng": 127.145081}, {"id": 14, "brand": "NC백화점", "name": "중앙로역점", "addr": "대전 중구 선화동 3-14", "dong": "선화동", "lat": 36.328894, "lng": 127.425032}, {"id": 15, "brand": "NC백화점", "name": "청주점", "addr": "충북 청주시 흥덕구 풍산로 15", "dong": "가경동", "lat": 36.626225, "lng": 127.431113}, {"id": 16, "brand": "NC백화점", "name": "충장점", "addr": "광주 동구 충장로4가 29-2", "dong": "충장로4가", "lat": 35.14864, "lng": 126.913311}, {"id": 17, "brand": "NC백화점", "name": "해운대점", "addr": "부산 해운대구 좌동 1467-4", "dong": "좌동", "lat": 35.170584, "lng": 129.177093}, {"id": 18, "brand": "NC백화점", "name": "NC대전유성점", "addr": "대전 유성구 계룡로 119", "dong": "봉명동", "lat": 36.353564, "lng": 127.343895}, {"id": 19, "brand": "뉴코아아울렛", "name": "강남점", "addr": "서울 서초구 잠원로 51", "dong": "잠원동", "lat": 37.50928, "lng": 127.0075}, {"id": 20, "brand": "뉴코아아울렛", "name": "광명점", "addr": "경기 광명시 하안로287번길 8", "dong": "하안동", "lat": 37.461151, "lng": 126.879319}, {"id": 21, "brand": "뉴코아아울렛", "name": "괴정점", "addr": "부산 사하구 괴정동", "dong": "괴정동", "lat": 35.098937, "lng": 128.994066}, {"id": 22, "brand": "뉴코아아울렛", "name": "덕천점", "addr": "부산 북구 덕천동", "dong": "덕천동", "lat": 35.211104, "lng": 129.007605}, {"id": 23, "brand": "뉴코아아울렛", "name": "동수원점", "addr": "경기 수원시 팔달구 인계로 154", "dong": "인계동", "lat": 37.266301, "lng": 127.034536}, {"id": 24, "brand": "뉴코아아울렛", "name": "부천점", "addr": "경기 부천시 송내대로 239", "dong": "상동", "lat": 37.504566, "lng": 126.757187}, {"id": 25, "brand": "뉴코아아울렛", "name": "산본점", "addr": "경기 군포시 산본동", "dong": "산본동", "lat": 37.357783, "lng": 126.932562}, {"id": 26, "brand": "뉴코아아울렛", "name": "울산2점", "addr": "울산 중구 성남동", "dong": "성남동", "lat": 35.554404, "lng": 129.321441}, {"id": 27, "brand": "뉴코아아울렛", "name": "울산점", "addr": "울산 남구 삼산로 217", "dong": "달동", "lat": 35.538481, "lng": 129.330734}, {"id": 28, "brand": "뉴코아아울렛", "name": "인천점", "addr": "인천 남동구 인하로 485", "dong": "구월동", "lat": 37.444267, "lng": 126.700754}, {"id": 29, "brand": "뉴코아아울렛", "name": "일산점", "addr": "경기 고양시 일산동구 중앙로 1206", "dong": "마두동", "lat": 37.65452, "lng": 126.77678}, {"id": 30, "brand": "뉴코아아울렛", "name": "창원점", "addr": "경남 창원시 의창구 창원대로397번길 6", "dong": "팔용동", "lat": 35.234533, "lng": 128.642249}, {"id": 31, "brand": "뉴코아아울렛", "name": "평촌2점", "addr": "경기 안양시 동안구 호계동", "dong": "호계동", "lat": 37.389184, "lng": 126.951189}, {"id": 32, "brand": "뉴코아아울렛", "name": "평택점", "addr": "경기 평택시 경기대로 279", "dong": "비전동", "lat": 36.995475, "lng": 127.112502}, {"id": 33, "brand": "2001아울렛", "name": "부평점", "addr": "인천 부평구 경원대로 1277", "dong": "산곡동", "lat": 37.490614, "lng": 126.710149}, {"id": 34, "brand": "2001아울렛", "name": "분당점", "addr": "경기 성남시 분당구 미금일로154번길 20", "dong": "구미동", "lat": 37.349049, "lng": 127.10744}, {"id": 35, "brand": "2001아울렛", "name": "안양점", "addr": "경기 안양시 만안구 안양로 275", "dong": "안양동", "lat": 37.396706, "lng": 126.922694}, {"id": 36, "brand": "2001아울렛", "name": "중계점", "addr": "서울 노원구 동일로204가길 46", "dong": "중계동", "lat": 37.641304, "lng": 127.067988}, {"id": 37, "brand": "2001아울렛", "name": "천호2점", "addr": "서울 강동구 구천면로 189", "dong": "천호동", "lat": 37.541205, "lng": 127.125953}, {"id": 38, "brand": "동아백화점", "name": "강북점", "addr": "대구 북구 칠곡중앙대로 416", "dong": "읍내동", "lat": 35.933041, "lng": 128.548981}, {"id": 39, "brand": "동아백화점", "name": "구미점", "addr": "경북 구미시 송원동로 28", "dong": "송정동", "lat": 36.119756, "lng": 128.348535}, {"id": 40, "brand": "동아백화점", "name": "쇼핑점", "addr": "대구 중구 달구벌대로 2085", "dong": "덕산동", "lat": 35.866314, "lng": 128.591847}, {"id": 41, "brand": "동아백화점", "name": "수성점", "addr": "대구 수성구 지범로 191", "dong": "범물동", "lat": 35.821137, "lng": 128.640387}], "tier_counts": {"동일상권": 2, "인접상권": 5, "근접권": 8, "별도상권": 18}, "total_brands": 168};
+
+const CAT_COLOR = {
+  '생활/홈/리빙':    'life',
+  '화훼/플라워':     'flower',
+  '키즈/놀이/엔터':  'kids',
+  '스포츠/피트니스': 'sports',
+  '뷰티/헤어/네일':  'beauty',
+  '통신/모바일':     'telecom',
+  '여행/서비스/기타': 'travel',
+  '기타':            'etc',
+};
+const CAT_CSS_VAR = {
+  life: '#4cc9f0', flower: '#f72585', kids: '#b5179e', sports: '#7209b7',
+  beauty: '#f3722c', telecom: '#43aa8b', travel: '#f9c74f', etc: '#6c757d',
+};
+const CAT_LABEL_SHORT = {
+  '생활/홈/리빙': '리빙', '화훼/플라워': '화훼', '키즈/놀이/엔터': '키즈',
+  '스포츠/피트니스': '스포츠', '뷰티/헤어/네일': '뷰티', '통신/모바일': '통신',
+  '여행/서비스/기타': '여행', '기타': '기타',
+};
+const TIER_CLASS = { '동일상권': 'tier-1', '인접상권': 'tier-2', '근접권': 'tier-3', '별도상권': 'tier-4' };
+const TIER_ORDER = { '동일상권': 0, '인접상권': 1, '근접권': 2, '별도상권': 3 };
+const TIER_LABEL = { '동일상권': '★ 동일상권', '인접상권': '◐ 인접상권', '근접권': '· 근접권', '별도상권': '별도상권' };
+
+const state = {
+  layers: { homeplus: true, eland: true, lines: true },
+  tiers: new Set(['동일상권', '인접상권', '근접권', '별도상권']),
+  categories: new Set(),
+  radius: 1,
+  brandSearch: '',
+  selectedStore: null,
+  issueSort: 'tier',
+};
+
+// MAP INIT
+const map = L.map('map', { center: [36.5, 127.8], zoom: 7, zoomControl: true });
+L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap', maxZoom: 18 }).addTo(map);
+
+const hpLayer     = L.layerGroup().addTo(map);
+const elLayer     = L.layerGroup().addTo(map);
+const lineLayer   = L.layerGroup().addTo(map);
+const radiusLayer = L.layerGroup().addTo(map);
+const hpMarkers   = {};
+const elMarkers   = {};
+
+// CATEGORY CHIPS
+function buildCategoryChips() {
+  const allCats = new Set();
+  DATA.homeplus.forEach(s => s.categories.forEach(c => allCats.add(c.category)));
+  const container = document.getElementById('cat-chips');
+  container.innerHTML = '';
+  Array.from(allCats).sort().forEach(cat => {
+    const storeCount = DATA.homeplus.filter(s => s.categories.some(c => c.category === cat)).length;
+    const cls = CAT_COLOR[cat] || 'etc';
+    const chip = document.createElement('div');
+    chip.className = 'chip active';
+    chip.dataset.cat = cat;
+    chip.innerHTML = `<span class="dot ccolor-${cls}"></span>${CAT_LABEL_SHORT[cat] || cat}<span class="chip-count">${storeCount}</span>`;
+    chip.addEventListener('click', () => toggleCategory(cat, chip));
+    container.appendChild(chip);
+  });
+}
+
+// TOOLTIP
+function makeTooltipHTML(store) {
+  const tierCls = TIER_CLASS[store.tier];
+  const tierLbl = TIER_LABEL[store.tier];
+  let catRows = '';
+  store.categories.forEach(c => {
+    const ccls = CAT_COLOR[c.category] || 'etc';
+    catRows += `<div class="tt-cat-row"><span class="tt-cat-name"><span class="tt-cat-dot ccolor-${ccls}"></span>${c.category}</span><span class="tt-cat-count">${c.count}</span></div>`;
+  });
+  return `
+    <div class="tt-head">
+      <div class="tt-store">홈플 ${store.name}</div>
+      <span class="tt-tier ${tierCls}">${tierLbl} · ${store.distance ? store.distance.toFixed(2)+'km' : ''}</span>
+    </div>
+    <div class="tt-body">
+      <div class="tt-total">총 입점 브랜드 <b>${store.total_brands}</b>개</div>
+      ${catRows}
+      <div class="tt-hint">클릭 시 브랜드 상세 표시</div>
+    </div>`;
+}
+
+// MARKERS
+function buildMarkers() {
+  DATA.homeplus.forEach(store => {
+    const tierCls = TIER_CLASS[store.tier];
+    const size = 28 + Math.min(store.total_brands, 18);
+    const icon = L.divIcon({
+      className: 'hp-marker',
+      html: `<div class="hp-marker-inner ${tierCls}" data-store="${store.name}">${store.total_brands}</div>`,
+      iconSize: [size, size], iconAnchor: [size/2, size/2],
+    });
+    const marker = L.marker([store.lat, store.lng], { icon, zIndexOffset: 100 });
+    marker.bindTooltip(L.tooltip({ direction: 'top', offset: [0, -size/2], className: 'hover-tooltip', opacity: 1 }).setContent(makeTooltipHTML(store)));
+    marker.on('click', () => selectStore(store));
+    marker._storeData = store;
+    hpMarkers[store.name] = marker;
+    hpLayer.addLayer(marker);
+  });
+  DATA.eland.forEach(s => {
+    const icon = L.divIcon({ className: 'el-marker', html: `<div class="el-marker-inner"></div>`, iconSize: [14, 14], iconAnchor: [7, 7] });
+    const marker = L.marker([s.lat, s.lng], { icon, zIndexOffset: 50 });
+    marker.bindTooltip(`<b>이랜드 · ${s.brand}</b><br>${s.name}<br><span style="color:#a0a8bc;font-size:10px">${s.addr}</span>`, { direction: 'top', className: 'hover-tooltip', offset: [0, -7] });
+    marker.on('click', () => { state.selectedStore = null; document.querySelectorAll('.hp-marker-inner.selected').forEach(el => el.classList.remove('selected')); radiusLayer.clearLayers(); renderElandDetail(s); });
+    elMarkers[s.id] = marker;
+    elLayer.addLayer(marker);
+  });
+}
+
+function buildLines() {
+  lineLayer.clearLayers();
+  DATA.homeplus.forEach(store => {
+    if (!store.eland_id || store.tier === '별도상권') return;
+    const elStore = DATA.eland.find(e => e.id === store.eland_id);
+    if (!elStore) return;
+    const tierColor = { '동일상권': '#ef476f', '인접상권': '#ffb547', '근접권': '#06d6a0' }[store.tier];
+    const line = L.polyline([[store.lat, store.lng], [elStore.lat, elStore.lng]], {
+      color: tierColor,
+      weight: store.tier === '동일상권' ? 3 : (store.tier === '인접상권' ? 2 : 1.5),
+      opacity: 0.6,
+      dashArray: store.tier === '근접권' ? '4,6' : null,
+    });
+    line._tier = store.tier;
+    lineLayer.addLayer(line);
+  });
+}
+
+function drawRadius(store) {
+  radiusLayer.clearLayers();
+  if (state.radius === 0 || !store) return;
+  L.circle([store.lat, store.lng], { radius: state.radius * 1000, color: '#ffd166', fillColor: '#ffd166', fillOpacity: 0.05, weight: 1.5, dashArray: '4,6' }).addTo(radiusLayer);
+}
+
+function applyFilters() {
+  DATA.homeplus.forEach(store => {
+    const marker = hpMarkers[store.name];
+    const tierOK   = state.tiers.has(store.tier);
+    const catOK    = state.categories.size === 0 || store.categories.some(c => state.categories.has(c.category));
+    const brandOK  = !state.brandSearch || store.categories.some(c => c.brands.some(b => b.toLowerCase().includes(state.brandSearch.toLowerCase())));
+    const visible  = tierOK && catOK && brandOK && state.layers.homeplus;
+    visible ? (!hpLayer.hasLayer(marker) && hpLayer.addLayer(marker)) : (hpLayer.hasLayer(marker) && hpLayer.removeLayer(marker));
+  });
+  if (state.layers.lines) {
+    if (!map.hasLayer(lineLayer)) map.addLayer(lineLayer);
+    lineLayer.eachLayer(l => l.setStyle({ opacity: state.tiers.has(l._tier) ? 0.6 : 0 }));
+  } else {
+    if (map.hasLayer(lineLayer)) map.removeLayer(lineLayer);
+  }
+  state.layers.eland ? (!map.hasLayer(elLayer) && map.addLayer(elLayer)) : (map.hasLayer(elLayer) && map.removeLayer(elLayer));
+}
+
+// ISSUE LIST
+function renderIssueList() {
+  const stores = [...DATA.homeplus];
+  if (state.issueSort === 'tier') {
+    stores.sort((a, b) => TIER_ORDER[a.tier] - TIER_ORDER[b.tier] || a.distance - b.distance);
+  } else if (state.issueSort === 'brands') {
+    stores.sort((a, b) => b.total_brands - a.total_brands);
+  } else if (state.issueSort === 'dist') {
+    stores.sort((a, b) => a.distance - b.distance);
+  } else {
+    stores.sort((a, b) => a.name.localeCompare(b.name, 'ko'));
+  }
+
+  const container = document.getElementById('issue-list');
+  container.innerHTML = '';
+  stores.forEach(store => {
+    const tc = TIER_CLASS[store.tier];
+    const tierNum = tc.replace('tier-', '');
+    const isSelected = state.selectedStore && state.selectedStore.name === store.name;
+
+    let catTags = '';
+    store.categories.forEach(c => {
+      const ccls = CAT_COLOR[c.category] || 'etc';
+      const color = CAT_CSS_VAR[ccls] || '#6c757d';
+      catTags += `<span class="issue-cat-tag"><span class="issue-cat-dot" style="background:${color}"></span>${CAT_LABEL_SHORT[c.category] || c.category} <b style="color:var(--text-1)">${c.count}</b></span>`;
+    });
+
+    const card = document.createElement('div');
+    card.className = `issue-card tier-${store.tier}${isSelected ? ' selected' : ''}`;
+    card.dataset.storeName = store.name;
+    card.innerHTML = `
+      <div class="issue-card-top">
+        <div class="issue-store-name">홈플 ${store.name}</div>
+        <span class="issue-tier-badge ${tc}">${TIER_LABEL[store.tier]}</span>
+      </div>
+      <div class="issue-card-mid">
+        <div class="issue-eland">→ <b>${store.eland_brand}</b> ${store.eland_name}</div>
+        <div class="issue-dist">${store.distance.toFixed(2)} km</div>
+      </div>
+      <div class="issue-cats">${catTags}</div>
+      <div class="issue-brand-count">
+        <span>총 브랜드 <b>${store.total_brands}</b>개 · ${store.categories.length}개 카테고리</span>
+        <span style="color:var(--text-3);font-size:10px">📍 ${store.addr.replace(/^(서울|경기|부산|인천|대구|대전|광주|전북|전남|경북|경남)\s/, '')}</span>
+      </div>
+    `;
+    card.addEventListener('click', () => {
+      // 이슈 탭에서 카드 클릭 시 지도 선택 + 우측 패널 표시
+      selectStore(store);
+      // 이슈 카드 선택 상태 업데이트
+      document.querySelectorAll('.issue-card').forEach(c => c.classList.remove('selected'));
+      card.classList.add('selected');
+    });
+    container.appendChild(card);
+  });
+}
+
+// DETAIL PANELS
+function renderDetail(store) {
+  const tierCls = TIER_CLASS[store.tier];
+  let catBlocks = '';
+  store.categories.forEach(c => {
+    const ccls = CAT_COLOR[c.category] || 'etc';
+    let pills = '';
+    c.brands.forEach(b => {
+      const highlight = state.brandSearch && b.toLowerCase().includes(state.brandSearch.toLowerCase());
+      pills += `<span class="brand-pill${highlight ? ' highlight' : ''}">${b}</span>`;
+    });
+    catBlocks += `
+      <div class="cat-block">
+        <div class="cat-head">
+          <span class="cat-name"><span class="cat-bar ccolor-${ccls}"></span>${c.category}</span>
+          <span class="cat-count">${c.count}</span>
+        </div>
+        <div class="brand-list">${pills}</div>
+      </div>`;
+  });
+  const matchHTML = store.eland_id ? `
+    <div class="detail-match" onclick="window._zoomToEland(${store.eland_id})" style="cursor:pointer">
+      <div class="match-label">최근접 이랜드 점포 (클릭 시 이동)</div>
+      <div class="match-store">
+        <span><b style="color:#4cc9f0">${store.eland_brand}</b> ${store.eland_name}</span>
+        <span class="match-dist">${store.distance.toFixed(2)} km</span>
+      </div>
+      <div style="font-size:10px;color:var(--text-3);margin-top:4px">📍 ${store.eland_addr}</div>
+    </div>` : '';
+  window._zoomToEland = function(id) {
+    const e = DATA.eland.find(x => x.id === id);
+    if (e) { map.flyTo([e.lat, e.lng], 13, { duration: 0.6 }); renderElandDetail(e); }
+  };
+  document.getElementById('detail-content').innerHTML = `
+    <div class="detail-head">
+      <span class="detail-tier ${tierCls}">${TIER_LABEL[store.tier]}</span>
+      <div class="detail-name">홈플 ${store.name}</div>
+      <div class="detail-sub" style="font-size:11px;color:var(--text-3);margin-bottom:4px">📍 ${store.addr || ''}</div>
+      <div class="detail-sub">총 ${store.total_brands}개 브랜드 입점 · ${store.categories.length}개 카테고리</div>
+      ${matchHTML}
+    </div>
+    <div class="detail-body">${catBlocks}</div>`;
+}
+
+function renderElandDetail(el) {
+  const matchedHps = DATA.homeplus.filter(h => h.eland_id === el.id).sort((a, b) => a.distance - b.distance);
+  let hpListHTML = '<div style="margin-top:14px;padding:12px;background:var(--bg-card);border:1px solid var(--border);border-radius:8px"><div style="font-size:10px;color:var(--text-3);margin-bottom:8px;text-transform:uppercase;letter-spacing:.06em">매칭된 영업중단 홈플 점포</div>';
+  if (matchedHps.length > 0) {
+    matchedHps.forEach(h => {
+      const tc = TIER_CLASS[h.tier];
+      hpListHTML += `<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border);font-size:12px;cursor:pointer" onclick="window._selectByName('${h.name}')"><span><span class="detail-tier ${tc}" style="font-size:9px;padding:2px 6px;margin-right:6px">${TIER_LABEL[h.tier]}</span>${h.name}</span><span style="color:var(--accent);font-weight:700">${h.distance.toFixed(2)} km</span></div>`;
+    });
+  } else {
+    hpListHTML += '<div style="color:var(--text-3);font-size:12px">매칭된 영업중단 홈플 점포 없음</div>';
+  }
+  hpListHTML += '</div>';
+  document.getElementById('detail-content').innerHTML = `
+    <div class="detail-head">
+      <span class="detail-tier" style="background:rgba(76,201,240,0.12);color:#4cc9f0">이랜드 점포</span>
+      <div class="detail-name">${el.brand}</div>
+      <div style="font-size:18px;font-weight:600;color:var(--text-1);margin-top:2px">${el.name}</div>
+      <div class="detail-sub" style="font-size:11px;color:var(--text-3);margin-top:6px">📍 ${el.addr}</div>
+      ${hpListHTML}
+    </div>`;
+}
+
+window._selectByName = function(name) {
+  const s = DATA.homeplus.find(h => h.name === name);
+  if (s) selectStore(s);
+};
+
+function selectStore(store) {
+  state.selectedStore = store;
+  document.querySelectorAll('.hp-marker-inner.selected').forEach(el => el.classList.remove('selected'));
+  const marker = hpMarkers[store.name];
+  const el = marker.getElement();
+  if (el) { const inner = el.querySelector('.hp-marker-inner'); if (inner) inner.classList.add('selected'); }
+  drawRadius(store);
+  renderDetail(store);
+  map.flyTo([store.lat, store.lng], Math.max(map.getZoom(), 11), { duration: 0.6 });
+  // 이슈 탭 카드 선택 동기화
+  document.querySelectorAll('.issue-card').forEach(c => {
+    c.classList.toggle('selected', c.dataset.storeName === store.name);
+  });
+}
+
+// EVENT HANDLERS
+function toggleTier(tier, chip) {
+  state.tiers.has(tier) ? (state.tiers.delete(tier), chip.classList.remove('active')) : (state.tiers.add(tier), chip.classList.add('active'));
+  applyFilters();
+}
+
+function toggleCategory(cat, chip) {
+  if (state.categories.size === 0) {
+    document.querySelectorAll('#cat-chips .chip').forEach(c => { if (c.dataset.cat === cat) state.categories.add(cat); else c.classList.remove('active'); });
+  } else {
+    if (state.categories.has(cat)) {
+      state.categories.delete(cat); chip.classList.remove('active');
+      if (state.categories.size === 0) document.querySelectorAll('#cat-chips .chip').forEach(c => c.classList.add('active'));
+    } else { state.categories.add(cat); chip.classList.add('active'); }
+  }
+  applyFilters();
+}
+
+function clearFilter(type) {
+  if (type === 'tier') {
+    state.tiers = new Set(['동일상권', '인접상권', '근접권', '별도상권']);
+    document.querySelectorAll('#tier-chips .chip').forEach(c => c.classList.add('active'));
+  } else if (type === 'cat') {
+    state.categories = new Set();
+    document.querySelectorAll('#cat-chips .chip').forEach(c => c.classList.add('active'));
+  }
+  applyFilters();
+}
+
+// Sidebar tabs
+document.querySelectorAll('.sidebar-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.sidebar-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById('tab-' + tab.dataset.tab).classList.add('active');
+    if (tab.dataset.tab === 'issues') renderIssueList();
+  });
+});
+
+// Issue sort buttons
+document.querySelectorAll('.sort-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    state.issueSort = btn.dataset.sort;
+    renderIssueList();
+  });
+});
+
+document.querySelectorAll('#tier-chips .chip').forEach(chip => {
+  chip.addEventListener('click', () => toggleTier(chip.dataset.tier, chip));
+});
+document.querySelectorAll('.layer-toggle').forEach(toggle => {
+  toggle.addEventListener('click', () => {
+    const layer = toggle.dataset.layer;
+    state.layers[layer] = !state.layers[layer];
+    toggle.querySelector('.switch').classList.toggle('on', state.layers[layer]);
+    applyFilters();
+  });
+});
+document.querySelectorAll('#radius-toggle .chip').forEach(chip => {
+  chip.addEventListener('click', () => {
+    document.querySelectorAll('#radius-toggle .chip').forEach(c => c.classList.remove('active'));
+    chip.classList.add('active');
+    state.radius = parseFloat(chip.dataset.radius);
+    if (state.selectedStore) drawRadius(state.selectedStore);
+  });
+});
+document.getElementById('brand-search').addEventListener('input', e => {
+  state.brandSearch = e.target.value.trim();
+  applyFilters();
+  if (state.selectedStore) renderDetail(state.selectedStore);
+});
+
+// INIT
+buildCategoryChips();
+buildMarkers();
+buildLines();
+map.fitBounds(L.latLngBounds([...DATA.homeplus.map(s => [s.lat, s.lng]), ...DATA.eland.map(s => [s.lat, s.lng])]), { padding: [50, 50] });
+
+// LEGEND
+document.getElementById('map').insertAdjacentHTML('beforeend', `
+  <div class="map-legend">
+    <div class="legend-title">범례</div>
+    <div class="legend-item"><span class="legend-dot" style="background:#ef476f;"></span>동일상권 (≤1km)<span class="legend-num">2</span></div>
+    <div class="legend-item"><span class="legend-dot" style="background:#ffb547;"></span>인접상권 (1~3km)<span class="legend-num">5</span></div>
+    <div class="legend-item"><span class="legend-dot" style="background:#06d6a0;"></span>근접권 (3~5km)<span class="legend-num">8</span></div>
+    <div class="legend-item"><span class="legend-dot" style="background:#5a6378;"></span>별도상권<span class="legend-num">18</span></div>
+    <div class="legend-item" style="margin-top:8px;padding-top:8px;border-top:1px solid var(--border);">
+      <span class="legend-dot diamond" style="background:#4cc9f0;"></span>이랜드 점포<span class="legend-num">39</span>
+    </div>
+    <div style="margin-top:8px;font-size:10px;color:var(--text-3);line-height:1.5">※ 원 크기 = 입점 브랜드 수<br>※ 점선 = 동일~근접 매칭선</div>
+  </div>`);
+
+} // end initMap()
+</script>
+</body>
+</html>
