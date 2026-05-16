@@ -99,7 +99,14 @@ export default function HomeplusMapClient() {
   const searchParams = useSearchParams();
   const initialLayer = searchParams?.get("layer") ?? "";
 
-  const [activeTiers, setActiveTiers] = useState<Set<Tier>>(new Set(ALL_TIERS));
+  // 체인 메뉴(아트박스/다이소/올리브영)로 진입했으면 홈플 33점은 기본 OFF.
+  // 홈플 메뉴 또는 쿼리 없음(기본 진입)은 4개 tier 모두 ON.
+  const isChainView =
+    initialLayer === "artbox" || initialLayer === "daiso" || initialLayer === "oliveyoung";
+
+  const [activeTiers, setActiveTiers] = useState<Set<Tier>>(
+    isChainView ? new Set() : new Set(ALL_TIERS),
+  );
   const [selected, setSelected] = useState<HomeplusStore | null>(null);
   const [showLines, setShowLines] = useState(true);
   const [showEland, setShowEland] = useState(true);
@@ -108,12 +115,14 @@ export default function HomeplusMapClient() {
   const [showDaiso, setShowDaiso] = useState(initialLayer === "daiso");
   const [showOliveYoung, setShowOliveYoung] = useState(initialLayer === "oliveyoung");
 
-  // 사이드바 하위 메뉴 클릭으로 layer가 바뀌면 해당 토글만 켜고 나머지 끔
+  // 사이드바 하위 메뉴 클릭으로 layer가 바뀌면 토글/tier 자동 동기화.
   useEffect(() => {
     setShowArtbox(initialLayer === "artbox");
     setShowDaiso(initialLayer === "daiso");
     setShowOliveYoung(initialLayer === "oliveyoung");
-  }, [initialLayer]);
+    // 체인 뷰 → 홈플 tier 모두 OFF / 홈플 뷰 → 모두 ON
+    setActiveTiers(isChainView ? new Set() : new Set(ALL_TIERS));
+  }, [initialLayer, isChainView]);
   // 클릭한 점포 좌표로 지도 이동 트리거. key를 매번 새로 만들어 같은 점포 재클릭도 동작.
   const [flyTarget, setFlyTarget] = useState<FlyTarget | null>(null);
 
