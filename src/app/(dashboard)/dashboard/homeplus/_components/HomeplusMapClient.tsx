@@ -39,6 +39,7 @@ import {
   type HomeplusStore,
   type Tier,
 } from "@/data/homeplus";
+import { ARTBOX_STORES } from "@/data/artbox";
 
 const TIER_COLOR: Record<Tier, string> = {
   "동일상권": "#ef476f",
@@ -68,6 +69,14 @@ const elandIcon = L.divIcon({
   iconAnchor: [7, 7],
 });
 
+// 분홍 사각 아트박스 마커 (작게)
+const artboxIcon = L.divIcon({
+  className: "",
+  html: `<div style="width:10px;height:10px;background:#f72585;border:1.5px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.35)"></div>`,
+  iconSize: [10, 10],
+  iconAnchor: [5, 5],
+});
+
 type FlyTarget = { lat: number; lng: number; zoom?: number; key: string };
 
 export default function HomeplusMapClient() {
@@ -75,6 +84,8 @@ export default function HomeplusMapClient() {
   const [selected, setSelected] = useState<HomeplusStore | null>(null);
   const [showLines, setShowLines] = useState(true);
   const [showEland, setShowEland] = useState(true);
+  // 체인 레이어 — 기본 OFF (마커 폭증 방지, 사용자 의도적으로 켜야 함)
+  const [showArtbox, setShowArtbox] = useState(false);
   // 클릭한 점포 좌표로 지도 이동 트리거. key를 매번 새로 만들어 같은 점포 재클릭도 동작.
   const [flyTarget, setFlyTarget] = useState<FlyTarget | null>(null);
 
@@ -151,7 +162,7 @@ export default function HomeplusMapClient() {
             })}
           </div>
 
-          <div className="mt-3 flex gap-3 text-[11px]">
+          <div className="mt-3 flex flex-wrap gap-x-3 gap-y-1.5 text-[11px]">
             <label className="flex cursor-pointer items-center gap-1.5">
               <input
                 type="checkbox"
@@ -169,6 +180,18 @@ export default function HomeplusMapClient() {
                 className="h-3.5 w-3.5 accent-yellow-400"
               />
               <span className="font-bold text-[#0a0a0a]">매칭선</span>
+            </label>
+            <label className="flex cursor-pointer items-center gap-1.5" title={ARTBOX_STORES.length === 0 ? "데이터 미수집 — scripts/fetch-artbox-stores.mjs 실행 필요" : `전국 ${ARTBOX_STORES.length}개 매장`}>
+              <input
+                type="checkbox"
+                checked={showArtbox}
+                onChange={(e) => setShowArtbox(e.target.checked)}
+                disabled={ARTBOX_STORES.length === 0}
+                className="h-3.5 w-3.5 accent-pink-500 disabled:opacity-40"
+              />
+              <span className={`font-bold ${ARTBOX_STORES.length === 0 ? "text-slate-400 line-through" : "text-[#0a0a0a]"}`}>
+                아트박스 {ARTBOX_STORES.length > 0 && `(${ARTBOX_STORES.length})`}
+              </span>
             </label>
           </div>
         </div>
@@ -317,6 +340,27 @@ export default function HomeplusMapClient() {
               </Marker>
             ))}
 
+          {/* 아트박스 매장 */}
+          {showArtbox &&
+            ARTBOX_STORES.map((a) => (
+              <Marker
+                key={`artbox-${a.id}`}
+                position={[a.lat, a.lng]}
+                icon={artboxIcon}
+              >
+                <Tooltip direction="top" offset={[0, -5]}>
+                  <div style={{ minWidth: 160 }}>
+                    <div style={{ fontWeight: 700, fontSize: 12, color: "#c1166b" }}>
+                      🎨 {a.name}
+                    </div>
+                    <div style={{ fontSize: 10, color: "#666", marginTop: 2 }}>
+                      {a.addr}
+                    </div>
+                  </div>
+                </Tooltip>
+              </Marker>
+            ))}
+
           {/* 클릭한 점포로 지도 이동 */}
           <FlyToTarget target={flyTarget} />
         </MapContainer>
@@ -348,6 +392,12 @@ export default function HomeplusMapClient() {
             />
             <span className="font-bold text-[#0a0a0a]">이랜드 41점</span>
           </div>
+          {showArtbox && ARTBOX_STORES.length > 0 && (
+            <div className="mt-1 flex items-center gap-2 text-[11px]">
+              <span className="inline-block h-2 w-2 border border-white" style={{ background: "#f72585" }} />
+              <span className="font-bold text-[#0a0a0a]">아트박스 {ARTBOX_STORES.length}점</span>
+            </div>
+          )}
           <div className="mt-2 text-[9.5px] leading-tight text-slate-500">
             ※ 원 크기 = 입점 브랜드 수
           </div>

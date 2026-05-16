@@ -120,7 +120,7 @@ const NAV: NavGroup[] = [
       { href: "/dashboard/calendar",  label: "52주 캘린더",   icon: <IconCalendar /> },
       { href: "/dashboard/floorplans",label: "전점도면",       icon: <IconBlueprint /> },
       { href: "/dashboard/branch",    label: "상권분석",       icon: <IconMap /> },
-      { href: "/dashboard/homeplus",  label: "홈플 이슈맵",   icon: <IconAlert /> },
+      { href: "/dashboard/homeplus",  label: "리테일 지도",   icon: <IconAlert /> },
     ],
   },
   {
