@@ -70,12 +70,11 @@ async function searchKeyword(query, page = 1) {
   return res.json();
 }
 
-/** 아트박스 직영/위탁만 추출. 노이즈(액세서리·문구점 일반명) 제거 */
+/** 아트박스 직영/위탁만 추출. "OO아트박스" 같은 동명이인 점포 제외 */
 function isArtbox(place) {
-  const name = String(place.place_name || "");
-  // "아트박스" 글자가 포함되고, 카테고리가 너무 동떨어지지 않은 것만
-  if (!name.includes("아트박스")) return false;
-  return true;
+  const name = String(place.place_name || "").trim();
+  // 정확히 "아트박스" 이거나 "아트박스 " 로 시작 (지점명 형식)
+  return name === "아트박스" || name.startsWith("아트박스 ");
 }
 
 async function main() {
