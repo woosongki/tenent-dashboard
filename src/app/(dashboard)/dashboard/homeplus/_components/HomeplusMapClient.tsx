@@ -179,6 +179,17 @@ export default function HomeplusMapClient() {
   const [showShinsegae, setShowShinsegae] = useState(initialLayer === "shinsegae");
   const [showAk, setShowAk] = useState(initialLayer === "ak");
   const [showGalleria, setShowGalleria] = useState(initialLayer === "galleria");
+  // 패널 섹션 접기 상태 (체인/백화점/그외/마트)
+  const [collapsedSections, setCollapsedSections] = useState<Set<string>>(new Set());
+  function toggleSection(key: string) {
+    setCollapsedSections((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  }
+
   // 그 외
   const [showEntersix, setShowEntersix] = useState(initialLayer === "entersix");
   const [showModa, setShowModa] = useState(initialLayer === "moda");
@@ -309,9 +320,15 @@ export default function HomeplusMapClient() {
 
         {/* 체인 매장 레이어 — 별도 섹션 */}
         <div className="border-b-[2px] border-[#0a0a0a] p-3">
-          <div className="mb-2 text-[10px] font-extrabold uppercase tracking-[.14em] text-slate-500">
-            체인 매장 (opt-in)
-          </div>
+          <button
+            type="button"
+            onClick={() => toggleSection("chain")}
+            className="mb-2 flex w-full items-center gap-1 text-left text-[10px] font-extrabold uppercase tracking-[.14em] text-slate-500 hover:text-slate-700"
+          >
+            <span className={`inline-block transition-transform ${collapsedSections.has("chain") ? "-rotate-90" : ""}`}>▾</span>
+            <span className="flex-1">체인 매장 (opt-in)</span>
+          </button>
+          {!collapsedSections.has("chain") && (
           <div className="flex flex-col gap-1.5 text-[11px]">
             <label className="flex cursor-pointer items-center gap-1.5" title={ARTBOX_STORES.length === 0 ? "수집 필요" : `전국 ${ARTBOX_STORES.length}개 매장`}>
               <input
@@ -353,12 +370,19 @@ export default function HomeplusMapClient() {
               </span>
             </label>
           </div>
+          )}
 
           {/* 백화점 3사 */}
           <div className="mt-3 border-t border-slate-200 pt-2">
-            <div className="mb-1.5 text-[10px] font-extrabold uppercase tracking-[.12em] text-slate-500">
-              백화점
-            </div>
+            <button
+              type="button"
+              onClick={() => toggleSection("dept")}
+              className="mb-1.5 flex w-full items-center gap-1 text-left text-[10px] font-extrabold uppercase tracking-[.12em] text-slate-500 hover:text-slate-700"
+            >
+              <span className={`inline-block transition-transform ${collapsedSections.has("dept") ? "-rotate-90" : ""}`}>▾</span>
+              <span className="flex-1">백화점</span>
+            </button>
+            {!collapsedSections.has("dept") && (
             <div className="flex flex-col gap-1.5 text-[11px]">
               <label className="flex cursor-pointer items-center gap-1.5">
                 <input
@@ -416,11 +440,20 @@ export default function HomeplusMapClient() {
                 <span className="font-bold text-[#0a0a0a]">갤러리아 ({GALLERIA_STORES.length})</span>
               </label>
             </div>
+            )}
           </div>
 
           {/* 그 외 */}
           <div className="mt-3 border-t border-slate-200 pt-2">
-            <div className="mb-1.5 text-[10px] font-extrabold uppercase tracking-[.12em] text-slate-500">그 외</div>
+            <button
+              type="button"
+              onClick={() => toggleSection("other")}
+              className="mb-1.5 flex w-full items-center gap-1 text-left text-[10px] font-extrabold uppercase tracking-[.12em] text-slate-500 hover:text-slate-700"
+            >
+              <span className={`inline-block transition-transform ${collapsedSections.has("other") ? "-rotate-90" : ""}`}>▾</span>
+              <span className="flex-1">그 외</span>
+            </button>
+            {!collapsedSections.has("other") && (
             <div className="flex flex-col gap-1.5 text-[11px]">
               <label className="flex cursor-pointer items-center gap-1.5">
                 <input type="checkbox" checked={showEntersix} onChange={(e) => setShowEntersix(e.target.checked)} disabled={ENTERSIX_STORES.length === 0} className="h-3.5 w-3.5 disabled:opacity-40" />
@@ -443,11 +476,20 @@ export default function HomeplusMapClient() {
                 <span className="font-bold text-[#0a0a0a]">LF스퀘어 ({LF_STORES.length})</span>
               </label>
             </div>
+            )}
           </div>
 
           {/* 마트 */}
           <div className="mt-3 border-t border-slate-200 pt-2">
-            <div className="mb-1.5 text-[10px] font-extrabold uppercase tracking-[.12em] text-slate-500">마트</div>
+            <button
+              type="button"
+              onClick={() => toggleSection("mart")}
+              className="mb-1.5 flex w-full items-center gap-1 text-left text-[10px] font-extrabold uppercase tracking-[.12em] text-slate-500 hover:text-slate-700"
+            >
+              <span className={`inline-block transition-transform ${collapsedSections.has("mart") ? "-rotate-90" : ""}`}>▾</span>
+              <span className="flex-1">마트</span>
+            </button>
+            {!collapsedSections.has("mart") && (
             <div className="flex flex-col gap-1.5 text-[11px]">
               <label className="flex cursor-pointer items-center gap-1.5">
                 <input type="checkbox" checked={showEmart} onChange={(e) => setShowEmart(e.target.checked)} disabled={EMART_STORES.length === 0} className="h-3.5 w-3.5 disabled:opacity-40" />
@@ -465,6 +507,7 @@ export default function HomeplusMapClient() {
                 <span className="font-bold text-[#0a0a0a]">하나로마트 ({HANAROMART_STORES.length})</span>
               </label>
             </div>
+            )}
           </div>
         </div>
 
