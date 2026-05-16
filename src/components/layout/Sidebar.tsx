@@ -108,7 +108,14 @@ function IconChevronDown() {
 }
 
 type Role = "owner" | "admin" | "member";
-interface NavChild { href: string; label: string; layer?: string; dotColor?: string }
+interface NavChild {
+  href: string;
+  label: string;
+  layer?: string;
+  dotColor?: string;
+  /** 같은 group 값을 가진 연속된 아이템들은 접기 가능한 그룹으로 묶임 */
+  group?: string;
+}
 interface NavItem {
   href: string;
   label: string;
@@ -141,24 +148,26 @@ const NAV: NavGroup[] = [
         label: "리테일 지도",
         icon: <IconAlert />,
         children: [
+          // 그룹 없음 — 항상 노출
           { href: "/dashboard/homeplus",                       label: "홈플 영업중단 33점", layer: "homeplus",   dotColor: "#ef476f" },
-          { href: "/dashboard/homeplus?layer=artbox",          label: "아트박스 203점",      layer: "artbox",     dotColor: "#f72585" },
-          { href: "/dashboard/homeplus?layer=daiso",           label: "다이소 1,714점",      layer: "daiso",      dotColor: "#f9c74f" },
-          { href: "/dashboard/homeplus?layer=oliveyoung",      label: "올리브영 1,363점",    layer: "oliveyoung", dotColor: "#52b788" },
-          { href: "/dashboard/homeplus?layer=lotte",           label: "롯데백화점 30점",     layer: "lotte",      dotColor: "#a4133c" },
-          { href: "/dashboard/homeplus?layer=hyundai",         label: "현대백화점 13점",     layer: "hyundai",    dotColor: "#1d3557" },
-          { href: "/dashboard/homeplus?layer=shinsegae",       label: "신세계백화점 10점",   layer: "shinsegae",  dotColor: "#495057" },
-          { href: "/dashboard/homeplus?layer=ak",              label: "AK백화점 3점",        layer: "ak",         dotColor: "#6f1d77" },
-          { href: "/dashboard/homeplus?layer=galleria",        label: "갤러리아 6점",        layer: "galleria",   dotColor: "#2d5016" },
-          // 그 외
-          { href: "/dashboard/homeplus?layer=entersix",        label: "엔터식스 6점",        layer: "entersix",   dotColor: "#ff6f3c" },
-          { href: "/dashboard/homeplus?layer=moda",            label: "모다아울렛 17점",     layer: "moda",       dotColor: "#00b4a0" },
-          { href: "/dashboard/homeplus?layer=savezone",        label: "세이브존 9점",        layer: "savezone",   dotColor: "#95a847" },
-          { href: "/dashboard/homeplus?layer=lf",              label: "LF스퀘어 3점",        layer: "lf",         dotColor: "#a08260" },
+          // 백화점
+          { href: "/dashboard/homeplus?layer=lotte",           label: "롯데백화점 30점",     layer: "lotte",      dotColor: "#a4133c", group: "백화점" },
+          { href: "/dashboard/homeplus?layer=hyundai",         label: "현대백화점 13점",     layer: "hyundai",    dotColor: "#1d3557", group: "백화점" },
+          { href: "/dashboard/homeplus?layer=shinsegae",       label: "신세계백화점 10점",   layer: "shinsegae",  dotColor: "#495057", group: "백화점" },
+          { href: "/dashboard/homeplus?layer=ak",              label: "AK백화점 3점",        layer: "ak",         dotColor: "#6f1d77", group: "백화점" },
+          { href: "/dashboard/homeplus?layer=galleria",        label: "갤러리아 6점",        layer: "galleria",   dotColor: "#2d5016", group: "백화점" },
+          // 기타 (체인 매장 + 그 외)
+          { href: "/dashboard/homeplus?layer=artbox",          label: "아트박스 203점",      layer: "artbox",     dotColor: "#f72585", group: "기타" },
+          { href: "/dashboard/homeplus?layer=daiso",           label: "다이소 1,714점",      layer: "daiso",      dotColor: "#f9c74f", group: "기타" },
+          { href: "/dashboard/homeplus?layer=oliveyoung",      label: "올리브영 1,363점",    layer: "oliveyoung", dotColor: "#52b788", group: "기타" },
+          { href: "/dashboard/homeplus?layer=entersix",        label: "엔터식스 6점",        layer: "entersix",   dotColor: "#ff6f3c", group: "기타" },
+          { href: "/dashboard/homeplus?layer=moda",            label: "모다아울렛 17점",     layer: "moda",       dotColor: "#00b4a0", group: "기타" },
+          { href: "/dashboard/homeplus?layer=savezone",        label: "세이브존 9점",        layer: "savezone",   dotColor: "#95a847", group: "기타" },
+          { href: "/dashboard/homeplus?layer=lf",              label: "LF스퀘어 3점",        layer: "lf",         dotColor: "#a08260", group: "기타" },
           // 마트
-          { href: "/dashboard/homeplus?layer=emart",           label: "이마트 127점",        layer: "emart",      dotColor: "#ffc107" },
-          { href: "/dashboard/homeplus?layer=lottemart",       label: "롯데마트 101점",      layer: "lottemart",  dotColor: "#d62828" },
-          { href: "/dashboard/homeplus?layer=hanaromart",      label: "하나로마트 155점",    layer: "hanaromart", dotColor: "#2d6a4f" },
+          { href: "/dashboard/homeplus?layer=emart",           label: "이마트 127점",        layer: "emart",      dotColor: "#ffc107", group: "마트" },
+          { href: "/dashboard/homeplus?layer=lottemart",       label: "롯데마트 101점",      layer: "lottemart",  dotColor: "#d62828", group: "마트" },
+          { href: "/dashboard/homeplus?layer=hanaromart",      label: "하나로마트 155점",    layer: "hanaromart", dotColor: "#2d6a4f", group: "마트" },
         ],
       },
     ],
@@ -242,6 +251,26 @@ export default function Sidebar({
       else next.add(href);
       return next;
     });
+  }
+  // 하위 그룹(백화점/기타/마트) 접힘 상태 — 기본 모두 펼쳐짐
+  const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
+  function toggleGroup(key: string) {
+    setCollapsedGroups((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  }
+  // children을 연속된 group 단위로 묶음 (group이 없으면 단독 블록)
+  function chunkChildren(children: NavChild[]) {
+    const chunks: { group?: string; items: NavChild[] }[] = [];
+    for (const c of children) {
+      const last = chunks[chunks.length - 1];
+      if (last && last.group === c.group) last.items.push(c);
+      else chunks.push({ group: c.group, items: [c] });
+    }
+    return chunks;
   }
 
   const initial = (userEmail[0] ?? "U").toUpperCase();
@@ -338,24 +367,45 @@ export default function Sidebar({
                   </button>
                   {isExpanded && (
                     <div className="mt-0.5 mb-1 ml-3 border-l-[2px] border-[#0a0a0a]/15 pl-1">
-                      {item.children!.map((child) => {
-                        const childActive = isChildActive(item.href, child);
+                      {chunkChildren(item.children!).map((chunk, ci) => {
+                        const groupKey = `${item.href}::${chunk.group ?? "__"}`;
+                        const groupCollapsed = chunk.group ? collapsedGroups.has(groupKey) : false;
                         return (
-                          <Link
-                            key={child.href + (child.layer ?? "")}
-                            href={child.href}
-                            className={`flex items-center gap-2 pl-3 pr-2 py-2 text-[12px] font-bold transition-colors ${
-                              childActive ? `${t.itemActive} ${t.textActive}` : `${t.itemBase} ${t.itemHover}`
-                            }`}
-                          >
-                            {child.dotColor && (
-                              <span
-                                className="inline-block h-2 w-2 shrink-0 border border-[#0a0a0a]/30"
-                                style={{ background: child.dotColor, borderRadius: child.dotColor === "#52b788" ? "50%" : 0 }}
-                              />
+                          <div key={ci}>
+                            {chunk.group && (
+                              <button
+                                type="button"
+                                onClick={() => toggleGroup(groupKey)}
+                                className={`mt-1.5 flex w-full items-center gap-1.5 pl-2 pr-1 py-1 text-[10px] font-extrabold uppercase tracking-[.12em] ${t.textMuted} hover:${t.text}`}
+                              >
+                                <span className={`shrink-0 transition-transform ${groupCollapsed ? "-rotate-90" : "rotate-0"}`}>
+                                  <IconChevronDown />
+                                </span>
+                                <span className="flex-1 text-left">{chunk.group}</span>
+                                <span className="font-mono text-[9.5px] opacity-60">{chunk.items.length}</span>
+                              </button>
                             )}
-                            <span className="truncate">{child.label}</span>
-                          </Link>
+                            {!groupCollapsed && chunk.items.map((child) => {
+                              const childActive = isChildActive(item.href, child);
+                              return (
+                                <Link
+                                  key={child.href + (child.layer ?? "")}
+                                  href={child.href}
+                                  className={`flex items-center gap-2 pr-2 py-2 text-[12px] font-bold transition-colors ${
+                                    chunk.group ? "pl-6" : "pl-3"
+                                  } ${childActive ? `${t.itemActive} ${t.textActive}` : `${t.itemBase} ${t.itemHover}`}`}
+                                >
+                                  {child.dotColor && (
+                                    <span
+                                      className="inline-block h-2 w-2 shrink-0 border border-[#0a0a0a]/30"
+                                      style={{ background: child.dotColor, borderRadius: child.dotColor === "#52b788" ? "50%" : 0 }}
+                                    />
+                                  )}
+                                  <span className="truncate">{child.label}</span>
+                                </Link>
+                              );
+                            })}
+                          </div>
                         );
                       })}
                     </div>
