@@ -1,7 +1,7 @@
 "use client";
 
 import "leaflet/dist/leaflet.css";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   MapContainer,
   TileLayer,
@@ -10,8 +10,27 @@ import {
   Tooltip,
   Polyline,
   Popup,
+  useMap,
 } from "react-leaflet";
 import L from "leaflet";
+
+// 선택된 좌표로 지도를 부드럽게 이동시키는 헬퍼 컴포넌트.
+// MapContainer 내부에 위치해야 useMap()이 동작함.
+function FlyToTarget({
+  target,
+}: {
+  target: { lat: number; lng: number; zoom?: number; key: string } | null;
+}) {
+  const map = useMap();
+  useEffect(() => {
+    if (!target) return;
+    map.flyTo([target.lat, target.lng], target.zoom ?? 13, {
+      duration: 0.7,
+      easeLinearity: 0.25,
+    });
+  }, [target, map]);
+  return null;
+}
 import {
   HOMEPLUS_STORES,
   ELAND_STORES,
@@ -49,11 +68,25 @@ const elandIcon = L.divIcon({
   iconAnchor: [7, 7],
 });
 
+type FlyTarget = { lat: number; lng: number; zoom?: number; key: string };
+
 export default function HomeplusMapClient() {
   const [activeTiers, setActiveTiers] = useState<Set<Tier>>(new Set(ALL_TIERS));
   const [selected, setSelected] = useState<HomeplusStore | null>(null);
   const [showLines, setShowLines] = useState(true);
   const [showEland, setShowEland] = useState(true);
+  // 클릭한 점포 좌표로 지도 이동 트리거. key를 매번 새로 만들어 같은 점포 재클릭도 동작.
+  const [flyTarget, setFlyTarget] = useState<FlyTarget | null>(null);
+
+  function selectHomeplus(s: HomeplusStore) {
+    setSelected(s);
+    setFlyTarget({ lat: s.lat, lng: s.lng, zoom: 13, key: `hp-${s.name}-${Date.now()}` });
+  }
+  function flyToEland(id: number) {
+    const e = ELAND_STORES.find((x) => x.id === id);
+    if (!e) return;
+    setFlyTarget({ lat: e.lat, lng: e.lng, zoom: 14, key: `el-${e.id}-${Date.now()}` });
+  }
 
   const filtered = useMemo(
     () => HOMEPLUS_STORES.filter((s) => activeTiers.has(s.tier)),
@@ -149,7 +182,7 @@ export default function HomeplusMapClient() {
               return (
                 <button
                   key={s.name}
-                  onClick={() => setSelected(s)}
+                  onClick={() => selectHomeplus(s)}
                   className={`mb-1.5 block w-full border-[2px] border-[#0a0a0a] bg-white p-2.5 text-left transition hover:bg-yellow-50 ${
                     isSel ? "bg-yellow-100" : ""
                   }`}
@@ -238,7 +271,7 @@ export default function HomeplusMapClient() {
                   fillOpacity: 0.9,
                 }}
                 eventHandlers={{
-                  click: () => setSelected(s),
+                  click: () => selectHomeplus(s),
                 }}
               >
                 <Tooltip direction="top" offset={[0, -radius]}>
@@ -266,6 +299,9 @@ export default function HomeplusMapClient() {
                 key={`eland-${e.id}`}
                 position={[e.lat, e.lng]}
                 icon={elandIcon}
+                eventHandlers={{
+                  click: () => flyToEland(e.id),
+                }}
               >
                 <Popup>
                   <div style={{ minWidth: 180 }}>
@@ -280,6 +316,9 @@ export default function HomeplusMapClient() {
                 </Popup>
               </Marker>
             ))}
+
+          {/* 클릭한 점포로 지도 이동 */}
+          <FlyToTarget target={flyTarget} />
         </MapContainer>
 
         {/* 범례 (좌하단) */}
@@ -348,12 +387,16 @@ export default function HomeplusMapClient() {
                 </button>
               </div>
 
-              <div
-                className="mt-2.5 border-[2px] border-[#0a0a0a] bg-cyan-50 p-2"
+              <button
+                type="button"
+                onClick={() => flyToEland(selected.eland_id)}
+                className="mt-2.5 block w-full border-[2px] border-[#0a0a0a] bg-cyan-50 p-2 text-left transition hover:bg-cyan-100"
                 style={{ boxShadow: "2px 2px 0 0 #0a0a0a" }}
+                title="이랜드 점포 위치로 지도 이동"
               >
-                <div className="text-[9px] font-extrabold uppercase tracking-wider text-slate-500">
-                  최근접 이랜드
+                <div className="flex items-center justify-between text-[9px] font-extrabold uppercase tracking-wider text-slate-500">
+                  <span>최근접 이랜드 (클릭 시 이동)</span>
+                  <span>→</span>
                 </div>
                 <div className="mt-0.5 flex items-center justify-between text-[12px]">
                   <span>
@@ -367,7 +410,7 @@ export default function HomeplusMapClient() {
                 <div className="mt-1 text-[10px] text-slate-500">
                   {selected.eland_addr}
                 </div>
-              </div>
+              </button>
             </div>
 
             <div className="p-3">
