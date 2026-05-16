@@ -1,7 +1,7 @@
 // LF스퀘어 전국 매장 위치 데이터
 // 수집: Kakao Local API (scripts/fetch-other-mart-stores.mjs)
 // 마지막 갱신: 2026-05-16T15:04:54.200Z
-// 총 4개 매장
+// 총 3개 매장 (양산점은 사용자 요청으로 제외)
 
 import type { ChainStore } from "./artbox";
 
@@ -12,13 +12,6 @@ export const LF_STORES: ChainStore[] = [
     "addr": "전남 광양시 광양읍 순광로 466",
     "lat": 34.9631726636811,
     "lng": 127.565873709773
-  },
-  {
-    "id": "1434405746",
-    "name": "LF스퀘어 양산점",
-    "addr": "경남 양산시 물금읍 증산역로 177",
-    "lat": 35.3098762947009,
-    "lng": 129.009381671516
   },
   {
     "id": "2012439144",

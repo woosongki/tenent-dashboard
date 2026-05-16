@@ -78,11 +78,13 @@ const CHAINS = [
     outFile: "ak.ts",
     varName: "AK_STORES",
     label: "AK백화점/플라자",
-    // AK백화점/AK플라자/AK PLAZA/AK& 변형
+    // AK백화점/AK플라자/AK PLAZA/AK& 변형 — "점"이 누락된 등록명("AK플라자 수원")도 포함.
+    // 노이즈(주차장/푸드코트/숍인숍) 제외.
     matcher: (name) => {
       const n = name.trim();
+      if (/주차|화장실|푸드|쇼핑몰|타워/.test(n)) return false;
       return (
-        /^AK\s?(?:백화점|플라자|PLAZA)\s?\S{1,12}점$/i.test(n) ||
+        /^AK\s?(?:백화점|플라자|PLAZA)\s\S{1,12}(점)?$/i.test(n) ||
         /^AK\s?&\s?\S{1,12}점$/i.test(n)
       );
     },

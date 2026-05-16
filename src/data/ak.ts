@@ -1,7 +1,7 @@
 // AK백화점/플라자 전국 매장 위치 데이터
 // 수집: Kakao Local API (scripts/fetch-dept-stores.mjs)
 // 마지막 갱신: 2026-05-16T15:00:06.010Z
-// 총 2개 매장
+// 총 3개 매장 (수원점은 카카오 등록명이 "AK플라자 수원"이라 수동 추가)
 
 import type { ChainStore } from "./artbox";
 
@@ -19,5 +19,12 @@ export const AK_STORES: ChainStore[] = [
     "addr": "경기 평택시 평택로 51",
     "lat": 36.991141153299466,
     "lng": 127.08500370097137
+  },
+  {
+    "id": "354622584",
+    "name": "AK플라자 수원점",
+    "addr": "경기 수원시 팔달구 덕영대로 924",
+    "lat": 37.2655920786361,
+    "lng": 127.000180381035
   }
 ];
