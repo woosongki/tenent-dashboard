@@ -95,7 +95,7 @@ const oliveyoungIcon = L.divIcon({
   iconAnchor: [5, 5],
 });
 // 백화점 — 사각형 + 글자 라벨 (앵커 매장이라 더 크게)
-function makeDeptIcon(letter, bg) {
+function makeDeptIcon(letter: string, bg: string) {
   return L.divIcon({
     className: "",
     html: `<div style="width:16px;height:16px;background:${bg};border:2px solid #fff;display:flex;align-items:center;justify-content:center;color:#fff;font-size:9px;font-weight:800;box-shadow:0 2px 6px rgba(0,0,0,.4)">${letter}</div>`,
