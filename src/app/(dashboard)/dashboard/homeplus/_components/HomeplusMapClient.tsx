@@ -40,6 +40,8 @@ import {
   type Tier,
 } from "@/data/homeplus";
 import { ARTBOX_STORES } from "@/data/artbox";
+import { DAISO_STORES } from "@/data/daiso";
+import { OLIVEYOUNG_STORES } from "@/data/oliveyoung";
 
 const TIER_COLOR: Record<Tier, string> = {
   "동일상권": "#ef476f",
@@ -69,10 +71,22 @@ const elandIcon = L.divIcon({
   iconAnchor: [7, 7],
 });
 
-// 분홍 사각 아트박스 마커 (작게)
+// 체인 매장 마커 (브랜드 컬러)
 const artboxIcon = L.divIcon({
   className: "",
   html: `<div style="width:10px;height:10px;background:#f72585;border:1.5px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.35)"></div>`,
+  iconSize: [10, 10],
+  iconAnchor: [5, 5],
+});
+const daisoIcon = L.divIcon({
+  className: "",
+  html: `<div style="width:10px;height:10px;background:#f9c74f;border:1.5px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.35)"></div>`,
+  iconSize: [10, 10],
+  iconAnchor: [5, 5],
+});
+const oliveyoungIcon = L.divIcon({
+  className: "",
+  html: `<div style="width:10px;height:10px;background:#52b788;border:1.5px solid #fff;border-radius:50%;box-shadow:0 1px 4px rgba(0,0,0,.35)"></div>`,
   iconSize: [10, 10],
   iconAnchor: [5, 5],
 });
@@ -86,6 +100,8 @@ export default function HomeplusMapClient() {
   const [showEland, setShowEland] = useState(true);
   // 체인 레이어 — 기본 OFF (마커 폭증 방지, 사용자 의도적으로 켜야 함)
   const [showArtbox, setShowArtbox] = useState(false);
+  const [showDaiso, setShowDaiso] = useState(false);
+  const [showOliveYoung, setShowOliveYoung] = useState(false);
   // 클릭한 점포 좌표로 지도 이동 트리거. key를 매번 새로 만들어 같은 점포 재클릭도 동작.
   const [flyTarget, setFlyTarget] = useState<FlyTarget | null>(null);
 
@@ -181,7 +197,16 @@ export default function HomeplusMapClient() {
               />
               <span className="font-bold text-[#0a0a0a]">매칭선</span>
             </label>
-            <label className="flex cursor-pointer items-center gap-1.5" title={ARTBOX_STORES.length === 0 ? "데이터 미수집 — scripts/fetch-artbox-stores.mjs 실행 필요" : `전국 ${ARTBOX_STORES.length}개 매장`}>
+          </div>
+        </div>
+
+        {/* 체인 매장 레이어 — 별도 섹션 */}
+        <div className="border-b-[2px] border-[#0a0a0a] p-3">
+          <div className="mb-2 text-[10px] font-extrabold uppercase tracking-[.14em] text-slate-500">
+            체인 매장 (opt-in)
+          </div>
+          <div className="flex flex-col gap-1.5 text-[11px]">
+            <label className="flex cursor-pointer items-center gap-1.5" title={ARTBOX_STORES.length === 0 ? "수집 필요" : `전국 ${ARTBOX_STORES.length}개 매장`}>
               <input
                 type="checkbox"
                 checked={showArtbox}
@@ -189,8 +214,35 @@ export default function HomeplusMapClient() {
                 disabled={ARTBOX_STORES.length === 0}
                 className="h-3.5 w-3.5 accent-pink-500 disabled:opacity-40"
               />
+              <span className="inline-block h-2 w-2" style={{ background: "#f72585" }} />
               <span className={`font-bold ${ARTBOX_STORES.length === 0 ? "text-slate-400 line-through" : "text-[#0a0a0a]"}`}>
                 아트박스 {ARTBOX_STORES.length > 0 && `(${ARTBOX_STORES.length})`}
+              </span>
+            </label>
+            <label className="flex cursor-pointer items-center gap-1.5" title={DAISO_STORES.length === 0 ? "수집 필요" : `전국 ${DAISO_STORES.length}개 매장`}>
+              <input
+                type="checkbox"
+                checked={showDaiso}
+                onChange={(e) => setShowDaiso(e.target.checked)}
+                disabled={DAISO_STORES.length === 0}
+                className="h-3.5 w-3.5 accent-yellow-400 disabled:opacity-40"
+              />
+              <span className="inline-block h-2 w-2" style={{ background: "#f9c74f" }} />
+              <span className={`font-bold ${DAISO_STORES.length === 0 ? "text-slate-400 line-through" : "text-[#0a0a0a]"}`}>
+                다이소 {DAISO_STORES.length > 0 && `(${DAISO_STORES.length})`}
+              </span>
+            </label>
+            <label className="flex cursor-pointer items-center gap-1.5" title={OLIVEYOUNG_STORES.length === 0 ? "수집 필요" : `전국 ${OLIVEYOUNG_STORES.length}개 매장`}>
+              <input
+                type="checkbox"
+                checked={showOliveYoung}
+                onChange={(e) => setShowOliveYoung(e.target.checked)}
+                disabled={OLIVEYOUNG_STORES.length === 0}
+                className="h-3.5 w-3.5 accent-green-500 disabled:opacity-40"
+              />
+              <span className="inline-block h-2 w-2 rounded-full" style={{ background: "#52b788" }} />
+              <span className={`font-bold ${OLIVEYOUNG_STORES.length === 0 ? "text-slate-400 line-through" : "text-[#0a0a0a]"}`}>
+                올리브영 {OLIVEYOUNG_STORES.length > 0 && `(${OLIVEYOUNG_STORES.length})`}
               </span>
             </label>
           </div>
@@ -343,19 +395,37 @@ export default function HomeplusMapClient() {
           {/* 아트박스 매장 */}
           {showArtbox &&
             ARTBOX_STORES.map((a) => (
-              <Marker
-                key={`artbox-${a.id}`}
-                position={[a.lat, a.lng]}
-                icon={artboxIcon}
-              >
+              <Marker key={`artbox-${a.id}`} position={[a.lat, a.lng]} icon={artboxIcon}>
                 <Tooltip direction="top" offset={[0, -5]}>
                   <div style={{ minWidth: 160 }}>
-                    <div style={{ fontWeight: 700, fontSize: 12, color: "#c1166b" }}>
-                      🎨 {a.name}
-                    </div>
-                    <div style={{ fontSize: 10, color: "#666", marginTop: 2 }}>
-                      {a.addr}
-                    </div>
+                    <div style={{ fontWeight: 700, fontSize: 12, color: "#c1166b" }}>🎨 {a.name}</div>
+                    <div style={{ fontSize: 10, color: "#666", marginTop: 2 }}>{a.addr}</div>
+                  </div>
+                </Tooltip>
+              </Marker>
+            ))}
+
+          {/* 다이소 매장 */}
+          {showDaiso &&
+            DAISO_STORES.map((d) => (
+              <Marker key={`daiso-${d.id}`} position={[d.lat, d.lng]} icon={daisoIcon}>
+                <Tooltip direction="top" offset={[0, -5]}>
+                  <div style={{ minWidth: 160 }}>
+                    <div style={{ fontWeight: 700, fontSize: 12, color: "#b88a00" }}>🛒 {d.name}</div>
+                    <div style={{ fontSize: 10, color: "#666", marginTop: 2 }}>{d.addr}</div>
+                  </div>
+                </Tooltip>
+              </Marker>
+            ))}
+
+          {/* 올리브영 매장 */}
+          {showOliveYoung &&
+            OLIVEYOUNG_STORES.map((o) => (
+              <Marker key={`oy-${o.id}`} position={[o.lat, o.lng]} icon={oliveyoungIcon}>
+                <Tooltip direction="top" offset={[0, -5]}>
+                  <div style={{ minWidth: 160 }}>
+                    <div style={{ fontWeight: 700, fontSize: 12, color: "#2d6a4f" }}>💄 {o.name}</div>
+                    <div style={{ fontSize: 10, color: "#666", marginTop: 2 }}>{o.addr}</div>
                   </div>
                 </Tooltip>
               </Marker>
@@ -396,6 +466,18 @@ export default function HomeplusMapClient() {
             <div className="mt-1 flex items-center gap-2 text-[11px]">
               <span className="inline-block h-2 w-2 border border-white" style={{ background: "#f72585" }} />
               <span className="font-bold text-[#0a0a0a]">아트박스 {ARTBOX_STORES.length}점</span>
+            </div>
+          )}
+          {showDaiso && DAISO_STORES.length > 0 && (
+            <div className="mt-1 flex items-center gap-2 text-[11px]">
+              <span className="inline-block h-2 w-2 border border-white" style={{ background: "#f9c74f" }} />
+              <span className="font-bold text-[#0a0a0a]">다이소 {DAISO_STORES.length}점</span>
+            </div>
+          )}
+          {showOliveYoung && OLIVEYOUNG_STORES.length > 0 && (
+            <div className="mt-1 flex items-center gap-2 text-[11px]">
+              <span className="inline-block h-2 w-2 rounded-full border border-white" style={{ background: "#52b788" }} />
+              <span className="font-bold text-[#0a0a0a]">올리브영 {OLIVEYOUNG_STORES.length}점</span>
             </div>
           )}
           <div className="mt-2 text-[9.5px] leading-tight text-slate-500">
