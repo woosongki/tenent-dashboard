@@ -1,6 +1,6 @@
 // 하나로마트 전국 매장 위치 데이터
 // 수집: Kakao Local API (scripts/fetch-other-mart-stores.mjs)
-// 마지막 갱신: 2026-05-16T14:53:05.993Z
+// 마지막 갱신: 2026-05-16T15:08:00.120Z
 // 총 155개 매장
 
 import type { ChainStore } from "./artbox";

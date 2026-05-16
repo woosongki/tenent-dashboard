@@ -1,6 +1,6 @@
 // 모다아울렛 전국 매장 위치 데이터
 // 수집: Kakao Local API (scripts/fetch-other-mart-stores.mjs)
-// 마지막 갱신: 2026-05-16T14:49:26.182Z
+// 마지막 갱신: 2026-05-16T15:04:16.207Z
 // 총 17개 매장
 
 import type { ChainStore } from "./artbox";

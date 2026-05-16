@@ -73,6 +73,33 @@ const CHAINS = [
       return /^신세계백화점\s\S{1,10}점$/.test(n) || /^[가-힣]{2,4}신세계백화점$/.test(n);
     },
   },
+  {
+    keyword: "AK백화점",
+    outFile: "ak.ts",
+    varName: "AK_STORES",
+    label: "AK백화점/플라자",
+    // AK백화점/AK플라자/AK PLAZA/AK& 변형
+    matcher: (name) => {
+      const n = name.trim();
+      return (
+        /^AK\s?(?:백화점|플라자|PLAZA)\s?\S{1,12}점$/i.test(n) ||
+        /^AK\s?&\s?\S{1,12}점$/i.test(n)
+      );
+    },
+  },
+  {
+    keyword: "갤러리아백화점",
+    outFile: "galleria.ts",
+    varName: "GALLERIA_STORES",
+    label: "갤러리아",
+    // 명품관EAST/WEST, 광교점, 타임월드, 센터시티, 진주점 등
+    matcher: (name) => {
+      const n = name.trim();
+      if (n.includes("아울렛") || n.includes("주차") || n.includes("푸드")) return false;
+      // "갤러리아백화점 OO" 또는 "갤러리아 OO점" 또는 "갤러리아 명품관EAST/WEST"
+      return /^갤러리아(?:백화점)?\s\S{1,20}$/.test(n);
+    },
+  },
 ];
 
 async function searchKeyword(query, page = 1) {

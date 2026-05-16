@@ -1,6 +1,6 @@
 // 엔터식스 전국 매장 위치 데이터
 // 수집: Kakao Local API (scripts/fetch-other-mart-stores.mjs)
-// 마지막 갱신: 2026-05-16T14:48:57.310Z
+// 마지막 갱신: 2026-05-16T15:03:49.165Z
 // 총 6개 매장
 
 import type { ChainStore } from "./artbox";

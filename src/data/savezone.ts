@@ -1,6 +1,6 @@
 // 세이브존 전국 매장 위치 데이터
 // 수집: Kakao Local API (scripts/fetch-other-mart-stores.mjs)
-// 마지막 갱신: 2026-05-16T14:49:50.480Z
+// 마지막 갱신: 2026-05-16T15:04:40.016Z
 // 총 9개 매장
 
 import type { ChainStore } from "./artbox";

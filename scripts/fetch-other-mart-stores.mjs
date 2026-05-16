@@ -62,17 +62,7 @@ const REGIONS = [
 ];
 
 const CHAINS = [
-  // ── 그 외 ──
-  {
-    keyword: "AK백화점",
-    outFile: "ak.ts",
-    varName: "AK_STORES",
-    label: "AK백화점/플라자",
-    matcher: (name) => {
-      const n = name.trim();
-      return /^AK(백화점|플라자)\s\S{1,12}점$/i.test(n) || /^AK&\s\S{1,12}점$/i.test(n);
-    },
-  },
+  // ── 그 외 ── (AK백화점은 fetch-dept-stores.mjs로 이동)
   {
     keyword: "엔터식스",
     outFile: "entersix.ts",
@@ -95,15 +85,12 @@ const CHAINS = [
     matcher: (name) => /^세이브존(\s\S{1,12}점)?$/.test(name.trim()),
   },
   {
-    keyword: "LF몰",
+    keyword: "LF스퀘어",
     outFile: "lf.ts",
     varName: "LF_STORES",
-    label: "LF몰/아울렛",
-    matcher: (name) => {
-      const n = name.trim();
-      // LF몰, LF아울렛, LF몰 OO점, LF아울렛 OO점, LF 패션센터 등
-      return /^LF\s?(몰|아울렛|패션센터|패션관|패션몰|FACTORY)/i.test(n);
-    },
+    label: "LF스퀘어",
+    // 정확히 "LF스퀘어 OO점" 형식만 (주차장/화장실 노이즈 제외)
+    matcher: (name) => /^LF스퀘어\s\S{1,12}점$/i.test(name.trim()),
   },
   // ── 마트 ──
   {

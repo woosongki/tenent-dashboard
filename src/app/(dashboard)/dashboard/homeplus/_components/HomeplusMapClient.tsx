@@ -46,8 +46,9 @@ import { OLIVEYOUNG_STORES } from "@/data/oliveyoung";
 import { LOTTE_STORES } from "@/data/lotte";
 import { HYUNDAI_STORES } from "@/data/hyundai";
 import { SHINSEGAE_STORES } from "@/data/shinsegae";
-// ── 그 외 ──
 import { AK_STORES } from "@/data/ak";
+import { GALLERIA_STORES } from "@/data/galleria";
+// ── 그 외 ──
 import { ENTERSIX_STORES } from "@/data/entersix";
 import { MODA_STORES } from "@/data/moda";
 import { SAVEZONE_STORES } from "@/data/savezone";
@@ -116,6 +117,8 @@ function makeDeptIcon(letter: string, bg: string) {
 const lotteIcon     = makeDeptIcon("L", "#a4133c");  // 와인 레드
 const hyundaiIcon   = makeDeptIcon("H", "#1d3557");  // 다크 네이비
 const shinsegaeIcon = makeDeptIcon("S", "#495057");  // 다크 그레이
+const akIcon        = makeDeptIcon("AK","#6f1d77");  // AK 보라
+const galleriaIcon  = makeDeptIcon("G", "#2d5016");  // 갤러리아 다크그린
 
 // 그 외 — 작은 사각 7px
 function makeSmallSquareIcon(bg: string) {
@@ -126,7 +129,6 @@ function makeSmallSquareIcon(bg: string) {
     iconAnchor: [4, 4],
   });
 }
-const akIcon       = makeSmallSquareIcon("#6f1d77");
 const entersixIcon = makeSmallSquareIcon("#ff6f3c");
 const modaIcon     = makeSmallSquareIcon("#00b4a0");
 const savezoneIcon = makeSmallSquareIcon("#95a847");
@@ -156,8 +158,8 @@ export default function HomeplusMapClient() {
   // 홈플 메뉴 또는 쿼리 없음(기본 진입)은 4개 tier 모두 ON.
   const CHAIN_LAYERS = [
     "artbox","daiso","oliveyoung",
-    "lotte","hyundai","shinsegae",
-    "ak","entersix","moda","savezone","lf",
+    "lotte","hyundai","shinsegae","ak","galleria",
+    "entersix","moda","savezone","lf",
     "emart","lottemart","hanaromart",
   ];
   const isChainView = CHAIN_LAYERS.includes(initialLayer);
@@ -175,8 +177,9 @@ export default function HomeplusMapClient() {
   const [showLotte, setShowLotte] = useState(initialLayer === "lotte");
   const [showHyundai, setShowHyundai] = useState(initialLayer === "hyundai");
   const [showShinsegae, setShowShinsegae] = useState(initialLayer === "shinsegae");
-  // 그 외
   const [showAk, setShowAk] = useState(initialLayer === "ak");
+  const [showGalleria, setShowGalleria] = useState(initialLayer === "galleria");
+  // 그 외
   const [showEntersix, setShowEntersix] = useState(initialLayer === "entersix");
   const [showModa, setShowModa] = useState(initialLayer === "moda");
   const [showSavezone, setShowSavezone] = useState(initialLayer === "savezone");
@@ -195,6 +198,7 @@ export default function HomeplusMapClient() {
     setShowHyundai(initialLayer === "hyundai");
     setShowShinsegae(initialLayer === "shinsegae");
     setShowAk(initialLayer === "ak");
+    setShowGalleria(initialLayer === "galleria");
     setShowEntersix(initialLayer === "entersix");
     setShowModa(initialLayer === "moda");
     setShowSavezone(initialLayer === "savezone");
@@ -389,6 +393,28 @@ export default function HomeplusMapClient() {
                 <span className="inline-flex h-3.5 w-3.5 items-center justify-center text-[8px] font-black text-white" style={{ background: "#495057" }}>S</span>
                 <span className="font-bold text-[#0a0a0a]">신세계백화점 ({SHINSEGAE_STORES.length})</span>
               </label>
+              <label className="flex cursor-pointer items-center gap-1.5">
+                <input
+                  type="checkbox"
+                  checked={showAk}
+                  onChange={(e) => setShowAk(e.target.checked)}
+                  disabled={AK_STORES.length === 0}
+                  className="h-3.5 w-3.5 disabled:opacity-40"
+                />
+                <span className="inline-flex h-3.5 w-3.5 items-center justify-center text-[7px] font-black text-white" style={{ background: "#6f1d77" }}>AK</span>
+                <span className="font-bold text-[#0a0a0a]">AK백화점 ({AK_STORES.length})</span>
+              </label>
+              <label className="flex cursor-pointer items-center gap-1.5">
+                <input
+                  type="checkbox"
+                  checked={showGalleria}
+                  onChange={(e) => setShowGalleria(e.target.checked)}
+                  disabled={GALLERIA_STORES.length === 0}
+                  className="h-3.5 w-3.5 disabled:opacity-40"
+                />
+                <span className="inline-flex h-3.5 w-3.5 items-center justify-center text-[8px] font-black text-white" style={{ background: "#2d5016" }}>G</span>
+                <span className="font-bold text-[#0a0a0a]">갤러리아 ({GALLERIA_STORES.length})</span>
+              </label>
             </div>
           </div>
 
@@ -396,11 +422,6 @@ export default function HomeplusMapClient() {
           <div className="mt-3 border-t border-slate-200 pt-2">
             <div className="mb-1.5 text-[10px] font-extrabold uppercase tracking-[.12em] text-slate-500">그 외</div>
             <div className="flex flex-col gap-1.5 text-[11px]">
-              <label className="flex cursor-pointer items-center gap-1.5">
-                <input type="checkbox" checked={showAk} onChange={(e) => setShowAk(e.target.checked)} disabled={AK_STORES.length === 0} className="h-3.5 w-3.5 disabled:opacity-40" />
-                <span className="inline-block h-2 w-2" style={{ background: "#6f1d77" }} />
-                <span className="font-bold text-[#0a0a0a]">AK백화점 ({AK_STORES.length})</span>
-              </label>
               <label className="flex cursor-pointer items-center gap-1.5">
                 <input type="checkbox" checked={showEntersix} onChange={(e) => setShowEntersix(e.target.checked)} disabled={ENTERSIX_STORES.length === 0} className="h-3.5 w-3.5 disabled:opacity-40" />
                 <span className="inline-block h-2 w-2" style={{ background: "#ff6f3c" }} />
@@ -419,7 +440,7 @@ export default function HomeplusMapClient() {
               <label className="flex cursor-pointer items-center gap-1.5">
                 <input type="checkbox" checked={showLf} onChange={(e) => setShowLf(e.target.checked)} disabled={LF_STORES.length === 0} className="h-3.5 w-3.5 disabled:opacity-40" />
                 <span className="inline-block h-2 w-2" style={{ background: "#a08260" }} />
-                <span className="font-bold text-[#0a0a0a]">LF몰 ({LF_STORES.length})</span>
+                <span className="font-bold text-[#0a0a0a]">LF스퀘어 ({LF_STORES.length})</span>
               </label>
             </div>
           </div>
@@ -672,17 +693,33 @@ export default function HomeplusMapClient() {
               </Marker>
             ))}
 
-          {/* ── 그 외 ── */}
+          {/* AK백화점 */}
           {showAk && AK_STORES.map((s) => (
             <Marker key={`ak-${s.id}`} position={[s.lat, s.lng]} icon={akIcon}>
-              <Tooltip direction="top" offset={[0, -4]}>
-                <div style={{ minWidth: 160 }}>
-                  <div style={{ fontWeight: 700, fontSize: 12, color: "#6f1d77" }}>{s.name}</div>
+              <Tooltip direction="top" offset={[0, -8]}>
+                <div style={{ minWidth: 180 }}>
+                  <div style={{ fontWeight: 700, fontSize: 12, color: "#6f1d77" }}>🏬 {s.name}</div>
                   <div style={{ fontSize: 10, color: "#666", marginTop: 2 }}>{s.addr}</div>
+                  <div style={{ fontSize: 9, color: "#999", marginTop: 4, fontStyle: "italic" }}>입점 컨텐츠 DB 준비 중</div>
                 </div>
               </Tooltip>
             </Marker>
           ))}
+
+          {/* 갤러리아 */}
+          {showGalleria && GALLERIA_STORES.map((s) => (
+            <Marker key={`gl-${s.id}`} position={[s.lat, s.lng]} icon={galleriaIcon}>
+              <Tooltip direction="top" offset={[0, -8]}>
+                <div style={{ minWidth: 180 }}>
+                  <div style={{ fontWeight: 700, fontSize: 12, color: "#2d5016" }}>🏬 {s.name}</div>
+                  <div style={{ fontSize: 10, color: "#666", marginTop: 2 }}>{s.addr}</div>
+                  <div style={{ fontSize: 9, color: "#999", marginTop: 4, fontStyle: "italic" }}>입점 컨텐츠 DB 준비 중</div>
+                </div>
+              </Tooltip>
+            </Marker>
+          ))}
+
+          {/* ── 그 외 ── */}
           {showEntersix && ENTERSIX_STORES.map((s) => (
             <Marker key={`es-${s.id}`} position={[s.lat, s.lng]} icon={entersixIcon}>
               <Tooltip direction="top" offset={[0, -4]}>
@@ -717,7 +754,7 @@ export default function HomeplusMapClient() {
             <Marker key={`lf-${s.id}`} position={[s.lat, s.lng]} icon={lfIcon}>
               <Tooltip direction="top" offset={[0, -4]}>
                 <div style={{ minWidth: 160 }}>
-                  <div style={{ fontWeight: 700, fontSize: 12, color: "#6e5538" }}>{s.name}</div>
+                  <div style={{ fontWeight: 700, fontSize: 12, color: "#6e5538" }}>🛍️ {s.name}</div>
                   <div style={{ fontSize: 10, color: "#666", marginTop: 2 }}>{s.addr}</div>
                 </div>
               </Tooltip>

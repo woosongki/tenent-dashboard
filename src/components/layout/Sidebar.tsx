@@ -148,12 +148,13 @@ const NAV: NavGroup[] = [
           { href: "/dashboard/homeplus?layer=lotte",           label: "롯데백화점 30점",     layer: "lotte",      dotColor: "#a4133c" },
           { href: "/dashboard/homeplus?layer=hyundai",         label: "현대백화점 13점",     layer: "hyundai",    dotColor: "#1d3557" },
           { href: "/dashboard/homeplus?layer=shinsegae",       label: "신세계백화점 10점",   layer: "shinsegae",  dotColor: "#495057" },
-          // 그 외
           { href: "/dashboard/homeplus?layer=ak",              label: "AK백화점 2점",        layer: "ak",         dotColor: "#6f1d77" },
+          { href: "/dashboard/homeplus?layer=galleria",        label: "갤러리아 6점",        layer: "galleria",   dotColor: "#2d5016" },
+          // 그 외
           { href: "/dashboard/homeplus?layer=entersix",        label: "엔터식스 6점",        layer: "entersix",   dotColor: "#ff6f3c" },
           { href: "/dashboard/homeplus?layer=moda",            label: "모다아울렛 17점",     layer: "moda",       dotColor: "#00b4a0" },
           { href: "/dashboard/homeplus?layer=savezone",        label: "세이브존 9점",        layer: "savezone",   dotColor: "#95a847" },
-          { href: "/dashboard/homeplus?layer=lf",              label: "LF몰 26점",           layer: "lf",         dotColor: "#a08260" },
+          { href: "/dashboard/homeplus?layer=lf",              label: "LF스퀘어 4점",        layer: "lf",         dotColor: "#a08260" },
           // 마트
           { href: "/dashboard/homeplus?layer=emart",           label: "이마트 127점",        layer: "emart",      dotColor: "#ffc107" },
           { href: "/dashboard/homeplus?layer=lottemart",       label: "롯데마트 101점",      layer: "lottemart",  dotColor: "#d62828" },

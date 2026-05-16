@@ -1,6 +1,6 @@
 // 롯데백화점 전국 매장 위치 데이터
 // 수집: Kakao Local API (scripts/fetch-dept-stores.mjs)
-// 마지막 갱신: 2026-05-16T11:48:00.294Z
+// 마지막 갱신: 2026-05-16T14:59:55.427Z
 // 총 30개 매장
 
 import type { ChainStore } from "./artbox";
