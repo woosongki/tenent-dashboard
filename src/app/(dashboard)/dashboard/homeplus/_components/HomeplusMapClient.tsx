@@ -2,6 +2,7 @@
 
 import "leaflet/dist/leaflet.css";
 import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import {
   MapContainer,
   TileLayer,
@@ -94,14 +95,25 @@ const oliveyoungIcon = L.divIcon({
 type FlyTarget = { lat: number; lng: number; zoom?: number; key: string };
 
 export default function HomeplusMapClient() {
+  // URL ?layer=X 로 진입한 체인 레이어 자동 활성화 (사이드바 하위 메뉴)
+  const searchParams = useSearchParams();
+  const initialLayer = searchParams?.get("layer") ?? "";
+
   const [activeTiers, setActiveTiers] = useState<Set<Tier>>(new Set(ALL_TIERS));
   const [selected, setSelected] = useState<HomeplusStore | null>(null);
   const [showLines, setShowLines] = useState(true);
   const [showEland, setShowEland] = useState(true);
-  // 체인 레이어 — 기본 OFF (마커 폭증 방지, 사용자 의도적으로 켜야 함)
-  const [showArtbox, setShowArtbox] = useState(false);
-  const [showDaiso, setShowDaiso] = useState(false);
-  const [showOliveYoung, setShowOliveYoung] = useState(false);
+  // 체인 레이어 — URL에 layer 파라미터 있으면 해당 레이어만 ON
+  const [showArtbox, setShowArtbox] = useState(initialLayer === "artbox");
+  const [showDaiso, setShowDaiso] = useState(initialLayer === "daiso");
+  const [showOliveYoung, setShowOliveYoung] = useState(initialLayer === "oliveyoung");
+
+  // 사이드바 하위 메뉴 클릭으로 layer가 바뀌면 해당 토글만 켜고 나머지 끔
+  useEffect(() => {
+    setShowArtbox(initialLayer === "artbox");
+    setShowDaiso(initialLayer === "daiso");
+    setShowOliveYoung(initialLayer === "oliveyoung");
+  }, [initialLayer]);
   // 클릭한 점포 좌표로 지도 이동 트리거. key를 매번 새로 만들어 같은 점포 재클릭도 동작.
   const [flyTarget, setFlyTarget] = useState<FlyTarget | null>(null);
 

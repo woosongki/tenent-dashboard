@@ -1,7 +1,8 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { signOutAction } from "@/app/(auth)/login/_actions/auth";
 import { SIDEBAR_THEMES, type SidebarTheme } from "@/lib/tokens";
 import NotionSyncButton from "@/components/ui/NotionSyncButton";
@@ -98,9 +99,24 @@ function IconChevronRight() {
     </svg>
   );
 }
+function IconChevronDown() {
+  return (
+    <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+    </svg>
+  );
+}
 
 type Role = "owner" | "admin" | "member";
-interface NavItem { href: string; label: string; icon: React.ReactElement; roles?: Role[] }
+interface NavChild { href: string; label: string; layer?: string; dotColor?: string }
+interface NavItem {
+  href: string;
+  label: string;
+  icon: React.ReactElement;
+  roles?: Role[];
+  /** 하위 메뉴 — 있으면 펼침 버튼으로 렌더 */
+  children?: NavChild[];
+}
 interface NavGroup { section: string; items: NavItem[] }
 
 const NAV: NavGroup[] = [
@@ -120,7 +136,17 @@ const NAV: NavGroup[] = [
       { href: "/dashboard/calendar",  label: "52주 캘린더",   icon: <IconCalendar /> },
       { href: "/dashboard/floorplans",label: "전점도면",       icon: <IconBlueprint /> },
       { href: "/dashboard/branch",    label: "상권분석",       icon: <IconMap /> },
-      { href: "/dashboard/homeplus",  label: "리테일 지도",   icon: <IconAlert /> },
+      {
+        href: "/dashboard/homeplus",
+        label: "리테일 지도",
+        icon: <IconAlert />,
+        children: [
+          { href: "/dashboard/homeplus",                       label: "홈플 영업중단 33점", layer: "homeplus",   dotColor: "#ef476f" },
+          { href: "/dashboard/homeplus?layer=artbox",          label: "아트박스 203점",      layer: "artbox",     dotColor: "#f72585" },
+          { href: "/dashboard/homeplus?layer=daiso",           label: "다이소 1,714점",      layer: "daiso",      dotColor: "#f9c74f" },
+          { href: "/dashboard/homeplus?layer=oliveyoung",      label: "올리브영 1,363점",    layer: "oliveyoung", dotColor: "#52b788" },
+        ],
+      },
     ],
   },
   {
@@ -171,11 +197,37 @@ export default function Sidebar({
   reportMode = false, onToggleReportMode,
 }: Props) {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const currentLayer = searchParams?.get("layer") ?? "";
   const t = SIDEBAR_THEMES[theme];
+  // 펼쳐진 부모 메뉴 추적. 현재 경로 기준 자동 펼침 + 클릭 토글.
+  const [expanded, setExpanded] = useState<Set<string>>(() => {
+    const initial = new Set<string>();
+    NAV.forEach((g) => g.items.forEach((it) => {
+      if (it.children && pathname.startsWith(it.href)) initial.add(it.href);
+    }));
+    return initial;
+  });
 
   function isActive(href: string) {
     if (href === "/dashboard") return pathname === "/dashboard";
     return pathname.startsWith(href);
+  }
+  function isChildActive(parentHref: string, child: NavChild) {
+    // parentHref와 path가 일치해야 하며, layer 쿼리도 매칭되어야 함
+    if (!pathname.startsWith(parentHref)) return false;
+    const expectedLayer = child.layer ?? "";
+    // child가 기본(layer 없음) 인 경우엔 layer 쿼리가 비어있을 때만 active
+    if (!expectedLayer) return currentLayer === "" || currentLayer === "homeplus";
+    return currentLayer === expectedLayer;
+  }
+  function toggleExpanded(href: string) {
+    setExpanded((prev) => {
+      const next = new Set(prev);
+      if (next.has(href)) next.delete(href);
+      else next.add(href);
+      return next;
+    });
   }
 
   const initial = (userEmail[0] ?? "U").toUpperCase();
@@ -230,30 +282,71 @@ export default function Sidebar({
             {collapsed && <div className="pt-3" />}
             {items.map((item) => {
               const active = isActive(item.href);
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  title={collapsed ? item.label : undefined}
-                  className={`relative flex items-center transition-colors ${
-                    collapsed ? "justify-center px-0 py-3" : "gap-2.5 pl-3 pr-2 py-2.5"
-                  } ${
-                    active
-                      ? `${t.itemActive} ${t.textActive}`
-                      : `${t.itemBase} ${t.itemHover}`
-                  }`}
-                >
-                  <span
-                    className={`h-[16px] w-[16px] shrink-0 [&>svg]:h-full [&>svg]:w-full [&>svg]:stroke-current`}
+              const hasChildren = !!item.children?.length;
+              const isExpanded = expanded.has(item.href);
+
+              // 하위 메뉴가 없거나 collapsed 모드면 기존 Link 렌더
+              if (!hasChildren || collapsed) {
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    title={collapsed ? item.label : undefined}
+                    className={`relative flex items-center transition-colors ${
+                      collapsed ? "justify-center px-0 py-3" : "gap-2.5 pl-3 pr-2 py-2.5"
+                    } ${active ? `${t.itemActive} ${t.textActive}` : `${t.itemBase} ${t.itemHover}`}`}
                   >
-                    {item.icon}
-                  </span>
-                  {!collapsed && (
-                    <span className="text-[13px] font-bold">
-                      {item.label}
+                    <span className="h-[16px] w-[16px] shrink-0 [&>svg]:h-full [&>svg]:w-full [&>svg]:stroke-current">
+                      {item.icon}
                     </span>
+                    {!collapsed && <span className="text-[13px] font-bold">{item.label}</span>}
+                  </Link>
+                );
+              }
+
+              // 펼침 가능한 부모 메뉴
+              return (
+                <div key={item.href}>
+                  <button
+                    type="button"
+                    onClick={() => toggleExpanded(item.href)}
+                    className={`relative flex w-full items-center gap-2.5 pl-3 pr-2 py-2.5 transition-colors ${
+                      active ? `${t.itemActive} ${t.textActive}` : `${t.itemBase} ${t.itemHover}`
+                    }`}
+                  >
+                    <span className="h-[16px] w-[16px] shrink-0 [&>svg]:h-full [&>svg]:w-full [&>svg]:stroke-current">
+                      {item.icon}
+                    </span>
+                    <span className="flex-1 text-left text-[13px] font-bold">{item.label}</span>
+                    <span className={`shrink-0 transition-transform ${isExpanded ? "rotate-0" : "-rotate-90"}`}>
+                      <IconChevronDown />
+                    </span>
+                  </button>
+                  {isExpanded && (
+                    <div className="mt-0.5 mb-1 ml-3 border-l-[2px] border-[#0a0a0a]/15 pl-1">
+                      {item.children!.map((child) => {
+                        const childActive = isChildActive(item.href, child);
+                        return (
+                          <Link
+                            key={child.href + (child.layer ?? "")}
+                            href={child.href}
+                            className={`flex items-center gap-2 pl-3 pr-2 py-2 text-[12px] font-bold transition-colors ${
+                              childActive ? `${t.itemActive} ${t.textActive}` : `${t.itemBase} ${t.itemHover}`
+                            }`}
+                          >
+                            {child.dotColor && (
+                              <span
+                                className="inline-block h-2 w-2 shrink-0 border border-[#0a0a0a]/30"
+                                style={{ background: child.dotColor, borderRadius: child.dotColor === "#52b788" ? "50%" : 0 }}
+                              />
+                            )}
+                            <span className="truncate">{child.label}</span>
+                          </Link>
+                        );
+                      })}
+                    </div>
                   )}
-                </Link>
+                </div>
               );
             })}
           </div>
