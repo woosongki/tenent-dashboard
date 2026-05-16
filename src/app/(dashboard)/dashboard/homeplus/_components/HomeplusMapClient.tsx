@@ -43,6 +43,9 @@ import {
 import { ARTBOX_STORES } from "@/data/artbox";
 import { DAISO_STORES } from "@/data/daiso";
 import { OLIVEYOUNG_STORES } from "@/data/oliveyoung";
+import { LOTTE_STORES } from "@/data/lotte";
+import { HYUNDAI_STORES } from "@/data/hyundai";
+import { SHINSEGAE_STORES } from "@/data/shinsegae";
 
 const TIER_COLOR: Record<Tier, string> = {
   "동일상권": "#ef476f",
@@ -91,6 +94,18 @@ const oliveyoungIcon = L.divIcon({
   iconSize: [10, 10],
   iconAnchor: [5, 5],
 });
+// 백화점 — 사각형 + 글자 라벨 (앵커 매장이라 더 크게)
+function makeDeptIcon(letter, bg) {
+  return L.divIcon({
+    className: "",
+    html: `<div style="width:16px;height:16px;background:${bg};border:2px solid #fff;display:flex;align-items:center;justify-content:center;color:#fff;font-size:9px;font-weight:800;box-shadow:0 2px 6px rgba(0,0,0,.4)">${letter}</div>`,
+    iconSize: [16, 16],
+    iconAnchor: [8, 8],
+  });
+}
+const lotteIcon     = makeDeptIcon("L", "#a4133c");  // 와인 레드
+const hyundaiIcon   = makeDeptIcon("H", "#1d3557");  // 다크 네이비
+const shinsegaeIcon = makeDeptIcon("S", "#495057");  // 다크 그레이
 
 type FlyTarget = { lat: number; lng: number; zoom?: number; key: string };
 
@@ -101,8 +116,8 @@ export default function HomeplusMapClient() {
 
   // 체인 메뉴(아트박스/다이소/올리브영)로 진입했으면 홈플 33점은 기본 OFF.
   // 홈플 메뉴 또는 쿼리 없음(기본 진입)은 4개 tier 모두 ON.
-  const isChainView =
-    initialLayer === "artbox" || initialLayer === "daiso" || initialLayer === "oliveyoung";
+  const CHAIN_LAYERS = ["artbox", "daiso", "oliveyoung", "lotte", "hyundai", "shinsegae"];
+  const isChainView = CHAIN_LAYERS.includes(initialLayer);
 
   const [activeTiers, setActiveTiers] = useState<Set<Tier>>(
     isChainView ? new Set() : new Set(ALL_TIERS),
@@ -114,12 +129,18 @@ export default function HomeplusMapClient() {
   const [showArtbox, setShowArtbox] = useState(initialLayer === "artbox");
   const [showDaiso, setShowDaiso] = useState(initialLayer === "daiso");
   const [showOliveYoung, setShowOliveYoung] = useState(initialLayer === "oliveyoung");
+  const [showLotte, setShowLotte] = useState(initialLayer === "lotte");
+  const [showHyundai, setShowHyundai] = useState(initialLayer === "hyundai");
+  const [showShinsegae, setShowShinsegae] = useState(initialLayer === "shinsegae");
 
   // 사이드바 하위 메뉴 클릭으로 layer가 바뀌면 토글/tier 자동 동기화.
   useEffect(() => {
     setShowArtbox(initialLayer === "artbox");
     setShowDaiso(initialLayer === "daiso");
     setShowOliveYoung(initialLayer === "oliveyoung");
+    setShowLotte(initialLayer === "lotte");
+    setShowHyundai(initialLayer === "hyundai");
+    setShowShinsegae(initialLayer === "shinsegae");
     // 체인 뷰 → 홈플 tier 모두 OFF / 홈플 뷰 → 모두 ON
     setActiveTiers(isChainView ? new Set() : new Set(ALL_TIERS));
   }, [initialLayer, isChainView]);
@@ -266,6 +287,48 @@ export default function HomeplusMapClient() {
                 올리브영 {OLIVEYOUNG_STORES.length > 0 && `(${OLIVEYOUNG_STORES.length})`}
               </span>
             </label>
+          </div>
+
+          {/* 백화점 3사 */}
+          <div className="mt-3 border-t border-slate-200 pt-2">
+            <div className="mb-1.5 text-[10px] font-extrabold uppercase tracking-[.12em] text-slate-500">
+              백화점
+            </div>
+            <div className="flex flex-col gap-1.5 text-[11px]">
+              <label className="flex cursor-pointer items-center gap-1.5">
+                <input
+                  type="checkbox"
+                  checked={showLotte}
+                  onChange={(e) => setShowLotte(e.target.checked)}
+                  disabled={LOTTE_STORES.length === 0}
+                  className="h-3.5 w-3.5 disabled:opacity-40"
+                />
+                <span className="inline-flex h-3.5 w-3.5 items-center justify-center text-[8px] font-black text-white" style={{ background: "#a4133c" }}>L</span>
+                <span className="font-bold text-[#0a0a0a]">롯데백화점 ({LOTTE_STORES.length})</span>
+              </label>
+              <label className="flex cursor-pointer items-center gap-1.5">
+                <input
+                  type="checkbox"
+                  checked={showHyundai}
+                  onChange={(e) => setShowHyundai(e.target.checked)}
+                  disabled={HYUNDAI_STORES.length === 0}
+                  className="h-3.5 w-3.5 disabled:opacity-40"
+                />
+                <span className="inline-flex h-3.5 w-3.5 items-center justify-center text-[8px] font-black text-white" style={{ background: "#1d3557" }}>H</span>
+                <span className="font-bold text-[#0a0a0a]">현대백화점 ({HYUNDAI_STORES.length})</span>
+              </label>
+              <label className="flex cursor-pointer items-center gap-1.5">
+                <input
+                  type="checkbox"
+                  checked={showShinsegae}
+                  onChange={(e) => setShowShinsegae(e.target.checked)}
+                  disabled={SHINSEGAE_STORES.length === 0}
+                  className="h-3.5 w-3.5 disabled:opacity-40"
+                />
+                <span className="inline-flex h-3.5 w-3.5 items-center justify-center text-[8px] font-black text-white" style={{ background: "#495057" }}>S</span>
+                <span className="font-bold text-[#0a0a0a]">신세계백화점 ({SHINSEGAE_STORES.length})</span>
+              </label>
+            </div>
           </div>
         </div>
 
@@ -452,6 +515,48 @@ export default function HomeplusMapClient() {
               </Marker>
             ))}
 
+          {/* 롯데백화점 */}
+          {showLotte &&
+            LOTTE_STORES.map((s) => (
+              <Marker key={`lotte-${s.id}`} position={[s.lat, s.lng]} icon={lotteIcon}>
+                <Tooltip direction="top" offset={[0, -8]}>
+                  <div style={{ minWidth: 180 }}>
+                    <div style={{ fontWeight: 700, fontSize: 12, color: "#a4133c" }}>🏬 {s.name}</div>
+                    <div style={{ fontSize: 10, color: "#666", marginTop: 2 }}>{s.addr}</div>
+                    <div style={{ fontSize: 9, color: "#999", marginTop: 4, fontStyle: "italic" }}>입점 컨텐츠 DB 준비 중</div>
+                  </div>
+                </Tooltip>
+              </Marker>
+            ))}
+
+          {/* 현대백화점 */}
+          {showHyundai &&
+            HYUNDAI_STORES.map((s) => (
+              <Marker key={`hyundai-${s.id}`} position={[s.lat, s.lng]} icon={hyundaiIcon}>
+                <Tooltip direction="top" offset={[0, -8]}>
+                  <div style={{ minWidth: 180 }}>
+                    <div style={{ fontWeight: 700, fontSize: 12, color: "#1d3557" }}>🏬 {s.name}</div>
+                    <div style={{ fontSize: 10, color: "#666", marginTop: 2 }}>{s.addr}</div>
+                    <div style={{ fontSize: 9, color: "#999", marginTop: 4, fontStyle: "italic" }}>입점 컨텐츠 DB 준비 중</div>
+                  </div>
+                </Tooltip>
+              </Marker>
+            ))}
+
+          {/* 신세계백화점 */}
+          {showShinsegae &&
+            SHINSEGAE_STORES.map((s) => (
+              <Marker key={`ss-${s.id}`} position={[s.lat, s.lng]} icon={shinsegaeIcon}>
+                <Tooltip direction="top" offset={[0, -8]}>
+                  <div style={{ minWidth: 180 }}>
+                    <div style={{ fontWeight: 700, fontSize: 12, color: "#495057" }}>🏬 {s.name}</div>
+                    <div style={{ fontSize: 10, color: "#666", marginTop: 2 }}>{s.addr}</div>
+                    <div style={{ fontSize: 9, color: "#999", marginTop: 4, fontStyle: "italic" }}>입점 컨텐츠 DB 준비 중</div>
+                  </div>
+                </Tooltip>
+              </Marker>
+            ))}
+
           {/* 클릭한 점포로 지도 이동 */}
           <FlyToTarget target={flyTarget} />
         </MapContainer>
@@ -499,6 +604,24 @@ export default function HomeplusMapClient() {
             <div className="mt-1 flex items-center gap-2 text-[11px]">
               <span className="inline-block h-2 w-2 rounded-full border border-white" style={{ background: "#52b788" }} />
               <span className="font-bold text-[#0a0a0a]">올리브영 {OLIVEYOUNG_STORES.length}점</span>
+            </div>
+          )}
+          {showLotte && LOTTE_STORES.length > 0 && (
+            <div className="mt-1 flex items-center gap-2 text-[11px]">
+              <span className="inline-flex h-3 w-3 items-center justify-center text-[7px] font-black text-white" style={{ background: "#a4133c" }}>L</span>
+              <span className="font-bold text-[#0a0a0a]">롯데백화점 {LOTTE_STORES.length}점</span>
+            </div>
+          )}
+          {showHyundai && HYUNDAI_STORES.length > 0 && (
+            <div className="mt-1 flex items-center gap-2 text-[11px]">
+              <span className="inline-flex h-3 w-3 items-center justify-center text-[7px] font-black text-white" style={{ background: "#1d3557" }}>H</span>
+              <span className="font-bold text-[#0a0a0a]">현대백화점 {HYUNDAI_STORES.length}점</span>
+            </div>
+          )}
+          {showShinsegae && SHINSEGAE_STORES.length > 0 && (
+            <div className="mt-1 flex items-center gap-2 text-[11px]">
+              <span className="inline-flex h-3 w-3 items-center justify-center text-[7px] font-black text-white" style={{ background: "#495057" }}>S</span>
+              <span className="font-bold text-[#0a0a0a]">신세계백화점 {SHINSEGAE_STORES.length}점</span>
             </div>
           )}
           <div className="mt-2 text-[9.5px] leading-tight text-slate-500">
