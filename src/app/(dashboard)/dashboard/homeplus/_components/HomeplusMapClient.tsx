@@ -46,6 +46,16 @@ import { OLIVEYOUNG_STORES } from "@/data/oliveyoung";
 import { LOTTE_STORES } from "@/data/lotte";
 import { HYUNDAI_STORES } from "@/data/hyundai";
 import { SHINSEGAE_STORES } from "@/data/shinsegae";
+// ── 그 외 ──
+import { AK_STORES } from "@/data/ak";
+import { ENTERSIX_STORES } from "@/data/entersix";
+import { MODA_STORES } from "@/data/moda";
+import { SAVEZONE_STORES } from "@/data/savezone";
+import { LF_STORES } from "@/data/lf";
+// ── 마트 ──
+import { EMART_STORES } from "@/data/emart";
+import { LOTTEMART_STORES } from "@/data/lottemart";
+import { HANAROMART_STORES } from "@/data/hanaromart";
 
 const TIER_COLOR: Record<Tier, string> = {
   "동일상권": "#ef476f",
@@ -107,6 +117,34 @@ const lotteIcon     = makeDeptIcon("L", "#a4133c");  // 와인 레드
 const hyundaiIcon   = makeDeptIcon("H", "#1d3557");  // 다크 네이비
 const shinsegaeIcon = makeDeptIcon("S", "#495057");  // 다크 그레이
 
+// 그 외 — 작은 사각 7px
+function makeSmallSquareIcon(bg: string) {
+  return L.divIcon({
+    className: "",
+    html: `<div style="width:8px;height:8px;background:${bg};border:1.5px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.3)"></div>`,
+    iconSize: [8, 8],
+    iconAnchor: [4, 4],
+  });
+}
+const akIcon       = makeSmallSquareIcon("#6f1d77");
+const entersixIcon = makeSmallSquareIcon("#ff6f3c");
+const modaIcon     = makeSmallSquareIcon("#00b4a0");
+const savezoneIcon = makeSmallSquareIcon("#95a847");
+const lfIcon       = makeSmallSquareIcon("#a08260");
+
+// 마트 — 원형 10px (백화점보다 작게, 체인보다 약간 큼)
+function makeCircleIcon(bg: string) {
+  return L.divIcon({
+    className: "",
+    html: `<div style="width:11px;height:11px;background:${bg};border:2px solid #fff;border-radius:50%;box-shadow:0 1px 4px rgba(0,0,0,.35)"></div>`,
+    iconSize: [11, 11],
+    iconAnchor: [5.5, 5.5],
+  });
+}
+const emartIcon      = makeCircleIcon("#ffc107"); // 노랑
+const lottemartIcon  = makeCircleIcon("#d62828"); // 빨강
+const hanaromartIcon = makeCircleIcon("#2d6a4f"); // 농협 초록
+
 type FlyTarget = { lat: number; lng: number; zoom?: number; key: string };
 
 export default function HomeplusMapClient() {
@@ -116,7 +154,12 @@ export default function HomeplusMapClient() {
 
   // 체인 메뉴(아트박스/다이소/올리브영)로 진입했으면 홈플 33점은 기본 OFF.
   // 홈플 메뉴 또는 쿼리 없음(기본 진입)은 4개 tier 모두 ON.
-  const CHAIN_LAYERS = ["artbox", "daiso", "oliveyoung", "lotte", "hyundai", "shinsegae"];
+  const CHAIN_LAYERS = [
+    "artbox","daiso","oliveyoung",
+    "lotte","hyundai","shinsegae",
+    "ak","entersix","moda","savezone","lf",
+    "emart","lottemart","hanaromart",
+  ];
   const isChainView = CHAIN_LAYERS.includes(initialLayer);
 
   const [activeTiers, setActiveTiers] = useState<Set<Tier>>(
@@ -132,6 +175,16 @@ export default function HomeplusMapClient() {
   const [showLotte, setShowLotte] = useState(initialLayer === "lotte");
   const [showHyundai, setShowHyundai] = useState(initialLayer === "hyundai");
   const [showShinsegae, setShowShinsegae] = useState(initialLayer === "shinsegae");
+  // 그 외
+  const [showAk, setShowAk] = useState(initialLayer === "ak");
+  const [showEntersix, setShowEntersix] = useState(initialLayer === "entersix");
+  const [showModa, setShowModa] = useState(initialLayer === "moda");
+  const [showSavezone, setShowSavezone] = useState(initialLayer === "savezone");
+  const [showLf, setShowLf] = useState(initialLayer === "lf");
+  // 마트
+  const [showEmart, setShowEmart] = useState(initialLayer === "emart");
+  const [showLottemart, setShowLottemart] = useState(initialLayer === "lottemart");
+  const [showHanaromart, setShowHanaromart] = useState(initialLayer === "hanaromart");
 
   // 사이드바 하위 메뉴 클릭으로 layer가 바뀌면 토글/tier 자동 동기화.
   useEffect(() => {
@@ -141,6 +194,14 @@ export default function HomeplusMapClient() {
     setShowLotte(initialLayer === "lotte");
     setShowHyundai(initialLayer === "hyundai");
     setShowShinsegae(initialLayer === "shinsegae");
+    setShowAk(initialLayer === "ak");
+    setShowEntersix(initialLayer === "entersix");
+    setShowModa(initialLayer === "moda");
+    setShowSavezone(initialLayer === "savezone");
+    setShowLf(initialLayer === "lf");
+    setShowEmart(initialLayer === "emart");
+    setShowLottemart(initialLayer === "lottemart");
+    setShowHanaromart(initialLayer === "hanaromart");
     // 체인 뷰 → 홈플 tier 모두 OFF / 홈플 뷰 → 모두 ON
     setActiveTiers(isChainView ? new Set() : new Set(ALL_TIERS));
   }, [initialLayer, isChainView]);
@@ -327,6 +388,60 @@ export default function HomeplusMapClient() {
                 />
                 <span className="inline-flex h-3.5 w-3.5 items-center justify-center text-[8px] font-black text-white" style={{ background: "#495057" }}>S</span>
                 <span className="font-bold text-[#0a0a0a]">신세계백화점 ({SHINSEGAE_STORES.length})</span>
+              </label>
+            </div>
+          </div>
+
+          {/* 그 외 */}
+          <div className="mt-3 border-t border-slate-200 pt-2">
+            <div className="mb-1.5 text-[10px] font-extrabold uppercase tracking-[.12em] text-slate-500">그 외</div>
+            <div className="flex flex-col gap-1.5 text-[11px]">
+              <label className="flex cursor-pointer items-center gap-1.5">
+                <input type="checkbox" checked={showAk} onChange={(e) => setShowAk(e.target.checked)} disabled={AK_STORES.length === 0} className="h-3.5 w-3.5 disabled:opacity-40" />
+                <span className="inline-block h-2 w-2" style={{ background: "#6f1d77" }} />
+                <span className="font-bold text-[#0a0a0a]">AK백화점 ({AK_STORES.length})</span>
+              </label>
+              <label className="flex cursor-pointer items-center gap-1.5">
+                <input type="checkbox" checked={showEntersix} onChange={(e) => setShowEntersix(e.target.checked)} disabled={ENTERSIX_STORES.length === 0} className="h-3.5 w-3.5 disabled:opacity-40" />
+                <span className="inline-block h-2 w-2" style={{ background: "#ff6f3c" }} />
+                <span className="font-bold text-[#0a0a0a]">엔터식스 ({ENTERSIX_STORES.length})</span>
+              </label>
+              <label className="flex cursor-pointer items-center gap-1.5">
+                <input type="checkbox" checked={showModa} onChange={(e) => setShowModa(e.target.checked)} disabled={MODA_STORES.length === 0} className="h-3.5 w-3.5 disabled:opacity-40" />
+                <span className="inline-block h-2 w-2" style={{ background: "#00b4a0" }} />
+                <span className="font-bold text-[#0a0a0a]">모다아울렛 ({MODA_STORES.length})</span>
+              </label>
+              <label className="flex cursor-pointer items-center gap-1.5">
+                <input type="checkbox" checked={showSavezone} onChange={(e) => setShowSavezone(e.target.checked)} disabled={SAVEZONE_STORES.length === 0} className="h-3.5 w-3.5 disabled:opacity-40" />
+                <span className="inline-block h-2 w-2" style={{ background: "#95a847" }} />
+                <span className="font-bold text-[#0a0a0a]">세이브존 ({SAVEZONE_STORES.length})</span>
+              </label>
+              <label className="flex cursor-pointer items-center gap-1.5">
+                <input type="checkbox" checked={showLf} onChange={(e) => setShowLf(e.target.checked)} disabled={LF_STORES.length === 0} className="h-3.5 w-3.5 disabled:opacity-40" />
+                <span className="inline-block h-2 w-2" style={{ background: "#a08260" }} />
+                <span className="font-bold text-[#0a0a0a]">LF몰 ({LF_STORES.length})</span>
+              </label>
+            </div>
+          </div>
+
+          {/* 마트 */}
+          <div className="mt-3 border-t border-slate-200 pt-2">
+            <div className="mb-1.5 text-[10px] font-extrabold uppercase tracking-[.12em] text-slate-500">마트</div>
+            <div className="flex flex-col gap-1.5 text-[11px]">
+              <label className="flex cursor-pointer items-center gap-1.5">
+                <input type="checkbox" checked={showEmart} onChange={(e) => setShowEmart(e.target.checked)} disabled={EMART_STORES.length === 0} className="h-3.5 w-3.5 disabled:opacity-40" />
+                <span className="inline-block h-2.5 w-2.5 rounded-full" style={{ background: "#ffc107" }} />
+                <span className="font-bold text-[#0a0a0a]">이마트 ({EMART_STORES.length})</span>
+              </label>
+              <label className="flex cursor-pointer items-center gap-1.5">
+                <input type="checkbox" checked={showLottemart} onChange={(e) => setShowLottemart(e.target.checked)} disabled={LOTTEMART_STORES.length === 0} className="h-3.5 w-3.5 disabled:opacity-40" />
+                <span className="inline-block h-2.5 w-2.5 rounded-full" style={{ background: "#d62828" }} />
+                <span className="font-bold text-[#0a0a0a]">롯데마트 ({LOTTEMART_STORES.length})</span>
+              </label>
+              <label className="flex cursor-pointer items-center gap-1.5">
+                <input type="checkbox" checked={showHanaromart} onChange={(e) => setShowHanaromart(e.target.checked)} disabled={HANAROMART_STORES.length === 0} className="h-3.5 w-3.5 disabled:opacity-40" />
+                <span className="inline-block h-2.5 w-2.5 rounded-full" style={{ background: "#2d6a4f" }} />
+                <span className="font-bold text-[#0a0a0a]">하나로마트 ({HANAROMART_STORES.length})</span>
               </label>
             </div>
           </div>
@@ -556,6 +671,90 @@ export default function HomeplusMapClient() {
                 </Tooltip>
               </Marker>
             ))}
+
+          {/* ── 그 외 ── */}
+          {showAk && AK_STORES.map((s) => (
+            <Marker key={`ak-${s.id}`} position={[s.lat, s.lng]} icon={akIcon}>
+              <Tooltip direction="top" offset={[0, -4]}>
+                <div style={{ minWidth: 160 }}>
+                  <div style={{ fontWeight: 700, fontSize: 12, color: "#6f1d77" }}>{s.name}</div>
+                  <div style={{ fontSize: 10, color: "#666", marginTop: 2 }}>{s.addr}</div>
+                </div>
+              </Tooltip>
+            </Marker>
+          ))}
+          {showEntersix && ENTERSIX_STORES.map((s) => (
+            <Marker key={`es-${s.id}`} position={[s.lat, s.lng]} icon={entersixIcon}>
+              <Tooltip direction="top" offset={[0, -4]}>
+                <div style={{ minWidth: 160 }}>
+                  <div style={{ fontWeight: 700, fontSize: 12, color: "#cc5429" }}>{s.name}</div>
+                  <div style={{ fontSize: 10, color: "#666", marginTop: 2 }}>{s.addr}</div>
+                </div>
+              </Tooltip>
+            </Marker>
+          ))}
+          {showModa && MODA_STORES.map((s) => (
+            <Marker key={`md-${s.id}`} position={[s.lat, s.lng]} icon={modaIcon}>
+              <Tooltip direction="top" offset={[0, -4]}>
+                <div style={{ minWidth: 160 }}>
+                  <div style={{ fontWeight: 700, fontSize: 12, color: "#007a6e" }}>{s.name}</div>
+                  <div style={{ fontSize: 10, color: "#666", marginTop: 2 }}>{s.addr}</div>
+                </div>
+              </Tooltip>
+            </Marker>
+          ))}
+          {showSavezone && SAVEZONE_STORES.map((s) => (
+            <Marker key={`sv-${s.id}`} position={[s.lat, s.lng]} icon={savezoneIcon}>
+              <Tooltip direction="top" offset={[0, -4]}>
+                <div style={{ minWidth: 160 }}>
+                  <div style={{ fontWeight: 700, fontSize: 12, color: "#6e7a2e" }}>{s.name}</div>
+                  <div style={{ fontSize: 10, color: "#666", marginTop: 2 }}>{s.addr}</div>
+                </div>
+              </Tooltip>
+            </Marker>
+          ))}
+          {showLf && LF_STORES.map((s) => (
+            <Marker key={`lf-${s.id}`} position={[s.lat, s.lng]} icon={lfIcon}>
+              <Tooltip direction="top" offset={[0, -4]}>
+                <div style={{ minWidth: 160 }}>
+                  <div style={{ fontWeight: 700, fontSize: 12, color: "#6e5538" }}>{s.name}</div>
+                  <div style={{ fontSize: 10, color: "#666", marginTop: 2 }}>{s.addr}</div>
+                </div>
+              </Tooltip>
+            </Marker>
+          ))}
+
+          {/* ── 마트 ── */}
+          {showEmart && EMART_STORES.map((s) => (
+            <Marker key={`em-${s.id}`} position={[s.lat, s.lng]} icon={emartIcon}>
+              <Tooltip direction="top" offset={[0, -6]}>
+                <div style={{ minWidth: 160 }}>
+                  <div style={{ fontWeight: 700, fontSize: 12, color: "#b88a00" }}>🛒 {s.name}</div>
+                  <div style={{ fontSize: 10, color: "#666", marginTop: 2 }}>{s.addr}</div>
+                </div>
+              </Tooltip>
+            </Marker>
+          ))}
+          {showLottemart && LOTTEMART_STORES.map((s) => (
+            <Marker key={`lm-${s.id}`} position={[s.lat, s.lng]} icon={lottemartIcon}>
+              <Tooltip direction="top" offset={[0, -6]}>
+                <div style={{ minWidth: 160 }}>
+                  <div style={{ fontWeight: 700, fontSize: 12, color: "#a01a1a" }}>🛒 {s.name}</div>
+                  <div style={{ fontSize: 10, color: "#666", marginTop: 2 }}>{s.addr}</div>
+                </div>
+              </Tooltip>
+            </Marker>
+          ))}
+          {showHanaromart && HANAROMART_STORES.map((s) => (
+            <Marker key={`hm-${s.id}`} position={[s.lat, s.lng]} icon={hanaromartIcon}>
+              <Tooltip direction="top" offset={[0, -6]}>
+                <div style={{ minWidth: 160 }}>
+                  <div style={{ fontWeight: 700, fontSize: 12, color: "#1f4d3a" }}>🛒 {s.name}</div>
+                  <div style={{ fontSize: 10, color: "#666", marginTop: 2 }}>{s.addr}</div>
+                </div>
+              </Tooltip>
+            </Marker>
+          ))}
 
           {/* 클릭한 점포로 지도 이동 */}
           <FlyToTarget target={flyTarget} />
