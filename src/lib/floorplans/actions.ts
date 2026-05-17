@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import sharp from "sharp";
 import { createClient } from "@/lib/supabase/server";
 import { computeSortOrder, type Floorplan } from "./queries";
 
@@ -12,6 +13,12 @@ const ALLOWED_MIME = new Set([
   "application/pdf",
 ]);
 const MAX_BYTES = 20 * 1024 * 1024; // 20 MB
+// Supabase Storage 캐시 헤더 — 도면은 파일명에 timestamp가 포함되어 사실상 immutable.
+// 브라우저/CDN에서 1년간 재요청 없이 캐시 → 무료 한도(5GB/월) 절약 핵심.
+const CACHE_CONTROL = "31536000, immutable";
+// WebP 변환 시 최대 변환 크기 (도면 가독성 유지하면서 용량 감소)
+const WEBP_MAX_DIM = 2400;
+const WEBP_QUALITY = 80;
 
 type Result<T = void> = { ok: true; data?: T } | { ok: false; error: string };
 
@@ -51,11 +58,6 @@ export async function uploadFloorplan(formData: FormData): Promise<Result<Floorp
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { ok: false, error: "인증 필요" };
 
-  // 파일명: {storeId}/{floorLabelSlug}-{timestamp}.{ext}
-  // (timestamp 추가로 같은 층 재업로드 시 캐시 우회)
-  const ext = extFromMime(file.type);
-  const path = `${storeId}/${slugify(floorLabel)}-${Date.now()}.${ext}`;
-
   // 1) 같은 (store_id, floor_label) 기존 행이 있으면 storage 파일도 함께 삭제
   const { data: existing } = await supabase
     .from("floorplans")
@@ -67,27 +69,55 @@ export async function uploadFloorplan(formData: FormData): Promise<Result<Floorp
     await supabase.storage.from("floorplans").remove([existing.storage_path]);
   }
 
-  // 2) Storage 업로드
-  const buf = await file.arrayBuffer();
+  // 2) PNG/JPEG는 WebP로 자동 변환 + 리사이즈 (Egress 70~90% 절감)
+  //    SVG/PDF/WebP는 원본 그대로 업로드.
+  const originalBuf = Buffer.from(await file.arrayBuffer());
+  let uploadBuf: Buffer = originalBuf;
+  let uploadMime = file.type;
+  let uploadExt = extFromMime(file.type);
+  let uploadSize = file.size;
+
+  if (file.type === "image/png" || file.type === "image/jpeg") {
+    try {
+      uploadBuf = await sharp(originalBuf)
+        .resize({ width: WEBP_MAX_DIM, height: WEBP_MAX_DIM, fit: "inside", withoutEnlargement: true })
+        .webp({ quality: WEBP_QUALITY })
+        .toBuffer();
+      uploadMime = "image/webp";
+      uploadExt = "webp";
+      uploadSize = uploadBuf.length;
+    } catch (err) {
+      console.warn("[floorplans.upload] WebP 변환 실패, 원본 업로드:", err);
+    }
+  }
+
+  // 파일명: {storeId}/{floorLabelSlug}-{timestamp}.{ext}
+  const path = `${storeId}/${slugify(floorLabel)}-${Date.now()}.${uploadExt}`;
+
+  // 3) Storage 업로드 (캐시 1년 immutable)
   const { error: upErr } = await supabase.storage
     .from("floorplans")
-    .upload(path, buf, { contentType: file.type, upsert: true });
+    .upload(path, uploadBuf, {
+      contentType: uploadMime,
+      upsert: true,
+      cacheControl: CACHE_CONTROL,
+    });
   if (upErr) {
     console.error("[floorplans.upload] Storage error:", upErr);
     return { ok: false, error: `Storage 업로드 실패: ${upErr.message}` };
   }
 
-  // 3) 공개 URL
+  // 4) 공개 URL
   const { data: pub } = supabase.storage.from("floorplans").getPublicUrl(path);
 
-  // 4) DB upsert
+  // 5) DB upsert (변환 후 mime/size 저장)
   const record = {
     store_id:     storeId,
     floor_label:  floorLabel,
     storage_path: path,
     public_url:   pub.publicUrl,
-    mime_type:    file.type,
-    size_bytes:   file.size,
+    mime_type:    uploadMime,
+    size_bytes:   uploadSize,
     sort_order:   computeSortOrder(floorLabel),
     uploaded_by:  user.id,
     updated_at:   new Date().toISOString(),
