@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * 테넌트 검증 파이프라인 스모크 테스트 (CLI)
+ * 컨텐츠 검증 파이프라인 스모크 테스트 (CLI)
  * UI를 거치지 않고 전체 흐름을 한 번 실행하여 동작 여부를 확인합니다.
  *
  * 사용:
@@ -146,7 +146,7 @@ try {
   const msg = await anthropic.messages.create({
     model: "claude-sonnet-4-6",
     max_tokens: 1024,
-    system: `이랜드리테일 임대 협상팀의 테넌트 검증 전문가. JSON으로만 응답.
+    system: `이랜드리테일 임대 협상팀의 컨텐츠 검증 전문가. JSON으로만 응답.
 형식: {"grade":"A|B|C|D|미확인","reason":"한 문장","summary":"한 문장"}`,
     messages: [{ role: "user", content: `${company} 검증.\n[재무]\n${finStr}\n[뉴스]\n${newsStr}` }],
   });
@@ -165,7 +165,7 @@ const notion = new Client({ auth: NOTION_KEY });
 try {
   const ds = await notion.databases.retrieve({ database_id: TENANT_DB });
   const dsId = ds.data_sources[0].id;
-  ok(`테넌트 검증 DB data source 접근 OK: ${dsId}`);
+  ok(`컨텐츠 검증 DB data source 접근 OK: ${dsId}`);
 
   // 실제 쓰기는 하지 않고 스키마만 확인 (안 그러면 테스트 행이 쌓임)
   const dataSource = await notion.dataSources.retrieve({ data_source_id: dsId });

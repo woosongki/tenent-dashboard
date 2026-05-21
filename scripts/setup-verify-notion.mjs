@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Notion v5 API로 테넌트 검증 도구용 DB 2개를 생성하거나 업데이트합니다.
+ * Notion v5 API로 컨텐츠 검증 도구용 DB 2개를 생성하거나 업데이트합니다.
  *
  * 동작 방식:
  * - .env.local에 NOTION_DB_VERIFY_TENANT_ID 가 이미 있으면 → 해당 DB의 data source에 properties 업데이트
@@ -177,11 +177,11 @@ async function appendEnvLocal(tenantDbId, newsDbId) {
   // 기존 NOTION_DB_VERIFY_* 항목 제거 후 새로 추가
   const filtered = existing
     .split(/\r?\n/)
-    .filter((l) => !l.startsWith("NOTION_DB_VERIFY_") && !l.startsWith("# 테넌트 검증 도구"))
+    .filter((l) => !l.startsWith("NOTION_DB_VERIFY_") && !l.startsWith("# 컨텐츠 검증 도구"))
     .join("\n")
     .replace(/\n+$/, "");
 
-  const toAdd = `\n\n# 테넌트 검증 도구 (setup-verify-notion.mjs 자동 생성)\nNOTION_DB_VERIFY_TENANT_ID=${tenantDbId}\nNOTION_DB_VERIFY_NEWS_ID=${newsDbId}\n`;
+  const toAdd = `\n\n# 컨텐츠 검증 도구 (setup-verify-notion.mjs 자동 생성)\nNOTION_DB_VERIFY_TENANT_ID=${tenantDbId}\nNOTION_DB_VERIFY_NEWS_ID=${newsDbId}\n`;
 
   writeFileSync(envPath, filtered + toAdd);
   console.log("   ✅ .env.local 업데이트 완료");
@@ -192,7 +192,7 @@ async function checkParentAccess() {
     await notion.pages.retrieve({ page_id: PARENT_PAGE_ID });
   } catch {
     console.error(`\n❌ 부모 페이지 접근 실패: ${PARENT_PAGE_ID}`);
-    console.error(`   Notion에서 "테넌트 검증 도구" 페이지를 열고`);
+    console.error(`   Notion에서 "컨텐츠 검증 도구" 페이지를 열고`);
     console.error(`   우측 상단 ··· → 연결 → 본인 Integration 추가가 필요합니다.\n`);
     process.exit(1);
   }
@@ -212,8 +212,8 @@ async function main() {
   const existingTenantId = process.env.NOTION_DB_VERIFY_TENANT_ID;
   const existingNewsId = process.env.NOTION_DB_VERIFY_NEWS_ID;
 
-  console.log("2️⃣  '테넌트 검증' DB 처리 중...");
-  const tenantDbId = await createOrUpdateDb("테넌트 검증", "✅", TENANT_PROPERTIES, existingTenantId);
+  console.log("2️⃣  '컨텐츠 검증' DB 처리 중...");
+  const tenantDbId = await createOrUpdateDb("컨텐츠 검증", "✅", TENANT_PROPERTIES, existingTenantId);
 
   console.log("3️⃣  '수집 뉴스' DB 처리 중...");
   const newsDbId = await createOrUpdateDb("수집 뉴스", "📰", NEWS_PROPERTIES, existingNewsId);

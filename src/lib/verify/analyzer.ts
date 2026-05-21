@@ -107,7 +107,7 @@ export async function analyzeWithClaude(params: {
     `자본잠식: ${ratios.isCapitalImpaired ? "예" : "아니오"}`,
   ].join(", ");
 
-  const systemPrompt = `당신은 이랜드리테일 임대 협상팀을 위한 테넌트 검증 전문가입니다.
+  const systemPrompt = `당신은 이랜드리테일 임대 협상팀을 위한 컨텐츠 검증 전문가입니다.
 DART 공시 데이터와 뉴스를 분석하여 구조화된 검증 브리프를 작성합니다.
 
 규칙:
@@ -151,7 +151,7 @@ ${formatDisclosures(params.disclosures)}
 [최근 12개월 뉴스]
 ${formatNews(params.news)}
 
-위 정보를 분석하여 테넌트 검증 브리프 JSON을 작성하세요.
+위 정보를 분석하여 컨텐츠 검증 브리프 JSON을 작성하세요.
 - riskFlags: 최대 5개, 심각도 순
 - focusAreas: 7개 카테고리 중 유의미한 것 최대 5개
 - questions: 10~15개, 카테고리 균형 있게`;

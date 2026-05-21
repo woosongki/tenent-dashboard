@@ -7,7 +7,7 @@ export default function VerifyPage() {
       <div className={SPACE.pageMaxW}>
         {/* 헤더 */}
         <div className="mb-6">
-          <h1 className={`${TYPO.pageTitle} font-display`}>테넌트 검증</h1>
+          <h1 className={`${TYPO.pageTitle} font-display`}>컨텐츠 검증</h1>
           <p className="mt-1 text-[13px] text-slate-500">
             회사명 입력 → DART 공시 + 뉴스 수집 → Claude 분석 → 검증 브리프 생성 · Notion 저장
           </p>
