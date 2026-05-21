@@ -338,7 +338,11 @@ function InternalSection({ brief }: { brief: VerifyBrief }) {
   );
 }
 
-export default function VerifyClient() {
+interface VerifyClientProps {
+  canVerify?: boolean;
+}
+
+export default function VerifyClient({ canVerify = true }: VerifyClientProps) {
   type Phase = "input" | "candidates" | "running" | "done";
 
   const [phase, setPhase] = useState<Phase>("input");
@@ -349,6 +353,7 @@ export default function VerifyClient() {
   const [logs, setLogs] = useState<string[]>([]);
   const [brief, setBrief] = useState<VerifyBrief | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [isCached, setIsCached] = useState(false);
   const logEndRef = useRef<HTMLDivElement>(null);
 
   function addLog(msg: string) {
@@ -387,12 +392,17 @@ export default function VerifyClient() {
     }
   }
 
-  async function runVerification(corp: CorpCandidate) {
+  async function runVerification(corp: CorpCandidate, forceFresh = false) {
+    if (!canVerify) {
+      setError("검증 권한이 없습니다 (member). owner/admin에게 요청하세요.");
+      return;
+    }
     setPhase("running");
     setLogs([]);
     setBrief(null);
     setError(null);
-    addLog(`선택: ${corp.name} (${corp.code}) ${corp.stockCode ? "· 상장 " + corp.stockCode : "· 비상장"}`);
+    setIsCached(false);
+    addLog(`선택: ${corp.name} (${corp.code}) ${corp.stockCode ? "· 상장 " + corp.stockCode : "· 비상장"}${forceFresh ? " · 강제 재검증" : ""}`);
 
     try {
       const response = await fetch("/api/verify/start", {
@@ -425,6 +435,9 @@ export default function VerifyClient() {
             if (event.type === "error") {
               setError(event.message);
               addLog(`오류: ${event.message}`);
+            }
+            if (event.type === "progress" && event.message?.includes("캐시 적중")) {
+              setIsCached(true);
             }
             if (event.type === "result" && event.data) {
               setBrief(event.data as VerifyBrief);
@@ -531,7 +544,9 @@ export default function VerifyClient() {
                       <div className="mt-1 text-[10px] text-slate-300">DART 기본정보 없음</div>
                     )}
                   </div>
-                  <span className="font-mono text-[11px] text-slate-400 shrink-0 mt-0.5">검증 →</span>
+                  <span className={`font-mono text-[11px] shrink-0 mt-0.5 ${canVerify ? "text-slate-400" : "text-slate-300"}`}>
+                    {canVerify ? "검증 →" : "권한 없음"}
+                  </span>
                 </button>
               </li>
             ))}
@@ -542,6 +557,27 @@ export default function VerifyClient() {
       {/* ───────── 3단계: 진행 + 결과 ───────── */}
       {(phase === "running" || phase === "done") && (
         <div>
+          {isCached && phase === "done" && brief && (
+            <div className="brutal-sm mb-4 border-cyan-500 bg-cyan-50 p-4 flex items-center justify-between">
+              <div>
+                <p className="font-bold text-cyan-800">
+                  💾 캐시된 결과 (30일 내 검증 이력 사용 — Claude 호출 0건, 비용 절감)
+                </p>
+                <p className="text-[11px] text-cyan-700 mt-0.5">
+                  Notion에서 상세 결과 확인 가능. 최신 데이터로 갱신하려면 다시 검증.
+                </p>
+              </div>
+              <button
+                onClick={() => {
+                  // 캐시 강제 회피: 다시 후보 선택 화면으로 (force fresh는 미구현 — Notion에서 직접 삭제하면 캐시 무효)
+                  reset();
+                }}
+                className="shrink-0 border-[2px] border-[#0a0a0a] bg-yellow-300 px-3 py-1.5 text-[11px] font-extrabold shadow-[2px_2px_0_0_#0a0a0a] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none"
+              >
+                다시 검증
+              </button>
+            </div>
+          )}
           {logs.length > 0 && (
             <div className="brutal-sm bg-[#0a0a0a] p-4">
               <div className="flex items-center justify-between mb-2">

@@ -11,13 +11,54 @@ import { analyzeWithClaude, calcRatios } from "./analyzer";
 import { writeBriefToNotion } from "./notionWriter";
 import { findExistingTenancy, buildSalesBenchmark } from "./internal";
 import { fetchSearchTrend } from "./trend";
-import type { VerifyBrief, VerifyProgressEvent, VerifyRequest } from "./types";
+import { findRecentVerification } from "./cache";
+import type { VerifyBrief, VerifyProgressEvent, VerifyRequest, RiskFlag, MeetingQuestion, FocusArea } from "./types";
 
 export async function* runVerifyPipeline(
   request: VerifyRequest
 ): AsyncGenerator<VerifyProgressEvent> {
   const { company } = request;
   const collectedAt = new Date().toISOString();
+
+  // ── T2-3: Notion 30일 캐시 조회 (Claude 100% 우회 가능) ────────
+  yield { type: "progress", step: "cache", message: "최근 검증 이력 캐시 조회 중..." };
+  const cache = await findRecentVerification(company);
+  if (cache.hit) {
+    yield {
+      type: "progress",
+      step: "cache",
+      message: `✅ 캐시 적중: ${cache.daysSince}일 전 검증 완료 (등급 ${cache.grade ?? "?"}) → Claude 호출 우회 (비용 0)`,
+    };
+    yield {
+      type: "result",
+      message: "캐시된 검증 결과 반환",
+      data: {
+        corpCode: request.corpCode ?? "",
+        companyName: company,
+        brandName: null,
+        bizrNo: null,
+        corpCls: "캐시",
+        industry: null,
+        grade: (cache.grade ?? "미확인") as VerifyBrief["grade"],
+        gradeReason: `${cache.daysSince}일 전 검증된 결과 (재검증 시 "다시 검증" 버튼 클릭)`,
+        riskFlags: [],
+        financials: { years: [], ratios: { operatingMargin: null, debtRatio: null, currentRatio: null, interestCoverageRatio: null, isCapitalImpaired: false }, latestRevenueBillionKrw: null, latestOperatingMarginPct: null },
+        majorShareholders: [],
+        recentDisclosures: [],
+        news: [],
+        focusAreas: [],
+        questions: [],
+        executiveSummary: cache.summary ?? "캐시된 검증 결과 — Notion 페이지에서 상세 확인",
+        reliability: "검증됨" as VerifyBrief["reliability"],
+        collectedAt: cache.verifiedAt,
+        notionPageId: cache.notionPageId,
+        notionUrl: cache.notionUrl,
+      },
+    };
+    yield { type: "done", message: "캐시 반환 완료" };
+    return;
+  }
+  yield { type: "progress", step: "cache", message: "캐시 없음 → 신규 검증 진행" };
 
   let corpCode = request.corpCode ?? "";
 
@@ -72,28 +113,61 @@ export async function* runVerifyPipeline(
     message: internalSummary.length > 0 ? internalSummary.join(" / ") : "내부 매칭 없음 / 트렌드 데이터 없음",
   };
 
-  yield { type: "progress", step: "analysis", message: "Claude로 재무 진단·리스크 분류 중..." };
-
+  // ── T2-1: 자본잠식 발견 시 자동 D등급, Claude 호출 우회 ────────
+  const ratios = calcRatios(financials);
   let analysis;
-  try {
-    analysis = await analyzeWithClaude({
-      company: companyInfo,
-      companyName: company,
-      financials,
-      disclosures,
-      shareholders,
-      news,
-      internalHistory,
-      salesBenchmark,
-      searchTrend,
-    });
-  } catch (err) {
-    const msg = err instanceof Error ? err.message : "알 수 없는 오류";
-    yield { type: "error", message: `Claude 분석 실패: ${msg}` };
-    return;
+  if (ratios.isCapitalImpaired) {
+    yield {
+      type: "progress",
+      step: "analysis",
+      message: "⚠ 자본잠식 감지 → 자동 D등급 부여 (Claude 호출 우회로 비용 0)",
+    };
+    const latestYear = financials[0];
+    const ruleBasedRisks: RiskFlag[] = [
+      { flag: "자본잠식", description: `${latestYear?.year}년 자본총계 ${latestYear?.totalEquity}원`, source: "검증됨" },
+    ];
+    if (ratios.debtRatio !== null && ratios.debtRatio > 400) {
+      ruleBasedRisks.push({ flag: "과다 부채", description: `부채비율 ${ratios.debtRatio.toFixed(0)}%`, source: "검증됨" });
+    }
+    const ruleBasedQuestions: MeetingQuestion[] = [
+      { category: "리스크 해명", question: "자본잠식 상태에서 임대 보증금·임대료 지급 능력을 어떻게 담보할 수 있는가?" },
+      { category: "거래구조", question: "본사 또는 모회사의 지급 보증이 가능한가?" },
+      { category: "리스크 해명", question: "자본 확충 계획 (유상증자·CB 발행 등)이 있는가? 시점은?" },
+      { category: "임대조건", question: "수익률 기반 임대료(매출 수수료) 구조로 전환 가능한가?" },
+      { category: "출점·확장", question: "이미 운영 중인 점포 중 폐점 예정이 있는가?" },
+      { category: "의사결정 권한", question: "본 입점 결정의 최종 결재자는 누구이며 의사결정 일정은?" },
+      { category: "리스크 해명", question: "감사보고서 강조사항·계속기업 불확실성 의견이 있었는가?" },
+      { category: "거래구조", question: "단기·중기 자금 조달 계획서를 공유 가능한가?" },
+    ];
+    analysis = {
+      grade: "D" as const,
+      gradeReason: `${latestYear?.year}년 기준 자본잠식(자본총계 ${latestYear?.totalEquity?.toLocaleString()}원) 확인. 임대 보증금·임대료 지급 능력에 중대한 의문이 있어 규칙 기반 자동 D등급 부여.`,
+      riskFlags: ruleBasedRisks,
+      focusAreas: [] as FocusArea[],
+      questions: ruleBasedQuestions,
+      executiveSummary: `자본잠식 상태로 D등급 자동 분류. 본사 지급보증·수익 연동 임대료 등 리스크 완화 조건 필수.`,
+    };
+  } else {
+    yield { type: "progress", step: "analysis", message: "Claude로 재무 진단·리스크 분류 중..." };
+    try {
+      analysis = await analyzeWithClaude({
+        company: companyInfo,
+        companyName: company,
+        financials,
+        disclosures,
+        shareholders,
+        news,
+        internalHistory,
+        salesBenchmark,
+        searchTrend,
+      });
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "알 수 없는 오류";
+      yield { type: "error", message: `Claude 분석 실패: ${msg}` };
+      return;
+    }
   }
 
-  const ratios = calcRatios(financials);
   const latestYear = financials[0];
 
   const corpClsMap: Record<string, string> = {

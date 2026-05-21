@@ -62,27 +62,27 @@ function formatFinancials(years: FinancialYear[]): string {
 }
 
 function formatDisclosures(ds: DartDisclosure[]): string {
-  if (ds.length === 0) return "최근 24개월 수시공시 없음";
-  return ds
-    .slice(0, 20)
-    .map((d) => `${d.rceptDt} [${d.pblntfTyNm}] ${d.rceptNm}`)
-    .join("\n");
+  if (ds.length === 0) return "없음";
+  // T1-2: 20→10건, 짧은 포맷
+  return ds.slice(0, 10).map((d) => `${d.rceptDt} ${d.rceptNm}`).join("\n");
 }
 
 function formatShareholders(sh: MajorShareholder[]): string {
   if (sh.length === 0) return "확인 불가";
-  return sh
-    .slice(0, 5)
-    .map((s) => `${s.nm} (${s.relate}): ${s.trmend_posesn_stock_qota_rt}%`)
-    .join("\n");
+  // T1-2: 5→3건
+  return sh.slice(0, 3).map((s) => `${s.nm}(${s.relate}) ${s.trmend_posesn_stock_qota_rt}%`).join("\n");
 }
 
 function formatNews(news: NewsArticle[]): string {
-  if (news.length === 0) return "최근 뉴스 없음";
+  if (news.length === 0) return "없음";
+  // T1-2: 30→12건, description 짧게(80자), 카테고리 압축
   return news
-    .slice(0, 30)
-    .map((n) => `[${n.pubDate.slice(0, 16)}] [${n.category}] ${n.title}\n${n.description}`)
-    .join("\n\n");
+    .slice(0, 12)
+    .map((n) => {
+      const desc = n.description.length > 80 ? n.description.slice(0, 80) + "…" : n.description;
+      return `[${n.pubDate.slice(5, 10)} ${n.category}] ${n.title} — ${desc}`;
+    })
+    .join("\n");
 }
 
 export interface AnalysisResult {
@@ -95,20 +95,15 @@ export interface AnalysisResult {
 }
 
 function formatInternalHistory(history?: { attraction: AttractionMatch[]; vendor: VendorMatch[] }): string {
-  if (!history || (history.attraction.length === 0 && history.vendor.length === 0)) return "이랜드 내부 DB에 매칭 이력 없음";
+  if (!history || (history.attraction.length === 0 && history.vendor.length === 0)) return "내부 DB 매칭 없음";
   const lines: string[] = [];
-  if (history.attraction.length > 0) {
-    lines.push("[입점계획(26년) 매칭]");
-    history.attraction.slice(0, 5).forEach((a) =>
-      lines.push(`- ${a.brandName} | ${a.branch ?? "-"} ${a.floor ?? ""} | ${a.category ?? "-"} | ${a.status} | 담당:${a.manager ?? "-"}`)
-    );
-  }
-  if (history.vendor.length > 0) {
-    lines.push("[업체리스트 매칭]");
-    history.vendor.slice(0, 5).forEach((v) =>
-      lines.push(`- ${v.name} (${v.source}) | ${v.category ?? "-"} | 상태:${v.status ?? "-"} | 키맨:${v.keyman ?? "-"}`)
-    );
-  }
+  // T1-2: 5→3건씩, 짧은 포맷
+  history.attraction.slice(0, 3).forEach((a) =>
+    lines.push(`입점:${a.brandName}|${a.branch ?? "-"}${a.floor ?? ""}|${a.category ?? "-"}|${a.status}`)
+  );
+  history.vendor.slice(0, 3).forEach((v) =>
+    lines.push(`업체:${v.name}(${v.source})|${v.status ?? "-"}|키맨:${v.keyman ?? "-"}`)
+  );
   return lines.join("\n");
 }
 
@@ -157,23 +152,24 @@ export async function analyzeWithClaude(params: {
     `자본잠식: ${ratios.isCapitalImpaired ? "예" : "아니오"}`,
   ].join(", ");
 
-  const systemPrompt = `당신은 이랜드리테일 임대 협상팀을 위한 컨텐츠 검증 전문가입니다.
-DART 공시 데이터와 뉴스를 분석하여 구조화된 검증 브리프를 작성합니다.
+  // T1-1: 시스템 프롬프트는 매번 동일 → 캐싱 대상 (5분 TTL, 90% 할인)
+  const systemPrompt = `당신은 이랜드리테일 임대 협상팀의 컨텐츠 검증 전문가입니다. DART 공시·뉴스·내부 데이터를 종합해 입점 의사결정용 구조화 브리프를 작성합니다.
 
-규칙:
-- DART 직접 확인 데이터는 "검증됨"으로 표시
-- 복수 언론 확인 정보는 "보도 확인"으로 표시
-- 단일 매체 정보는 "참고"로 표시
-- 확인 안 된 정보는 절대 추정하지 않고 "확인 불가" 표시
-- 회사 자체 주장(시장점유율 등)은 "참고"로 표시
+[출처 표시]
+- DART 확인 = "검증됨"
+- 복수 언론 = "보도 확인"
+- 단일 매체 = "참고"
+- 추정 금지 → "확인 불가"
 
-재무 등급 기준:
-A (안전): 영업이익률 5%↑, 부채비율 200%↓, 유동비율 100%↑, 자본잠식 없음, 감사의견 적정
-B (조건부): 기준 일부 미달 but 치명적 리스크 없음
-C (주의): 영업이익률 음수 또는 부채비율 400%↑ 또는 자본잠식 부분
-D (부적합): 자본완전잠식, 감사의견 비적정, 계속기업 불확실성, 회생/파산
+[재무 등급]
+A: 영업이익률 5%↑·부채비율 200%↓·유동비율 100%↑·자본잠식 없음·감사 적정
+B: 기준 일부 미달, 치명적 리스크 없음
+C: 영업이익 적자 / 부채비율 400%↑ / 자본 부분잠식
+D: 자본 완전잠식 / 감사 비적정 / 계속기업 불확실 / 회생·파산
 
-반드시 submit_brief 도구를 호출하여 결과를 반환하세요.`;
+[중요]
+- 자체 매출 데이터·검색 트렌드·내부 입점이력은 등급 근거에 인용
+- 반드시 submit_brief 도구로 응답`;
 
   const userPrompt = `분석 대상: ${params.companyName}
 법인구분: ${params.company?.corpCls ?? "확인 불가"}
@@ -213,30 +209,24 @@ ${formatTrend(params.searchTrend)}
     apiKey: process.env.ANTHROPIC_API_KEY,
   });
 
-  // tool_use 스키마 — Claude가 구조화된 JSON을 보장
+  // T1-3: 출력 trim — description 짧게, maxItems 축소
+  // T1-1: 도구 정의는 매번 동일 → cache_control로 캐싱
   const briefTool: Anthropic.Tool = {
     name: "submit_brief",
-    description: "컨텐츠 검증 브리프를 구조화된 형식으로 제출합니다.",
+    description: "컨텐츠 검증 브리프 제출",
     input_schema: {
       type: "object",
       properties: {
-        grade: {
-          type: "string",
-          enum: ["A", "B", "C", "D", "미확인"],
-          description: "재무 등급",
-        },
-        gradeReason: {
-          type: "string",
-          description: "등급 산정 근거 2-3문장",
-        },
+        grade: { type: "string", enum: ["A", "B", "C", "D", "미확인"] },
+        gradeReason: { type: "string", description: "2문장" },
         riskFlags: {
           type: "array",
-          maxItems: 5,
+          maxItems: 4,
           items: {
             type: "object",
             properties: {
-              flag: { type: "string", description: "리스크 명칭 (간결)" },
-              description: { type: "string", description: "리스크 설명" },
+              flag: { type: "string" },
+              description: { type: "string" },
               source: { type: "string", enum: ["검증됨", "보도 확인", "참고"] },
             },
             required: ["flag", "description", "source"],
@@ -244,24 +234,15 @@ ${formatTrend(params.searchTrend)}
         },
         focusAreas: {
           type: "array",
-          maxItems: 5,
+          maxItems: 4,
           items: {
             type: "object",
             properties: {
               category: {
                 type: "string",
-                enum: [
-                  "출점·매장 전략",
-                  "카테고리 확장",
-                  "인프라·물류",
-                  "법적·규제 이슈",
-                  "인사·조직 변동",
-                  "재무 이벤트",
-                  "온·오프 연계",
-                  "기타",
-                ],
+                enum: ["출점·매장 전략", "카테고리 확장", "인프라·물류", "법적·규제 이슈", "인사·조직 변동", "재무 이벤트", "온·오프 연계", "기타"],
               },
-              summary: { type: "string", description: "관찰 사실" },
+              summary: { type: "string" },
               implication: { type: "string", description: "협상 함의 1문장" },
               source: { type: "string", enum: ["검증됨", "보도 확인", "참고"] },
             },
@@ -270,34 +251,34 @@ ${formatTrend(params.searchTrend)}
         },
         questions: {
           type: "array",
-          minItems: 10,
-          maxItems: 15,
+          minItems: 8,
+          maxItems: 10,
           items: {
             type: "object",
             properties: {
-              category: {
-                type: "string",
-                enum: ["의사결정 권한", "거래구조", "출점·확장", "임대조건", "리스크 해명"],
-              },
+              category: { type: "string", enum: ["의사결정 권한", "거래구조", "출점·확장", "임대조건", "리스크 해명"] },
               question: { type: "string" },
             },
             required: ["category", "question"],
           },
         },
-        executiveSummary: {
-          type: "string",
-          description: "1-2문장 핵심 요약",
-        },
+        executiveSummary: { type: "string", description: "1문장" },
       },
       required: ["grade", "gradeReason", "riskFlags", "focusAreas", "questions", "executiveSummary"],
     },
   };
 
+  // T1-1: Anthropic prompt caching — system + tools에 cache_control 적용
+  // 첫 호출 후 5분 내 동일 system/tools 재사용 시 90% 할인
   const message = await client.messages.create({
     model: "claude-sonnet-4-6",
-    max_tokens: 8192,
-    system: systemPrompt,
-    tools: [briefTool],
+    max_tokens: 4096,
+    system: [
+      { type: "text", text: systemPrompt, cache_control: { type: "ephemeral" } },
+    ],
+    tools: [
+      { ...briefTool, cache_control: { type: "ephemeral" } } as Anthropic.Tool,
+    ],
     tool_choice: { type: "tool", name: "submit_brief" },
     messages: [{ role: "user", content: userPrompt }],
   });

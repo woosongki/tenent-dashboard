@@ -1,7 +1,23 @@
 import { SPACE, TYPO } from "@/lib/tokens";
+import { createClient } from "@/lib/supabase/server";
 import VerifyClient from "./_components/VerifyClient";
 
-export default function VerifyPage() {
+export default async function VerifyPage() {
+  // T5-1: 권한 확인 — member에게는 검증 UI 비활성화 표시
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  let role: "owner" | "admin" | "member" | null = null;
+  if (user) {
+    const { data: membership } = await supabase
+      .from("organization_members")
+      .select("role")
+      .eq("user_id", user.id)
+      .limit(1)
+      .maybeSingle();
+    role = (membership?.role as "owner" | "admin" | "member" | undefined) ?? null;
+  }
+  const canVerify = role === "owner" || role === "admin";
+
   return (
     <main className={`flex-1 overflow-y-auto ${SPACE.pageX} ${SPACE.pageY}`}>
       <div className={SPACE.pageMaxW}>
@@ -9,15 +25,25 @@ export default function VerifyPage() {
         <div className="mb-6">
           <h1 className={`${TYPO.pageTitle} font-display`}>컨텐츠 검증</h1>
           <p className="mt-1 text-[13px] text-slate-500">
-            회사명 입력 → DART 공시 + 뉴스 수집 → Claude 분석 → 검증 브리프 생성 · Notion 저장
+            DART + 뉴스 + 자체 데이터 → Claude 분석 → Notion 저장 · <strong>30일 캐시로 비용 절감</strong>
           </p>
         </div>
 
-        {/* 안내 배너 (API 키 미설정 시 표시) */}
+        {/* 안내 배너 */}
         <SetupBanner />
 
+        {!canVerify && (
+          <div className="brutal-sm mb-4 border-slate-400 bg-slate-50 p-4">
+            <p className="font-bold text-slate-700">조회 전용 모드 (member 권한)</p>
+            <p className="mt-1 text-[12px] text-slate-600">
+              API 비용 보호를 위해 신규 검증은 owner/admin 권한자만 실행할 수 있습니다.
+              아래에서 회사 검색은 가능하며, 결과는 Notion DB에서 누구나 조회 가능합니다.
+            </p>
+          </div>
+        )}
+
         {/* 검증 인터페이스 */}
-        <VerifyClient />
+        <VerifyClient canVerify={canVerify} />
       </div>
     </main>
   );
