@@ -2,7 +2,7 @@
 
 import { useState, useRef } from "react";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
-import type { VerifyBrief, VerifyProgressEvent } from "@/lib/verify/types";
+import type { VerifyBrief, VerifyProgressEvent, BusinessSwot } from "@/lib/verify/types";
 
 interface CorpCandidate {
   code: string;
@@ -182,7 +182,7 @@ function BriefCard({ brief }: { brief: VerifyBrief }) {
       {/* 5년 재무 추이 라인차트 (C1) */}
       <FinancialChart brief={brief} />
 
-      {/* 사업/감사보고서 SWOT (A3 + B2) */}
+      {/* 사업/감사보고서 SWOT (A3 + B2) — opt-in 버튼 */}
       <SwotSection brief={brief} />
 
       {/* 내부 데이터 + 시장 신호 */}
@@ -243,10 +243,68 @@ function FinancialChart({ brief }: { brief: VerifyBrief }) {
   );
 }
 
-// A3 + B2: 사업/감사보고서 본문 SWOT
+// A3 + B2: 사업/감사보고서 본문 SWOT (opt-in 버튼 → Haiku로 추가 분석)
 function SwotSection({ brief }: { brief: VerifyBrief }) {
-  const swot = brief.businessSwot;
-  if (!swot) return null;
+  const [swot, setSwot] = useState<BusinessSwot | null>(brief.businessSwot ?? null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function loadSwot() {
+    if (!brief.corpCode) {
+      setError("DART 코드 없음 — SWOT 분석 불가");
+      return;
+    }
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/verify/swot", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ companyName: brief.companyName, corpCode: brief.corpCode }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error || "SWOT 분석 실패");
+      } else if (data.swot) {
+        setSwot(data.swot);
+      }
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "네트워크 오류");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  // 버튼 상태 (SWOT 미로드)
+  if (!swot) {
+    return (
+      <div className="border-t-[2px] border-[#0a0a0a] p-5 bg-[#FAF7EC]">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-[10px] font-extrabold uppercase tracking-[.14em] text-slate-500">
+              사업/감사보고서 SWOT 추가 분석
+            </p>
+            <p className="text-[11px] text-slate-500 mt-1">
+              DART 보고서 본문을 다운로드하여 강점·약점·기회·위협·핵심감사사항(KAM) 추출
+              <span className="ml-2 font-mono text-slate-400">(Haiku 4.5, 약 $0.005 추가, 약 10-20초 소요)</span>
+            </p>
+          </div>
+          <button
+            onClick={loadSwot}
+            disabled={loading || !brief.corpCode}
+            className="shrink-0 border-[2px] border-[#0a0a0a] bg-cyan-300 px-4 py-2 text-[12px] font-extrabold shadow-[2px_2px_0_0_#0a0a0a] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {loading ? "분석 중..." : "SWOT 분석 실행"}
+          </button>
+        </div>
+        {error && (
+          <div className="mt-3 bg-rose-50 border border-rose-300 px-3 py-2 text-[12px] text-rose-700">
+            {error}
+          </div>
+        )}
+      </div>
+    );
+  }
 
   const blocks = [
     { label: "Strengths", color: "border-emerald-400 bg-emerald-50 text-emerald-800", items: swot.strengths },

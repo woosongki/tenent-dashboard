@@ -69,7 +69,8 @@ export async function findLatestReportRcept(
  * DART 본문 ZIP 다운로드 + HTML 텍스트 추출
  * 매우 긴 경우 truncate (maxChars 기본 15,000)
  */
-export async function fetchReportText(rceptNo: string, maxChars = 15000): Promise<string | null> {
+// 옵션 1: 기본 15K → 8K 축소 (Claude 입력 비용 -50%)
+export async function fetchReportText(rceptNo: string, maxChars = 8000): Promise<string | null> {
   if (!rceptNo) return null;
 
   try {

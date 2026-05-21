@@ -373,8 +373,9 @@ ${params.bodyText}
   };
 
   try {
+    // 옵션 1: SWOT 추출은 Haiku 4.5로 (Sonnet 대비 4배 저렴, 패턴 매칭 작업이라 품질 영향 적음)
     const message = await client.messages.create({
-      model: "claude-sonnet-4-6",
+      model: "claude-haiku-4-5",
       max_tokens: 2048,
       system: [
         { type: "text", text: systemPrompt, cache_control: { type: "ephemeral" } },
