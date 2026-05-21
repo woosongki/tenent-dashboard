@@ -123,15 +123,7 @@ B (조건부): 기준 일부 미달 but 치명적 리스크 없음
 C (주의): 영업이익률 음수 또는 부채비율 400%↑ 또는 자본잠식 부분
 D (부적합): 자본완전잠식, 감사의견 비적정, 계속기업 불확실성, 회생/파산
 
-출력은 반드시 아래 JSON 형식으로만 응답:
-{
-  "grade": "A"|"B"|"C"|"D"|"미확인",
-  "gradeReason": "2-3문장",
-  "riskFlags": [{"flag": "...", "description": "...", "source": "검증됨"|"보도 확인"|"참고"}],
-  "focusAreas": [{"category": "...", "summary": "...", "implication": "협상 함의 1문장", "source": "검증됨"|"보도 확인"|"참고"}],
-  "questions": [{"category": "의사결정 권한"|"거래구조"|"출점·확장"|"임대조건"|"리스크 해명", "question": "..."}],
-  "executiveSummary": "1문장 핵심 요약"
-}`;
+반드시 submit_brief 도구를 호출하여 결과를 반환하세요.`;
 
   const userPrompt = `분석 대상: ${params.companyName}
 법인구분: ${params.company?.corpCls ?? "확인 불가"}
@@ -148,10 +140,10 @@ ${formatShareholders(params.shareholders)}
 [수시공시 이력 — DART 검증됨]
 ${formatDisclosures(params.disclosures)}
 
-[최근 12개월 뉴스]
+[최근 3개월 뉴스]
 ${formatNews(params.news)}
 
-위 정보를 분석하여 컨텐츠 검증 브리프 JSON을 작성하세요.
+위 정보를 분석하여 submit_brief 도구를 호출하세요.
 - riskFlags: 최대 5개, 심각도 순
 - focusAreas: 7개 카테고리 중 유의미한 것 최대 5개
 - questions: 10~15개, 카테고리 균형 있게`;
@@ -160,21 +152,102 @@ ${formatNews(params.news)}
     apiKey: process.env.ANTHROPIC_API_KEY,
   });
 
+  // tool_use 스키마 — Claude가 구조화된 JSON을 보장
+  const briefTool: Anthropic.Tool = {
+    name: "submit_brief",
+    description: "컨텐츠 검증 브리프를 구조화된 형식으로 제출합니다.",
+    input_schema: {
+      type: "object",
+      properties: {
+        grade: {
+          type: "string",
+          enum: ["A", "B", "C", "D", "미확인"],
+          description: "재무 등급",
+        },
+        gradeReason: {
+          type: "string",
+          description: "등급 산정 근거 2-3문장",
+        },
+        riskFlags: {
+          type: "array",
+          maxItems: 5,
+          items: {
+            type: "object",
+            properties: {
+              flag: { type: "string", description: "리스크 명칭 (간결)" },
+              description: { type: "string", description: "리스크 설명" },
+              source: { type: "string", enum: ["검증됨", "보도 확인", "참고"] },
+            },
+            required: ["flag", "description", "source"],
+          },
+        },
+        focusAreas: {
+          type: "array",
+          maxItems: 5,
+          items: {
+            type: "object",
+            properties: {
+              category: {
+                type: "string",
+                enum: [
+                  "출점·매장 전략",
+                  "카테고리 확장",
+                  "인프라·물류",
+                  "법적·규제 이슈",
+                  "인사·조직 변동",
+                  "재무 이벤트",
+                  "온·오프 연계",
+                  "기타",
+                ],
+              },
+              summary: { type: "string", description: "관찰 사실" },
+              implication: { type: "string", description: "협상 함의 1문장" },
+              source: { type: "string", enum: ["검증됨", "보도 확인", "참고"] },
+            },
+            required: ["category", "summary", "implication", "source"],
+          },
+        },
+        questions: {
+          type: "array",
+          minItems: 10,
+          maxItems: 15,
+          items: {
+            type: "object",
+            properties: {
+              category: {
+                type: "string",
+                enum: ["의사결정 권한", "거래구조", "출점·확장", "임대조건", "리스크 해명"],
+              },
+              question: { type: "string" },
+            },
+            required: ["category", "question"],
+          },
+        },
+        executiveSummary: {
+          type: "string",
+          description: "1-2문장 핵심 요약",
+        },
+      },
+      required: ["grade", "gradeReason", "riskFlags", "focusAreas", "questions", "executiveSummary"],
+    },
+  };
+
   const message = await client.messages.create({
     model: "claude-sonnet-4-6",
-    max_tokens: 4096,
+    max_tokens: 8192,
     system: systemPrompt,
+    tools: [briefTool],
+    tool_choice: { type: "tool", name: "submit_brief" },
     messages: [{ role: "user", content: userPrompt }],
   });
 
-  const textBlock = message.content.find((b) => b.type === "text");
-  if (!textBlock || textBlock.type !== "text") throw new Error("Claude 응답 없음");
+  const toolUse = message.content.find((b) => b.type === "tool_use");
+  if (!toolUse || toolUse.type !== "tool_use") {
+    throw new Error("Claude가 submit_brief 도구를 호출하지 않음");
+  }
 
-  const jsonMatch = textBlock.text.match(/\{[\s\S]*\}/);
-  if (!jsonMatch) throw new Error("Claude 응답에서 JSON 파싱 실패");
-
-  const parsed = JSON.parse(jsonMatch[0]) as AnalysisResult;
-  return { ...parsed, grade: parsed.grade ?? "미확인" };
+  const result = toolUse.input as AnalysisResult;
+  return { ...result, grade: result.grade ?? "미확인" };
 }
 
 export { calcRatios };
