@@ -42,6 +42,28 @@ export interface CorpCandidate {
   name: string;
   stockCode: string | null;
   matchType: "exact" | "startsWith" | "contains" | "reverse";
+  ceoName?: string | null;       // DART에서 비동기로 채워짐
+  estDate?: string | null;       // 설립일 YYYYMMDD
+  industry?: string | null;      // 업종코드
+}
+
+/**
+ * 후보 목록에 대표자명을 비동기로 채워 넣음 (DART company.json 병렬 호출)
+ * UI에서 동명이인·계열사 구분을 위해 사용
+ */
+export async function enrichCandidates(candidates: CorpCandidate[]): Promise<CorpCandidate[]> {
+  const results = await Promise.all(
+    candidates.map(async (c) => {
+      const info = await fetchCompanyInfo(c.code);
+      return {
+        ...c,
+        ceoName: info?.repName ?? null,
+        estDate: info?.est_dt ?? null,
+        industry: info?.induty_code ?? null,
+      };
+    })
+  );
+  return results;
 }
 
 /**

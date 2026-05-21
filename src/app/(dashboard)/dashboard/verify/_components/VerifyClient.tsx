@@ -8,6 +8,14 @@ interface CorpCandidate {
   name: string;
   stockCode: string | null;
   matchType: "exact" | "startsWith" | "contains" | "reverse";
+  ceoName?: string | null;
+  estDate?: string | null;
+  industry?: string | null;
+}
+
+function formatEstDate(d: string | null | undefined): string {
+  if (!d || d.length !== 8) return "";
+  return `${d.slice(0, 4)}.${d.slice(4, 6)}`;
 }
 
 const GRADE_COLORS: Record<string, string> = {
@@ -304,7 +312,7 @@ export default function VerifyClient() {
             </div>
             <button type="submit" disabled={searching || !company.trim()}
               className="shrink-0 border-[2px] border-[#0a0a0a] bg-yellow-300 px-8 py-3 text-[13px] font-extrabold shadow-[3px_3px_0_0_#0a0a0a] transition-all hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none disabled:cursor-not-allowed disabled:opacity-50">
-              {searching ? "검색 중..." : "법인 검색"}
+              {searching ? "법인+대표자 조회 중..." : "법인 검색"}
             </button>
           </div>
         </form>
@@ -329,10 +337,10 @@ export default function VerifyClient() {
             {candidates.map((corp) => (
               <li key={corp.code}>
                 <button onClick={() => runVerification(corp)}
-                  className="w-full text-left px-6 py-3 hover:bg-yellow-50 transition-colors flex items-center gap-3">
-                  <span className="font-mono text-[10px] text-slate-400 shrink-0 w-16">{corp.code}</span>
+                  className="w-full text-left px-6 py-3 hover:bg-yellow-50 transition-colors flex items-start gap-3">
+                  <span className="font-mono text-[10px] text-slate-400 shrink-0 w-16 mt-0.5">{corp.code}</span>
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
                       <span className="font-bold text-[14px]">{corp.name}</span>
                       {corp.stockCode && (
                         <span className="inline-block border border-cyan-400 bg-cyan-50 px-1.5 py-0.5 text-[10px] font-extrabold text-cyan-800">
@@ -343,8 +351,34 @@ export default function VerifyClient() {
                         {MATCH_LABELS[corp.matchType]}
                       </span>
                     </div>
+                    {/* 대표자 + 설립일 + 업종 — DART에서 비동기로 채워짐 */}
+                    {(corp.ceoName || corp.estDate || corp.industry) && (
+                      <div className="mt-1 flex items-center gap-3 text-[11px] text-slate-500 flex-wrap">
+                        {corp.ceoName && (
+                          <span className="flex items-center gap-1">
+                            <span className="text-slate-400">대표</span>
+                            <span className="font-bold text-slate-700">{corp.ceoName}</span>
+                          </span>
+                        )}
+                        {corp.estDate && (
+                          <span className="flex items-center gap-1">
+                            <span className="text-slate-400">설립</span>
+                            <span className="font-mono">{formatEstDate(corp.estDate)}</span>
+                          </span>
+                        )}
+                        {corp.industry && (
+                          <span className="flex items-center gap-1">
+                            <span className="text-slate-400">업종</span>
+                            <span className="font-mono">{corp.industry}</span>
+                          </span>
+                        )}
+                      </div>
+                    )}
+                    {!corp.ceoName && !corp.estDate && (
+                      <div className="mt-1 text-[10px] text-slate-300">DART 기본정보 없음</div>
+                    )}
                   </div>
-                  <span className="font-mono text-[11px] text-slate-400 shrink-0">검증 →</span>
+                  <span className="font-mono text-[11px] text-slate-400 shrink-0 mt-0.5">검증 →</span>
                 </button>
               </li>
             ))}
