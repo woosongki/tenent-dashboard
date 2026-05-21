@@ -9,6 +9,8 @@ import { Client } from "@notionhq/client";
  *   NOTION_DB_VENDOR_LEASE        — 업체리스트(일반임대) DB ID
  *   NOTION_DS_VENDOR_LEASE        — 업체리스트(일반임대) Data Source ID
  *   CRON_SECRET                   — /api/sync/notion 보호용 토큰
+ *   NOTION_DB_VERIFY_TENANT_ID    — 테넌트 검증 메인 DB ID (setup-verify-notion.mjs 실행 후)
+ *   NOTION_DB_VERIFY_NEWS_ID      — 수집 뉴스 DB ID (setup-verify-notion.mjs 실행 후)
  */
 
 export function getNotionClient(): Client | null {
