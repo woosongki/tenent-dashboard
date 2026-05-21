@@ -99,6 +99,64 @@ export interface MeetingQuestion {
   question: string;
 }
 
+// ── 내부 데이터 연계 (C1) ────────────────────────────────
+export interface AttractionMatch {
+  brandName: string;
+  branch: string | null;
+  floor: string | null;
+  category: string | null;
+  manager: string | null;
+  status: "완료" | "진행 중";
+  memo: string | null;
+  notionUrl: string | null;
+}
+
+export interface VendorMatch {
+  name: string;
+  source: "F&B" | "일반임대";
+  category: string | null;
+  status: string | null;
+  score: string | null;
+  keyman: string | null;
+  contact: string | null;
+  memo: string | null;
+}
+
+// ── 매출 벤치마크 (C2) ────────────────────────────────────
+export interface SalesBenchmark {
+  ourBrandFound: boolean;
+  ourBrandStats: {
+    name: string;
+    revenueWon: number;
+    marginPct: number;
+    revenueGrowth: number;
+  } | null;
+  groupName: string | null;
+  groupCode: string | null;
+  peerCount: number;
+  peerAvgRevenueWon: number | null;
+  peerAvgMarginPct: number | null;
+  peerAvgGrowthPct: number | null;
+  overall: {
+    totalRevenueWon: number;
+    avgMarginPct: number;
+    revenueGrowthPct: number;
+  };
+}
+
+// ── 검색 트렌드 (B1) ──────────────────────────────────────
+export interface SearchTrend {
+  keyword: string;
+  timeUnit: "month";
+  monthly: Array<{ month: string; ratio: number }>; // ratio: 피크월 = 100 기준
+  peakMonth: string;
+  peakRatio: number;
+  recent3MonthAvg: number;
+  prev3MonthAvg: number;
+  momentum: "rising" | "stable" | "declining";
+  momentumPct: number; // 최근 3개월 vs 직전 3개월 변화율
+}
+
 export interface VerifyBrief {
   corpCode: string;
   companyName: string;
@@ -125,6 +183,14 @@ export interface VerifyBrief {
   collectedAt: string; // ISO timestamp
   notionPageId: string | null;
   notionUrl: string | null;
+
+  // 신규 — 내부 데이터 연계 + 시장 신호
+  internalHistory?: {
+    attraction: AttractionMatch[];
+    vendor: VendorMatch[];
+  };
+  salesBenchmark?: SalesBenchmark | null;
+  searchTrend?: SearchTrend | null;
 }
 
 export interface VerifyProgressEvent {

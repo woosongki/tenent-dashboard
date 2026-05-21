@@ -11,6 +11,10 @@ import type {
   FocusArea,
   MeetingQuestion,
   FinancialRatios,
+  AttractionMatch,
+  VendorMatch,
+  SalesBenchmark,
+  SearchTrend,
 } from "./types";
 
 function calcRatios(years: FinancialYear[]): FinancialRatios {
@@ -90,6 +94,49 @@ export interface AnalysisResult {
   executiveSummary: string;
 }
 
+function formatInternalHistory(history?: { attraction: AttractionMatch[]; vendor: VendorMatch[] }): string {
+  if (!history || (history.attraction.length === 0 && history.vendor.length === 0)) return "이랜드 내부 DB에 매칭 이력 없음";
+  const lines: string[] = [];
+  if (history.attraction.length > 0) {
+    lines.push("[입점계획(26년) 매칭]");
+    history.attraction.slice(0, 5).forEach((a) =>
+      lines.push(`- ${a.brandName} | ${a.branch ?? "-"} ${a.floor ?? ""} | ${a.category ?? "-"} | ${a.status} | 담당:${a.manager ?? "-"}`)
+    );
+  }
+  if (history.vendor.length > 0) {
+    lines.push("[업체리스트 매칭]");
+    history.vendor.slice(0, 5).forEach((v) =>
+      lines.push(`- ${v.name} (${v.source}) | ${v.category ?? "-"} | 상태:${v.status ?? "-"} | 키맨:${v.keyman ?? "-"}`)
+    );
+  }
+  return lines.join("\n");
+}
+
+function formatSalesBenchmark(bench?: SalesBenchmark | null): string {
+  if (!bench) return "자체 매출 데이터 없음";
+  const toB = (won: number | null) => (won === null ? "-" : `${Math.round(won / 1e8)}억원`);
+  const lines: string[] = [];
+  if (bench.ourBrandFound && bench.ourBrandStats) {
+    lines.push(`★ 본사 자체 매출 데이터 있음 (이미 입점 중): ${bench.ourBrandStats.name}`);
+    lines.push(`  - 매출 ${toB(bench.ourBrandStats.revenueWon)}, 영업이익률 ${bench.ourBrandStats.marginPct.toFixed(1)}%, 매출 성장 ${bench.ourBrandStats.revenueGrowth >= 0 ? "+" : ""}${bench.ourBrandStats.revenueGrowth.toFixed(1)}%`);
+  }
+  if (bench.groupName) {
+    lines.push(`동종 카테고리 평균 (${bench.groupName}, ${bench.peerCount}개 브랜드):`);
+    lines.push(`  - 평균 매출 ${toB(bench.peerAvgRevenueWon)}, 평균 영업이익률 ${bench.peerAvgMarginPct?.toFixed(1) ?? "-"}%, 평균 성장 ${bench.peerAvgGrowthPct?.toFixed(1) ?? "-"}%`);
+  }
+  lines.push(`전사 평균: 매출 ${toB(bench.overall.totalRevenueWon)}, 영업이익률 ${bench.overall.avgMarginPct.toFixed(1)}%, 성장 ${bench.overall.revenueGrowthPct.toFixed(1)}%`);
+  return lines.join("\n");
+}
+
+function formatTrend(trend?: SearchTrend | null): string {
+  if (!trend) return "검색 트렌드 데이터 없음 (네이버 데이터랩 스코프 미연동 가능성)";
+  const dir = trend.momentum === "rising" ? "상승세" : trend.momentum === "declining" ? "하락세" : "유지";
+  return `네이버 검색 트렌드 (최근 12개월, 피크월=100 기준):
+- 모멘텀: ${dir} (최근 3개월 ${trend.recent3MonthAvg} vs 직전 3개월 ${trend.prev3MonthAvg}, ${trend.momentumPct >= 0 ? "+" : ""}${trend.momentumPct}%)
+- 피크: ${trend.peakMonth} (${trend.peakRatio})
+- 최근 6개월 추이: ${trend.monthly.slice(-6).map(m => m.month.slice(-2) + "월 " + m.ratio).join(" → ")}`;
+}
+
 export async function analyzeWithClaude(params: {
   company: DartCompany | null;
   companyName: string;
@@ -97,6 +144,9 @@ export async function analyzeWithClaude(params: {
   disclosures: DartDisclosure[];
   shareholders: MajorShareholder[];
   news: NewsArticle[];
+  internalHistory?: { attraction: AttractionMatch[]; vendor: VendorMatch[] };
+  salesBenchmark?: SalesBenchmark | null;
+  searchTrend?: SearchTrend | null;
 }): Promise<AnalysisResult> {
   const ratios = calcRatios(params.financials);
   const ratioStr = [
@@ -143,10 +193,21 @@ ${formatDisclosures(params.disclosures)}
 [최근 3개월 뉴스]
 ${formatNews(params.news)}
 
+[이랜드 내부 데이터]
+${formatInternalHistory(params.internalHistory)}
+
+[자체 매출 벤치마크]
+${formatSalesBenchmark(params.salesBenchmark)}
+
+[시장 신호]
+${formatTrend(params.searchTrend)}
+
 위 정보를 분석하여 submit_brief 도구를 호출하세요.
 - riskFlags: 최대 5개, 심각도 순
 - focusAreas: 7개 카테고리 중 유의미한 것 최대 5개
-- questions: 10~15개, 카테고리 균형 있게`;
+- questions: 10~15개, 카테고리 균형 있게
+- gradeReason: 자체 매출 데이터 / 검색 트렌드 / 내부 입점 이력이 있으면 등급 근거에 인용
+- executiveSummary: 내부 데이터로 확인된 사실(이미 입점 중, 자체 매출 등)은 명확히 반영`;
 
   const client = new Anthropic({
     apiKey: process.env.ANTHROPIC_API_KEY,

@@ -9,6 +9,8 @@ import {
 import { fetchNews } from "./news";
 import { analyzeWithClaude, calcRatios } from "./analyzer";
 import { writeBriefToNotion } from "./notionWriter";
+import { findExistingTenancy, buildSalesBenchmark } from "./internal";
+import { fetchSearchTrend } from "./trend";
 import type { VerifyBrief, VerifyProgressEvent, VerifyRequest } from "./types";
 
 export async function* runVerifyPipeline(
@@ -48,9 +50,27 @@ export async function* runVerifyPipeline(
   yield { type: "progress", step: "shareholders", message: "DART 최대주주 현황 수집 중..." };
   const shareholders = corpCode ? await fetchMajorShareholders(corpCode) : [];
 
-  yield { type: "progress", step: "news", message: "네이버에서 최근 12개월 뉴스 검색 중..." };
+  yield { type: "progress", step: "news", message: "네이버에서 최근 3개월 뉴스 검색 중..." };
   const news = await fetchNews(company);
   yield { type: "progress", step: "news", message: `뉴스 ${news.length}건 수집 완료` };
+
+  // ── 신규: 내부 데이터 + 시장 신호 (병렬) ────────────────────────
+  yield { type: "progress", step: "internal", message: "이랜드 내부 데이터 + 네이버 검색 트렌드 조회 중..." };
+  const [internalHistory, salesBenchmark, searchTrend] = await Promise.all([
+    findExistingTenancy(company, null),
+    Promise.resolve(buildSalesBenchmark(company, null)),
+    fetchSearchTrend(company),
+  ]);
+  const internalSummary: string[] = [];
+  if (internalHistory.attraction.length > 0) internalSummary.push(`기존 입점 후보 ${internalHistory.attraction.length}건`);
+  if (internalHistory.vendor.length > 0) internalSummary.push(`업체리스트 ${internalHistory.vendor.length}건`);
+  if (salesBenchmark?.ourBrandFound) internalSummary.push(`자체 매출 데이터 ${salesBenchmark.ourBrandStats?.name}`);
+  if (searchTrend) internalSummary.push(`검색 트렌드 ${searchTrend.momentum === "rising" ? "↑" : searchTrend.momentum === "declining" ? "↓" : "→"} ${searchTrend.momentumPct > 0 ? "+" : ""}${searchTrend.momentumPct}%`);
+  yield {
+    type: "progress",
+    step: "internal",
+    message: internalSummary.length > 0 ? internalSummary.join(" / ") : "내부 매칭 없음 / 트렌드 데이터 없음",
+  };
 
   yield { type: "progress", step: "analysis", message: "Claude로 재무 진단·리스크 분류 중..." };
 
@@ -63,6 +83,9 @@ export async function* runVerifyPipeline(
       disclosures,
       shareholders,
       news,
+      internalHistory,
+      salesBenchmark,
+      searchTrend,
     });
   } catch (err) {
     const msg = err instanceof Error ? err.message : "알 수 없는 오류";
@@ -106,6 +129,9 @@ export async function* runVerifyPipeline(
     collectedAt,
     notionPageId: null,
     notionUrl: null,
+    internalHistory,
+    salesBenchmark,
+    searchTrend,
   };
 
   yield { type: "progress", step: "notion", message: "Notion에 검증 결과 저장 중..." };

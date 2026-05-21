@@ -178,8 +178,161 @@ function BriefCard({ brief }: { brief: VerifyBrief }) {
         </div>
       )}
 
+      {/* 내부 데이터 + 시장 신호 */}
+      <InternalSection brief={brief} />
+
       <div className="border-t-[2px] border-[#0a0a0a] bg-[#FAF7EC] px-6 py-2 text-[10px] text-slate-400">
         수집 시각: {new Date(brief.collectedAt).toLocaleString("ko-KR")} · DART {brief.recentDisclosures.length}건 · 뉴스 {brief.news.length}건 (최근 3개월)
+      </div>
+    </div>
+  );
+}
+
+function InternalSection({ brief }: { brief: VerifyBrief }) {
+  const history = brief.internalHistory;
+  const bench = brief.salesBenchmark;
+  const trend = brief.searchTrend;
+
+  const hasAny =
+    (history && (history.attraction.length > 0 || history.vendor.length > 0)) ||
+    bench?.ourBrandFound || (bench?.peerCount ?? 0) > 0 ||
+    trend;
+
+  if (!hasAny) return null;
+
+  const toB = (won: number | null | undefined) => (won == null ? "—" : `${Math.round(won / 1e8).toLocaleString()}억`);
+
+  return (
+    <div className="border-t-[2px] border-[#0a0a0a] grid grid-cols-1 md:grid-cols-3">
+      {/* C1. 내부 입점 이력 */}
+      <div className="border-r-[0px] md:border-r-[2px] border-[#0a0a0a] p-5">
+        <p className="mb-3 text-[10px] font-extrabold uppercase tracking-[.14em] text-slate-500">내부 입점 이력</p>
+        {history && history.attraction.length === 0 && history.vendor.length === 0 ? (
+          <p className="text-[12px] text-slate-400">자체 DB 매칭 없음</p>
+        ) : (
+          <ul className="space-y-2">
+            {history?.attraction.slice(0, 4).map((a, i) => (
+              <li key={"a"+i} className="text-[12px]">
+                <div className="flex items-start gap-1.5">
+                  <span className={`inline-block shrink-0 border px-1 py-0.5 text-[9px] font-bold ${a.status === "완료" ? "border-emerald-400 bg-emerald-50 text-emerald-700" : "border-blue-400 bg-blue-50 text-blue-700"}`}>
+                    {a.status}
+                  </span>
+                  <div>
+                    <p className="font-bold">{a.brandName}</p>
+                    <p className="text-[10px] text-slate-500">
+                      {[a.branch, a.floor, a.category].filter(Boolean).join(" · ")}
+                      {a.manager && ` · 담당 ${a.manager}`}
+                    </p>
+                  </div>
+                </div>
+              </li>
+            ))}
+            {history?.vendor.slice(0, 3).map((v, i) => (
+              <li key={"v"+i} className="text-[12px]">
+                <div className="flex items-start gap-1.5">
+                  <span className="inline-block shrink-0 border border-violet-400 bg-violet-50 px-1 py-0.5 text-[9px] font-bold text-violet-700">
+                    {v.source}
+                  </span>
+                  <div>
+                    <p className="font-bold">{v.name}</p>
+                    <p className="text-[10px] text-slate-500">
+                      {[v.category, v.status].filter(Boolean).join(" · ")}
+                      {v.keyman && ` · 키맨 ${v.keyman}`}
+                    </p>
+                  </div>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+
+      {/* C2. 매출 벤치마크 */}
+      <div className="border-r-[0px] md:border-r-[2px] border-[#0a0a0a] p-5">
+        <p className="mb-3 text-[10px] font-extrabold uppercase tracking-[.14em] text-slate-500">자체 매출 벤치마크</p>
+        {!bench ? (
+          <p className="text-[12px] text-slate-400">매출 데이터 없음</p>
+        ) : (
+          <div className="space-y-2 text-[12px]">
+            {bench.ourBrandFound && bench.ourBrandStats && (
+              <div className="border border-cyan-300 bg-cyan-50 p-2">
+                <p className="text-[10px] font-bold text-cyan-700 uppercase">★ 이미 입점 중</p>
+                <p className="font-bold mt-0.5">{bench.ourBrandStats.name}</p>
+                <div className="flex justify-between font-mono text-[11px] mt-1">
+                  <span>매출 {toB(bench.ourBrandStats.revenueWon)}</span>
+                  <span className={bench.ourBrandStats.marginPct >= 0 ? "text-cyan-700" : "text-rose-500"}>
+                    OPM {bench.ourBrandStats.marginPct.toFixed(1)}%
+                  </span>
+                  <span className={bench.ourBrandStats.revenueGrowth >= 0 ? "text-cyan-700" : "text-rose-500"}>
+                    {bench.ourBrandStats.revenueGrowth >= 0 ? "↑" : "↓"} {Math.abs(bench.ourBrandStats.revenueGrowth).toFixed(1)}%
+                  </span>
+                </div>
+              </div>
+            )}
+            {bench.groupName && (
+              <div>
+                <p className="text-[10px] font-bold text-slate-500 uppercase">동종 {bench.groupName} 평균 ({bench.peerCount}개)</p>
+                <div className="flex justify-between font-mono text-[11px] mt-0.5">
+                  <span>매출 {toB(bench.peerAvgRevenueWon)}</span>
+                  <span>OPM {bench.peerAvgMarginPct?.toFixed(1) ?? "—"}%</span>
+                  <span>↑ {bench.peerAvgGrowthPct?.toFixed(1) ?? "—"}%</span>
+                </div>
+              </div>
+            )}
+            <div>
+              <p className="text-[10px] font-bold text-slate-500 uppercase">전사 평균</p>
+              <div className="flex justify-between font-mono text-[11px] mt-0.5 text-slate-600">
+                <span>매출 {toB(bench.overall.totalRevenueWon)}</span>
+                <span>OPM {bench.overall.avgMarginPct.toFixed(1)}%</span>
+                <span>↑ {bench.overall.revenueGrowthPct.toFixed(1)}%</span>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* B1. 검색 트렌드 */}
+      <div className="p-5">
+        <p className="mb-3 text-[10px] font-extrabold uppercase tracking-[.14em] text-slate-500">네이버 검색 트렌드 (1년)</p>
+        {!trend ? (
+          <p className="text-[12px] text-slate-400">
+            데이터랩 미연동
+            <br />
+            <span className="text-[10px] text-slate-300">개발자센터에서 "데이터랩(검색어트렌드)" scope 추가 필요</span>
+          </p>
+        ) : (
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <span className={`inline-block border-[2px] px-2 py-1 text-[11px] font-extrabold ${
+                trend.momentum === "rising" ? "border-emerald-500 bg-emerald-50 text-emerald-700" :
+                trend.momentum === "declining" ? "border-rose-500 bg-rose-50 text-rose-700" :
+                "border-slate-400 bg-slate-50 text-slate-600"
+              }`}>
+                {trend.momentum === "rising" ? "↑ 상승세" : trend.momentum === "declining" ? "↓ 하락세" : "→ 유지"}
+              </span>
+              <span className="font-mono text-[14px] font-extrabold">
+                {trend.momentumPct >= 0 ? "+" : ""}{trend.momentumPct}%
+              </span>
+            </div>
+            {/* 간단 sparkline (12개월 막대) */}
+            <div className="flex items-end gap-0.5 h-12 mt-2">
+              {trend.monthly.map((m) => {
+                const heightPct = (m.ratio / Math.max(trend.peakRatio, 1)) * 100;
+                return (
+                  <div key={m.month} className="flex-1 bg-cyan-300 border-t border-cyan-500 min-h-[2px]"
+                    style={{ height: `${heightPct}%` }}
+                    title={`${m.month}: ${m.ratio}`} />
+                );
+              })}
+            </div>
+            <div className="flex justify-between text-[10px] text-slate-400 font-mono">
+              <span>{trend.monthly[0]?.month}</span>
+              <span>최근 3M: {trend.recent3MonthAvg}</span>
+              <span>{trend.monthly[trend.monthly.length - 1]?.month}</span>
+            </div>
+            <p className="text-[10px] text-slate-500">피크: {trend.peakMonth} ({trend.peakRatio})</p>
+          </div>
+        )}
       </div>
     </div>
   );
