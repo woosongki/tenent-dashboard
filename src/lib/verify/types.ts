@@ -136,6 +136,7 @@ export interface VerifyProgressEvent {
 
 export interface VerifyRequest {
   company: string;
+  corpCode?: string;  // UI에서 후보 선택 후 직접 지정 가능 (검색 단계 스킵)
   priority?: "urgent" | "standard";
   memo?: string;
   meetingDate?: string;

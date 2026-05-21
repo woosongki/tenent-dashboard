@@ -14,20 +14,27 @@ import type { VerifyBrief, VerifyProgressEvent, VerifyRequest } from "./types";
 export async function* runVerifyPipeline(
   request: VerifyRequest
 ): AsyncGenerator<VerifyProgressEvent> {
-  const { company, memo } = request;
+  const { company } = request;
   const collectedAt = new Date().toISOString();
 
-  yield { type: "progress", step: "corp-search", message: `DART에서 "${company}" 검색 중...` };
+  let corpCode = request.corpCode ?? "";
 
-  const corpEntry = searchCorpCode(company);
-  if (!corpEntry) {
-    yield {
-      type: "progress",
-      step: "corp-search",
-      message: `DART corp-codes.json에 "${company}"가 없습니다. DART 고유번호를 직접 입력하거나 scripts/dart-sync-corp-codes.mjs를 실행하세요.`,
-    };
+  if (corpCode) {
+    yield { type: "progress", step: "corp-search", message: `DART corp_code ${corpCode} 사용 (사용자 선택)` };
+  } else {
+    yield { type: "progress", step: "corp-search", message: `DART에서 "${company}" 검색 중...` };
+    const corpEntry = searchCorpCode(company);
+    if (!corpEntry) {
+      yield {
+        type: "progress",
+        step: "corp-search",
+        message: `DART corp-codes.json에 "${company}"가 없습니다. DART 고유번호를 직접 입력하거나 scripts/dart-sync-corp-codes.mjs를 실행하세요.`,
+      };
+    } else {
+      yield { type: "progress", step: "corp-search", message: `DART 매칭: ${corpEntry.name} (${corpEntry.code})` };
+    }
+    corpCode = corpEntry?.code ?? "";
   }
-  const corpCode = corpEntry?.code ?? "";
 
   yield { type: "progress", step: "company-info", message: "DART 기업 기본정보 수집 중..." };
   const companyInfo = corpCode ? await fetchCompanyInfo(corpCode) : null;

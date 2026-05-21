@@ -61,9 +61,9 @@ export async function fetchNews(companyName: string): Promise<NewsArticle[]> {
     if (!res.ok) return [];
     const data = (await res.json()) as NaverNewsResponse;
 
-    // 최근 12개월 필터
+    // 최근 3개월 필터
     const cutoff = new Date();
-    cutoff.setFullYear(cutoff.getFullYear() - 1);
+    cutoff.setMonth(cutoff.getMonth() - 3);
 
     return (data.items ?? [])
       .filter((item) => new Date(item.pubDate) >= cutoff)

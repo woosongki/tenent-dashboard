@@ -37,6 +37,62 @@ function loadCorpCache(): CorpEntry[] {
   }
 }
 
+export interface CorpCandidate {
+  code: string;
+  name: string;
+  stockCode: string | null;
+  matchType: "exact" | "startsWith" | "contains" | "reverse";
+}
+
+/**
+ * 회사명으로 매칭되는 후보 목록을 반환 (UI에서 사용자가 선택 가능)
+ * 정렬: matchType 우선순위 → 상장사 우선 → 이름 짧은 순
+ */
+export function searchCorpCandidates(companyName: string, limit = 30): CorpCandidate[] {
+  const corps = loadCorpCache();
+  if (corps.length === 0) return [];
+  const q = companyName.trim();
+  if (!q) return [];
+
+  const seen = new Set<string>();
+  const candidates: CorpCandidate[] = [];
+
+  function push(entry: CorpEntry, matchType: CorpCandidate["matchType"]) {
+    if (seen.has(entry.code)) return;
+    seen.add(entry.code);
+    candidates.push({
+      code: entry.code,
+      name: entry.name,
+      stockCode: entry.stockCode || null,
+      matchType,
+    });
+  }
+
+  const sortFn = (a: CorpEntry, b: CorpEntry) => {
+    const sa = a.stockCode ? 0 : 1;
+    const sb = b.stockCode ? 0 : 1;
+    if (sa !== sb) return sa - sb;
+    return a.name.length - b.name.length;
+  };
+
+  // 1) 완전 일치
+  corps.filter((c) => c.name === q).sort(sortFn).forEach((c) => push(c, "exact"));
+
+  // 2) 시작 일치
+  corps.filter((c) => c.name.startsWith(q) && c.name !== q).sort(sortFn).forEach((c) => push(c, "startsWith"));
+
+  // 3) 포함
+  corps.filter((c) => c.name.includes(q) && !c.name.startsWith(q)).sort(sortFn).forEach((c) => push(c, "contains"));
+
+  // 4) 역방향 포함 (쿼리가 등록명을 포함)
+  corps
+    .filter((c) => c.name.length >= 3 && q.includes(c.name) && !c.name.includes(q))
+    .sort((a, b) => b.name.length - a.name.length)
+    .forEach((c) => push(c, "reverse"));
+
+  return candidates.slice(0, limit);
+}
+
 export function searchCorpCode(companyName: string): CorpEntry | null {
   const corps = loadCorpCache();
   if (corps.length === 0) return null;
