@@ -7,7 +7,8 @@ import {
   fetchMajorShareholders,
 } from "./dart";
 import { fetchNews } from "./news";
-import { analyzeWithClaude, calcRatios } from "./analyzer";
+import { analyzeWithClaude, analyzeBusinessSwot, calcRatios } from "./analyzer";
+import { findLatestReportRcept, fetchReportText } from "./dartDocument";
 import { writeBriefToNotion } from "./notionWriter";
 import { findExistingTenancy, buildSalesBenchmark } from "./internal";
 import { fetchSearchTrend } from "./trend";
@@ -95,13 +96,39 @@ export async function* runVerifyPipeline(
   const news = await fetchNews(company);
   yield { type: "progress", step: "news", message: `뉴스 ${news.length}건 수집 완료` };
 
-  // ── 신규: 내부 데이터 + 시장 신호 (병렬) ────────────────────────
-  yield { type: "progress", step: "internal", message: "이랜드 내부 데이터 + 네이버 검색 트렌드 조회 중..." };
-  const [internalHistory, salesBenchmark, searchTrend] = await Promise.all([
+  // ── 신규: 내부 데이터 + 시장 신호 + 사업/감사보고서 본문 (병렬) ────
+  yield { type: "progress", step: "internal", message: "이랜드 내부 데이터 + 네이버 트렌드 + DART 보고서 본문 조회 중..." };
+  const [internalHistory, salesBenchmark, searchTrend, reportRcept] = await Promise.all([
     findExistingTenancy(company, null),
     Promise.resolve(buildSalesBenchmark(company, null)),
     fetchSearchTrend(company),
+    findLatestReportRcept(corpCode, companyInfo?.corpCls ?? null, disclosures),
   ]);
+
+  // A3+B2: 보고서 본문 텍스트 + SWOT 분석 (옵션, 실패해도 메인 OK)
+  let businessSwot = null;
+  if (reportRcept) {
+    yield { type: "progress", step: "swot", message: `DART ${reportRcept.type} 본문 다운로드 중 (rcept ${reportRcept.rceptNo})...` };
+    const bodyText = await fetchReportText(reportRcept.rceptNo, 15000);
+    if (bodyText && bodyText.length > 300) {
+      yield { type: "progress", step: "swot", message: `본문 ${(bodyText.length / 1000).toFixed(1)}KB 추출 → Claude SWOT 분석 중...` };
+      businessSwot = await analyzeBusinessSwot({
+        companyName: company,
+        reportType: reportRcept.type,
+        reportDate: reportRcept.date,
+        bodyText,
+      });
+      if (businessSwot) {
+        yield { type: "progress", step: "swot", message: `SWOT 완료 (S/W/O/T ${businessSwot.strengths.length}/${businessSwot.weaknesses.length}/${businessSwot.opportunities.length}/${businessSwot.threats.length})` };
+      } else {
+        yield { type: "progress", step: "swot", message: "SWOT 분석 실패 (메인 분석은 계속)" };
+      }
+    } else {
+      yield { type: "progress", step: "swot", message: "본문 텍스트 추출 실패 (스킵)" };
+    }
+  } else {
+    yield { type: "progress", step: "swot", message: "보고서 미발견 (DART 미공시 법인일 수 있음)" };
+  }
   const internalSummary: string[] = [];
   if (internalHistory.attraction.length > 0) internalSummary.push(`기존 입점 후보 ${internalHistory.attraction.length}건`);
   if (internalHistory.vendor.length > 0) internalSummary.push(`업체리스트 ${internalHistory.vendor.length}건`);
@@ -206,6 +233,7 @@ export async function* runVerifyPipeline(
     internalHistory,
     salesBenchmark,
     searchTrend,
+    businessSwot,
   };
 
   yield { type: "progress", step: "notion", message: "Notion에 검증 결과 저장 중..." };

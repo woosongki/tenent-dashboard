@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
+import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 import type { VerifyBrief, VerifyProgressEvent } from "@/lib/verify/types";
 
 interface CorpCandidate {
@@ -178,12 +179,140 @@ function BriefCard({ brief }: { brief: VerifyBrief }) {
         </div>
       )}
 
+      {/* 5년 재무 추이 라인차트 (C1) */}
+      <FinancialChart brief={brief} />
+
+      {/* 사업/감사보고서 SWOT (A3 + B2) */}
+      <SwotSection brief={brief} />
+
       {/* 내부 데이터 + 시장 신호 */}
       <InternalSection brief={brief} />
 
       <div className="border-t-[2px] border-[#0a0a0a] bg-[#FAF7EC] px-6 py-2 text-[10px] text-slate-400">
         수집 시각: {new Date(brief.collectedAt).toLocaleString("ko-KR")} · DART {brief.recentDisclosures.length}건 · 뉴스 {brief.news.length}건 (최근 3개월)
       </div>
+    </div>
+  );
+}
+
+// C1: 5년 재무 추이 라인차트
+function FinancialChart({ brief }: { brief: VerifyBrief }) {
+  const years = brief.financials.years.filter((y) => y.revenue !== null);
+  if (years.length < 2) return null;
+
+  // 오래된 순으로 정렬 (좌→우 시간 흐름)
+  const data = [...years]
+    .sort((a, b) => a.year - b.year)
+    .map((y) => ({
+      year: String(y.year),
+      매출: y.revenue ? Math.round(y.revenue / 1e8) : null,
+      영업이익: y.operatingProfit !== null ? Math.round(y.operatingProfit / 1e8) : null,
+      영업이익률:
+        y.revenue && y.operatingProfit !== null
+          ? Math.round((y.operatingProfit / y.revenue) * 1000) / 10
+          : null,
+    }));
+
+  return (
+    <div className="border-t-[2px] border-[#0a0a0a] p-5">
+      <p className="mb-3 text-[10px] font-extrabold uppercase tracking-[.14em] text-slate-500">
+        5년 재무 추이 (단위: 억원 / %)
+      </p>
+      <div className="h-48">
+        <ResponsiveContainer width="100%" height="100%">
+          <LineChart data={data} margin={{ top: 5, right: 30, left: 0, bottom: 5 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+            <XAxis dataKey="year" stroke="#64748b" style={{ fontSize: "11px" }} />
+            <YAxis yAxisId="left" stroke="#0891b2" style={{ fontSize: "11px" }} />
+            <YAxis yAxisId="right" orientation="right" stroke="#f97316" style={{ fontSize: "11px" }} unit="%" />
+            <Tooltip
+              contentStyle={{ border: "2px solid #0a0a0a", borderRadius: 0, fontSize: "12px" }}
+              formatter={(value, name) => {
+                if (value == null) return ["—", name];
+                if (name === "영업이익률") return [`${value}%`, name];
+                return [`${Number(value).toLocaleString()}억`, name];
+              }}
+            />
+            <Line yAxisId="left" type="monotone" dataKey="매출" stroke="#0891b2" strokeWidth={2.5} dot={{ r: 4 }} />
+            <Line yAxisId="left" type="monotone" dataKey="영업이익" stroke="#0a0a0a" strokeWidth={2} dot={{ r: 3 }} />
+            <Line yAxisId="right" type="monotone" dataKey="영업이익률" stroke="#f97316" strokeWidth={2} strokeDasharray="4 2" dot={{ r: 3 }} />
+          </LineChart>
+        </ResponsiveContainer>
+      </div>
+    </div>
+  );
+}
+
+// A3 + B2: 사업/감사보고서 본문 SWOT
+function SwotSection({ brief }: { brief: VerifyBrief }) {
+  const swot = brief.businessSwot;
+  if (!swot) return null;
+
+  const blocks = [
+    { label: "Strengths", color: "border-emerald-400 bg-emerald-50 text-emerald-800", items: swot.strengths },
+    { label: "Weaknesses", color: "border-rose-400 bg-rose-50 text-rose-800", items: swot.weaknesses },
+    { label: "Opportunities", color: "border-cyan-400 bg-cyan-50 text-cyan-800", items: swot.opportunities },
+    { label: "Threats", color: "border-orange-400 bg-orange-50 text-orange-800", items: swot.threats },
+  ];
+
+  return (
+    <div className="border-t-[2px] border-[#0a0a0a] p-5">
+      <div className="flex items-center justify-between mb-3">
+        <p className="text-[10px] font-extrabold uppercase tracking-[.14em] text-slate-500">
+          {swot.reportType} 본문 SWOT
+        </p>
+        <span className="text-[10px] text-slate-400 font-mono">
+          접수일 {swot.reportDate.slice(0, 4)}.{swot.reportDate.slice(4, 6)}.{swot.reportDate.slice(6, 8)}
+        </span>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        {blocks.map((b) => (
+          <div key={b.label} className={`border-[2px] ${b.color} p-3`}>
+            <p className="text-[10px] font-extrabold uppercase tracking-wider mb-2">{b.label}</p>
+            {b.items.length === 0 ? (
+              <p className="text-[11px] opacity-60">—</p>
+            ) : (
+              <ul className="space-y-1.5">
+                {b.items.map((item, i) => (
+                  <li key={i} className="text-[12px] flex items-start gap-1.5">
+                    <span className="font-mono opacity-50">▸</span>
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        ))}
+      </div>
+
+      {(swot.marketShare || swot.keyAuditMatters.length > 0 || swot.goingConcernNote) && (
+        <div className="mt-3 border-t border-[#0a0a0a]/10 pt-3 space-y-2">
+          {swot.marketShare && (
+            <div className="text-[12px]">
+              <span className="inline-block border border-violet-400 bg-violet-50 px-1.5 py-0.5 text-[10px] font-bold text-violet-700 mr-2">시장점유율</span>
+              {swot.marketShare}
+              <span className="text-[10px] text-slate-400 ml-1">(회사 자체 진술)</span>
+            </div>
+          )}
+          {swot.keyAuditMatters.length > 0 && (
+            <div className="text-[12px]">
+              <p className="text-[10px] font-bold text-slate-500 mb-1">핵심감사사항 (KAM)</p>
+              <ul className="space-y-0.5 pl-4">
+                {swot.keyAuditMatters.map((k, i) => (
+                  <li key={i} className="text-[12px] text-slate-700">• {k}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+          {swot.goingConcernNote && (
+            <div className="text-[12px] bg-rose-50 border border-rose-300 px-2 py-1.5">
+              <span className="font-bold text-rose-700">⚠ 강조사항·계속기업: </span>
+              <span className="text-rose-800">{swot.goingConcernNote}</span>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

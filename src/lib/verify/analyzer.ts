@@ -15,6 +15,7 @@ import type {
   VendorMatch,
   SalesBenchmark,
   SearchTrend,
+  BusinessSwot,
 } from "./types";
 
 function calcRatios(years: FinancialYear[]): FinancialRatios {
@@ -293,3 +294,121 @@ ${formatTrend(params.searchTrend)}
 }
 
 export { calcRatios };
+
+// ─────────────────────────────────────────────────────────────
+// A3 + B2: 사업/감사보고서 본문 SWOT 분석 (별도 Claude 호출)
+// 비용: 입력 ~5K 토큰 (캐시 적용 가능), 출력 ~800 토큰 (~$0.015/건, 30일 캐시 시 1회만)
+// ─────────────────────────────────────────────────────────────
+export async function analyzeBusinessSwot(params: {
+  companyName: string;
+  reportType: "사업보고서" | "감사보고서" | "기타";
+  reportDate: string;
+  bodyText: string;
+}): Promise<BusinessSwot | null> {
+  if (!params.bodyText || params.bodyText.length < 300) return null;
+
+  const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+
+  const systemPrompt = `당신은 DART 사업보고서/감사보고서 분석 전문가입니다.
+임대 협상에 도움될 SWOT 정보를 본문에서 추출합니다.
+
+규칙:
+- 본문에 명시된 사실만 추출 (추정 금지)
+- 회사 자체 진술 (시장점유율 등)은 그대로 인용
+- 핵심감사사항(KAM)·강조사항·계속기업 불확실성은 정확히 식별
+- 영문 약어·전문 용어는 한국어로 풀어서
+
+submit_swot 도구로만 응답.`;
+
+  const userPrompt = `회사: ${params.companyName}
+보고서: ${params.reportType} (접수일 ${params.reportDate})
+
+[본문 발췌]
+${params.bodyText}
+
+위 본문에서 SWOT·시장점유율·핵심감사사항·계속기업 강조사항 추출.`;
+
+  const swotTool: Anthropic.Tool = {
+    name: "submit_swot",
+    description: "사업/감사보고서 SWOT 분석 결과 제출",
+    input_schema: {
+      type: "object",
+      properties: {
+        strengths: {
+          type: "array",
+          maxItems: 4,
+          items: { type: "string", description: "1문장" },
+        },
+        weaknesses: {
+          type: "array",
+          maxItems: 4,
+          items: { type: "string", description: "1문장" },
+        },
+        opportunities: {
+          type: "array",
+          maxItems: 3,
+          items: { type: "string", description: "1문장" },
+        },
+        threats: {
+          type: "array",
+          maxItems: 3,
+          items: { type: "string", description: "1문장" },
+        },
+        marketShare: {
+          type: "string",
+          description: "회사 자체 진술 시장점유율 (예: '국내 잡화시장 점유율 45%'). 없으면 'N/A'",
+        },
+        keyAuditMatters: {
+          type: "array",
+          maxItems: 3,
+          items: { type: "string", description: "핵심감사사항 KAM 1문장" },
+        },
+        goingConcernNote: {
+          type: "string",
+          description: "계속기업 불확실성·강조사항 요약. 없으면 'N/A'",
+        },
+      },
+      required: ["strengths", "weaknesses", "opportunities", "threats", "marketShare", "keyAuditMatters", "goingConcernNote"],
+    },
+  };
+
+  try {
+    const message = await client.messages.create({
+      model: "claude-sonnet-4-6",
+      max_tokens: 2048,
+      system: [
+        { type: "text", text: systemPrompt, cache_control: { type: "ephemeral" } },
+      ],
+      tools: [{ ...swotTool, cache_control: { type: "ephemeral" } } as Anthropic.Tool],
+      tool_choice: { type: "tool", name: "submit_swot" },
+      messages: [{ role: "user", content: userPrompt }],
+    });
+
+    const toolUse = message.content.find((b) => b.type === "tool_use");
+    if (!toolUse || toolUse.type !== "tool_use") return null;
+
+    const input = toolUse.input as {
+      strengths: string[];
+      weaknesses: string[];
+      opportunities: string[];
+      threats: string[];
+      marketShare: string;
+      keyAuditMatters: string[];
+      goingConcernNote: string;
+    };
+
+    return {
+      reportType: params.reportType,
+      reportDate: params.reportDate,
+      strengths: input.strengths,
+      weaknesses: input.weaknesses,
+      opportunities: input.opportunities,
+      threats: input.threats,
+      marketShare: input.marketShare && input.marketShare !== "N/A" ? input.marketShare : null,
+      keyAuditMatters: input.keyAuditMatters,
+      goingConcernNote: input.goingConcernNote && input.goingConcernNote !== "N/A" ? input.goingConcernNote : null,
+    };
+  } catch {
+    return null;
+  }
+}

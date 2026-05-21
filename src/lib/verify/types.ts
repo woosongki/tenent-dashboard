@@ -191,6 +191,21 @@ export interface VerifyBrief {
   };
   salesBenchmark?: SalesBenchmark | null;
   searchTrend?: SearchTrend | null;
+
+  // A3 + B2 — 사업/감사보고서 본문 SWOT 분석
+  businessSwot?: BusinessSwot | null;
+}
+
+export interface BusinessSwot {
+  reportType: "사업보고서" | "감사보고서" | "기타";
+  reportDate: string;
+  strengths: string[];
+  weaknesses: string[];
+  opportunities: string[];
+  threats: string[];
+  marketShare: string | null;     // 회사 자체 진술 시장점유율
+  keyAuditMatters: string[];      // 핵심감사사항 KAM
+  goingConcernNote: string | null; // 계속기업 불확실성 강조사항 유무
 }
 
 export interface VerifyProgressEvent {

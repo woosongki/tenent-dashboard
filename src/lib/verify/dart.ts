@@ -253,11 +253,12 @@ function findAmount(items: FinancialItem[], names: string[], sjDiv: string, fsDi
   return isNaN(n) ? null : n;
 }
 
-export async function fetchFinancials(corpCode: string): Promise<FinancialYear[]> {
+export async function fetchFinancials(corpCode: string, lookbackYears = 5): Promise<FinancialYear[]> {
+  // C1: 기본 5년 (currentYear-1 ~ currentYear-5)
   const currentYear = new Date().getFullYear();
   const years: FinancialYear[] = [];
 
-  for (let y = currentYear - 1; y >= currentYear - 3; y--) {
+  for (let y = currentYear - 1; y >= currentYear - lookbackYears; y--) {
     try {
       const data = await dartGet<{ list?: FinancialItem[] }>("fnlttSinglAcnt.json", {
         corp_code: corpCode,
