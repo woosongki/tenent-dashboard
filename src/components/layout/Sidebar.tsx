@@ -85,6 +85,14 @@ function IconVerify() {
     </svg>
   );
 }
+function IconKeyword() {
+  return (
+    <svg fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M9.568 3H5.25A2.25 2.25 0 0 0 3 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 0 0 5.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 0 0 9.568 3Z" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M6 6h.008v.008H6V6Z" />
+    </svg>
+  );
+}
 function IconLogout() {
   return (
     <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -151,6 +159,7 @@ const NAV: NavGroup[] = [
       { href: "/dashboard/floorplans",label: "전점도면",       icon: <IconBlueprint /> },
       { href: "/dashboard/branch",    label: "상권분석",       icon: <IconMap /> },
       { href: "/dashboard/verify",    label: "컨텐츠 검증",    icon: <IconVerify /> },
+      { href: "/dashboard/brand-keyword", label: "브랜드 키워드", icon: <IconKeyword /> },
       {
         href: "/dashboard/homeplus",
         label: "리테일 지도",
