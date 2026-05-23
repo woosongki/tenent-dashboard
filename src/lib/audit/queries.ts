@@ -28,7 +28,7 @@ export async function getAuditLogs(
 
   let query = supabase
     .from("audit_logs")
-    .select("*")
+    .select("id, organization_id, actor_id, actor_email, entity_type, entity_id, entity_label, action, field, old_value, new_value, metadata, created_at")
     .eq("organization_id", orgId)
     .order("created_at", { ascending: false })
     .limit(PAGE_SIZE + 1); // +1 로 hasMore 판단

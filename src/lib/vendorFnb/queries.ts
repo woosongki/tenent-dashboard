@@ -22,7 +22,7 @@ export async function getVendorFnb(): Promise<VendorFnbRow[]> {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("vendor_fnb")
-    .select("*")
+    .select("id, name, types, score, is_checked, status, link, contact, keyman, memo, created_at, updated_at")
     .order("created_at", { ascending: false });
   if (error || !data) return [];
   return data.map(rowToVendor);

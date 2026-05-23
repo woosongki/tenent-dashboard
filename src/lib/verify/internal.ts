@@ -28,10 +28,11 @@ export async function findExistingTenancy(
   try {
     const supabase = await createClient();
 
+    // 매칭에 필요한 컬럼만 명시 (egress 절감)
     const [attractionRes, fnbRes, leaseRes] = await Promise.all([
       supabase.from("attraction_status").select("brand_name, branch, floor, category, manager, is_completed, memo, notion_url"),
       supabase.from("vendor_fnb").select("name, types, score, status, link, contact, keyman, memo"),
-      supabase.from("vendor_lease").select("*"),
+      supabase.from("vendor_lease").select("name, types, status, link, contact, keyman, memo"),
     ]);
 
     const attractionRows = (attractionRes.data ?? []) as Array<{

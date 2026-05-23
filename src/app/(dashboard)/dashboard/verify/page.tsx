@@ -1,21 +1,10 @@
 import { SPACE, TYPO } from "@/lib/tokens";
-import { createClient } from "@/lib/supabase/server";
+import { getSessionContext } from "@/lib/auth/session";
 import VerifyClient from "./_components/VerifyClient";
 
 export default async function VerifyPage() {
-  // T5-1: 권한 확인 — member에게는 검증 UI 비활성화 표시
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  let role: "owner" | "admin" | "member" | null = null;
-  if (user) {
-    const { data: membership } = await supabase
-      .from("organization_members")
-      .select("role")
-      .eq("user_id", user.id)
-      .limit(1)
-      .maybeSingle();
-    role = (membership?.role as "owner" | "admin" | "member" | undefined) ?? null;
-  }
+  // Layout에서 이미 조회한 session을 cache()로 재사용 (DB 추가 호출 0)
+  const { role } = await getSessionContext();
   const canVerify = role === "owner" || role === "admin";
 
   return (

@@ -5,7 +5,7 @@ export async function getAttractionRows(): Promise<AttractionRow[]> {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("attraction_status")
-    .select("*")
+    .select("id, brand_name, branch, floor, category, size_pyeong, manager, is_completed, memo, notion_url, created_at")
     .order("created_at", { ascending: true });
 
   if (error || !data) return [];

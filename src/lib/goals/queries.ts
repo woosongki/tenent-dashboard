@@ -29,7 +29,7 @@ export async function getGoals(
   const supabase = await createClient();
   let query = supabase
     .from("goals")
-    .select("*")
+    .select("id, organization_id, title, description, category, pool_type, target_value, current_value, unit, period, start_date, end_date, status, created_by, created_at, updated_at")
     .eq("organization_id", organizationId)
     .order("created_at", { ascending: false });
 

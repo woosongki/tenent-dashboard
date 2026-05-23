@@ -1,28 +1,20 @@
 import { NextRequest } from "next/server";
 import { runVerifyPipeline } from "@/lib/verify/pipeline";
-import { createClient } from "@/lib/supabase/server";
+import { getSessionContext } from "@/lib/auth/session";
 import type { VerifyRequest } from "@/lib/verify/types";
 
 export const runtime = "nodejs";
 export const maxDuration = 300;
 
 export async function POST(req: NextRequest) {
-  // T5-1: 권한 게이트 — owner/admin만 검증 가능 (member는 조회만)
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  // T5-1: 권한 게이트 — owner/admin만 검증 가능
+  const { user, role } = await getSessionContext();
   if (!user) {
     return new Response(JSON.stringify({ error: "인증이 필요합니다" }), {
       status: 401,
       headers: { "Content-Type": "application/json" },
     });
   }
-  const { data: membership } = await supabase
-    .from("organization_members")
-    .select("role")
-    .eq("user_id", user.id)
-    .limit(1)
-    .maybeSingle();
-  const role = membership?.role as "owner" | "admin" | "member" | undefined;
   if (role !== "owner" && role !== "admin") {
     return new Response(
       JSON.stringify({

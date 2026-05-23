@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { getSessionContext } from "@/lib/auth/session";
 import { fetchDisclosures, fetchCompanyInfo } from "@/lib/verify/dart";
 import { findLatestReportRcept, fetchReportText } from "@/lib/verify/dartDocument";
 import { analyzeBusinessSwot } from "@/lib/verify/analyzer";
@@ -13,19 +13,11 @@ interface SwotRequest {
 }
 
 export async function POST(req: NextRequest) {
-  // T5-1 권한 게이트 (메인과 동일)
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  // T5-1 권한 게이트
+  const { user, role } = await getSessionContext();
   if (!user) {
     return Response.json({ error: "인증 필요" }, { status: 401 });
   }
-  const { data: membership } = await supabase
-    .from("organization_members")
-    .select("role")
-    .eq("user_id", user.id)
-    .limit(1)
-    .maybeSingle();
-  const role = membership?.role;
   if (role !== "owner" && role !== "admin") {
     return Response.json({ error: "owner/admin만 SWOT 분석을 실행할 수 있습니다" }, { status: 403 });
   }

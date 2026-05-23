@@ -28,7 +28,7 @@ export async function getAllFloorplansGrouped(): Promise<Record<string, Floorpla
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("floorplans")
-    .select("*")
+    .select("id, store_id, floor_label, storage_path, public_url, mime_type, size_bytes, sort_order, created_at, updated_at")
     .order("sort_order", { ascending: true })
     .order("floor_label", { ascending: true });
   if (error || !data) return {};

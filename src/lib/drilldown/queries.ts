@@ -15,7 +15,7 @@ export async function getChannels(orgId: string): Promise<Channel[]> {
   const supabase = await createClient();
   const { data } = await supabase
     .from("channels")
-    .select("*")
+    .select("id, organization_id, name, type, color, is_active, created_at")
     .eq("organization_id", orgId)
     .eq("is_active", true)
     .order("name");
@@ -36,7 +36,7 @@ export async function getBrands(orgId: string): Promise<Brand[]> {
   const supabase = await createClient();
   const { data } = await supabase
     .from("brands")
-    .select("*")
+    .select("id, organization_id, name, description, color, logo_url, is_active, created_at")
     .eq("organization_id", orgId)
     .eq("is_active", true)
     .order("name");
@@ -63,7 +63,7 @@ export async function getChannelSummaries(
   // 집계
   const { data: summary } = await supabase
     .from("channel_summary")
-    .select("*")
+    .select("channel_id, channel_name, channel_type, color, total_sessions, total_conversions, total_revenue, total_ad_spend, conversion_rate, roas, cpa")
     .eq("organization_id", orgId);
 
   if (!summary?.length) return [];
@@ -110,7 +110,7 @@ export async function getChannel(channelId: string): Promise<Channel | null> {
   const supabase = await createClient();
   const { data } = await supabase
     .from("channels")
-    .select("*")
+    .select("id, organization_id, name, type, color, is_active, created_at")
     .eq("id", channelId)
     .single();
 
@@ -185,7 +185,7 @@ export async function getBrand(brandId: string): Promise<Brand | null> {
   const supabase = await createClient();
   const { data } = await supabase
     .from("brands")
-    .select("*")
+    .select("id, organization_id, name, description, color, logo_url, is_active, created_at")
     .eq("id", brandId)
     .single();
 
