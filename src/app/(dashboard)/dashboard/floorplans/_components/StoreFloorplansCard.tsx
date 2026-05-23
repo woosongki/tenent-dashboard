@@ -114,6 +114,34 @@ export default function StoreFloorplansCard({ store, brandColor, initialFloors }
 }
 
 // ─────────────────────────────────────────────────────────────
+// FloorThumb — 썸네일 우선, 없으면 원본 fallback
+//   썸네일 path 규칙: `{원본path}.thumb.webp`
+//   ⚡ Egress 절감 핵심:
+//     - 썸네일 (400px, q55, ~10KB) 사용 — 원본 (2400px, ~100KB) 대비 90%↓
+//     - loading="lazy" → 화면 밖 매장 카드는 다운로드 안 함
+//     - 썸네일 미존재(기존 파일) 시에만 풀이미지로 fallback
+// ─────────────────────────────────────────────────────────────
+function FloorThumb({ floor }: { floor: Floorplan }) {
+  const [useFallback, setUseFallback] = useState(false);
+  // 썸네일 URL = 원본 URL + ".thumb.webp"
+  const thumbUrl = floor.public_url + ".thumb.webp";
+  const src = useFallback ? floor.public_url : thumbUrl;
+  return (
+    <img
+      src={src}
+      alt={floor.floor_label}
+      loading="lazy"
+      decoding="async"
+      fetchPriority="low"
+      onError={() => {
+        if (!useFallback) setUseFallback(true);
+      }}
+      className="h-full w-full object-contain"
+    />
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
 // FloorTile — 한 층 미리보기 + 삭제 버튼
 // ─────────────────────────────────────────────────────────────
 function FloorTile({
@@ -161,11 +189,7 @@ function FloorTile({
           <span className="text-[9px] text-slate-400">{Math.round(floor.size_bytes / 1024)}KB</span>
         </div>
       ) : (
-        <img
-          src={floor.public_url}
-          alt={floor.floor_label}
-          className="h-full w-full object-contain"
-        />
+        <FloorThumb floor={floor} />
       )}
 
       {/* 층 라벨 배지 */}
@@ -403,6 +427,7 @@ function ViewerModal({
             <img
               src={floor.public_url}
               alt={floor.floor_label}
+              decoding="async"
               className="mx-auto max-h-full max-w-full object-contain"
             />
           )}

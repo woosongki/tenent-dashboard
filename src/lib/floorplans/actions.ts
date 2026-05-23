@@ -19,6 +19,9 @@ const CACHE_CONTROL = "31536000, immutable";
 // WebP 변환 시 최대 변환 크기 (도면 가독성 유지하면서 용량 감소)
 const WEBP_MAX_DIM = 2400;
 const WEBP_QUALITY = 80;
+// 썸네일 (미리보기 타일 전용) — 미리보기 egress 90%↓
+const THUMB_MAX_DIM = 400;
+const THUMB_QUALITY = 55;
 
 type Result<T = void> = { ok: true; data?: T } | { ok: false; error: string };
 
@@ -66,7 +69,10 @@ export async function uploadFloorplan(formData: FormData): Promise<Result<Floorp
     .eq("floor_label", floorLabel)
     .maybeSingle();
   if (existing?.storage_path) {
-    await supabase.storage.from("floorplans").remove([existing.storage_path]);
+    await supabase.storage.from("floorplans").remove([
+      existing.storage_path,
+      `${existing.storage_path}.thumb.webp`,
+    ]);
   }
 
   // 2) PNG/JPEG는 WebP로 자동 변환 + 리사이즈 (Egress 70~90% 절감)
@@ -105,6 +111,26 @@ export async function uploadFloorplan(formData: FormData): Promise<Result<Floorp
   if (upErr) {
     console.error("[floorplans.upload] Storage error:", upErr);
     return { ok: false, error: `Storage 업로드 실패: ${upErr.message}` };
+  }
+
+  // 3b) 썸네일 생성 (PDF/SVG 제외, 이미지만)
+  //     파일명 규칙: {원본path}.thumb.webp — 클라이언트가 예측 가능
+  //     미리보기는 썸네일만 → 풀이미지 다운로드 회피로 egress -90%
+  if (uploadMime.startsWith("image/") && uploadMime !== "image/svg+xml") {
+    try {
+      const thumbBuf = await sharp(originalBuf)
+        .resize({ width: THUMB_MAX_DIM, height: THUMB_MAX_DIM, fit: "inside", withoutEnlargement: true })
+        .webp({ quality: THUMB_QUALITY })
+        .toBuffer();
+      const thumbPath = `${path}.thumb.webp`;
+      await supabase.storage.from("floorplans").upload(thumbPath, thumbBuf, {
+        contentType: "image/webp",
+        upsert: true,
+        cacheControl: CACHE_CONTROL,
+      });
+    } catch (err) {
+      console.warn("[floorplans.upload] 썸네일 생성 실패 (계속 진행):", err);
+    }
   }
 
   // 4) 공개 URL
@@ -151,8 +177,8 @@ export async function deleteFloorplan(id: string): Promise<Result> {
     .maybeSingle();
   if (getErr || !row) return { ok: false, error: "도면을 찾을 수 없음" };
 
-  // Storage 파일 삭제 (실패해도 DB는 진행)
-  await supabase.storage.from("floorplans").remove([row.storage_path]);
+  // Storage 파일 + 썸네일 삭제 (실패해도 DB는 진행)
+  await supabase.storage.from("floorplans").remove([row.storage_path, `${row.storage_path}.thumb.webp`]);
 
   const { error: dbErr } = await supabase.from("floorplans").delete().eq("id", id);
   if (dbErr) return { ok: false, error: dbErr.message };
