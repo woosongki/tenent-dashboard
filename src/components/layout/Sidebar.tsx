@@ -78,6 +78,14 @@ function IconAlert() {
     </svg>
   );
 }
+function IconTarget() {
+  return (
+    <svg fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
+    </svg>
+  );
+}
 function IconVerify() {
   return (
     <svg fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
@@ -160,6 +168,7 @@ const NAV: NavGroup[] = [
       { href: "/dashboard/branch",    label: "상권분석",       icon: <IconMap /> },
       { href: "/dashboard/verify",    label: "컨텐츠 검증",    icon: <IconVerify /> },
       { href: "/dashboard/brand-keyword", label: "브랜드 키워드", icon: <IconKeyword /> },
+      { href: "/dashboard/brand-fit", label: "브랜드 적합도",  icon: <IconTarget /> },
       {
         href: "/dashboard/homeplus",
         label: "리테일 지도",
