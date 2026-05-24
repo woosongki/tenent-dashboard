@@ -83,6 +83,7 @@ export default function BrandFitClient() {
   }
 
   return (
+    <div className="h-full overflow-y-auto">
     <div className="mx-auto max-w-[1100px] p-6">
       <div className="mb-6">
         <h1 className="font-display text-[28px] leading-none text-[#0a0a0a]">브랜드 적합도 진단</h1>
@@ -236,6 +237,7 @@ export default function BrandFitClient() {
           </div>
         </div>
       )}
+    </div>
     </div>
   );
 }
