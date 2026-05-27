@@ -14,7 +14,8 @@
   "grandTotal": {
     "revenueWon": 217930684985,
     "customers": 1086841,
-    "receipts": 3809330
+    "receipts": 3809330,
+    "quantity": 11797539
   },
   "stores": [
     {
@@ -27,6 +28,9 @@
       "operatingDays": 30,
       "receipts": 107010,
       "avgPricePerReceipt": 54737,
+      "quantity": 250312,
+      "avgPricePerItem": 23400,
+      "itemsPerCustomer": 8.4,
       "priceBand": "중가"
     },
     {
@@ -39,6 +43,9 @@
       "operatingDays": 30,
       "receipts": 18905,
       "avgPricePerReceipt": 61275,
+      "quantity": 28351,
+      "avgPricePerItem": 40860,
+      "itemsPerCustomer": 2.8,
       "priceBand": "중가"
     },
     {
@@ -51,6 +58,9 @@
       "operatingDays": 26,
       "receipts": 171711,
       "avgPricePerReceipt": 52336,
+      "quantity": 608641,
+      "avgPricePerItem": 14765,
+      "itemsPerCustomer": 14.2,
       "priceBand": "중고가"
     },
     {
@@ -63,6 +73,9 @@
       "operatingDays": 30,
       "receipts": 104699,
       "avgPricePerReceipt": 45091,
+      "quantity": 277482,
+      "avgPricePerItem": 17014,
+      "itemsPerCustomer": 9.7,
       "priceBand": "중가"
     },
     {
@@ -75,6 +88,9 @@
       "operatingDays": 30,
       "receipts": 29217,
       "avgPricePerReceipt": 67023,
+      "quantity": 54784,
+      "avgPricePerItem": 35744,
+      "itemsPerCustomer": 4.3,
       "priceBand": "중가"
     },
     {
@@ -87,6 +103,9 @@
       "operatingDays": 30,
       "receipts": 22608,
       "avgPricePerReceipt": 59009,
+      "quantity": 34101,
+      "avgPricePerItem": 39121,
+      "itemsPerCustomer": 3.6,
       "priceBand": "중가"
     },
     {
@@ -99,6 +118,9 @@
       "operatingDays": 30,
       "receipts": 210406,
       "avgPricePerReceipt": 53333,
+      "quantity": 823143,
+      "avgPricePerItem": 13633,
+      "itemsPerCustomer": 16,
       "priceBand": "중고가"
     },
     {
@@ -111,6 +133,9 @@
       "operatingDays": 30,
       "receipts": 134363,
       "avgPricePerReceipt": 61304,
+      "quantity": 271102,
+      "avgPricePerItem": 30383,
+      "itemsPerCustomer": 7.5,
       "priceBand": "중고가"
     },
     {
@@ -123,6 +148,9 @@
       "operatingDays": 30,
       "receipts": 151080,
       "avgPricePerReceipt": 56113,
+      "quantity": 446646,
+      "avgPricePerItem": 18980,
+      "itemsPerCustomer": 11.3,
       "priceBand": "중고가"
     },
     {
@@ -135,6 +163,9 @@
       "operatingDays": 30,
       "receipts": 248636,
       "avgPricePerReceipt": 56940,
+      "quantity": 947269,
+      "avgPricePerItem": 14945,
+      "itemsPerCustomer": 15.3,
       "priceBand": "중고가"
     },
     {
@@ -147,6 +178,9 @@
       "operatingDays": 30,
       "receipts": 112845,
       "avgPricePerReceipt": 57167,
+      "quantity": 271506,
+      "avgPricePerItem": 23760,
+      "itemsPerCustomer": 7.5,
       "priceBand": "중가"
     },
     {
@@ -159,6 +193,9 @@
       "operatingDays": 30,
       "receipts": 37408,
       "avgPricePerReceipt": 74819,
+      "quantity": 55864,
+      "avgPricePerItem": 50101,
+      "itemsPerCustomer": 4.1,
       "priceBand": "중고가"
     },
     {
@@ -171,6 +208,9 @@
       "operatingDays": 30,
       "receipts": 216239,
       "avgPricePerReceipt": 51738,
+      "quantity": 678349,
+      "avgPricePerItem": 16492,
+      "itemsPerCustomer": 10.9,
       "priceBand": "중가"
     },
     {
@@ -183,6 +223,9 @@
       "operatingDays": 30,
       "receipts": 271761,
       "avgPricePerReceipt": 67308,
+      "quantity": 1358157,
+      "avgPricePerItem": 13468,
+      "itemsPerCustomer": 23.5,
       "priceBand": "고가"
     },
     {
@@ -195,6 +238,9 @@
       "operatingDays": 30,
       "receipts": 107351,
       "avgPricePerReceipt": 58239,
+      "quantity": 279747,
+      "avgPricePerItem": 22349,
+      "itemsPerCustomer": 9.3,
       "priceBand": "중고가"
     },
     {
@@ -207,6 +253,9 @@
       "operatingDays": 30,
       "receipts": 34235,
       "avgPricePerReceipt": 116698,
+      "quantity": 45005,
+      "avgPricePerItem": 88771,
+      "itemsPerCustomer": 3.6,
       "priceBand": "고가"
     },
     {
@@ -219,6 +268,9 @@
       "operatingDays": 30,
       "receipts": 80883,
       "avgPricePerReceipt": 40449,
+      "quantity": 241727,
+      "avgPricePerItem": 13535,
+      "itemsPerCustomer": 9.4,
       "priceBand": "중가"
     },
     {
@@ -231,6 +283,9 @@
       "operatingDays": 30,
       "receipts": 12436,
       "avgPricePerReceipt": 61759,
+      "quantity": 19622,
+      "avgPricePerItem": 39141,
+      "itemsPerCustomer": 3.7,
       "priceBand": "중가"
     },
     {
@@ -243,6 +298,9 @@
       "operatingDays": 30,
       "receipts": 74533,
       "avgPricePerReceipt": 34909,
+      "quantity": 278357,
+      "avgPricePerItem": 9347,
+      "itemsPerCustomer": 14.9,
       "priceBand": "중가"
     },
     {
@@ -255,6 +313,9 @@
       "operatingDays": 30,
       "receipts": 79652,
       "avgPricePerReceipt": 53557,
+      "quantity": 218419,
+      "avgPricePerItem": 19531,
+      "itemsPerCustomer": 9.3,
       "priceBand": "중가"
     },
     {
@@ -267,6 +328,9 @@
       "operatingDays": 30,
       "receipts": 5731,
       "avgPricePerReceipt": 60390,
+      "quantity": 9529,
+      "avgPricePerItem": 36320,
+      "itemsPerCustomer": 3,
       "priceBand": "중가"
     },
     {
@@ -279,6 +343,9 @@
       "operatingDays": 30,
       "receipts": 49905,
       "avgPricePerReceipt": 71576,
+      "quantity": 86818,
+      "avgPricePerItem": 41143,
+      "itemsPerCustomer": 4.9,
       "priceBand": "중고가"
     },
     {
@@ -291,6 +358,9 @@
       "operatingDays": 30,
       "receipts": 228469,
       "avgPricePerReceipt": 53717,
+      "quantity": 693901,
+      "avgPricePerItem": 17686,
+      "itemsPerCustomer": 11.2,
       "priceBand": "중가"
     },
     {
@@ -303,6 +373,9 @@
       "operatingDays": 30,
       "receipts": 52724,
       "avgPricePerReceipt": 68488,
+      "quantity": 81977,
+      "avgPricePerItem": 44048,
+      "itemsPerCustomer": 3.9,
       "priceBand": "중가"
     },
     {
@@ -315,6 +388,9 @@
       "operatingDays": 30,
       "receipts": 213479,
       "avgPricePerReceipt": 52957,
+      "quantity": 740623,
+      "avgPricePerItem": 15264,
+      "itemsPerCustomer": 12.3,
       "priceBand": "중가"
     },
     {
@@ -327,6 +403,9 @@
       "operatingDays": 30,
       "receipts": 244559,
       "avgPricePerReceipt": 61484,
+      "quantity": 948323,
+      "avgPricePerItem": 15856,
+      "itemsPerCustomer": 15.4,
       "priceBand": "중고가"
     },
     {
@@ -339,6 +418,9 @@
       "operatingDays": 30,
       "receipts": 38626,
       "avgPricePerReceipt": 63296,
+      "quantity": 72305,
+      "avgPricePerItem": 33813,
+      "itemsPerCustomer": 5.1,
       "priceBand": "중가"
     },
     {
@@ -351,6 +433,9 @@
       "operatingDays": 30,
       "receipts": 90653,
       "avgPricePerReceipt": 47717,
+      "quantity": 229347,
+      "avgPricePerItem": 18861,
+      "itemsPerCustomer": 8.2,
       "priceBand": "중가"
     },
     {
@@ -363,6 +448,9 @@
       "operatingDays": 30,
       "receipts": 6146,
       "avgPricePerReceipt": 75738,
+      "quantity": 13206,
+      "avgPricePerItem": 35248,
+      "itemsPerCustomer": 4.1,
       "priceBand": "중가"
     },
     {
@@ -375,6 +463,9 @@
       "operatingDays": 30,
       "receipts": 27641,
       "avgPricePerReceipt": 83027,
+      "quantity": 43038,
+      "avgPricePerItem": 53324,
+      "itemsPerCustomer": 4,
       "priceBand": "중고가"
     },
     {
@@ -387,6 +478,9 @@
       "operatingDays": 30,
       "receipts": 10416,
       "avgPricePerReceipt": 74393,
+      "quantity": 14630,
+      "avgPricePerItem": 52965,
+      "itemsPerCustomer": 3.5,
       "priceBand": "중가"
     },
     {
@@ -399,6 +493,9 @@
       "operatingDays": 30,
       "receipts": 25018,
       "avgPricePerReceipt": 71555,
+      "quantity": 39742,
+      "avgPricePerItem": 45044,
+      "itemsPerCustomer": 3.6,
       "priceBand": "중가"
     },
     {
@@ -411,6 +508,9 @@
       "operatingDays": 30,
       "receipts": 53675,
       "avgPricePerReceipt": 72093,
+      "quantity": 86746,
+      "avgPricePerItem": 44608,
+      "itemsPerCustomer": 4.3,
       "priceBand": "중가"
     },
     {
@@ -423,6 +523,9 @@
       "operatingDays": 30,
       "receipts": 18451,
       "avgPricePerReceipt": 59032,
+      "quantity": 28678,
+      "avgPricePerItem": 37981,
+      "itemsPerCustomer": 3.7,
       "priceBand": "중가"
     },
     {
@@ -435,6 +538,9 @@
       "operatingDays": 30,
       "receipts": 44913,
       "avgPricePerReceipt": 55954,
+      "quantity": 92316,
+      "avgPricePerItem": 27223,
+      "itemsPerCustomer": 6.2,
       "priceBand": "중가"
     },
     {
@@ -447,6 +553,9 @@
       "operatingDays": 30,
       "receipts": 140979,
       "avgPricePerReceipt": 49450,
+      "quantity": 471145,
+      "avgPricePerItem": 14797,
+      "itemsPerCustomer": 13,
       "priceBand": "중가"
     },
     {
@@ -459,6 +568,9 @@
       "operatingDays": 30,
       "receipts": 101991,
       "avgPricePerReceipt": 65643,
+      "quantity": 302556,
+      "avgPricePerItem": 22128,
+      "itemsPerCustomer": 9.4,
       "priceBand": "중고가"
     },
     {
@@ -471,6 +583,9 @@
       "operatingDays": 30,
       "receipts": 125227,
       "avgPricePerReceipt": 49578,
+      "quantity": 334900,
+      "avgPricePerItem": 18538,
+      "itemsPerCustomer": 8.3,
       "priceBand": "중가"
     },
     {
@@ -483,6 +598,9 @@
       "operatingDays": 30,
       "receipts": 74537,
       "avgPricePerReceipt": 46543,
+      "quantity": 279773,
+      "avgPricePerItem": 12400,
+      "itemsPerCustomer": 16.2,
       "priceBand": "중고가"
     },
     {
@@ -495,6 +613,9 @@
       "operatingDays": 30,
       "receipts": 10935,
       "avgPricePerReceipt": 128585,
+      "quantity": 14300,
+      "avgPricePerItem": 98327,
+      "itemsPerCustomer": 3,
       "priceBand": "중고가"
     },
     {
@@ -507,6 +628,9 @@
       "operatingDays": 30,
       "receipts": 19277,
       "avgPricePerReceipt": 76597,
+      "quantity": 25102,
+      "avgPricePerItem": 58822,
+      "itemsPerCustomer": 2.9,
       "priceBand": "중가"
     }
   ]

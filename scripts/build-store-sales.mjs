@@ -60,6 +60,62 @@ const raw = `7204\t중계점\t5,857,393,701\t29,679\t197,358\t30\t107,010\t54,73
 8503\t구미점\t1,406,074,411\t4,840\t290,511\t30\t10,935\t128,585
 8504\t강북점\t1,476,552,660\t8,542\t172,858\t30\t19,277\t76,597`;
 
+// 구매수량 raw (storeCode → quantity)
+const quantityRaw = `7204\t250,312
+7206\t28,351
+7209\t608,641
+7214\t277,482
+7215\t54,784
+7216\t34,101
+7217\t823,143
+7219\t271,102
+7305\t11,746
+7916\t28,152
+7917\t25,087
+7918\t27,921
+7920\t70,121
+7921\t142,761
+8201\t446,646
+8202\t947,269
+8203\t271,506
+8204\t55,864
+8205\t678,349
+8206\t1,358,157
+8208\t279,747
+8212\t45,005
+8215\t241,727
+8216\t19,622
+8217\t278,357
+8218\t218,419
+8219\t9,529
+8220\t86,818
+8222\t693,901
+8223\t81,977
+8224\t740,623
+8227\t948,323
+8228\t72,305
+8229\t229,347
+8230\t13,206
+8231\t43,038
+8233\t14,630
+8235\t39,742
+8237\t86,746
+8239\t28,678
+8241\t92,316
+8242\t471,145
+8243\t302,556
+8501\t334,900
+8502\t279,773
+8503\t14,300
+8504\t25,102`;
+
+const quantityMap = new Map(
+  quantityRaw.split("\n").map((l) => {
+    const [code, q] = l.split("\t");
+    return [code, Number(q.replace(/,/g, ""))];
+  })
+);
+
 // ── 객단가 → price_band 매핑 ──────────────────────────────────
 // brand-fit AgeBand 타입: "초저가" | "중저가" | "중가" | "중고가" | "고가"
 function inferPriceBand(unitPrice) {
@@ -76,15 +132,21 @@ const stores = raw.split("\n").map((line) => {
   const code = parts[0];
   const name = parts[1];
   const nums = parts.slice(2).map((s) => Number(s.replace(/,/g, "")));
+  const quantity = quantityMap.get(code) ?? null;
+  const customers = nums[1];
+  const revenueWon = nums[0];
   return {
     storeCode: code,
     storeName: name,
-    revenueWon: nums[0],
-    customers: nums[1],
+    revenueWon,
+    customers,
     avgPricePerCustomer: nums[2],
     operatingDays: nums[3],
     receipts: nums[4],
     avgPricePerReceipt: nums[5],
+    quantity,
+    avgPricePerItem: quantity && quantity > 0 ? Math.round(revenueWon / quantity) : null,
+    itemsPerCustomer: quantity && customers > 0 ? Math.round((quantity / customers) * 10) / 10 : null,
     priceBand: inferPriceBand(nums[2]),
   };
 });
@@ -133,6 +195,7 @@ const out = {
     revenueWon: enriched.reduce((s, x) => s + x.revenueWon, 0),
     customers: enriched.reduce((s, x) => s + x.customers, 0),
     receipts: enriched.reduce((s, x) => s + x.receipts, 0),
+    quantity: enriched.reduce((s, x) => s + (x.quantity ?? 0), 0),
   },
   stores: enriched,
 };
@@ -173,3 +236,18 @@ console.log("\n📊 price_band 분포 (41개점):");
 ["고가", "중고가", "중가", "중저가", "초저가"].forEach((b) => {
   if (dist[b]) console.log(`   ${b}: ${dist[b]}개점`);
 });
+
+// 6. 개당 단가 + 객당 구매수량 Top 5
+console.log("\n💰 개당 평균 단가 Top 5 (고가품 비중 추정):");
+[...matched]
+  .filter((s) => s.avgPricePerItem !== null)
+  .sort((a, b) => b.avgPricePerItem - a.avgPricePerItem)
+  .slice(0, 5)
+  .forEach((s) => console.log(`   ${s.storeName}: ${s.avgPricePerItem.toLocaleString()}원/개 (${s.itemsPerCustomer}개/객)`));
+
+console.log("\n🛒 객당 구매수량 Top 5 (다품종 소량 구매):");
+[...matched]
+  .filter((s) => s.itemsPerCustomer !== null)
+  .sort((a, b) => b.itemsPerCustomer - a.itemsPerCustomer)
+  .slice(0, 5)
+  .forEach((s) => console.log(`   ${s.storeName}: ${s.itemsPerCustomer}개/객 (단가 ${s.avgPricePerItem.toLocaleString()}원)`));
