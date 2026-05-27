@@ -100,17 +100,19 @@ function normalize(s) {
 const nameToId = new Map();
 elandStores.forEach((s) => nameToId.set(normalize(s.name), s.id));
 
-const enriched = stores.map((st) => ({
+const allEnriched = stores.map((st) => ({
   storeId: nameToId.get(normalize(st.storeName)) ?? null,
   ...st,
 }));
 
-const matched = enriched.filter((s) => s.storeId !== null);
-const unmatched = enriched.filter((s) => s.storeId === null);
-console.log(`매칭됨 (41점포 마스터): ${matched.length} / ${enriched.length}`);
-if (unmatched.length > 0) {
-  console.log(`마스터 미매칭 (별도 ${unmatched.length}개점):`);
-  unmatched.forEach((s) => console.log(`  ${s.storeCode} ${s.storeName} (객단가 ${s.avgPricePerCustomer.toLocaleString()}원)`));
+// 41점 마스터에 없는 점포(킴스클럽·NC포항)는 제외
+const enriched = allEnriched.filter((s) => s.storeId !== null);
+const excluded = allEnriched.filter((s) => s.storeId === null);
+const matched = enriched;
+console.log(`41점 마스터 매칭: ${matched.length} / 41`);
+if (excluded.length > 0) {
+  console.log(`제외된 ${excluded.length}개점 (마스터에 없음):`);
+  excluded.forEach((s) => console.log(`  ${s.storeCode} ${s.storeName}`));
 }
 
 // 3. JSON 저장

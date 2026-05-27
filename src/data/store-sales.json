@@ -12,9 +12,9 @@
     "고가": "300,000원+"
   },
   "grandTotal": {
-    "revenueWon": 219576901413,
-    "customers": 1107489,
-    "receipts": 3881480
+    "revenueWon": 217930684985,
+    "customers": 1086841,
+    "receipts": 3809330
   },
   "stores": [
     {
@@ -112,78 +112,6 @@
       "receipts": 134363,
       "avgPricePerReceipt": 61304,
       "priceBand": "중고가"
-    },
-    {
-      "storeId": null,
-      "storeCode": "7305",
-      "storeName": "NC포항점",
-      "revenueWon": 358809956,
-      "customers": 2441,
-      "avgPricePerCustomer": 146993,
-      "operatingDays": 30,
-      "receipts": 5660,
-      "avgPricePerReceipt": 63394,
-      "priceBand": "중가"
-    },
-    {
-      "storeId": null,
-      "storeCode": "7916",
-      "storeName": "신정킴스",
-      "revenueWon": 98657908,
-      "customers": 2196,
-      "avgPricePerCustomer": 44926,
-      "operatingDays": 28,
-      "receipts": 8159,
-      "avgPricePerReceipt": 12092,
-      "priceBand": "초저가"
-    },
-    {
-      "storeId": null,
-      "storeCode": "7917",
-      "storeName": "신촌킴스",
-      "revenueWon": 85636174,
-      "customers": 1966,
-      "avgPricePerCustomer": 43559,
-      "operatingDays": 28,
-      "receipts": 7266,
-      "avgPricePerReceipt": 11786,
-      "priceBand": "초저가"
-    },
-    {
-      "storeId": null,
-      "storeCode": "7918",
-      "storeName": "염창킴스",
-      "revenueWon": 86774947,
-      "customers": 1699,
-      "avgPricePerCustomer": 51074,
-      "operatingDays": 28,
-      "receipts": 6829,
-      "avgPricePerReceipt": 12707,
-      "priceBand": "중저가"
-    },
-    {
-      "storeId": null,
-      "storeCode": "7920",
-      "storeName": "김포킴스",
-      "revenueWon": 319289662,
-      "customers": 2984,
-      "avgPricePerCustomer": 107001,
-      "operatingDays": 28,
-      "receipts": 14484,
-      "avgPricePerReceipt": 22044,
-      "priceBand": "중가"
-    },
-    {
-      "storeId": null,
-      "storeCode": "7921",
-      "storeName": "구의킴스",
-      "revenueWon": 697047781,
-      "customers": 9362,
-      "avgPricePerCustomer": 74455,
-      "operatingDays": 28,
-      "receipts": 29752,
-      "avgPricePerReceipt": 23429,
-      "priceBand": "중저가"
     },
     {
       "storeId": 29,
