@@ -1,0 +1,1671 @@
+{
+  "$schema": "./store-demographics.schema.json",
+  "version": "1.0",
+  "compiledAt": "2026-05-27",
+  "source": "ERP 점포별 연령대별 구매고객수·영수증건수",
+  "ageLabels": [
+    "10대이하",
+    "20대",
+    "30대",
+    "40대",
+    "50대",
+    "60대이상",
+    "미상"
+  ],
+  "grandTotal": {
+    "customers": 1086841,
+    "receipts": 3809330
+  },
+  "stores": [
+    {
+      "storeId": 36,
+      "storeCode": "7204",
+      "storeName": "중계점",
+      "totalCustomers": 29679,
+      "totalReceipts": 107010,
+      "byAge": {
+        "10대이하": {
+          "customers": 43,
+          "receipts": 130
+        },
+        "20대": {
+          "customers": 310,
+          "receipts": 853
+        },
+        "30대": {
+          "customers": 2135,
+          "receipts": 6915
+        },
+        "40대": {
+          "customers": 8434,
+          "receipts": 31923
+        },
+        "50대": {
+          "customers": 10346,
+          "receipts": 37356
+        },
+        "60대이상": {
+          "customers": 7856,
+          "receipts": 28145
+        },
+        "미상": {
+          "customers": 555,
+          "receipts": 1688
+        }
+      },
+      "primaryAge": [
+        "50대"
+      ]
+    },
+    {
+      "storeId": 35,
+      "storeCode": "7206",
+      "storeName": "안양점",
+      "totalCustomers": 10168,
+      "totalReceipts": 18905,
+      "byAge": {
+        "10대이하": {
+          "customers": 6,
+          "receipts": 8
+        },
+        "20대": {
+          "customers": 33,
+          "receipts": 49
+        },
+        "30대": {
+          "customers": 261,
+          "receipts": 406
+        },
+        "40대": {
+          "customers": 990,
+          "receipts": 1657
+        },
+        "50대": {
+          "customers": 2199,
+          "receipts": 4009
+        },
+        "60대이상": {
+          "customers": 6554,
+          "receipts": 12555
+        },
+        "미상": {
+          "customers": 125,
+          "receipts": 221
+        }
+      },
+      "primaryAge": [
+        "60대이상"
+      ]
+    },
+    {
+      "storeId": 34,
+      "storeCode": "7209",
+      "storeName": "분당점",
+      "totalCustomers": 42873,
+      "totalReceipts": 171711,
+      "byAge": {
+        "10대이하": {
+          "customers": 47,
+          "receipts": 158
+        },
+        "20대": {
+          "customers": 453,
+          "receipts": 1250
+        },
+        "30대": {
+          "customers": 2448,
+          "receipts": 7995
+        },
+        "40대": {
+          "customers": 8680,
+          "receipts": 33490
+        },
+        "50대": {
+          "customers": 13105,
+          "receipts": 52376
+        },
+        "60대이상": {
+          "customers": 17545,
+          "receipts": 74733
+        },
+        "미상": {
+          "customers": 595,
+          "receipts": 1709
+        }
+      },
+      "primaryAge": [
+        "60대이상"
+      ]
+    },
+    {
+      "storeId": 17,
+      "storeCode": "7214",
+      "storeName": "해운대점",
+      "totalCustomers": 28535,
+      "totalReceipts": 104699,
+      "byAge": {
+        "10대이하": {
+          "customers": 20,
+          "receipts": 51
+        },
+        "20대": {
+          "customers": 307,
+          "receipts": 701
+        },
+        "30대": {
+          "customers": 2274,
+          "receipts": 6958
+        },
+        "40대": {
+          "customers": 6611,
+          "receipts": 23117
+        },
+        "50대": {
+          "customers": 7963,
+          "receipts": 28845
+        },
+        "60대이상": {
+          "customers": 10925,
+          "receipts": 43840
+        },
+        "미상": {
+          "customers": 435,
+          "receipts": 1187
+        }
+      },
+      "primaryAge": [
+        "60대이상"
+      ]
+    },
+    {
+      "storeId": 37,
+      "storeCode": "7215",
+      "storeName": "천호2점",
+      "totalCustomers": 12783,
+      "totalReceipts": 29217,
+      "byAge": {
+        "10대이하": {
+          "customers": 13,
+          "receipts": 30
+        },
+        "20대": {
+          "customers": 141,
+          "receipts": 240
+        },
+        "30대": {
+          "customers": 986,
+          "receipts": 1997
+        },
+        "40대": {
+          "customers": 3252,
+          "receipts": 7719
+        },
+        "50대": {
+          "customers": 3618,
+          "receipts": 8244
+        },
+        "60대이상": {
+          "customers": 4439,
+          "receipts": 10320
+        },
+        "미상": {
+          "customers": 334,
+          "receipts": 667
+        }
+      },
+      "primaryAge": [
+        "60대이상"
+      ]
+    },
+    {
+      "storeId": 33,
+      "storeCode": "7216",
+      "storeName": "부평점",
+      "totalCustomers": 9479,
+      "totalReceipts": 22608,
+      "byAge": {
+        "10대이하": {
+          "customers": 7,
+          "receipts": 18
+        },
+        "20대": {
+          "customers": 66,
+          "receipts": 145
+        },
+        "30대": {
+          "customers": 585,
+          "receipts": 1222
+        },
+        "40대": {
+          "customers": 1532,
+          "receipts": 3395
+        },
+        "50대": {
+          "customers": 2435,
+          "receipts": 5689
+        },
+        "60대이상": {
+          "customers": 4664,
+          "receipts": 11734
+        },
+        "미상": {
+          "customers": 190,
+          "receipts": 405
+        }
+      },
+      "primaryAge": [
+        "60대이상"
+      ]
+    },
+    {
+      "storeId": 6,
+      "storeCode": "7217",
+      "storeName": "불광점",
+      "totalCustomers": 51460,
+      "totalReceipts": 210406,
+      "byAge": {
+        "10대이하": {
+          "customers": 60,
+          "receipts": 183
+        },
+        "20대": {
+          "customers": 656,
+          "receipts": 1856
+        },
+        "30대": {
+          "customers": 3640,
+          "receipts": 12078
+        },
+        "40대": {
+          "customers": 9057,
+          "receipts": 33274
+        },
+        "50대": {
+          "customers": 13769,
+          "receipts": 55483
+        },
+        "60대이상": {
+          "customers": 23637,
+          "receipts": 105669
+        },
+        "미상": {
+          "customers": 641,
+          "receipts": 1863
+        }
+      },
+      "primaryAge": [
+        "60대이상"
+      ]
+    },
+    {
+      "storeId": 3,
+      "storeCode": "7219",
+      "storeName": "고잔점",
+      "totalCustomers": 35987,
+      "totalReceipts": 134363,
+      "byAge": {
+        "10대이하": {
+          "customers": 48,
+          "receipts": 168
+        },
+        "20대": {
+          "customers": 606,
+          "receipts": 1635
+        },
+        "30대": {
+          "customers": 4497,
+          "receipts": 15190
+        },
+        "40대": {
+          "customers": 10259,
+          "receipts": 40336
+        },
+        "50대": {
+          "customers": 11356,
+          "receipts": 42468
+        },
+        "60대이상": {
+          "customers": 8632,
+          "receipts": 32811
+        },
+        "미상": {
+          "customers": 589,
+          "receipts": 1755
+        }
+      },
+      "primaryAge": [
+        "50대",
+        "40대"
+      ]
+    },
+    {
+      "storeId": 29,
+      "storeCode": "8201",
+      "storeName": "일산점",
+      "totalCustomers": 39368,
+      "totalReceipts": 151080,
+      "byAge": {
+        "10대이하": {
+          "customers": 53,
+          "receipts": 172
+        },
+        "20대": {
+          "customers": 452,
+          "receipts": 1176
+        },
+        "30대": {
+          "customers": 2627,
+          "receipts": 8212
+        },
+        "40대": {
+          "customers": 8777,
+          "receipts": 33546
+        },
+        "50대": {
+          "customers": 12145,
+          "receipts": 46046
+        },
+        "60대이상": {
+          "customers": 14588,
+          "receipts": 59789
+        },
+        "미상": {
+          "customers": 726,
+          "receipts": 2139
+        }
+      },
+      "primaryAge": [
+        "60대이상"
+      ]
+    },
+    {
+      "storeId": 11,
+      "storeCode": "8202",
+      "storeName": "야탑점",
+      "totalCustomers": 61845,
+      "totalReceipts": 248636,
+      "byAge": {
+        "10대이하": {
+          "customers": 72,
+          "receipts": 270
+        },
+        "20대": {
+          "customers": 713,
+          "receipts": 1760
+        },
+        "30대": {
+          "customers": 4891,
+          "receipts": 14482
+        },
+        "40대": {
+          "customers": 13603,
+          "receipts": 50940
+        },
+        "50대": {
+          "customers": 17449,
+          "receipts": 69287
+        },
+        "60대이상": {
+          "customers": 24171,
+          "receipts": 109190
+        },
+        "미상": {
+          "customers": 946,
+          "receipts": 2707
+        }
+      },
+      "primaryAge": [
+        "60대이상"
+      ]
+    },
+    {
+      "storeId": 28,
+      "storeCode": "8203",
+      "storeName": "인천점",
+      "totalCustomers": 36111,
+      "totalReceipts": 112845,
+      "byAge": {
+        "10대이하": {
+          "customers": 31,
+          "receipts": 112
+        },
+        "20대": {
+          "customers": 540,
+          "receipts": 1237
+        },
+        "30대": {
+          "customers": 3244,
+          "receipts": 8452
+        },
+        "40대": {
+          "customers": 8130,
+          "receipts": 24564
+        },
+        "50대": {
+          "customers": 10267,
+          "receipts": 31904
+        },
+        "60대이상": {
+          "customers": 13143,
+          "receipts": 44661
+        },
+        "미상": {
+          "customers": 756,
+          "receipts": 1915
+        }
+      },
+      "primaryAge": [
+        "60대이상"
+      ]
+    },
+    {
+      "storeId": 32,
+      "storeCode": "8204",
+      "storeName": "평택점",
+      "totalCustomers": 13653,
+      "totalReceipts": 37408,
+      "byAge": {
+        "10대이하": {
+          "customers": 13,
+          "receipts": 30
+        },
+        "20대": {
+          "customers": 139,
+          "receipts": 330
+        },
+        "30대": {
+          "customers": 1293,
+          "receipts": 3561
+        },
+        "40대": {
+          "customers": 3713,
+          "receipts": 10468
+        },
+        "50대": {
+          "customers": 3957,
+          "receipts": 10552
+        },
+        "60대이상": {
+          "customers": 4246,
+          "receipts": 11724
+        },
+        "미상": {
+          "customers": 292,
+          "receipts": 743
+        }
+      },
+      "primaryAge": [
+        "60대이상",
+        "50대"
+      ]
+    },
+    {
+      "storeId": 31,
+      "storeCode": "8205",
+      "storeName": "평촌2점",
+      "totalCustomers": 62004,
+      "totalReceipts": 216239,
+      "byAge": {
+        "10대이하": {
+          "customers": 67,
+          "receipts": 181
+        },
+        "20대": {
+          "customers": 575,
+          "receipts": 1322
+        },
+        "30대": {
+          "customers": 4673,
+          "receipts": 12289
+        },
+        "40대": {
+          "customers": 13382,
+          "receipts": 43311
+        },
+        "50대": {
+          "customers": 18141,
+          "receipts": 63810
+        },
+        "60대이상": {
+          "customers": 24353,
+          "receipts": 93262
+        },
+        "미상": {
+          "customers": 813,
+          "receipts": 2064
+        }
+      },
+      "primaryAge": [
+        "60대이상"
+      ]
+    },
+    {
+      "storeId": 19,
+      "storeCode": "8206",
+      "storeName": "강남점",
+      "totalCustomers": 57817,
+      "totalReceipts": 271761,
+      "byAge": {
+        "10대이하": {
+          "customers": 66,
+          "receipts": 303
+        },
+        "20대": {
+          "customers": 416,
+          "receipts": 1260
+        },
+        "30대": {
+          "customers": 3347,
+          "receipts": 12117
+        },
+        "40대": {
+          "customers": 11559,
+          "receipts": 50105
+        },
+        "50대": {
+          "customers": 17159,
+          "receipts": 81406
+        },
+        "60대이상": {
+          "customers": 24256,
+          "receipts": 123263
+        },
+        "미상": {
+          "customers": 1014,
+          "receipts": 3307
+        }
+      },
+      "primaryAge": [
+        "60대이상"
+      ]
+    },
+    {
+      "storeId": 23,
+      "storeCode": "8208",
+      "storeName": "동수원",
+      "totalCustomers": 30089,
+      "totalReceipts": 107351,
+      "byAge": {
+        "10대이하": {
+          "customers": 33,
+          "receipts": 98
+        },
+        "20대": {
+          "customers": 381,
+          "receipts": 1070
+        },
+        "30대": {
+          "customers": 2310,
+          "receipts": 6798
+        },
+        "40대": {
+          "customers": 7073,
+          "receipts": 24475
+        },
+        "50대": {
+          "customers": 9739,
+          "receipts": 35398
+        },
+        "60대이상": {
+          "customers": 10115,
+          "receipts": 38360
+        },
+        "미상": {
+          "customers": 438,
+          "receipts": 1152
+        }
+      },
+      "primaryAge": [
+        "60대이상",
+        "50대"
+      ]
+    },
+    {
+      "storeId": 9,
+      "storeCode": "8212",
+      "storeName": "순천점",
+      "totalCustomers": 12643,
+      "totalReceipts": 34235,
+      "byAge": {
+        "10대이하": {
+          "customers": 17,
+          "receipts": 43
+        },
+        "20대": {
+          "customers": 121,
+          "receipts": 287
+        },
+        "30대": {
+          "customers": 1345,
+          "receipts": 3299
+        },
+        "40대": {
+          "customers": 3371,
+          "receipts": 9372
+        },
+        "50대": {
+          "customers": 3483,
+          "receipts": 9301
+        },
+        "60대이상": {
+          "customers": 4008,
+          "receipts": 11207
+        },
+        "미상": {
+          "customers": 298,
+          "receipts": 726
+        }
+      },
+      "primaryAge": [
+        "60대이상",
+        "50대"
+      ]
+    },
+    {
+      "storeId": 25,
+      "storeCode": "8215",
+      "storeName": "산본점",
+      "totalCustomers": 25656,
+      "totalReceipts": 80883,
+      "byAge": {
+        "10대이하": {
+          "customers": 31,
+          "receipts": 111
+        },
+        "20대": {
+          "customers": 160,
+          "receipts": 359
+        },
+        "30대": {
+          "customers": 1527,
+          "receipts": 3827
+        },
+        "40대": {
+          "customers": 4342,
+          "receipts": 12234
+        },
+        "50대": {
+          "customers": 7437,
+          "receipts": 22914
+        },
+        "60대이상": {
+          "customers": 11848,
+          "receipts": 40646
+        },
+        "미상": {
+          "customers": 311,
+          "receipts": 792
+        }
+      },
+      "primaryAge": [
+        "60대이상"
+      ]
+    },
+    {
+      "storeId": 27,
+      "storeCode": "8216",
+      "storeName": "울산점",
+      "totalCustomers": 5303,
+      "totalReceipts": 12436,
+      "byAge": {
+        "10대이하": {
+          "customers": 4,
+          "receipts": 8
+        },
+        "20대": {
+          "customers": 50,
+          "receipts": 84
+        },
+        "30대": {
+          "customers": 503,
+          "receipts": 1133
+        },
+        "40대": {
+          "customers": 1561,
+          "receipts": 3690
+        },
+        "50대": {
+          "customers": 1366,
+          "receipts": 3275
+        },
+        "60대이상": {
+          "customers": 1643,
+          "receipts": 3865
+        },
+        "미상": {
+          "customers": 176,
+          "receipts": 381
+        }
+      },
+      "primaryAge": [
+        "60대이상",
+        "40대"
+      ]
+    },
+    {
+      "storeId": 20,
+      "storeCode": "8217",
+      "storeName": "광명점",
+      "totalCustomers": 18642,
+      "totalReceipts": 74533,
+      "byAge": {
+        "10대이하": {
+          "customers": 19,
+          "receipts": 59
+        },
+        "20대": {
+          "customers": 189,
+          "receipts": 530
+        },
+        "30대": {
+          "customers": 1639,
+          "receipts": 5187
+        },
+        "40대": {
+          "customers": 4364,
+          "receipts": 15298
+        },
+        "50대": {
+          "customers": 5621,
+          "receipts": 22684
+        },
+        "60대이상": {
+          "customers": 6562,
+          "receipts": 30050
+        },
+        "미상": {
+          "customers": 248,
+          "receipts": 725
+        }
+      },
+      "primaryAge": [
+        "60대이상",
+        "50대"
+      ]
+    },
+    {
+      "storeId": 21,
+      "storeCode": "8218",
+      "storeName": "괴정점",
+      "totalCustomers": 23522,
+      "totalReceipts": 79652,
+      "byAge": {
+        "10대이하": {
+          "customers": 16,
+          "receipts": 55
+        },
+        "20대": {
+          "customers": 181,
+          "receipts": 392
+        },
+        "30대": {
+          "customers": 1438,
+          "receipts": 4006
+        },
+        "40대": {
+          "customers": 4656,
+          "receipts": 14564
+        },
+        "50대": {
+          "customers": 5918,
+          "receipts": 19533
+        },
+        "60대이상": {
+          "customers": 10942,
+          "receipts": 40274
+        },
+        "미상": {
+          "customers": 371,
+          "receipts": 828
+        }
+      },
+      "primaryAge": [
+        "60대이상"
+      ]
+    },
+    {
+      "storeId": 26,
+      "storeCode": "8219",
+      "storeName": "울산2점",
+      "totalCustomers": 3162,
+      "totalReceipts": 5731,
+      "byAge": {
+        "10대이하": {
+          "customers": 2,
+          "receipts": 2
+        },
+        "20대": {
+          "customers": 33,
+          "receipts": 43
+        },
+        "30대": {
+          "customers": 277,
+          "receipts": 513
+        },
+        "40대": {
+          "customers": 1105,
+          "receipts": 1988
+        },
+        "50대": {
+          "customers": 880,
+          "receipts": 1705
+        },
+        "60대이상": {
+          "customers": 772,
+          "receipts": 1325
+        },
+        "미상": {
+          "customers": 93,
+          "receipts": 155
+        }
+      },
+      "primaryAge": [
+        "40대"
+      ]
+    },
+    {
+      "storeId": 30,
+      "storeCode": "8220",
+      "storeName": "창원점",
+      "totalCustomers": 17546,
+      "totalReceipts": 49905,
+      "byAge": {
+        "10대이하": {
+          "customers": 13,
+          "receipts": 30
+        },
+        "20대": {
+          "customers": 170,
+          "receipts": 395
+        },
+        "30대": {
+          "customers": 2616,
+          "receipts": 7298
+        },
+        "40대": {
+          "customers": 7379,
+          "receipts": 23015
+        },
+        "50대": {
+          "customers": 4499,
+          "receipts": 11767
+        },
+        "60대이상": {
+          "customers": 2494,
+          "receipts": 6459
+        },
+        "미상": {
+          "customers": 375,
+          "receipts": 941
+        }
+      },
+      "primaryAge": [
+        "40대"
+      ]
+    },
+    {
+      "storeId": 24,
+      "storeCode": "8222",
+      "storeName": "부천점",
+      "totalCustomers": 62013,
+      "totalReceipts": 228469,
+      "byAge": {
+        "10대이하": {
+          "customers": 86,
+          "receipts": 306
+        },
+        "20대": {
+          "customers": 823,
+          "receipts": 2058
+        },
+        "30대": {
+          "customers": 8090,
+          "receipts": 26939
+        },
+        "40대": {
+          "customers": 19181,
+          "receipts": 72093
+        },
+        "50대": {
+          "customers": 17433,
+          "receipts": 63172
+        },
+        "60대이상": {
+          "customers": 15221,
+          "receipts": 60463
+        },
+        "미상": {
+          "customers": 1179,
+          "receipts": 3438
+        }
+      },
+      "primaryAge": [
+        "40대",
+        "50대"
+      ]
+    },
+    {
+      "storeId": 22,
+      "storeCode": "8223",
+      "storeName": "덕천점",
+      "totalCustomers": 21193,
+      "totalReceipts": 52724,
+      "byAge": {
+        "10대이하": {
+          "customers": 25,
+          "receipts": 64
+        },
+        "20대": {
+          "customers": 253,
+          "receipts": 474
+        },
+        "30대": {
+          "customers": 2305,
+          "receipts": 5580
+        },
+        "40대": {
+          "customers": 5416,
+          "receipts": 14498
+        },
+        "50대": {
+          "customers": 5963,
+          "receipts": 14644
+        },
+        "60대이상": {
+          "customers": 6912,
+          "receipts": 16754
+        },
+        "미상": {
+          "customers": 319,
+          "receipts": 710
+        }
+      },
+      "primaryAge": [
+        "60대이상",
+        "50대"
+      ]
+    },
+    {
+      "storeId": 7,
+      "storeCode": "8224",
+      "storeName": "송파점",
+      "totalCustomers": 59979,
+      "totalReceipts": 213479,
+      "byAge": {
+        "10대이하": {
+          "customers": 75,
+          "receipts": 223
+        },
+        "20대": {
+          "customers": 660,
+          "receipts": 1757
+        },
+        "30대": {
+          "customers": 6330,
+          "receipts": 18175
+        },
+        "40대": {
+          "customers": 18009,
+          "receipts": 60873
+        },
+        "50대": {
+          "customers": 16500,
+          "receipts": 59786
+        },
+        "60대이상": {
+          "customers": 17128,
+          "receipts": 69425
+        },
+        "미상": {
+          "customers": 1277,
+          "receipts": 3240
+        }
+      },
+      "primaryAge": [
+        "40대",
+        "60대이상"
+      ]
+    },
+    {
+      "storeId": 1,
+      "storeCode": "8227",
+      "storeName": "강서점",
+      "totalCustomers": 61647,
+      "totalReceipts": 244559,
+      "byAge": {
+        "10대이하": {
+          "customers": 88,
+          "receipts": 328
+        },
+        "20대": {
+          "customers": 1054,
+          "receipts": 2824
+        },
+        "30대": {
+          "customers": 6547,
+          "receipts": 21590
+        },
+        "40대": {
+          "customers": 15709,
+          "receipts": 59758
+        },
+        "50대": {
+          "customers": 16509,
+          "receipts": 65438
+        },
+        "60대이상": {
+          "customers": 20606,
+          "receipts": 91286
+        },
+        "미상": {
+          "customers": 1134,
+          "receipts": 3335
+        }
+      },
+      "primaryAge": [
+        "60대이상"
+      ]
+    },
+    {
+      "storeId": 16,
+      "storeCode": "8228",
+      "storeName": "충장점",
+      "totalCustomers": 14279,
+      "totalReceipts": 38626,
+      "byAge": {
+        "10대이하": {
+          "customers": 23,
+          "receipts": 55
+        },
+        "20대": {
+          "customers": 546,
+          "receipts": 1037
+        },
+        "30대": {
+          "customers": 2632,
+          "receipts": 6717
+        },
+        "40대": {
+          "customers": 6571,
+          "receipts": 19485
+        },
+        "50대": {
+          "customers": 3024,
+          "receipts": 7736
+        },
+        "60대이상": {
+          "customers": 1036,
+          "receipts": 2504
+        },
+        "미상": {
+          "customers": 447,
+          "receipts": 1092
+        }
+      },
+      "primaryAge": [
+        "40대"
+      ]
+    },
+    {
+      "storeId": 5,
+      "storeCode": "8229",
+      "storeName": "부산대점",
+      "totalCustomers": 27991,
+      "totalReceipts": 90653,
+      "byAge": {
+        "10대이하": {
+          "customers": 32,
+          "receipts": 73
+        },
+        "20대": {
+          "customers": 1594,
+          "receipts": 4393
+        },
+        "30대": {
+          "customers": 3963,
+          "receipts": 11839
+        },
+        "40대": {
+          "customers": 10395,
+          "receipts": 35751
+        },
+        "50대": {
+          "customers": 7515,
+          "receipts": 23752
+        },
+        "60대이상": {
+          "customers": 3828,
+          "receipts": 13096
+        },
+        "미상": {
+          "customers": 664,
+          "receipts": 1749
+        }
+      },
+      "primaryAge": [
+        "40대"
+      ]
+    },
+    {
+      "storeId": 13,
+      "storeCode": "8230",
+      "storeName": "전주점",
+      "totalCustomers": 3246,
+      "totalReceipts": 6146,
+      "byAge": {
+        "10대이하": {
+          "customers": 3,
+          "receipts": 3
+        },
+        "20대": {
+          "customers": 140,
+          "receipts": 200
+        },
+        "30대": {
+          "customers": 732,
+          "receipts": 1411
+        },
+        "40대": {
+          "customers": 1704,
+          "receipts": 3362
+        },
+        "50대": {
+          "customers": 405,
+          "receipts": 699
+        },
+        "60대이상": {
+          "customers": 87,
+          "receipts": 151
+        },
+        "미상": {
+          "customers": 175,
+          "receipts": 320
+        }
+      },
+      "primaryAge": [
+        "40대"
+      ]
+    },
+    {
+      "storeId": 12,
+      "storeCode": "8231",
+      "storeName": "엑스코점",
+      "totalCustomers": 10737,
+      "totalReceipts": 27641,
+      "byAge": {
+        "10대이하": {
+          "customers": 18,
+          "receipts": 40
+        },
+        "20대": {
+          "customers": 130,
+          "receipts": 275
+        },
+        "30대": {
+          "customers": 1042,
+          "receipts": 2860
+        },
+        "40대": {
+          "customers": 3855,
+          "receipts": 10745
+        },
+        "50대": {
+          "customers": 2900,
+          "receipts": 7034
+        },
+        "60대이상": {
+          "customers": 2626,
+          "receipts": 6287
+        },
+        "미상": {
+          "customers": 166,
+          "receipts": 400
+        }
+      },
+      "primaryAge": [
+        "40대"
+      ]
+    },
+    {
+      "storeId": 4,
+      "storeCode": "8233",
+      "storeName": "광주역점",
+      "totalCustomers": 4227,
+      "totalReceipts": 10416,
+      "byAge": {
+        "10대이하": {
+          "customers": 8,
+          "receipts": 13
+        },
+        "20대": {
+          "customers": 48,
+          "receipts": 127
+        },
+        "30대": {
+          "customers": 391,
+          "receipts": 759
+        },
+        "40대": {
+          "customers": 832,
+          "receipts": 1757
+        },
+        "50대": {
+          "customers": 844,
+          "receipts": 2114
+        },
+        "60대이상": {
+          "customers": 1951,
+          "receipts": 5267
+        },
+        "미상": {
+          "customers": 153,
+          "receipts": 379
+        }
+      },
+      "primaryAge": [
+        "60대이상"
+      ]
+    },
+    {
+      "storeId": 14,
+      "storeCode": "8235",
+      "storeName": "중앙로역점",
+      "totalCustomers": 11082,
+      "totalReceipts": 25018,
+      "byAge": {
+        "10대이하": {
+          "customers": 13,
+          "receipts": 27
+        },
+        "20대": {
+          "customers": 340,
+          "receipts": 588
+        },
+        "30대": {
+          "customers": 1547,
+          "receipts": 3179
+        },
+        "40대": {
+          "customers": 3780,
+          "receipts": 9123
+        },
+        "50대": {
+          "customers": 2671,
+          "receipts": 5957
+        },
+        "60대이상": {
+          "customers": 2405,
+          "receipts": 5527
+        },
+        "미상": {
+          "customers": 326,
+          "receipts": 617
+        }
+      },
+      "primaryAge": [
+        "40대"
+      ]
+    },
+    {
+      "storeId": 8,
+      "storeCode": "8237",
+      "storeName": "수원터미널점",
+      "totalCustomers": 19976,
+      "totalReceipts": 53675,
+      "byAge": {
+        "10대이하": {
+          "customers": 24,
+          "receipts": 61
+        },
+        "20대": {
+          "customers": 283,
+          "receipts": 557
+        },
+        "30대": {
+          "customers": 2332,
+          "receipts": 5669
+        },
+        "40대": {
+          "customers": 6836,
+          "receipts": 19691
+        },
+        "50대": {
+          "customers": 5462,
+          "receipts": 14688
+        },
+        "60대이상": {
+          "customers": 4608,
+          "receipts": 11977
+        },
+        "미상": {
+          "customers": 431,
+          "receipts": 1032
+        }
+      },
+      "primaryAge": [
+        "40대"
+      ]
+    },
+    {
+      "storeId": 2,
+      "storeCode": "8239",
+      "storeName": "경산점",
+      "totalCustomers": 7828,
+      "totalReceipts": 18451,
+      "byAge": {
+        "10대이하": {
+          "customers": 7,
+          "receipts": 18
+        },
+        "20대": {
+          "customers": 113,
+          "receipts": 198
+        },
+        "30대": {
+          "customers": 1165,
+          "receipts": 2713
+        },
+        "40대": {
+          "customers": 2737,
+          "receipts": 6669
+        },
+        "50대": {
+          "customers": 1997,
+          "receipts": 4741
+        },
+        "60대이상": {
+          "customers": 1628,
+          "receipts": 3712
+        },
+        "미상": {
+          "customers": 181,
+          "receipts": 400
+        }
+      },
+      "primaryAge": [
+        "40대"
+      ]
+    },
+    {
+      "storeId": 15,
+      "storeCode": "8241",
+      "storeName": "청주점",
+      "totalCustomers": 14890,
+      "totalReceipts": 44913,
+      "byAge": {
+        "10대이하": {
+          "customers": 32,
+          "receipts": 104
+        },
+        "20대": {
+          "customers": 435,
+          "receipts": 1058
+        },
+        "30대": {
+          "customers": 2456,
+          "receipts": 6842
+        },
+        "40대": {
+          "customers": 5603,
+          "receipts": 17473
+        },
+        "50대": {
+          "customers": 2963,
+          "receipts": 9292
+        },
+        "60대이상": {
+          "customers": 2834,
+          "receipts": 8566
+        },
+        "미상": {
+          "customers": 567,
+          "receipts": 1578
+        }
+      },
+      "primaryAge": [
+        "40대"
+      ]
+    },
+    {
+      "storeId": 10,
+      "storeCode": "8242",
+      "storeName": "신구로점",
+      "totalCustomers": 36201,
+      "totalReceipts": 140979,
+      "byAge": {
+        "10대이하": {
+          "customers": 41,
+          "receipts": 122
+        },
+        "20대": {
+          "customers": 713,
+          "receipts": 2304
+        },
+        "30대": {
+          "customers": 4537,
+          "receipts": 15941
+        },
+        "40대": {
+          "customers": 9744,
+          "receipts": 36567
+        },
+        "50대": {
+          "customers": 9193,
+          "receipts": 36712
+        },
+        "60대이상": {
+          "customers": 10440,
+          "receipts": 44133
+        },
+        "미상": {
+          "customers": 1533,
+          "receipts": 5200
+        }
+      },
+      "primaryAge": [
+        "60대이상",
+        "40대"
+      ]
+    },
+    {
+      "storeId": 18,
+      "storeCode": "8243",
+      "storeName": "대전유성점",
+      "totalCustomers": 32130,
+      "totalReceipts": 101991,
+      "byAge": {
+        "10대이하": {
+          "customers": 26,
+          "receipts": 80
+        },
+        "20대": {
+          "customers": 1340,
+          "receipts": 3390
+        },
+        "30대": {
+          "customers": 6251,
+          "receipts": 18937
+        },
+        "40대": {
+          "customers": 10032,
+          "receipts": 33472
+        },
+        "50대": {
+          "customers": 6648,
+          "receipts": 21400
+        },
+        "60대이상": {
+          "customers": 6435,
+          "receipts": 20707
+        },
+        "미상": {
+          "customers": 1398,
+          "receipts": 4005
+        }
+      },
+      "primaryAge": [
+        "40대"
+      ]
+    },
+    {
+      "storeId": 40,
+      "storeCode": "8501",
+      "storeName": "쇼핑점",
+      "totalCustomers": 40491,
+      "totalReceipts": 125227,
+      "byAge": {
+        "10대이하": {
+          "customers": 57,
+          "receipts": 166
+        },
+        "20대": {
+          "customers": 398,
+          "receipts": 1161
+        },
+        "30대": {
+          "customers": 2050,
+          "receipts": 5361
+        },
+        "40대": {
+          "customers": 6690,
+          "receipts": 18959
+        },
+        "50대": {
+          "customers": 9826,
+          "receipts": 30251
+        },
+        "60대이상": {
+          "customers": 20627,
+          "receipts": 67182
+        },
+        "미상": {
+          "customers": 843,
+          "receipts": 2147
+        }
+      },
+      "primaryAge": [
+        "60대이상"
+      ]
+    },
+    {
+      "storeId": 41,
+      "storeCode": "8502",
+      "storeName": "수성점",
+      "totalCustomers": 17224,
+      "totalReceipts": 74537,
+      "byAge": {
+        "10대이하": {
+          "customers": 25,
+          "receipts": 85
+        },
+        "20대": {
+          "customers": 107,
+          "receipts": 333
+        },
+        "30대": {
+          "customers": 610,
+          "receipts": 2153
+        },
+        "40대": {
+          "customers": 2188,
+          "receipts": 8501
+        },
+        "50대": {
+          "customers": 3935,
+          "receipts": 16109
+        },
+        "60대이상": {
+          "customers": 10221,
+          "receipts": 46942
+        },
+        "미상": {
+          "customers": 138,
+          "receipts": 414
+        }
+      },
+      "primaryAge": [
+        "60대이상"
+      ]
+    },
+    {
+      "storeId": 39,
+      "storeCode": "8503",
+      "storeName": "구미점",
+      "totalCustomers": 4840,
+      "totalReceipts": 10935,
+      "byAge": {
+        "10대이하": {
+          "customers": 4,
+          "receipts": 8
+        },
+        "20대": {
+          "customers": 33,
+          "receipts": 102
+        },
+        "30대": {
+          "customers": 153,
+          "receipts": 301
+        },
+        "40대": {
+          "customers": 557,
+          "receipts": 1070
+        },
+        "50대": {
+          "customers": 1383,
+          "receipts": 3208
+        },
+        "60대이상": {
+          "customers": 2642,
+          "receipts": 6119
+        },
+        "미상": {
+          "customers": 68,
+          "receipts": 127
+        }
+      },
+      "primaryAge": [
+        "60대이상"
+      ]
+    },
+    {
+      "storeId": 38,
+      "storeCode": "8504",
+      "storeName": "강북점",
+      "totalCustomers": 8542,
+      "totalReceipts": 19277,
+      "byAge": {
+        "10대이하": {
+          "customers": 8,
+          "receipts": 13
+        },
+        "20대": {
+          "customers": 67,
+          "receipts": 153
+        },
+        "30대": {
+          "customers": 295,
+          "receipts": 571
+        },
+        "40대": {
+          "customers": 831,
+          "receipts": 1692
+        },
+        "50대": {
+          "customers": 2363,
+          "receipts": 5364
+        },
+        "60대이상": {
+          "customers": 4832,
+          "receipts": 11187
+        },
+        "미상": {
+          "customers": 146,
+          "receipts": 297
+        }
+      },
+      "primaryAge": [
+        "60대이상"
+      ]
+    }
+  ]
+}
