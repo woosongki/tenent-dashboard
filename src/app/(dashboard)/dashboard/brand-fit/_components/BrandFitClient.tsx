@@ -22,6 +22,8 @@ const OPS: OperationType[] = ["상시매장", "팝업(단기)", "시즌형"];
 const AVOIDS: AvoidStrength[] = ["강함", "보통", "약함"];
 
 export default function BrandFitClient() {
+  // 브랜드명 (단독 입력 가능 — 비어있는 옵션은 기본값으로)
+  const [brandName, setBrandName] = useState("");
   // 확보가능 (8개)
   const [primaryAge, setPrimaryAge] = useState<AgeBand[]>([]);
   const [primaryGender, setPrimaryGender] = useState<Gender | null>(null);
@@ -31,7 +33,7 @@ export default function BrandFitClient() {
   const [priceBand, setPriceBand] = useState<PriceBand | null>(null);
   const [requiredSpace, setRequiredSpace] = useState<SpaceSize | null>(null);
   const [operationType, setOperationType] = useState<OperationType | null>(null);
-  // 반드시 (2개)
+  // 선택 (앵커·회피강도)
   const [anchorTag, setAnchorTag] = useState("");
   const [preferredAnchors, setPreferredAnchors] = useState<string[]>([]);
   const [avoidStrength, setAvoidStrength] = useState<AvoidStrength | null>(null);
@@ -39,8 +41,10 @@ export default function BrandFitClient() {
   // 결과
   const [results, setResults] = useState<FitScore[]>([]);
   const [submitted, setSubmitted] = useState(false);
+  const [submittedBrand, setSubmittedBrand] = useState("");
 
-  const canAnalyze = preferredAnchors.length > 0 && avoidStrength !== null;
+  // 브랜드명만 있으면 분석 가능 (다른 옵션은 모두 선택적)
+  const canAnalyze = brandName.trim().length > 0;
 
   function toggleArr<T>(arr: T[], v: T): T[] {
     return arr.includes(v) ? arr.filter((x) => x !== v) : [...arr, v];
@@ -64,10 +68,11 @@ export default function BrandFitClient() {
       required_space: requiredSpace,
       operation_type: operationType,
       preferred_anchors: preferredAnchors,
-      avoid_strength: avoidStrength!,
+      avoid_strength: avoidStrength ?? "보통", // 미입력 시 기본값
     };
     setResults(rankStores(input, 3));
     setSubmitted(true);
+    setSubmittedBrand(brandName.trim());
     // 결과 스크롤
     setTimeout(() => {
       document.getElementById("result-section")?.scrollIntoView({ behavior: "smooth" });
@@ -75,11 +80,12 @@ export default function BrandFitClient() {
   }
 
   function reset() {
+    setBrandName("");
     setPrimaryAge([]); setPrimaryGender(null); setFamilyRatio(null);
     setStayType(null); setCategory(null); setPriceBand(null);
     setRequiredSpace(null); setOperationType(null);
     setPreferredAnchors([]); setAvoidStrength(null); setAnchorTag("");
-    setResults([]); setSubmitted(false);
+    setResults([]); setSubmitted(false); setSubmittedBrand("");
   }
 
   return (
@@ -88,13 +94,50 @@ export default function BrandFitClient() {
       <div className="mb-6">
         <h1 className="font-display text-[28px] leading-none text-[#0a0a0a]">브랜드 적합도 진단</h1>
         <p className="mt-2 text-[13px] text-slate-600">
-          체크리스트로 브랜드 특성을 입력하면 41개 이랜드 점포 중 적합도 TOP3를 알려드립니다.
+          브랜드명만 입력해도 기본값으로 분석 가능. 추가 옵션은 정확도를 높이는 용도.
         </p>
       </div>
 
-      {/* ── 필수 입력 ── */}
-      <Section title="🔴 반드시 입력" desc="단이님의 전략적 판단이 필요한 항목">
-        <Field label="인접 선호 앵커" required>
+      {/* ── 브랜드명 단독 입력 (필수, 최상단) ── */}
+      <div className="mb-6 border-[3px] border-[#0a0a0a] bg-yellow-100 p-5 shadow-[5px_5px_0_0_#0a0a0a]">
+        <label className="block mb-2 text-[11px] font-extrabold uppercase tracking-[.14em] text-[#0a0a0a]">
+          적합도 진단 브랜드명
+        </label>
+        <div className="flex gap-3">
+          <input
+            type="text"
+            value={brandName}
+            onChange={(e) => setBrandName(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && canAnalyze) {
+                e.preventDefault();
+                analyze();
+              }
+            }}
+            placeholder="예: 다이소, 무신사, 올리브영, 스타벅스..."
+            className="flex-1 border-[2px] border-[#0a0a0a] bg-white px-4 py-3 font-mono text-[18px] font-bold placeholder-slate-400 focus:outline-none focus:bg-yellow-50"
+            autoFocus
+          />
+          <button
+            onClick={analyze}
+            disabled={!canAnalyze}
+            className={`shrink-0 border-[2px] border-[#0a0a0a] px-8 font-display text-[16px] transition ${
+              canAnalyze
+                ? "bg-[#0a0a0a] text-white shadow-[3px_3px_0_0_#0a0a0a] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none"
+                : "bg-slate-200 text-slate-400 cursor-not-allowed"
+            }`}
+          >
+            분석
+          </button>
+        </div>
+        <p className="mt-2 text-[11px] text-[#0a0a0a]/70">
+          💡 브랜드명만으로 즉시 분석 (Enter). 아래 옵션은 정확도 향상용 — 비워두면 기본값.
+        </p>
+      </div>
+
+      {/* ── 선택 입력 (앵커·회피) ── */}
+      <Section title="🎯 정확도 향상 (선택)" desc="입력하면 점수 산출 정확도가 올라갑니다">
+        <Field label="인접 선호 앵커">
           <div className="flex flex-wrap gap-1.5 mb-2">
             {preferredAnchors.map((t) => (
               <span key={t} className="inline-flex items-center gap-1 border-[2px] border-[#0a0a0a] bg-yellow-200 px-2 py-1 text-[12px] font-bold shadow-[2px_2px_0_0_#0a0a0a]">
@@ -116,16 +159,17 @@ export default function BrandFitClient() {
               추가
             </button>
           </div>
-          <p className="mt-1.5 text-[11px] text-slate-500">💡 이 브랜드가 시너지 낼 만한 앵커를 자유롭게 입력 (Enter로 추가)</p>
+          <p className="mt-1.5 text-[11px] text-slate-500">💡 이 브랜드가 시너지 낼 만한 앵커 (Enter로 추가)</p>
         </Field>
 
-        <Field label="경쟁/유사 브랜드 회피 강도" required>
-          <ChipGroup options={AVOIDS} value={avoidStrength} onChange={setAvoidStrength} />
+        <Field label="경쟁/유사 브랜드 회피 강도">
+          <ChipGroup options={AVOIDS} value={avoidStrength} onChange={setAvoidStrength} allowNull />
+          <p className="mt-1.5 text-[11px] text-slate-500">💡 미선택 시 &quot;보통&quot; 으로 처리</p>
         </Field>
       </Section>
 
       {/* ── 확보가능 입력 ── */}
-      <Section title="🟢 브랜드 정보" desc="알고 계시면 입력 — 비워두면 기본값으로 점수 산출">
+      <Section title="🟢 브랜드 정보 (선택)" desc="알고 계시면 입력 — 비워두면 점수 산출에서 제외">
         <Field label="주력 타겟 연령 (다중 선택)">
           <div className="flex flex-wrap gap-1.5">
             {AGES.map((a) => (
@@ -171,7 +215,7 @@ export default function BrandFitClient() {
         </Field>
       </Section>
 
-      {/* ── 액션 ── */}
+      {/* ── 추가 분석/초기화 (하단) ── */}
       <div className="sticky bottom-4 mt-6 flex gap-3 z-10">
         <button
           onClick={analyze}
@@ -182,7 +226,7 @@ export default function BrandFitClient() {
               : "bg-slate-100 text-slate-400 cursor-not-allowed"
           }`}
         >
-          {canAnalyze ? "🎯 적합도 분석" : "필수 항목 입력 필요"}
+          {canAnalyze ? "🎯 옵션 반영해서 다시 분석" : "브랜드명 입력 필요"}
         </button>
         <button
           onClick={reset}
@@ -195,7 +239,10 @@ export default function BrandFitClient() {
       {/* ── 결과 ── */}
       {submitted && (
         <div id="result-section" className="mt-10 border-t-[3px] border-[#0a0a0a] pt-6">
-          <h2 className="font-display text-[22px] mb-1">TOP 3 추천 지점</h2>
+          <div className="mb-4 flex items-baseline gap-3 flex-wrap">
+            <h2 className="font-display text-[22px]">{submittedBrand}</h2>
+            <span className="text-[13px] text-slate-500">TOP 3 추천 지점</span>
+          </div>
           <p className="text-[12px] text-slate-500 mb-4">
             ⚠️ 정성 데이터가 비어있는 지점이 많으면 결과 신뢰도가 낮습니다. <code className="text-[11px]">src/data/eland-meta.ts</code> 에 데이터를 채워주세요.
           </p>
