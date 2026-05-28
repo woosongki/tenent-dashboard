@@ -46,7 +46,7 @@ export const ELAND_META: StoreMeta[] = [
   {
     store_id: 1,
     trade_area: { primary_age: ["60대+"] as AgeBand[], primary_gender: null, family_ratio: null },
-    anchors: [],
+    anchors: ["하이퍼","모던하우스공통(MODERN HOUSE","애슐리퀸즈","나이키(NIKE)","전자랜드","네파","ABC마트","특정명품","스케쳐스","로운"],
     tenant_mix: { categories: ["하이퍼"], price_band: ["중고가"] as PriceBand[] },
     available_space: [],
     popup_friendly: null,
@@ -54,7 +54,7 @@ export const ELAND_META: StoreMeta[] = [
   {
     store_id: 2,
     trade_area: { primary_age: ["40대"] as AgeBand[], primary_gender: null, family_ratio: null },
-    anchors: [],
+    anchors: ["애슐리퀸즈","모던하우스공통(MODERN HOUSE","뉴발란스키즈","에스핏","폴햄메가샾","뱅뱅","에꼴리에","허쉬파피(HUSHPUPPIES)","밀리밤(MILIBAM)","애니바디(ANYBODY)"],
     tenant_mix: { categories: ["아동의류","F&B"], price_band: ["중가"] as PriceBand[] },
     available_space: [],
     popup_friendly: null,
@@ -62,7 +62,7 @@ export const ELAND_META: StoreMeta[] = [
   {
     store_id: 3,
     trade_area: { primary_age: ["50대","40대"] as AgeBand[], primary_gender: null, family_ratio: null },
-    anchors: [],
+    anchors: ["하이퍼","애슐리퀸즈","모던하우스공통(MODERN HOUSE","게스(GUESS)(진)","ABC마트","에스마켓","뉴발란스","디스커버리","노스페이스(THENORTHFACE)","LF종합관"],
     tenant_mix: { categories: ["캐주얼"], price_band: ["중고가"] as PriceBand[] },
     available_space: [],
     popup_friendly: null,
@@ -70,7 +70,7 @@ export const ELAND_META: StoreMeta[] = [
   {
     store_id: 4,
     trade_area: { primary_age: ["60대+"] as AgeBand[], primary_gender: null, family_ratio: null },
-    anchors: [],
+    anchors: ["로운","모던하우스공통(MODERN HOUSE","헤이린뉴욕","레드페이스","엘칸토(ELCANTO )","유니프랜드(모이모이)","스테파니(STEFANI)","벨리시앙","조순희","텐퍼센트커피"],
     tenant_mix: { categories: ["여성의류","영캐주얼"], price_band: ["중가"] as PriceBand[] },
     available_space: [],
     popup_friendly: null,
@@ -78,7 +78,7 @@ export const ELAND_META: StoreMeta[] = [
   {
     store_id: 5,
     trade_area: { primary_age: ["40대"] as AgeBand[], primary_gender: null, family_ratio: null },
-    anchors: [],
+    anchors: ["하이퍼","모던하우스공통(MODERN HOUSE","애슐리퀸즈","SPAO(캐주얼)","로운","폴햄메가샾","영풍문고","미쏘","에스마켓","리트머스"],
     tenant_mix: { categories: ["아동의류","캐주얼"], price_band: ["중가"] as PriceBand[] },
     available_space: [],
     popup_friendly: null,
@@ -86,7 +86,7 @@ export const ELAND_META: StoreMeta[] = [
   {
     store_id: 6,
     trade_area: { primary_age: ["60대+"] as AgeBand[], primary_gender: null, family_ratio: null },
-    anchors: [],
+    anchors: ["하이퍼","모던하우스공통(MODERN HOUSE","뉴발란스","LF종합관","엘칸토(ELCANTO )","오프라이스","SPAO(캐주얼)","폴햄메가샾","ABC마트","게스(GUESS)(진)"],
     tenant_mix: { categories: ["하이퍼"], price_band: ["중고가"] as PriceBand[] },
     available_space: [],
     popup_friendly: null,
@@ -94,7 +94,7 @@ export const ELAND_META: StoreMeta[] = [
   {
     store_id: 7,
     trade_area: { primary_age: ["40대","60대+"] as AgeBand[], primary_gender: null, family_ratio: null },
-    anchors: [],
+    anchors: ["하이퍼","모던하우스공통(MODERN HOUSE","로운","락앤락","ABC마트","뉴발란스","스타벅스","사월에보리밥과쭈꾸미","SPAO(캐주얼)","특정OPR"],
     tenant_mix: { categories: ["하이퍼","F&B"], price_band: ["중가"] as PriceBand[] },
     available_space: [],
     popup_friendly: null,
@@ -102,7 +102,7 @@ export const ELAND_META: StoreMeta[] = [
   {
     store_id: 8,
     trade_area: { primary_age: ["40대"] as AgeBand[], primary_gender: null, family_ratio: null },
-    anchors: [],
+    anchors: ["모던하우스공통(MODERN HOUSE","애슐리퀸즈","탑텐","로운","ABC마트","아디다스(ADIDAS)","미샤팩토리","게스(GUESS)(진)","에스마켓","피자몰"],
     tenant_mix: { categories: ["스포츠","F&B"], price_band: ["중가"] as PriceBand[] },
     available_space: [],
     popup_friendly: null,
@@ -110,7 +110,7 @@ export const ELAND_META: StoreMeta[] = [
   {
     store_id: 9,
     trade_area: { primary_age: ["60대+","50대"] as AgeBand[], primary_gender: null, family_ratio: null },
-    anchors: [],
+    anchors: ["애슐리퀸즈","특정명품","모던하우스공통(MODERN HOUSE","로운","아디다스(ADIDAS)","크리스챤디올","블랙야크","문화센터(CULTURECENTER)","아이더(EIDER)","에스콰이아(ESQUIRE)"],
     tenant_mix: { categories: ["여성의류","잡화"], price_band: ["고가"] as PriceBand[] },
     available_space: [],
     popup_friendly: null,
@@ -118,7 +118,7 @@ export const ELAND_META: StoreMeta[] = [
   {
     store_id: 10,
     trade_area: { primary_age: ["60대+","40대"] as AgeBand[], primary_gender: null, family_ratio: null },
-    anchors: [],
+    anchors: ["하이퍼","삼성패션아울렛","애슐리퀸즈","다이소","스타벅스","올리브영","사월에보리밥과쭈꾸미","행텐틴즈","모던하우스공통(MODERN HOUSE","스케쳐스"],
     tenant_mix: { categories: ["F&B","하이퍼"], price_band: ["중가"] as PriceBand[] },
     available_space: [],
     popup_friendly: null,
@@ -126,7 +126,7 @@ export const ELAND_META: StoreMeta[] = [
   {
     store_id: 11,
     trade_area: { primary_age: ["60대+"] as AgeBand[], primary_gender: null, family_ratio: null },
-    anchors: [],
+    anchors: ["하이퍼","하이마트","애슐리퀸즈","모던하우스공통(MODERN HOUSE","아디다스(ADIDAS)","오아시스","맥도날드","LF종합관","컬럼비아","멜본"],
     tenant_mix: { categories: ["하이퍼"], price_band: ["중고가"] as PriceBand[] },
     available_space: [],
     popup_friendly: null,
@@ -134,7 +134,7 @@ export const ELAND_META: StoreMeta[] = [
   {
     store_id: 12,
     trade_area: { primary_age: ["40대"] as AgeBand[], primary_gender: null, family_ratio: null },
-    anchors: [],
+    anchors: ["에스마켓","모던하우스공통(MODERN HOUSE","에꼴리에","소이","유솔(USALL)","아디다스(ADIDAS)","디즈니골프","폴햄메가샾","스케쳐스","폴햄키즈"],
     tenant_mix: { categories: ["아동의류","남성의류"], price_band: ["중고가"] as PriceBand[] },
     available_space: [],
     popup_friendly: null,
@@ -142,7 +142,7 @@ export const ELAND_META: StoreMeta[] = [
   {
     store_id: 13,
     trade_area: { primary_age: ["40대"] as AgeBand[], primary_gender: null, family_ratio: null },
-    anchors: [],
+    anchors: ["교보문고","애슐리퀸즈","피자몰","SPAO(캐주얼)","반에이크","폴햄메가샾","두끼","해요","스파오키즈","캉골"],
     tenant_mix: { categories: ["F&B","라이프스타일","캐주얼","아동의류"], price_band: ["중가"] as PriceBand[] },
     available_space: [],
     popup_friendly: null,
@@ -150,7 +150,7 @@ export const ELAND_META: StoreMeta[] = [
   {
     store_id: 14,
     trade_area: { primary_age: ["40대"] as AgeBand[], primary_gender: null, family_ratio: null },
-    anchors: [],
+    anchors: ["애슐리퀸즈","로운","모던하우스공통(MODERN HOUSE","아트박스","버커루","SPAO(캐주얼)","슈펜","에꼴리에","멜본","행텐"],
     tenant_mix: { categories: ["캐주얼","여성의류","영캐주얼"], price_band: ["중가"] as PriceBand[] },
     available_space: [],
     popup_friendly: null,
@@ -158,7 +158,7 @@ export const ELAND_META: StoreMeta[] = [
   {
     store_id: 15,
     trade_area: { primary_age: ["40대"] as AgeBand[], primary_gender: null, family_ratio: null },
-    anchors: [],
+    anchors: ["다이소","애슐리퀸즈","서브웨이","올리비아로렌","씨지브이(CGV)","델리BY애슐리","뉴발란스","하이퍼","디스커버리","파사디골프"],
     tenant_mix: { categories: ["F&B","라이프스타일"], price_band: ["중가"] as PriceBand[] },
     available_space: [],
     popup_friendly: null,
@@ -166,7 +166,7 @@ export const ELAND_META: StoreMeta[] = [
   {
     store_id: 16,
     trade_area: { primary_age: ["40대"] as AgeBand[], primary_gender: null, family_ratio: null },
-    anchors: [],
+    anchors: ["애슐리퀸즈","아디다스(ADIDAS)","씨지브이(CGV)","모던하우스공통(MODERN HOUSE","폴햄","SPAO(캐주얼)","미쏘","크록스(CROCS)","알래스카","게스(GUESS)(진)"],
     tenant_mix: { categories: ["캐주얼","아동의류"], price_band: ["중가"] as PriceBand[] },
     available_space: [],
     popup_friendly: null,
@@ -174,7 +174,7 @@ export const ELAND_META: StoreMeta[] = [
   {
     store_id: 17,
     trade_area: { primary_age: ["60대+"] as AgeBand[], primary_gender: null, family_ratio: null },
-    anchors: [],
+    anchors: ["하이퍼","모던하우스공통(MODERN HOUSE","애슐리퀸즈","탑텐","스타벅스","교보문고","폴햄","비씨비지","락앤락","ABC마트"],
     tenant_mix: { categories: ["하이퍼"], price_band: ["중가"] as PriceBand[] },
     available_space: [],
     popup_friendly: null,
@@ -182,7 +182,7 @@ export const ELAND_META: StoreMeta[] = [
   {
     store_id: 18,
     trade_area: { primary_age: ["40대"] as AgeBand[], primary_gender: null, family_ratio: null },
-    anchors: [],
+    anchors: ["하이퍼","애슐리퀸즈","다이소","스케쳐스","스타벅스","LF종합관","ABC마트","피자몰","SPAO(캐주얼)","뉴발란스키즈"],
     tenant_mix: { categories: ["F&B"], price_band: ["중고가"] as PriceBand[] },
     available_space: [],
     popup_friendly: null,
@@ -190,7 +190,7 @@ export const ELAND_META: StoreMeta[] = [
   {
     store_id: 19,
     trade_area: { primary_age: ["60대+"] as AgeBand[], primary_gender: null, family_ratio: null },
-    anchors: [],
+    anchors: ["하이퍼","오아시스","모던하우스공통(MODERN HOUSE","특정명품","애슐리퀸즈","올리브영","아디다스(ADIDAS)","ABC마트","AK골프","버거킹(burgerking)"],
     tenant_mix: { categories: ["하이퍼"], price_band: ["고가"] as PriceBand[] },
     available_space: [],
     popup_friendly: null,
@@ -198,7 +198,7 @@ export const ELAND_META: StoreMeta[] = [
   {
     store_id: 20,
     trade_area: { primary_age: ["60대+","50대"] as AgeBand[], primary_gender: null, family_ratio: null },
-    anchors: [],
+    anchors: ["하이퍼","애슐리퀸즈","스포츠직매입","피자몰","숙녀(특정)_사입","특정OPR","크로커다일레이디","폴햄","모던하우스공통(MODERN HOUSE","멜본"],
     tenant_mix: { categories: ["하이퍼"], price_band: ["중가"] as PriceBand[] },
     available_space: [],
     popup_friendly: null,
@@ -206,7 +206,7 @@ export const ELAND_META: StoreMeta[] = [
   {
     store_id: 21,
     trade_area: { primary_age: ["60대+"] as AgeBand[], primary_gender: null, family_ratio: null },
-    anchors: [],
+    anchors: ["하이퍼","모던하우스공통(MODERN HOUSE","아이더(EIDER)","폴햄메가샾","로운","LF팩토리","케이투(K2)","아디다스(ADIDAS)","로이드(LLOYD)","비씨비지"],
     tenant_mix: { categories: ["하이퍼","스포츠"], price_band: ["중가"] as PriceBand[] },
     available_space: [],
     popup_friendly: null,
@@ -214,7 +214,7 @@ export const ELAND_META: StoreMeta[] = [
   {
     store_id: 22,
     trade_area: { primary_age: ["60대+","50대"] as AgeBand[], primary_gender: null, family_ratio: null },
-    anchors: [],
+    anchors: ["애슐리퀸즈","ABC마트","탑텐","뉴발란스","SPAO(캐주얼)","아이더(EIDER)","케이투(K2)","스케쳐스","요하넥스","베네통(영캐주얼)"],
     tenant_mix: { categories: ["스포츠","캐주얼"], price_band: ["중가"] as PriceBand[] },
     available_space: [],
     popup_friendly: null,
@@ -222,7 +222,7 @@ export const ELAND_META: StoreMeta[] = [
   {
     store_id: 23,
     trade_area: { primary_age: ["60대+","50대"] as AgeBand[], primary_gender: null, family_ratio: null },
-    anchors: [],
+    anchors: ["하이퍼","애슐리퀸즈","모던하우스공통(MODERN HOUSE","게스(GUESS)(진)","콜핑(KOLPING)","크로커다일(CROCODILE)","아식스(ASICS)","베스띠벨리","폴햄","아우어베이커리"],
     tenant_mix: { categories: [], price_band: ["중고가"] as PriceBand[] },
     available_space: [],
     popup_friendly: null,
@@ -230,7 +230,7 @@ export const ELAND_META: StoreMeta[] = [
   {
     store_id: 24,
     trade_area: { primary_age: ["40대","50대"] as AgeBand[], primary_gender: null, family_ratio: null },
-    anchors: [],
+    anchors: ["하이퍼","아디다스(ADIDAS)","모던하우스공통(MODERN HOUSE","애슐리퀸즈","SPAO(캐주얼)","나이키(NIKE)","ABC마트","에스마켓","루이까스텔","올리브영"],
     tenant_mix: { categories: ["하이퍼","스포츠"], price_band: ["중가"] as PriceBand[] },
     available_space: [],
     popup_friendly: null,
@@ -238,7 +238,7 @@ export const ELAND_META: StoreMeta[] = [
   {
     store_id: 25,
     trade_area: { primary_age: ["60대+"] as AgeBand[], primary_gender: null, family_ratio: null },
-    anchors: [],
+    anchors: ["하이퍼","맥스온누리 약국","ABC마트","게스(GUESS)(진)","피에이티(PAT)","미셸BY탠디","피자몰","프로젝트M","이헌영패션","엘칸토(ELCANTO )"],
     tenant_mix: { categories: ["하이퍼","라이프스타일"], price_band: ["중가"] as PriceBand[] },
     available_space: [],
     popup_friendly: null,
@@ -246,7 +246,7 @@ export const ELAND_META: StoreMeta[] = [
   {
     store_id: 26,
     trade_area: { primary_age: ["40대"] as AgeBand[], primary_gender: null, family_ratio: null },
-    anchors: [],
+    anchors: ["올리브영","폴햄메가샾","엘칸토(ELCANTO )","에꼴리에","애니바디(ANYBODY)","행텐틴즈","비너스(VENUS)","오픈클로젯","엔코코","프로젝트M"],
     tenant_mix: { categories: ["잡화","아동의류","캐주얼"], price_band: ["중가"] as PriceBand[] },
     available_space: [],
     popup_friendly: null,
@@ -254,7 +254,7 @@ export const ELAND_META: StoreMeta[] = [
   {
     store_id: 27,
     trade_area: { primary_age: ["60대+","40대"] as AgeBand[], primary_gender: null, family_ratio: null },
-    anchors: [],
+    anchors: ["애슐리퀸즈","모던하우스공통(MODERN HOUSE","행텐틴즈","아메리칸투어리스트","에스핏","인디고뱅크키즈(INDIGOBANKKI","밀리밤(MILIBAM)","폴햄키즈","아다바트화이트","로엠(ROEM)"],
     tenant_mix: { categories: ["영캐주얼"], price_band: ["중가"] as PriceBand[] },
     available_space: [],
     popup_friendly: null,
@@ -262,7 +262,7 @@ export const ELAND_META: StoreMeta[] = [
   {
     store_id: 28,
     trade_area: { primary_age: ["60대+"] as AgeBand[], primary_gender: null, family_ratio: null },
-    anchors: [],
+    anchors: ["하이퍼","모던하우스공통(MODERN HOUSE","애슐리퀸즈","게스(GUESS)(진)","아디다스(ADIDAS)","탑텐","아가방","미쏘","폴햄","소이"],
     tenant_mix: { categories: [], price_band: ["중가"] as PriceBand[] },
     available_space: [],
     popup_friendly: null,
@@ -270,7 +270,7 @@ export const ELAND_META: StoreMeta[] = [
   {
     store_id: 29,
     trade_area: { primary_age: ["60대+"] as AgeBand[], primary_gender: null, family_ratio: null },
-    anchors: [],
+    anchors: ["하이퍼","모던하우스공통(MODERN HOUSE","애슐리퀸즈","로운","ABC마트","SPAO(캐주얼)","뉴발란스","모조에스핀","프로젝트M","미셸BY탠디"],
     tenant_mix: { categories: ["하이퍼"], price_band: ["중고가"] as PriceBand[] },
     available_space: [],
     popup_friendly: null,
@@ -278,7 +278,7 @@ export const ELAND_META: StoreMeta[] = [
   {
     store_id: 30,
     trade_area: { primary_age: ["40대"] as AgeBand[], primary_gender: null, family_ratio: null },
-    anchors: [],
+    anchors: ["모던하우스공통(MODERN HOUSE","애슐리퀸즈","아디다스(ADIDAS)","에스마켓","탑텐","뉴발란스","행텐틴즈","인터크루","소이","에꼴리에"],
     tenant_mix: { categories: ["아동의류","스포츠","남성의류"], price_band: ["중고가"] as PriceBand[] },
     available_space: [],
     popup_friendly: null,
@@ -286,7 +286,7 @@ export const ELAND_META: StoreMeta[] = [
   {
     store_id: 31,
     trade_area: { primary_age: ["60대+"] as AgeBand[], primary_gender: null, family_ratio: null },
-    anchors: [],
+    anchors: ["하이퍼","ABC마트","애슐리퀸즈","모던하우스공통(MODERN HOUSE","미샤(화장품)","프랑제리","좋은영화","로운","뉴발란스","올리브영"],
     tenant_mix: { categories: ["하이퍼"], price_band: ["중가"] as PriceBand[] },
     available_space: [],
     popup_friendly: null,
@@ -294,7 +294,7 @@ export const ELAND_META: StoreMeta[] = [
   {
     store_id: 32,
     trade_area: { primary_age: ["60대+","50대"] as AgeBand[], primary_gender: null, family_ratio: null },
-    anchors: [],
+    anchors: ["엠페스트","모던하우스공통(MODERN HOUSE","애슐리퀸즈","스케쳐스","ABC마트","레드페이스","베스띠벨리","피에이티(PAT)","제이디엑스(JDX)","루이까스텔"],
     tenant_mix: { categories: ["남성의류"], price_band: ["중고가"] as PriceBand[] },
     available_space: [],
     popup_friendly: null,
@@ -302,7 +302,7 @@ export const ELAND_META: StoreMeta[] = [
   {
     store_id: 33,
     trade_area: { primary_age: ["60대+"] as AgeBand[], primary_gender: null, family_ratio: null },
-    anchors: [],
+    anchors: ["엠페스트","모던하우스공통(MODERN HOUSE","바바&바바","스케쳐스","오후(OHOO)","CMCUBE","오스본(OSBORNE)","소이","아메리칸투어리스트","크로커다일레이디"],
     tenant_mix: { categories: ["스포츠","잡화"], price_band: ["중가"] as PriceBand[] },
     available_space: [],
     popup_friendly: null,
@@ -310,7 +310,7 @@ export const ELAND_META: StoreMeta[] = [
   {
     store_id: 34,
     trade_area: { primary_age: ["60대+"] as AgeBand[], primary_gender: null, family_ratio: null },
-    anchors: [],
+    anchors: ["하이퍼","모던하우스공통(MODERN HOUSE","애슐리퀸즈","아동(특정)_사입","숙녀(특정)_사입","특정OPR","스타벅스","멜본","오프라이스","스케쳐스"],
     tenant_mix: { categories: ["하이퍼"], price_band: ["중고가"] as PriceBand[] },
     available_space: [],
     popup_friendly: null,
@@ -318,7 +318,7 @@ export const ELAND_META: StoreMeta[] = [
   {
     store_id: 35,
     trade_area: { primary_age: ["60대+"] as AgeBand[], primary_gender: null, family_ratio: null },
-    anchors: [],
+    anchors: ["프로스펙스","크로커다일(CROCODILE)","크로커다일레이디","발렌시아","소이","콜핑(KOLPING)","피에이티(PAT)","행텐틴즈","수엔지","애니바디(ANYBODY)"],
     tenant_mix: { categories: ["여성의류","스포츠","잡화"], price_band: ["중가"] as PriceBand[] },
     available_space: [],
     popup_friendly: null,
@@ -326,7 +326,7 @@ export const ELAND_META: StoreMeta[] = [
   {
     store_id: 36,
     trade_area: { primary_age: ["50대"] as AgeBand[], primary_gender: null, family_ratio: null },
-    anchors: [],
+    anchors: ["모던하우스공통(MODERN HOUSE","하이퍼","델리BY애슐리","애슐리퀸즈","피자몰","ABC마트","엘칸토(ELCANTO )","스케쳐스","디스커버리","SPAO(캐주얼)"],
     tenant_mix: { categories: [], price_band: ["중가"] as PriceBand[] },
     available_space: [],
     popup_friendly: null,
@@ -334,7 +334,7 @@ export const ELAND_META: StoreMeta[] = [
   {
     store_id: 37,
     trade_area: { primary_age: ["60대+"] as AgeBand[], primary_gender: null, family_ratio: null },
-    anchors: [],
+    anchors: ["모던하우스공통(MODERN HOUSE","하이퍼","델리BY애슐리","애슐리퀸즈","피자몰","ABC마트","엘칸토(ELCANTO )","스케쳐스","디스커버리","SPAO(캐주얼)"],
     tenant_mix: { categories: ["스포츠"], price_band: ["중가"] as PriceBand[] },
     available_space: [],
     popup_friendly: null,
@@ -342,7 +342,7 @@ export const ELAND_META: StoreMeta[] = [
   {
     store_id: 38,
     trade_area: { primary_age: ["60대+"] as AgeBand[], primary_gender: null, family_ratio: null },
-    anchors: [],
+    anchors: ["엠페스트","애슐리퀸즈","뉴발란스","모던하우스공통(MODERN HOUSE","특정OPR","ABC마트","숙녀(특정)_사입","스케쳐스","엘칸토(ELCANTO )","트랜드컬렉션(TREND COLLECT"],
     tenant_mix: { categories: ["남성의류","여성의류","잡화"], price_band: ["중가"] as PriceBand[] },
     available_space: [],
     popup_friendly: null,
@@ -350,7 +350,7 @@ export const ELAND_META: StoreMeta[] = [
   {
     store_id: 39,
     trade_area: { primary_age: ["60대+"] as AgeBand[], primary_gender: null, family_ratio: null },
-    anchors: [],
+    anchors: ["트레몰로","소이","프로스펙스","레드페이스","더레노마","모던하우스공통(MODERN HOUSE","미소페(MISOPE)","도쿄엔펄","멜본","엔프라니"],
     tenant_mix: { categories: ["여성의류","잡화"], price_band: ["중고가"] as PriceBand[] },
     available_space: [],
     popup_friendly: null,
@@ -358,7 +358,7 @@ export const ELAND_META: StoreMeta[] = [
   {
     store_id: 40,
     trade_area: { primary_age: ["60대+"] as AgeBand[], primary_gender: null, family_ratio: null },
-    anchors: [],
+    anchors: ["애슐리퀸즈","엘칸토(ELCANTO )","발렌시아","CMCUBE","클라비스(CLOVIS)","오휘","닥스(셔츠/타이)","비씨비지","리스트","비너스(VENUS)"],
     tenant_mix: { categories: ["하이퍼","잡화"], price_band: ["중가"] as PriceBand[] },
     available_space: [],
     popup_friendly: null,
@@ -366,7 +366,7 @@ export const ELAND_META: StoreMeta[] = [
   {
     store_id: 41,
     trade_area: { primary_age: ["60대+"] as AgeBand[], primary_gender: null, family_ratio: null },
-    anchors: [],
+    anchors: ["하이퍼","델리BY애슐리","애슐리퀸즈","모던하우스공통(MODERN HOUSE","스케쳐스","피에르가르뎅(신사캐주얼)","특정명품","게스(GUESS)(진)","크로커다일(CROCODILE)","인디고뱅크키즈(INDIGOBANKKI"],
     tenant_mix: { categories: ["하이퍼"], price_band: ["중고가"] as PriceBand[] },
     available_space: [],
     popup_friendly: null,
