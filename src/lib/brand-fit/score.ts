@@ -24,6 +24,7 @@ import storeCategoriesData from "@/data/store-categories.json";
 import storeBrandsData from "@/data/store-brands.json";
 import storeSalesData from "@/data/store-sales.json";
 import storeAreasData from "@/data/store-areas.json";
+import tradeAreaData from "@/data/trade-area.json";
 
 // ── 사용자 입력 (브랜드 체크리스트) ──
 export type Stay = "목적형" | "체험형" | "체류형";
@@ -70,6 +71,7 @@ type StoreCatRow = { storeId: number; total: number; ratios: Record<string, numb
 type StoreBrandRow = { storeId: number; brandCount: number; totalSales: number };
 type StoreSalesRow = { storeId: number | null; avgPricePerCustomer: number };
 type StoreAreaRow = { storeId: number; totalAreaPyeong: number; floorCount: number; maxFloorPyeong: number };
+type TradeAreaRow = { storeId: number; sizeScore: number; regionTier: string; commercialDensity: number };
 
 const categoriesIdx = new Map<number, StoreCatRow>();
 (storeCategoriesData.stores as StoreCatRow[]).forEach((s) => categoriesIdx.set(s.storeId, s));
@@ -93,6 +95,10 @@ const areaIdx = new Map<number, StoreAreaRow>();
 const allAreas = [...areaIdx.values()].map((s) => s.totalAreaPyeong);
 const MAX_AREA = allAreas.length ? Math.max(...allAreas) : 0;
 const MIN_AREA = allAreas.length ? Math.min(...allAreas) : 0;
+
+// 상권 규모/유동인구: 권역 + 실측 상가밀도(소상공인 상가업소 반경 500m) 기반 외부 객관 신호
+const tradeAreaIdx = new Map<number, TradeAreaRow>();
+(tradeAreaData.stores as TradeAreaRow[]).forEach((s) => tradeAreaIdx.set(s.storeId, s));
 
 // ─────────────────────────────────────────────────────────────
 // 카테고리 키워드 매핑 (사용자 입력 → ERP 카테고리)
@@ -169,6 +175,12 @@ function scoreTradeArea(b: BrandInput, m: StoreMeta): number | null {
     else if (b.family_ratio === "둘 다" || m.trade_area.family_ratio === "둘 다") score = 75;
     else score = 35;
     subs.push({ score, weight: 1.5 });
+  }
+
+  // 상권 규모/유동인구: 권역 + 실측 상가밀도 (브랜드 입력과 무관하게 항상 존재 → 지방 소형 vs 수도권 대형 차등)
+  const ta = tradeAreaIdx.get(m.store_id);
+  if (ta) {
+    subs.push({ score: ta.sizeScore, weight: 2.0 });
   }
 
   if (subs.length === 0) return null;
