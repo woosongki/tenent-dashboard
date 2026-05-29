@@ -42,6 +42,8 @@ export default function BrandFitClient() {
   const [results, setResults] = useState<FitScore[]>([]);
   const [submitted, setSubmitted] = useState(false);
   const [submittedBrand, setSubmittedBrand] = useState("");
+  // 점수 로직 패널
+  const [showLogic, setShowLogic] = useState(false);
 
   // 브랜드명만 있으면 분석 가능 (다른 옵션은 모두 선택적)
   const canAnalyze = brandName.trim().length > 0;
@@ -91,12 +93,24 @@ export default function BrandFitClient() {
   return (
     <div className="h-full overflow-y-auto">
     <div className="mx-auto max-w-[1100px] p-6">
-      <div className="mb-6">
-        <h1 className="font-display text-[28px] leading-none text-[#0a0a0a]">브랜드 적합도 진단</h1>
-        <p className="mt-2 text-[13px] text-slate-600">
-          브랜드명만 입력해도 기본값으로 분석 가능. 추가 옵션은 정확도를 높이는 용도.
-        </p>
+      <div className="mb-6 flex items-start justify-between gap-4">
+        <div>
+          <h1 className="font-display text-[28px] leading-none text-[#0a0a0a]">브랜드 적합도 진단</h1>
+          <p className="mt-2 text-[13px] text-slate-600">
+            브랜드명만 입력해도 기본값으로 분석 가능. 추가 옵션은 정확도를 높이는 용도.
+          </p>
+        </div>
+        <button
+          onClick={() => setShowLogic((v) => !v)}
+          className={`shrink-0 border-[2px] border-[#0a0a0a] px-4 py-2 text-[12px] font-bold transition shadow-[3px_3px_0_0_#0a0a0a] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0_0_#0a0a0a] ${
+            showLogic ? "bg-[#0a0a0a] text-white" : "bg-cyan-300 text-[#0a0a0a]"
+          }`}
+        >
+          {showLogic ? "✕ 점수 로직 닫기" : "🧮 점수 산출 방식 보기"}
+        </button>
       </div>
+
+      {showLogic && <ScoringLogicPanel />}
 
       {/* ── 브랜드명 단독 입력 (필수, 최상단) ── */}
       <div className="mb-6 border-[3px] border-[#0a0a0a] bg-yellow-100 p-5 shadow-[5px_5px_0_0_#0a0a0a]">
@@ -285,6 +299,141 @@ export default function BrandFitClient() {
         </div>
       )}
     </div>
+    </div>
+  );
+}
+
+// ── 점수 산출 방식 패널 ──
+// src/lib/brand-fit/score.ts 의 실제 로직을 한 화면에 정리 (변경 시 동기화 필요)
+
+const AXES = [
+  {
+    key: "trade_area",
+    title: "① 상권 / 고객층",
+    weight: 35,
+    color: "#ef476f",
+    desc: "점포 구매고객의 연령·성별·가족 구성과 브랜드 타겟의 일치도",
+    rows: [
+      { name: "연령 매칭", w: "2.0", detail: "점포 1순위 연령 = 1.0 / 2순위 = 0.5 가중. 선호 연령이 점포 주력 연령에 포함될수록 100점에 근접" },
+      { name: "성별", w: "0.5", detail: "동일 95 / 한쪽이 '균형' 65 / 반대 25. 전 점포가 '여성 중심'이라 변별력이 낮아 가중치 최소화" },
+      { name: "가족 비율", w: "1.5", detail: "동일 100 / 한쪽이 '둘 다' 75 / 반대 35" },
+    ],
+  },
+  {
+    key: "anchors",
+    title: "② 인접 앵커 · 동선",
+    weight: 30,
+    color: "#ffb547",
+    desc: "입력한 선호 앵커가 점포 TOP10 매출 브랜드에 들어있는지",
+    rows: [
+      { name: "앵커별 매칭", w: "—", detail: "정확 일치 100 / 점포 앵커가 입력어를 포함 75 / 입력어가 앵커를 포함 60 / 불일치 0" },
+      { name: "개수 보너스", w: "—", detail: "3개 이상 매칭 +15 / 2개 +8 (최대 100)" },
+      { name: "예외", w: "—", detail: "선호 앵커 미입력 → 이 축 제외 · 점포 앵커 데이터 없음 → 10점" },
+    ],
+  },
+  {
+    key: "character",
+    title: "③ 브랜드 성격",
+    weight: 20,
+    color: "#06d6a0",
+    desc: "카테고리·가격대가 점포 테넌트 구성과 맞는지",
+    rows: [
+      { name: "카테고리", w: "2.0", detail: "점포의 해당 카테고리 매출 비중 합 → 30%+ 95 / 20%+ 80 / 10%+ 60 / 5%+ 40 / 그 외 25 / 매칭 없음 15" },
+      { name: "가격대", w: "1.0", detail: "가격대 거리 0 = 100 / 1단계 70 / 2단계 40 / 3단계+ 15" },
+      { name: "필요 평형", w: "1.0", detail: "공실(입점가능 공간) 데이터는 변동성이 커 정적 미입력 → 사실상 비활성" },
+    ],
+  },
+  {
+    key: "synergy",
+    title: "④ 시너지",
+    weight: 15,
+    color: "#7c3aed",
+    desc: "운영 형태 적합성 + 카니발(잠식) 회피 + 매장 규모",
+    rows: [
+      { name: "팝업 친화", w: "1.0", detail: "상시매장 90 / 팝업친화 점포 95 / 비친화 30" },
+      { name: "카니발 회피", w: "1.5", detail: "동일 카테고리 비중이 클수록 감점, 회피 강도(강함/보통/약함)에 따라 차등" },
+      { name: "매장 규모", w: "1.0", detail: "실제 전용면적(평)을 41점 분포로 0~1 정규화 → 40~95점. 면적 데이터 없으면 브랜드 수로 폴백" },
+    ],
+  },
+];
+
+const DATA_SOURCES = [
+  { label: "연령", src: "store-demographics.json (구매고객 연령대)" },
+  { label: "성별", src: "전사 평균 여성 78% → 전 점포 '여성 중심' 가정" },
+  { label: "가격대", src: "store-sales.json (객단가)" },
+  { label: "카테고리", src: "store-categories.json (10개 카테고리 매출 비중)" },
+  { label: "앵커", src: "store-brands.json (점포별 매출 TOP10)" },
+  { label: "매장 규모", src: "store-areas.json (층별 전용면적 합)" },
+];
+
+function ScoringLogicPanel() {
+  return (
+    <div className="mb-6 border-[3px] border-[#0a0a0a] bg-white p-5 shadow-[5px_5px_0_0_#0a0a0a]">
+      <div className="mb-4 border-b-[2px] border-[#0a0a0a] pb-3">
+        <div className="font-display text-[18px]">🧮 점수 산출 방식</div>
+        <p className="mt-1 text-[12px] text-slate-600">
+          41개 점포 각각을 4개 평가축으로 채점하고, 가중 평균해 100점 만점 종합 점수를 냅니다.
+        </p>
+      </div>
+
+      {/* 종합 공식 */}
+      <div className="mb-4 border-[2px] border-[#0a0a0a] bg-slate-50 p-3">
+        <div className="mb-2 text-[11px] font-extrabold uppercase tracking-[.12em] text-slate-500">종합 점수 = 가중 평균</div>
+        <div className="flex flex-wrap items-center gap-1.5 font-mono text-[12px]">
+          {AXES.map((a, i) => (
+            <span key={a.key} className="inline-flex items-center gap-1.5">
+              {i > 0 && <span className="text-slate-400">+</span>}
+              <span className="inline-flex items-center gap-1 border-[2px] border-[#0a0a0a] bg-white px-2 py-1 font-bold">
+                <span className="inline-block h-2.5 w-2.5 border border-[#0a0a0a]" style={{ background: a.color }} />
+                {a.title.replace(/^[①②③④]\s/, "")}
+                <span className="text-slate-500">×{a.weight}%</span>
+              </span>
+            </span>
+          ))}
+        </div>
+        <p className="mt-2 text-[11px] text-slate-500">
+          💡 입력값이 없거나 데이터가 빈 축은 평균으로 채우지 않고 <b>가중치를 재정규화해 제외</b>합니다. 동점이면 <b>전용면적 → 브랜드 수</b> 순으로 우선순위를 둡니다.
+        </p>
+      </div>
+
+      {/* 축별 상세 */}
+      <div className="grid grid-cols-2 gap-3">
+        {AXES.map((a) => (
+          <div key={a.key} className="border-[2px] border-[#0a0a0a] bg-white" style={{ borderTopColor: a.color, borderTopWidth: 6 }}>
+            <div className="flex items-baseline justify-between border-b border-slate-200 px-3 py-2">
+              <span className="font-display text-[14px]">{a.title}</span>
+              <span className="font-mono text-[13px] font-extrabold" style={{ color: a.color }}>{a.weight}%</span>
+            </div>
+            <p className="px-3 pt-2 text-[11px] text-slate-500">{a.desc}</p>
+            <div className="space-y-1.5 p-3">
+              {a.rows.map((r) => (
+                <div key={r.name} className="text-[11px] leading-relaxed">
+                  <div className="flex items-center gap-1.5">
+                    <span className="font-bold text-[#0a0a0a]">{r.name}</span>
+                    {r.w !== "—" && (
+                      <span className="border border-slate-300 bg-slate-50 px-1 font-mono text-[10px] text-slate-500">내부가중 {r.w}</span>
+                    )}
+                  </div>
+                  <div className="text-slate-600">{r.detail}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* 데이터 출처 */}
+      <div className="mt-4 border-[2px] border-[#0a0a0a] bg-yellow-50 p-3">
+        <div className="mb-2 text-[11px] font-extrabold uppercase tracking-[.12em] text-slate-500">데이터 출처 (2026-04 ERP 기준)</div>
+        <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-[11px]">
+          {DATA_SOURCES.map((d) => (
+            <div key={d.label} className="flex gap-2">
+              <span className="w-16 shrink-0 font-bold text-[#0a0a0a]">{d.label}</span>
+              <span className="font-mono text-[10px] text-slate-600">{d.src}</span>
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
