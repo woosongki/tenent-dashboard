@@ -98,6 +98,7 @@ const MIN_AREA = allAreas.length ? Math.min(...allAreas) : 0;
 // 카테고리 키워드 매핑 (사용자 입력 → ERP 카테고리)
 // store-categories.json의 컬럼명과 사용자 입력값을 정규화
 const CATEGORY_ALIAS: Record<string, string[]> = {
+  "패션":     ["여성의류", "캐주얼", "영캐주얼", "남성의류"], // 의류 전반
   "리빙":     ["라이프스타일", "하이퍼"],
   "라이프스타일": ["라이프스타일"],
   "잡화":     ["잡화"],
