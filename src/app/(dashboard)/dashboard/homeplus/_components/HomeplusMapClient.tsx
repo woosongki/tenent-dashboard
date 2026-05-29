@@ -53,6 +53,7 @@ import { ENTERSIX_STORES } from "@/data/entersix";
 import { MODA_STORES } from "@/data/moda";
 import { SAVEZONE_STORES } from "@/data/savezone";
 import { LF_STORES } from "@/data/lf";
+import { SATUR_STORES } from "@/data/satur";
 // ── 마트 ──
 import { EMART_STORES } from "@/data/emart";
 import { LOTTEMART_STORES } from "@/data/lottemart";
@@ -133,6 +134,7 @@ const entersixIcon = makeSmallSquareIcon("#ff6f3c");
 const modaIcon     = makeSmallSquareIcon("#00b4a0");
 const savezoneIcon = makeSmallSquareIcon("#95a847");
 const lfIcon       = makeSmallSquareIcon("#a08260");
+const saturIcon    = makeSmallSquareIcon("#7c3aed"); // 보라 — 세터
 
 // 마트 — 원형 10px (백화점보다 작게, 체인보다 약간 큼)
 function makeCircleIcon(bg: string) {
@@ -195,6 +197,7 @@ export default function HomeplusMapClient() {
   const [showModa, setShowModa] = useState(initialLayer === "moda");
   const [showSavezone, setShowSavezone] = useState(initialLayer === "savezone");
   const [showLf, setShowLf] = useState(initialLayer === "lf");
+  const [showSatur, setShowSatur] = useState(initialLayer === "satur");
   // 마트
   const [showEmart, setShowEmart] = useState(initialLayer === "emart");
   const [showLottemart, setShowLottemart] = useState(initialLayer === "lottemart");
@@ -474,6 +477,11 @@ export default function HomeplusMapClient() {
                 <input type="checkbox" checked={showLf} onChange={(e) => setShowLf(e.target.checked)} disabled={LF_STORES.length === 0} className="h-3.5 w-3.5 disabled:opacity-40" />
                 <span className="inline-block h-2 w-2" style={{ background: "#a08260" }} />
                 <span className="font-bold text-[#0a0a0a]">LF스퀘어 ({LF_STORES.length})</span>
+              </label>
+              <label className="flex cursor-pointer items-center gap-1.5">
+                <input type="checkbox" checked={showSatur} onChange={(e) => setShowSatur(e.target.checked)} disabled={SATUR_STORES.length === 0} className="h-3.5 w-3.5 disabled:opacity-40" />
+                <span className="inline-block h-2 w-2" style={{ background: "#7c3aed" }} />
+                <span className="font-bold text-[#0a0a0a]">세터 ({SATUR_STORES.length})</span>
               </label>
             </div>
             )}
@@ -798,6 +806,16 @@ export default function HomeplusMapClient() {
               <Tooltip direction="top" offset={[0, -4]}>
                 <div style={{ minWidth: 160 }}>
                   <div style={{ fontWeight: 700, fontSize: 12, color: "#6e5538" }}>🛍️ {s.name}</div>
+                  <div style={{ fontSize: 10, color: "#666", marginTop: 2 }}>{s.addr}</div>
+                </div>
+              </Tooltip>
+            </Marker>
+          ))}
+          {showSatur && SATUR_STORES.map((s) => (
+            <Marker key={`sa-${s.id}`} position={[s.lat, s.lng]} icon={saturIcon}>
+              <Tooltip direction="top" offset={[0, -4]}>
+                <div style={{ minWidth: 160 }}>
+                  <div style={{ fontWeight: 700, fontSize: 12, color: "#5b21b6" }}>👜 {s.name}</div>
                   <div style={{ fontSize: 10, color: "#666", marginTop: 2 }}>{s.addr}</div>
                 </div>
               </Tooltip>
