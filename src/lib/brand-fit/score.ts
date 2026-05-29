@@ -23,6 +23,7 @@ import {
 import storeCategoriesData from "@/data/store-categories.json";
 import storeBrandsData from "@/data/store-brands.json";
 import storeSalesData from "@/data/store-sales.json";
+import storeAreasData from "@/data/store-areas.json";
 
 // ── 사용자 입력 (브랜드 체크리스트) ──
 export type Stay = "목적형" | "체험형" | "체류형";
@@ -68,6 +69,7 @@ export interface FitScore {
 type StoreCatRow = { storeId: number; total: number; ratios: Record<string, number> };
 type StoreBrandRow = { storeId: number; brandCount: number; totalSales: number };
 type StoreSalesRow = { storeId: number | null; avgPricePerCustomer: number };
+type StoreAreaRow = { storeId: number; totalAreaPyeong: number; floorCount: number; maxFloorPyeong: number };
 
 const categoriesIdx = new Map<number, StoreCatRow>();
 (storeCategoriesData.stores as StoreCatRow[]).forEach((s) => categoriesIdx.set(s.storeId, s));
@@ -84,6 +86,13 @@ const salesIdx = new Map<number, StoreSalesRow>();
 const allBrandCounts = [...brandsIdx.values()].map((s) => s.brandCount);
 const MAX_BRAND_COUNT = Math.max(...allBrandCounts);
 const MIN_BRAND_COUNT = Math.min(...allBrandCounts);
+
+// 매장 규모: 실제 전용면적(평) 기반 — 브랜드 수보다 정밀한 연속 신호
+const areaIdx = new Map<number, StoreAreaRow>();
+(storeAreasData.stores as StoreAreaRow[]).forEach((s) => areaIdx.set(s.storeId, s));
+const allAreas = [...areaIdx.values()].map((s) => s.totalAreaPyeong);
+const MAX_AREA = allAreas.length ? Math.max(...allAreas) : 0;
+const MIN_AREA = allAreas.length ? Math.min(...allAreas) : 0;
 
 // ─────────────────────────────────────────────────────────────
 // 카테고리 키워드 매핑 (사용자 입력 → ERP 카테고리)
@@ -275,16 +284,22 @@ function scoreSynergy(b: BrandInput, m: StoreMeta): number | null {
     }
   }
 
-  // 매장 규모 가산 (브랜드 다양성 = 노출 잠재력)
-  const brandRow = brandsIdx.get(m.store_id);
-  if (brandRow) {
-    const range = MAX_BRAND_COUNT - MIN_BRAND_COUNT;
-    const normalized = range > 0
-      ? (brandRow.brandCount - MIN_BRAND_COUNT) / range
-      : 0.5;
+  // 매장 규모 가산 (전용면적 = 집객력·노출 잠재력)
+  // 실제 전용면적(평)을 1순위로, 미입력 시 브랜드 수로 폴백
+  const areaRow = areaIdx.get(m.store_id);
+  if (areaRow && MAX_AREA > MIN_AREA) {
+    const normalized = (areaRow.totalAreaPyeong - MIN_AREA) / (MAX_AREA - MIN_AREA);
     // 0~1 → 40~95 (큰 매장은 95에 가깝게)
     const score = 40 + normalized * 55;
     subs.push({ score, weight: 1.0 });
+  } else {
+    const brandRow = brandsIdx.get(m.store_id);
+    if (brandRow) {
+      const range = MAX_BRAND_COUNT - MIN_BRAND_COUNT;
+      const normalized = range > 0 ? (brandRow.brandCount - MIN_BRAND_COUNT) / range : 0.5;
+      const score = 40 + normalized * 55;
+      subs.push({ score, weight: 1.0 });
+    }
   }
 
   if (subs.length === 0) return null;
@@ -351,7 +366,11 @@ export function rankStores(b: BrandInput, topN = 3): FitScore[] {
   });
   return all.sort((a, b) => {
     if (b.total !== a.total) return b.total - a.total;
-    // 타이브레이커: 매장 규모 (브랜드 수)
+    // 타이브레이커 1: 매장 규모 (전용면적)
+    const aArea = areaIdx.get(a.store.id)?.totalAreaPyeong ?? 0;
+    const bArea = areaIdx.get(b.store.id)?.totalAreaPyeong ?? 0;
+    if (bArea !== aArea) return bArea - aArea;
+    // 타이브레이커 2: 브랜드 수
     const aCount = brandsIdx.get(a.store.id)?.brandCount ?? 0;
     const bCount = brandsIdx.get(b.store.id)?.brandCount ?? 0;
     return bCount - aCount;
