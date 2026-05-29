@@ -43,8 +43,33 @@ function regionTier(region) {
   return "지방";
 }
 
+// 상세 파일 topL(실제 대분류 상위 카운트)에서 업종 비중 계산 — 체류 성격 산출용
+// (breakdown 6버킷은 카테고리명 불일치로 일부 0이라 신뢰 불가 → topL 기반으로 재계산)
+function pctFromTopL(d, patterns) {
+  const total = d.total || 1;
+  let c = 0;
+  for (const [name, cnt] of d.topL ?? []) {
+    if (patterns.some((p) => name.includes(p))) c += cnt;
+  }
+  return Math.round((c / total) * 1000) / 10;
+}
+function loadBreakdown(id) {
+  try {
+    const d = JSON.parse(readFileSync(path.resolve(ROOT, "data/trade-area", `${id}.json`), "utf-8"));
+    return {
+      foodPct: pctFromTopL(d, ["음식"]),
+      retailPct: pctFromTopL(d, ["소매"]),
+      leisurePct: pctFromTopL(d, ["예술", "스포츠", "오락", "관광"]), // 여가/체험
+      lifeServicePct: pctFromTopL(d, ["수리·개인", "시설관리"]),       // 생활서비스
+    };
+  } catch {
+    return null;
+  }
+}
+
 const rows = idx.stores.map((s) => {
   const storeId = nameToId.get(normalize(s.name)) ?? null;
+  const bd = loadBreakdown(s.id) ?? { foodPct: s.foodPct, retailPct: s.retailPct, leisurePct: 0, lifeServicePct: 0 };
   return {
     storeId,
     storeName: storeId ? `${idToStore.get(storeId).brand} ${idToStore.get(storeId).name}` : `${s.brand} ${s.name}`,
@@ -52,8 +77,10 @@ const rows = idx.stores.map((s) => {
     regionTier: regionTier(s.region),
     commercialDensity: s.total, // 반경 500m 상가업소 수
     tradeAreaType: s.tradeAreaType,
-    foodPct: s.foodPct,
-    retailPct: s.retailPct,
+    foodPct: bd.foodPct,
+    retailPct: bd.retailPct,
+    leisurePct: bd.leisurePct,
+    lifeServicePct: bd.lifeServicePct,
   };
 });
 

@@ -17,6 +17,8 @@
       "tradeAreaType": "복합 상권",
       "foodPct": 31.6,
       "retailPct": 20.6,
+      "leisurePct": 4.9,
+      "lifeServicePct": 13.7,
       "sizeScore": 81.6
     },
     {
@@ -28,6 +30,8 @@
       "tradeAreaType": "소매 중심 상권",
       "foodPct": 33.6,
       "retailPct": 39.6,
+      "leisurePct": 1.9,
+      "lifeServicePct": 12,
       "sizeScore": 40.2
     },
     {
@@ -39,6 +43,8 @@
       "tradeAreaType": "복합 상권",
       "foodPct": 30.3,
       "retailPct": 18.2,
+      "leisurePct": 4.3,
+      "lifeServicePct": 16.7,
       "sizeScore": 91.8
     },
     {
@@ -50,6 +56,8 @@
       "tradeAreaType": "복합 상권",
       "foodPct": 24.9,
       "retailPct": 23.3,
+      "leisurePct": 2.4,
+      "lifeServicePct": 20.1,
       "sizeScore": 50.4
     },
     {
@@ -61,6 +69,8 @@
       "tradeAreaType": "음식 중심 상권",
       "foodPct": 47.3,
       "retailPct": 23.5,
+      "leisurePct": 4.9,
+      "lifeServicePct": 8,
       "sizeScore": 43.3
     },
     {
@@ -72,6 +82,8 @@
       "tradeAreaType": "복합 상권",
       "foodPct": 28.1,
       "retailPct": 29.8,
+      "leisurePct": 3.4,
+      "lifeServicePct": 13,
       "sizeScore": 75
     },
     {
@@ -83,6 +95,8 @@
       "tradeAreaType": "소매 중심 상권",
       "foodPct": 14.9,
       "retailPct": 40.9,
+      "leisurePct": 1.4,
+      "lifeServicePct": 12.7,
       "sizeScore": 75.4
     },
     {
@@ -94,6 +108,8 @@
       "tradeAreaType": "소매 중심 상권",
       "foodPct": 24.3,
       "retailPct": 30.5,
+      "leisurePct": 5.9,
+      "lifeServicePct": 18.1,
       "sizeScore": 61.4
     },
     {
@@ -105,6 +121,8 @@
       "tradeAreaType": "소매 중심 상권",
       "foodPct": 22,
       "retailPct": 34.8,
+      "leisurePct": 6.5,
+      "lifeServicePct": 10.3,
       "sizeScore": 32
     },
     {
@@ -116,6 +134,8 @@
       "tradeAreaType": "복합 상권",
       "foodPct": 26.1,
       "retailPct": 25.7,
+      "leisurePct": 5.1,
+      "lifeServicePct": 15.7,
       "sizeScore": 65.3
     },
     {
@@ -127,6 +147,8 @@
       "tradeAreaType": "복합 상권",
       "foodPct": 26.2,
       "retailPct": 24.3,
+      "leisurePct": 5.5,
+      "lifeServicePct": 15.6,
       "sizeScore": 78.9
     },
     {
@@ -138,6 +160,8 @@
       "tradeAreaType": "소매 중심 상권",
       "foodPct": 17.1,
       "retailPct": 61,
+      "leisurePct": 2.1,
+      "lifeServicePct": 9.8,
       "sizeScore": 49.6
     },
     {
@@ -149,6 +173,8 @@
       "tradeAreaType": "소매 중심 상권",
       "foodPct": 31.5,
       "retailPct": 34.4,
+      "leisurePct": 2.9,
+      "lifeServicePct": 12.1,
       "sizeScore": 53.6
     },
     {
@@ -160,6 +186,8 @@
       "tradeAreaType": "소매 중심 상권",
       "foodPct": 35.4,
       "retailPct": 32.1,
+      "leisurePct": 4.6,
+      "lifeServicePct": 9.3,
       "sizeScore": 71.5
     },
     {
@@ -171,6 +199,8 @@
       "tradeAreaType": "복합 상권",
       "foodPct": 34.3,
       "retailPct": 26.5,
+      "leisurePct": 7.6,
+      "lifeServicePct": 12.7,
       "sizeScore": 51.6
     },
     {
@@ -182,6 +212,8 @@
       "tradeAreaType": "소매 중심 상권",
       "foodPct": 19.3,
       "retailPct": 43.3,
+      "leisurePct": 3.6,
+      "lifeServicePct": 15.5,
       "sizeScore": 68.9
     },
     {
@@ -193,6 +225,8 @@
       "tradeAreaType": "복합 상권",
       "foodPct": 36,
       "retailPct": 20.9,
+      "leisurePct": 6.1,
+      "lifeServicePct": 14.5,
       "sizeScore": 69.2
     },
     {
@@ -204,6 +238,8 @@
       "tradeAreaType": "복합 상권",
       "foodPct": 29.1,
       "retailPct": 21,
+      "leisurePct": 3.7,
+      "lifeServicePct": 15.5,
       "sizeScore": 59
     },
     {
@@ -215,6 +251,8 @@
       "tradeAreaType": "소매 중심 상권",
       "foodPct": 12.6,
       "retailPct": 55.4,
+      "leisurePct": 1.9,
+      "lifeServicePct": 6.4,
       "sizeScore": 77.3
     },
     {
@@ -226,6 +264,8 @@
       "tradeAreaType": "복합 상권",
       "foodPct": 20.2,
       "retailPct": 20.7,
+      "leisurePct": 4.6,
+      "lifeServicePct": 16.8,
       "sizeScore": 65.8
     },
     {
@@ -237,6 +277,8 @@
       "tradeAreaType": "소매 중심 상권",
       "foodPct": 28.2,
       "retailPct": 33.8,
+      "leisurePct": 2.7,
+      "lifeServicePct": 19.6,
       "sizeScore": 46
     },
     {
@@ -248,6 +290,8 @@
       "tradeAreaType": "소매 중심 상권",
       "foodPct": 33.4,
       "retailPct": 33.9,
+      "leisurePct": 2.9,
+      "lifeServicePct": 18.3,
       "sizeScore": 45.9
     },
     {
@@ -259,6 +303,8 @@
       "tradeAreaType": "복합 상권",
       "foodPct": 37.4,
       "retailPct": 12.1,
+      "leisurePct": 10.6,
+      "lifeServicePct": 13.9,
       "sizeScore": 61
     },
     {
@@ -270,6 +316,8 @@
       "tradeAreaType": "복합 상권",
       "foodPct": 23.8,
       "retailPct": 29.6,
+      "leisurePct": 6,
+      "lifeServicePct": 16.1,
       "sizeScore": 96.2
     },
     {
@@ -281,6 +329,8 @@
       "tradeAreaType": "복합 상권",
       "foodPct": 34.1,
       "retailPct": 24.8,
+      "leisurePct": 7.1,
+      "lifeServicePct": 15.2,
       "sizeScore": 69.4
     },
     {
@@ -292,6 +342,8 @@
       "tradeAreaType": "소매 중심 상권",
       "foodPct": 29.9,
       "retailPct": 41,
+      "leisurePct": 4.1,
+      "lifeServicePct": 11.8,
       "sizeScore": 59.8
     },
     {
@@ -303,6 +355,8 @@
       "tradeAreaType": "복합 상권",
       "foodPct": 34.9,
       "retailPct": 19.5,
+      "leisurePct": 2.6,
+      "lifeServicePct": 22.6,
       "sizeScore": 55.5
     },
     {
@@ -314,6 +368,8 @@
       "tradeAreaType": "소매 중심 상권",
       "foodPct": 35.1,
       "retailPct": 30.4,
+      "leisurePct": 7.8,
+      "lifeServicePct": 12.8,
       "sizeScore": 78.7
     },
     {
@@ -325,6 +381,8 @@
       "tradeAreaType": "복합 상권",
       "foodPct": 29.9,
       "retailPct": 17,
+      "leisurePct": 5.8,
+      "lifeServicePct": 18.9,
       "sizeScore": 67
     },
     {
@@ -336,6 +394,8 @@
       "tradeAreaType": "복합 상권",
       "foodPct": 30.2,
       "retailPct": 24.5,
+      "leisurePct": 3.4,
+      "lifeServicePct": 15.3,
       "sizeScore": 51
     },
     {
@@ -347,6 +407,8 @@
       "tradeAreaType": "복합 상권",
       "foodPct": 22.1,
       "retailPct": 23.2,
+      "leisurePct": 5,
+      "lifeServicePct": 16,
       "sizeScore": 63.2
     },
     {
@@ -358,6 +420,8 @@
       "tradeAreaType": "복합 상권",
       "foodPct": 25.7,
       "retailPct": 26.3,
+      "leisurePct": 4.3,
+      "lifeServicePct": 15.5,
       "sizeScore": 64.5
     },
     {
@@ -369,6 +433,8 @@
       "tradeAreaType": "소매 중심 상권",
       "foodPct": 25.2,
       "retailPct": 30.7,
+      "leisurePct": 5.2,
+      "lifeServicePct": 16.8,
       "sizeScore": 57.6
     },
     {
@@ -380,6 +446,8 @@
       "tradeAreaType": "복합 상권",
       "foodPct": 23.2,
       "retailPct": 25.9,
+      "leisurePct": 5.2,
+      "lifeServicePct": 13.3,
       "sizeScore": 78.1
     },
     {
@@ -391,6 +459,8 @@
       "tradeAreaType": "소매 중심 상권",
       "foodPct": 30.8,
       "retailPct": 34.3,
+      "leisurePct": 5,
+      "lifeServicePct": 10.7,
       "sizeScore": 91.5
     },
     {
@@ -402,6 +472,8 @@
       "tradeAreaType": "소매 중심 상권",
       "foodPct": 22,
       "retailPct": 45.9,
+      "leisurePct": 2.9,
+      "lifeServicePct": 10,
       "sizeScore": 62
     },
     {
@@ -413,6 +485,8 @@
       "tradeAreaType": "소매 중심 상권",
       "foodPct": 25,
       "retailPct": 35.3,
+      "leisurePct": 4.3,
+      "lifeServicePct": 13.5,
       "sizeScore": 81.6
     },
     {
@@ -424,6 +498,8 @@
       "tradeAreaType": "소매 중심 상권",
       "foodPct": 32.1,
       "retailPct": 33.8,
+      "leisurePct": 4.2,
+      "lifeServicePct": 17.4,
       "sizeScore": 48.3
     },
     {
@@ -435,6 +511,8 @@
       "tradeAreaType": "복합 상권",
       "foodPct": 35.8,
       "retailPct": 23.4,
+      "leisurePct": 3.6,
+      "lifeServicePct": 13.7,
       "sizeScore": 38.4
     },
     {
@@ -446,6 +524,8 @@
       "tradeAreaType": "소매 중심 상권",
       "foodPct": 27.3,
       "retailPct": 36.2,
+      "leisurePct": 2.8,
+      "lifeServicePct": 11.4,
       "sizeScore": 87
     },
     {
@@ -457,6 +537,8 @@
       "tradeAreaType": "소매 중심 상권",
       "foodPct": 25.3,
       "retailPct": 30.9,
+      "leisurePct": 6.8,
+      "lifeServicePct": 16,
       "sizeScore": 50.8
     }
   ]

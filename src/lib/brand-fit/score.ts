@@ -71,7 +71,7 @@ type StoreCatRow = { storeId: number; total: number; ratios: Record<string, numb
 type StoreBrandRow = { storeId: number; brandCount: number; totalSales: number };
 type StoreSalesRow = { storeId: number | null; avgPricePerCustomer: number };
 type StoreAreaRow = { storeId: number; totalAreaPyeong: number; floorCount: number; maxFloorPyeong: number };
-type TradeAreaRow = { storeId: number; sizeScore: number; regionTier: string; commercialDensity: number };
+type TradeAreaRow = { storeId: number; sizeScore: number; regionTier: string; commercialDensity: number; foodPct: number; retailPct: number; leisurePct: number };
 
 const categoriesIdx = new Map<number, StoreCatRow>();
 (storeCategoriesData.stores as StoreCatRow[]).forEach((s) => categoriesIdx.set(s.storeId, s));
@@ -99,6 +99,28 @@ const MIN_AREA = allAreas.length ? Math.min(...allAreas) : 0;
 // 상권 규모/유동인구: 권역 + 실측 상가밀도(소상공인 상가업소 반경 500m) 기반 외부 객관 신호
 const tradeAreaIdx = new Map<number, TradeAreaRow>();
 (tradeAreaData.stores as TradeAreaRow[]).forEach((s) => tradeAreaIdx.set(s.storeId, s));
+
+// 상권 업종 믹스 정규화 기준 (상권 성격·체류 성격 산출용)
+const _taVals = [...tradeAreaIdx.values()];
+const _foodArr = _taVals.map((t) => t.foodPct);
+const _retailArr = _taVals.map((t) => t.retailPct);
+const _lingerArr = _taVals.map((t) => t.foodPct + t.leisurePct);
+const _experienceArr = _taVals.map((t) => t.leisurePct + t.foodPct * 0.5);
+function normIn(v: number, arr: number[]): number {
+  if (!arr.length) return 0.5;
+  const mn = Math.min(...arr), mx = Math.max(...arr);
+  return mx > mn ? (v - mn) / (mx - mn) : 0.5;
+}
+
+// 가격대 → 대표 객단가(원) — store-sales 실객단가와 거리 매칭용 (priceBandRules 중앙값)
+const PRICE_BAND_REP: Record<PriceBand, number> = {
+  "초저가": 35000, "중저가": 75000, "중가": 150000, "중고가": 250000, "고가": 400000,
+};
+
+// 음식형 카테고리 판별 (상권 성격 매칭 시 음식 vs 소매 분기)
+function isFoodCategory(cat: string): boolean {
+  return /F&B|음식|식음료|카페|디저트|외식/i.test(cat);
+}
 
 // ─────────────────────────────────────────────────────────────
 // 카테고리 키워드 매핑 (사용자 입력 → ERP 카테고리)
@@ -181,6 +203,23 @@ function scoreTradeArea(b: BrandInput, m: StoreMeta): number | null {
   const ta = tradeAreaIdx.get(m.store_id);
   if (ta) {
     subs.push({ score: ta.sizeScore, weight: 2.0 });
+
+    // 상권 성격 적합: 브랜드 업태(음식형/소매형) ↔ 주변 상권 업종 믹스
+    if (b.category) {
+      const n = isFoodCategory(b.category)
+        ? normIn(ta.foodPct, _foodArr)
+        : normIn(ta.retailPct, _retailArr);
+      subs.push({ score: 40 + n * 60, weight: 1.0 });
+    }
+
+    // 체류 성격: 방문 행태 ↔ 상권 체류성(음식+여가) / 목적성(소매)
+    if (b.stay_type) {
+      let n: number;
+      if (b.stay_type === "체류형") n = normIn(ta.foodPct + ta.leisurePct, _lingerArr);
+      else if (b.stay_type === "체험형") n = normIn(ta.leisurePct + ta.foodPct * 0.5, _experienceArr);
+      else n = normIn(ta.retailPct, _retailArr); // 목적형
+      subs.push({ score: 40 + n * 60, weight: 1.0 });
+    }
   }
 
   if (subs.length === 0) return null;
@@ -240,13 +279,21 @@ function scoreCharacter(b: BrandInput, m: StoreMeta): number | null {
     }
   }
 
-  // 가격대: 인접 가격대는 부분 점수 (거리에 따라 감점)
-  if (b.price_band && m.tenant_mix.price_band.length) {
-    const distances = m.tenant_mix.price_band.map((p) => priceDistance(b.price_band!, p));
-    const minDist = Math.min(...distances);
-    // 거리 0 = 100, 1 = 70, 2 = 40, 3+ = 15
-    const score = minDist === 0 ? 100 : minDist === 1 ? 70 : minDist === 2 ? 40 : 15;
-    subs.push({ score, weight: 1.0 });
+  // 가격대: 점포 실제 객단가(store-sales)와 거리 매칭 — 41점 모두 다른 객단가라 촘촘한 차등
+  //         실객단가 데이터 없으면 기존 5단계 밴드 거리로 폴백
+  if (b.price_band) {
+    const sales = salesIdx.get(m.store_id);
+    if (sales && sales.avgPricePerCustomer > 0) {
+      const rep = PRICE_BAND_REP[b.price_band];
+      const ratio = Math.abs(rep - sales.avgPricePerCustomer) / rep; // 상대 거리
+      const score = Math.max(10, Math.min(100, 100 - ratio * 110));
+      subs.push({ score, weight: 1.0 });
+    } else if (m.tenant_mix.price_band.length) {
+      const distances = m.tenant_mix.price_band.map((p) => priceDistance(b.price_band!, p));
+      const minDist = Math.min(...distances);
+      const score = minDist === 0 ? 100 : minDist === 1 ? 70 : minDist === 2 ? 40 : 15;
+      subs.push({ score, weight: 1.0 });
+    }
   }
 
   // 필요 평형 (공실 데이터 미입력이라 사실상 비활성)
