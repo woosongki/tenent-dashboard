@@ -45,10 +45,10 @@ export interface BrandInput {
 }
 
 const WEIGHTS = {
-  trade_area: 0.35,
-  anchors:    0.30,
+  trade_area: 0.50,
+  anchors:    0.20,
   character:  0.20,
-  synergy:    0.15,
+  synergy:    0.10,
 } as const;
 
 export interface AxisScores {
@@ -202,7 +202,8 @@ function scoreTradeArea(b: BrandInput, m: StoreMeta): number | null {
   // 상권 규모/유동인구: 권역 + 실측 상가밀도 (브랜드 입력과 무관하게 항상 존재 → 지방 소형 vs 수도권 대형 차등)
   const ta = tradeAreaIdx.get(m.store_id);
   if (ta) {
-    subs.push({ score: ta.sizeScore, weight: 2.0 });
+    // 상권 규모(유동인구): 항상 반영되는 신호라 가중을 1.2로 억제 → 큰 점포 쏠림 완화
+    subs.push({ score: ta.sizeScore, weight: 1.2 });
 
     // 상권 성격 적합: 브랜드 업태(음식형/소매형) ↔ 주변 상권 업종 믹스
     if (b.category) {

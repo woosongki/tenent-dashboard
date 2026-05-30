@@ -272,10 +272,10 @@ export default function BrandFitClient() {
               <thead className="bg-[#0a0a0a] text-white">
                 <tr>
                   <th className="px-3 py-2 text-left">지점</th>
-                  <th className="px-2 py-2 text-right">상권 35%</th>
-                  <th className="px-2 py-2 text-right">앵커 30%</th>
+                  <th className="px-2 py-2 text-right">상권 50%</th>
+                  <th className="px-2 py-2 text-right">앵커 20%</th>
                   <th className="px-2 py-2 text-right">성격 20%</th>
-                  <th className="px-2 py-2 text-right">시너지 15%</th>
+                  <th className="px-2 py-2 text-right">시너지 10%</th>
                   <th className="px-3 py-2 text-right">종합</th>
                 </tr>
               </thead>
@@ -310,11 +310,11 @@ const AXES = [
   {
     key: "trade_area",
     title: "① 상권 / 고객층",
-    weight: 35,
+    weight: 50,
     color: "#ef476f",
     desc: "상권 규모·유동인구 + 점포 구매고객의 연령·성별·가족 구성과 브랜드 타겟의 일치도",
     rows: [
-      { name: "상권 규모·유동인구", w: "2.0", detail: "권역(수도권 55/광역시 42/지방 32) + 반경 500m 실측 상가밀도 정규화(0~45). 브랜드 입력과 무관하게 항상 반영 → 지방 소형점과 수도권 대형점 차등" },
+      { name: "상권 규모·유동인구", w: "1.2", detail: "권역(수도권 55/광역시 42/지방 32) + 반경 500m 실측 상가밀도 정규화(0~45). 브랜드 입력과 무관하게 항상 반영. 큰 점포 쏠림 방지를 위해 가중 억제(1.2)" },
       { name: "상권 성격 적합", w: "1.0", detail: "카테고리 입력 시. 음식형(F&B)은 주변 음식업 비중, 소매형(패션·잡화 등)은 소매업 비중이 높은 상권에 가점 (반경 500m 업종 믹스 정규화)" },
       { name: "체류 성격", w: "1.0", detail: "체류시간 성격 입력 시. 체류형=음식+여가 비중, 체험형=여가 비중, 목적형=소매 비중이 높은 상권에 가점" },
       { name: "연령 매칭", w: "2.0", detail: "점포 1순위 연령 = 1.0 / 2순위 = 0.5 가중. 선호 연령이 점포 주력 연령에 포함될수록 100점에 근접" },
@@ -325,7 +325,7 @@ const AXES = [
   {
     key: "anchors",
     title: "② 인접 앵커 · 동선",
-    weight: 30,
+    weight: 20,
     color: "#ffb547",
     desc: "입력한 선호 앵커가 점포 TOP10 매출 브랜드에 들어있는지",
     rows: [
@@ -349,7 +349,7 @@ const AXES = [
   {
     key: "synergy",
     title: "④ 시너지",
-    weight: 15,
+    weight: 10,
     color: "#7c3aed",
     desc: "운영 형태 적합성 + 카니발(잠식) 회피 + 매장 규모",
     rows: [
