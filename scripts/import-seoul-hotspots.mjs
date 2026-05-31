@@ -1,4 +1,4 @@
-/* eslint-disable no-console */
+ 
 /**
  * 서울 실시간 도시데이터의 121개 핫스팟 권역 목록 (XLSX)을
  * src/data/seoul-hotspots.json 으로 변환.

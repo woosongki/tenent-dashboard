@@ -1,4 +1,4 @@
-/* eslint-disable no-console */
+ 
 /**
  * 상권분석 모듈을 다른 Next.js 프로젝트로 이식할 수 있는 패키지로 추출.
  *

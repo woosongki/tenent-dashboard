@@ -1,4 +1,4 @@
-/* eslint-disable no-console */
+ 
 // 데스크톱 CSV(💫이랜드리테일 콘텐츠팝업팀 - 팝업 컨텍판.csv)를
 // src/data/popup-contacts.json 으로 정규화 변환.
 //

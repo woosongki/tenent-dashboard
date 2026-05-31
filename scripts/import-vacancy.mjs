@@ -1,4 +1,4 @@
-/* eslint-disable no-console */
+ 
 // 데스크톱 CSV(공실4월3주.CSV)를 src/data/vacancy.json 으로 변환.
 //
 // 사용:  node scripts/import-vacancy.mjs

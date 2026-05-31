@@ -1,4 +1,4 @@
-/* eslint-disable no-console */
+ 
 // src/data/calendar52.json을 calendar52_weeks 테이블에 시드/리셋.
 // 모든 organization에 동일 48주 upsert.
 //

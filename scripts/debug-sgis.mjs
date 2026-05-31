@@ -1,4 +1,4 @@
-/* eslint-disable no-console */
+ 
 /**
  * SGIS API 진단 — 시도/시군구 코드 확인 + year 가용성 체크.
  * 사용: node scripts/debug-sgis.mjs

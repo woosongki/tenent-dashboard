@@ -167,7 +167,7 @@ export async function fetchReportText(rceptNo: string, maxChars = 8000): Promise
 
     if (texts.length === 0) return null;
 
-    let combined = texts.join("\n\n");
+    const combined = texts.join("\n\n");
 
     // 우선순위 섹션 키워드 우선 추출 (분석 가치 높은 부분)
     const priorityKeywords = [

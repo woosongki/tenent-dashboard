@@ -1,4 +1,4 @@
-/* eslint-disable no-console */
+ 
 // 데스크톱 HTML(이랜드리테일_팝업_52주_캘린더_v4.html)에서 const W=[...]만
 // 안전하게 추출해 src/data/calendar52.json 으로 저장.
 
