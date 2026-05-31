@@ -87,6 +87,13 @@ async function fetchNaverPage(brand: string, start: number): Promise<NaverShopRe
 }
 
 export async function POST(req: NextRequest) {
+  // 인증 게이트 — 로그인하지 않은 호출 차단 (네이버 API 비용 보호)
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    return Response.json({ error: "인증이 필요합니다." }, { status: 401 });
+  }
+
   const body = (await req.json()) as { brand?: string };
   const brand = body.brand?.trim();
   if (!brand) {
