@@ -1,42 +1,24 @@
-import { type NextRequest, NextResponse } from "next/server";
+// Next.js 16 Proxy (구 Middleware) — Supabase 세션 자동 갱신
+//
+// 역할: 모든 요청 전에 Supabase 액세스 토큰을 갱신해 쿠키에 반영.
+//   이게 없으면 토큰 만료 시 사용자가 갑자기 로그아웃되거나
+//   서버 컴포넌트에서 인증이 끊기는 문제가 발생한다.
+//
+// 페이지/API의 실제 접근 권한 체크는 각 layout·route에서 계속 수행한다.
+// 여기서는 세션 유지(토큰 리프레시)만 담당.
+
+import { type NextRequest } from "next/server";
 import { updateSession } from "@/lib/supabase/middleware";
 
-// 인증 없이 접근 가능한 공개 경로
-const PUBLIC_PATHS = ["/login", "/auth/callback", "/auth/error"];
-
 export async function proxy(request: NextRequest) {
-  const { pathname } = request.nextUrl;
-
-  // 정적 에셋은 그냥 통과
-  if (pathname.startsWith("/_next") || pathname.startsWith("/favicon")) {
-    return NextResponse.next({ request });
-  }
-
-  const { response, user } = await updateSession(request);
-
-  const isPublic = PUBLIC_PATHS.some((p) => pathname.startsWith(p));
-
-  // 미인증 → 공개 경로가 아니면 로그인으로
-  if (!user && !isPublic) {
-    const url = request.nextUrl.clone();
-    url.pathname = "/login";
-    url.searchParams.set("next", pathname);
-    return NextResponse.redirect(url);
-  }
-
-  // 인증된 상태에서 로그인 페이지 → 대시보드로
-  if (user && pathname.startsWith("/login")) {
-    const url = request.nextUrl.clone();
-    url.pathname = "/dashboard";
-    url.searchParams.delete("next");
-    return NextResponse.redirect(url);
-  }
-
+  // updateSession은 { response, user }를 반환 — Proxy는 Response를 반환해야 함
+  const { response } = await updateSession(request);
   return response;
 }
 
 export const config = {
   matcher: [
+    // 정적 자산 제외한 모든 경로
     "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
   ],
 };
