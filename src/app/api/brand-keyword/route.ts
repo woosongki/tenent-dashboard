@@ -1,5 +1,6 @@
 import { NextRequest } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { rateLimit } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 
@@ -92,6 +93,12 @@ export async function POST(req: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) {
     return Response.json({ error: "인증이 필요합니다." }, { status: 401 });
+  }
+
+  // 레이트 리밋 — 네이버 쇼핑 API 1회 호출당 3페이지 fetch (비용 보호)
+  const limited = rateLimit(`brand-keyword:${user.id}`, { limit: 20, windowMs: 60_000 });
+  if (limited) {
+    return Response.json({ error: limited.message }, { status: 429, headers: { "Retry-After": String(limited.retryAfter) } });
   }
 
   const body = (await req.json()) as { brand?: string };
