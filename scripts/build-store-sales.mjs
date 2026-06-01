@@ -214,8 +214,6 @@ let metaContent = readFileSync("src/data/eland-meta.ts", "utf-8");
 for (let id = 1; id <= 41; id++) {
   const band = idToPriceBand.get(id);
   if (!band) continue;
-  const newBand = `price_band: ${JSON.stringify(band)} as PriceBand[]`;
-  const storeIdLine = `store_id: ${id},`;
   // store_id: N으로 시작하는 객체 내에서 price_band: [] 를 교체
   const regex = new RegExp(
     `(store_id: ${id},[\\s\\S]*?price_band: )\\[\\]`,

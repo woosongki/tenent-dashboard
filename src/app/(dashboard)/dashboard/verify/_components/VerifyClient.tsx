@@ -485,7 +485,7 @@ function InternalSection({ brief }: { brief: VerifyBrief }) {
           <p className="text-[12px] text-slate-400">
             데이터랩 미연동
             <br />
-            <span className="text-[10px] text-slate-300">개발자센터에서 "데이터랩(검색어트렌드)" scope 추가 필요</span>
+            <span className="text-[10px] text-slate-300">개발자센터에서 &quot;데이터랩(검색어트렌드)&quot; scope 추가 필요</span>
           </p>
         ) : (
           <div className="space-y-2">
@@ -677,7 +677,7 @@ export default function VerifyClient({ canVerify = true }: VerifyClientProps) {
           <div className="border-b-[2px] border-[#0a0a0a] bg-[#FAF7EC] px-6 py-3 flex items-center justify-between">
             <div>
               <p className="text-[11px] font-extrabold uppercase tracking-[.14em] text-slate-500">
-                "{company}" 검색 결과 · {candidates.length}건
+                &quot;{company}&quot; 검색 결과 · {candidates.length}건
               </p>
               <p className="text-[11px] text-slate-500 mt-0.5">검증할 법인을 클릭하세요. 상장사가 가장 풍부한 데이터를 제공합니다.</p>
             </div>

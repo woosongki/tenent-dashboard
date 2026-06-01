@@ -17,7 +17,8 @@ export default function CategoryTable({ groups }: Props) {
   function togglePlan(plan: string) {
     setOpenPlans((prev) => {
       const next = new Set(prev);
-      next.has(plan) ? next.delete(plan) : next.add(plan);
+      if (next.has(plan)) next.delete(plan);
+      else next.add(plan);
       return next;
     });
   }

@@ -28,17 +28,6 @@ export interface StoreMeta {
   popup_friendly: boolean | null;     // 팝업 운영 친화도
 }
 
-/** 빈 메타 생성 헬퍼 */
-function empty(id: number): StoreMeta {
-  return {
-    store_id: id,
-    trade_area: { primary_age: [], primary_gender: "여성 중심", family_ratio: null },
-    anchors: [],
-    tenant_mix: { categories: [], price_band: [] },
-    available_space: [],
-    popup_friendly: null,
-  };
-}
 
 // 41개점 정성 데이터 (2026-05 기준 자동 채움)
 //

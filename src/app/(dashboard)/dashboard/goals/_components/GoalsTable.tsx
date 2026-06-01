@@ -180,6 +180,16 @@ export default function GoalsTable({ goals: initialGoals }: Props) {
           </div>
         </div>
       )}
+
+      <ConfirmDialog
+        open={pendingDelete !== null}
+        title="목표 삭제"
+        message="목표를 삭제하시겠습니까?"
+        confirmLabel="삭제"
+        tone="danger"
+        onConfirm={() => pendingDelete && doDelete(pendingDelete)}
+        onCancel={() => setPendingDelete(null)}
+      />
     </div>
   );
 }

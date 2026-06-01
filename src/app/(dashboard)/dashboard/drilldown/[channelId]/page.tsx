@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import Link from "next/link";
 import { redirect, notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
@@ -140,11 +141,11 @@ export default async function ChannelPage({
     <div className="min-h-screen bg-gray-50">
       <header className="sticky top-0 z-10 border-b border-gray-200 bg-white/80 backdrop-blur-sm">
         <div className="mx-auto flex max-w-7xl items-center gap-3 px-4 py-3 sm:px-6">
-          <a href="/dashboard/drilldown" className="text-gray-400 hover:text-gray-600 transition-colors">
+          <Link href="/dashboard/drilldown" className="text-gray-400 hover:text-gray-600 transition-colors">
             <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
             </svg>
-          </a>
+          </Link>
           <span className="text-sm font-semibold text-gray-800">채널 분석</span>
         </div>
       </header>

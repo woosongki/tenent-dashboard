@@ -127,6 +127,8 @@ function FloorThumb({ floor }: { floor: Floorplan }) {
   const thumbUrl = floor.public_url + ".thumb.webp";
   const src = useFallback ? floor.public_url : thumbUrl;
   return (
+    // Supabase Storage 서명 URL — next/image 최적화는 Storage egress를 다시 늘려서 의도적으로 <img> 사용
+    // eslint-disable-next-line @next/next/no-img-element
     <img
       src={src}
       alt={floor.floor_label}
@@ -424,6 +426,8 @@ function ViewerModal({
           {isPdf ? (
             <iframe src={floor.public_url} className="h-full w-full min-h-[70vh]" title={floor.floor_label} />
           ) : (
+            // Supabase Storage 서명 URL — next/image 최적화는 Storage egress를 다시 늘려서 의도적으로 <img> 사용
+            // eslint-disable-next-line @next/next/no-img-element
             <img
               src={floor.public_url}
               alt={floor.floor_label}

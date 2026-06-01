@@ -7,8 +7,8 @@
  * 사용: node scripts/export-branch-module.mjs
  */
 
-import { readFileSync, writeFileSync, mkdirSync, cpSync, existsSync } from "node:fs";
-import { resolve, dirname, join } from "node:path";
+import { writeFileSync, mkdirSync, cpSync, existsSync } from "node:fs";
+import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");

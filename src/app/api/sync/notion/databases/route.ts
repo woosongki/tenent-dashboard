@@ -9,7 +9,7 @@ import { createClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
 
-export async function GET(req: Request) {
+export async function GET() {
   // 로그인 유저만 접근
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();

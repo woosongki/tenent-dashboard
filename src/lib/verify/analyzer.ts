@@ -52,7 +52,6 @@ function calcRatios(years: FinancialYear[]): FinancialRatios {
 
 function formatFinancials(years: FinancialYear[]): string {
   const toB = (n: number | null) => (n === null ? "확인 불가" : `${(n / 1e8).toFixed(0)}억원`);
-  const toPct = (n: number | null) => (n === null ? "확인 불가" : `${n.toFixed(1)}%`);
 
   return years
     .map(

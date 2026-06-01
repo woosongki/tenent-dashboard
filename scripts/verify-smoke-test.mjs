@@ -36,7 +36,6 @@ const NAVER_ID = process.env.NAVER_SEARCH_CLIENT_ID;
 const NAVER_SECRET = process.env.NAVER_SEARCH_CLIENT_SECRET;
 const NOTION_KEY = process.env.NOTION_API_KEY;
 const TENANT_DB = process.env.NOTION_DB_VERIFY_TENANT_ID;
-const NEWS_DB = process.env.NOTION_DB_VERIFY_NEWS_ID;
 
 function step(n, msg) { console.log(`\n[${n}] ${msg}`); }
 function ok(msg) { console.log(`    ✅ ${msg}`); }

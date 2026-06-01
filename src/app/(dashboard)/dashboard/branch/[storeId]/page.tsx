@@ -3,9 +3,9 @@ import { redirect, notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import TopBar from "@/components/layout/TopBar";
-import { getStoreById, BRAND_BADGE } from "@/lib/stores";
+import { getStoreById } from "@/lib/stores";
 import { fetchCommercialTrade, formatPrice10k } from "@/lib/realEstate";
-import { getTradeArea, getCohortStat, TRADE_AREA_BADGE } from "@/lib/tradeArea";
+import { getTradeArea, getCohortStat } from "@/lib/tradeArea";
 import {
   getCommercialRent,
   getRentSource,

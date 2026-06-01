@@ -21,7 +21,6 @@
  * 안전성: 한 행씩 트랜잭션처럼 처리 → 실패해도 다른 행 영향 없음.
  */
 
-import fs from "node:fs/promises";
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -67,8 +66,6 @@ function fmtBytes(n) {
 }
 
 async function processOne(row) {
-  const tag = `[${row.store_id}/${row.floor_label}]`;
-
   // PNG/JPEG가 아니면 스킵 (단, cacheControl만 갱신할 필요 있을 수도 있는데
   // Supabase API는 기존 객체 메타 갱신을 지원하지 않으므로 그냥 패스)
   if (row.mime_type !== "image/png" && row.mime_type !== "image/jpeg") {

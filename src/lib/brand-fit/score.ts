@@ -10,7 +10,6 @@
 
 import { ELAND_STORES, type ElandStore } from "@/data/homeplus";
 import {
-  ELAND_META,
   getMeta,
   isMetaEmpty,
   type StoreMeta,
