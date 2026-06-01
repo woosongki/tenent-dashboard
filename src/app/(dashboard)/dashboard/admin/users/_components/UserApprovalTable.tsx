@@ -4,6 +4,7 @@ import { useMemo, useState, useTransition } from "react";
 import { toast } from "sonner";
 import Badge from "@/components/ui/Badge";
 import EmptyState from "@/components/ui/EmptyState";
+import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import { approveUser, rejectUser, revokeApproval } from "../_actions";
 
 export interface UserRow {
@@ -117,6 +118,7 @@ function TH({
 
 function UserRowItem({ row, zebra = false }: { row: UserRow; zebra?: boolean }) {
   const [pending, start] = useTransition();
+  const [confirmRevoke, setConfirmRevoke] = useState(false);
 
   function onApprove() {
     start(async () => {
@@ -136,8 +138,8 @@ function UserRowItem({ row, zebra = false }: { row: UserRow; zebra?: boolean }) 
     });
   }
 
-  function onRevoke() {
-    if (!confirm(`${row.email}의 승인을 박탈할까요?\n해당 사용자는 즉시 대시보드 접근이 차단됩니다.`)) return;
+  function doRevoke() {
+    setConfirmRevoke(false);
     start(async () => {
       const res = await revokeApproval(row.id);
       if (!res.ok) toast.error(res.error);
@@ -207,7 +209,7 @@ function UserRowItem({ row, zebra = false }: { row: UserRow; zebra?: boolean }) 
           {row.isApproved && !row.isMe && (
             <button
               type="button"
-              onClick={onRevoke}
+              onClick={() => setConfirmRevoke(true)}
               disabled={pending}
               className="text-[11px] font-extrabold uppercase tracking-wider px-2.5 py-1 border-[2px] border-[#0a0a0a] bg-white text-[#0a0a0a] hover:bg-yellow-300 disabled:opacity-50 transition-colors"
             >
@@ -226,6 +228,15 @@ function UserRowItem({ row, zebra = false }: { row: UserRow; zebra?: boolean }) 
           )}
         </div>
       </td>
+      <ConfirmDialog
+        open={confirmRevoke}
+        title="승인 박탈"
+        message={`${row.email}의 승인을 박탈할까요? 해당 사용자는 즉시 대시보드 접근이 차단됩니다.`}
+        confirmLabel="박탈"
+        tone="danger"
+        onConfirm={doRevoke}
+        onCancel={() => setConfirmRevoke(false)}
+      />
     </tr>
   );
 }

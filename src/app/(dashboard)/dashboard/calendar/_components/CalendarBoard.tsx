@@ -3,6 +3,7 @@
 import { useMemo, useState, useTransition } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
+import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import {
   type CalendarWeek,
   type CalendarMatch,
@@ -529,11 +530,11 @@ function PinChip({
   canEdit: boolean;
 }) {
   const [pending, start] = useTransition();
+  const [confirmOpen, setConfirmOpen] = useState(false);
   const stage = contact?.stage ?? null;
 
-  function onRemove() {
-    if (!canEdit) return;
-    if (!confirm(`'${assignment.contactBrand}' 핀을 해제할까요?`)) return;
+  function doRemove() {
+    setConfirmOpen(false);
     start(async () => {
       const res = await unassignContact(assignment.id);
       if (!res.ok) toast.error(res.error);
@@ -556,7 +557,7 @@ function PinChip({
       {canEdit && (
         <button
           type="button"
-          onClick={onRemove}
+          onClick={() => setConfirmOpen(true)}
           disabled={pending}
           aria-label="핀 해제"
           className="ml-0.5 h-3.5 w-3.5 inline-flex items-center justify-center border-[1.5px] border-[#0a0a0a] bg-white text-[#0a0a0a] hover:bg-rose-500 hover:text-white transition-colors"
@@ -564,6 +565,15 @@ function PinChip({
           ✕
         </button>
       )}
+      <ConfirmDialog
+        open={confirmOpen}
+        title="핀 해제"
+        message={`'${assignment.contactBrand}' 핀을 해제할까요?`}
+        confirmLabel="해제"
+        tone="danger"
+        onConfirm={doRemove}
+        onCancel={() => setConfirmOpen(false)}
+      />
     </span>
   );
 }
