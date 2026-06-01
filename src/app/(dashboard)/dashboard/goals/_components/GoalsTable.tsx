@@ -10,6 +10,7 @@ import ExportButton from "@/components/ui/ExportButton";
 import type { FilterDef } from "@/types/filterBar";
 import type { ExcelColumn } from "@/lib/excel";
 import InlineEditCell from "./InlineEditCell";
+import ConfirmDialog from "@/components/ui/ConfirmDialog";
 
 // ── Excel 컬럼 정의 ───────────────────────────────────────────
 const EXCEL_COLUMNS: ExcelColumn[] = [
@@ -48,6 +49,7 @@ interface Props {
 export default function GoalsTable({ goals: initialGoals }: Props) {
   const [goals, setGoals]   = useState(initialGoals);
   const [, startTransition] = useTransition();
+  const [pendingDelete, setPendingDelete] = useState<string | null>(null);
 
   const filterBar = useFilterBar(FILTER_DEFS);
   const sortBar   = useFilterBar(SORT_DEFS);
@@ -60,7 +62,11 @@ export default function GoalsTable({ goals: initialGoals }: Props) {
   }
 
   function handleDelete(id: string) {
-    if (!confirm("목표를 삭제하시겠습니까?")) return;
+    setPendingDelete(id);
+  }
+
+  function doDelete(id: string) {
+    setPendingDelete(null);
     setGoals((prev) => prev.filter((g) => g.id !== id));
     startTransition(async () => {
       const res = await deleteGoal(id);
