@@ -3,6 +3,7 @@
 import { useState } from "react";
 import {
   rankStores,
+  WEIGHTS,
   type BrandInput,
   type Stay,
   type OperationType,
@@ -272,10 +273,10 @@ export default function BrandFitClient() {
               <thead className="bg-[#0a0a0a] text-white">
                 <tr>
                   <th className="px-3 py-2 text-left">지점</th>
-                  <th className="px-2 py-2 text-right">상권 50%</th>
-                  <th className="px-2 py-2 text-right">앵커 20%</th>
-                  <th className="px-2 py-2 text-right">성격 20%</th>
-                  <th className="px-2 py-2 text-right">시너지 10%</th>
+                  <th className="px-2 py-2 text-right">상권 {Math.round(WEIGHTS.trade_area * 100)}%</th>
+                  <th className="px-2 py-2 text-right">앵커 {Math.round(WEIGHTS.anchors * 100)}%</th>
+                  <th className="px-2 py-2 text-right">성격 {Math.round(WEIGHTS.character * 100)}%</th>
+                  <th className="px-2 py-2 text-right">시너지 {Math.round(WEIGHTS.synergy * 100)}%</th>
                   <th className="px-3 py-2 text-right">종합</th>
                 </tr>
               </thead>
@@ -310,7 +311,7 @@ const AXES = [
   {
     key: "trade_area",
     title: "① 상권 / 고객층",
-    weight: 50,
+    weight: Math.round(WEIGHTS.trade_area * 100),
     color: "#ef476f",
     desc: "상권 규모·유동인구 + 점포 구매고객의 연령·성별·가족 구성과 브랜드 타겟의 일치도",
     rows: [
@@ -325,7 +326,7 @@ const AXES = [
   {
     key: "anchors",
     title: "② 인접 앵커 · 동선",
-    weight: 20,
+    weight: Math.round(WEIGHTS.anchors * 100),
     color: "#ffb547",
     desc: "입력한 선호 앵커가 점포 TOP10 매출 브랜드에 들어있는지",
     rows: [
@@ -337,7 +338,7 @@ const AXES = [
   {
     key: "character",
     title: "③ 브랜드 성격",
-    weight: 20,
+    weight: Math.round(WEIGHTS.character * 100),
     color: "#06d6a0",
     desc: "카테고리·가격대가 점포 테넌트 구성과 맞는지",
     rows: [
@@ -349,7 +350,7 @@ const AXES = [
   {
     key: "synergy",
     title: "④ 시너지",
-    weight: 10,
+    weight: Math.round(WEIGHTS.synergy * 100),
     color: "#7c3aed",
     desc: "운영 형태 적합성 + 카니발(잠식) 회피 + 매장 규모",
     rows: [

@@ -43,7 +43,7 @@ export interface BrandInput {
   avoid_strength:    AvoidStrength;
 }
 
-const WEIGHTS = {
+export const WEIGHTS = {
   trade_area: 0.50,
   anchors:    0.20,
   character:  0.20,
