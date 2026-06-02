@@ -11,27 +11,31 @@ import {
   Tooltip,
   Polyline,
   Popup,
-  useMap,
 } from "react-leaflet";
-import L from "leaflet";
-
-// 선택된 좌표로 지도를 부드럽게 이동시키는 헬퍼 컴포넌트.
-// MapContainer 내부에 위치해야 useMap()이 동작함.
-function FlyToTarget({
-  target,
-}: {
-  target: { lat: number; lng: number; zoom?: number; key: string } | null;
-}) {
-  const map = useMap();
-  useEffect(() => {
-    if (!target) return;
-    map.flyTo([target.lat, target.lng], target.zoom ?? 13, {
-      duration: 0.7,
-      easeLinearity: 0.25,
-    });
-  }, [target, map]);
-  return null;
-}
+import FlyToTarget, { type FlyTarget } from "./FlyToTarget";
+import {
+  TIER_COLOR,
+  TIER_LABEL,
+  TIER_ORDER,
+  ALL_TIERS,
+  elandIcon,
+  artboxIcon,
+  daisoIcon,
+  oliveyoungIcon,
+  lotteIcon,
+  hyundaiIcon,
+  shinsegaeIcon,
+  akIcon,
+  galleriaIcon,
+  entersixIcon,
+  modaIcon,
+  savezoneIcon,
+  lfIcon,
+  saturIcon,
+  emartIcon,
+  lottemartIcon,
+  hanaromartIcon,
+} from "./mapIcons";
 import {
   HOMEPLUS_STORES,
   ELAND_STORES,
@@ -58,98 +62,6 @@ import { SATUR_STORES } from "@/data/satur";
 import { EMART_STORES } from "@/data/emart";
 import { LOTTEMART_STORES } from "@/data/lottemart";
 import { HANAROMART_STORES } from "@/data/hanaromart";
-
-const TIER_COLOR: Record<Tier, string> = {
-  "동일상권": "#ef476f",
-  "인접상권": "#ffb547",
-  "근접권":   "#06d6a0",
-  "별도상권": "#5a6378",
-};
-
-const TIER_LABEL: Record<Tier, string> = {
-  "동일상권": "동일 (≤1km)",
-  "인접상권": "인접 (1~3km)",
-  "근접권":   "근접 (3~5km)",
-  "별도상권": "별도",
-};
-
-const TIER_ORDER: Record<Tier, number> = {
-  "동일상권": 0, "인접상권": 1, "근접권": 2, "별도상권": 3,
-};
-
-const ALL_TIERS: Tier[] = ["동일상권", "인접상권", "근접권", "별도상권"];
-
-// 다이아몬드 모양 이랜드 마커
-const elandIcon = L.divIcon({
-  className: "",
-  html: `<div style="width:14px;height:14px;background:#4cc9f0;border:2px solid #fff;transform:rotate(45deg);box-shadow:0 2px 6px rgba(0,0,0,.4)"></div>`,
-  iconSize: [14, 14],
-  iconAnchor: [7, 7],
-});
-
-// 체인 매장 마커 (브랜드 컬러)
-const artboxIcon = L.divIcon({
-  className: "",
-  html: `<div style="width:10px;height:10px;background:#f72585;border:1.5px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.35)"></div>`,
-  iconSize: [10, 10],
-  iconAnchor: [5, 5],
-});
-const daisoIcon = L.divIcon({
-  className: "",
-  html: `<div style="width:10px;height:10px;background:#f9c74f;border:1.5px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.35)"></div>`,
-  iconSize: [10, 10],
-  iconAnchor: [5, 5],
-});
-const oliveyoungIcon = L.divIcon({
-  className: "",
-  html: `<div style="width:10px;height:10px;background:#52b788;border:1.5px solid #fff;border-radius:50%;box-shadow:0 1px 4px rgba(0,0,0,.35)"></div>`,
-  iconSize: [10, 10],
-  iconAnchor: [5, 5],
-});
-// 백화점 — 사각형 + 글자 라벨 (앵커 매장이라 더 크게)
-function makeDeptIcon(letter: string, bg: string) {
-  return L.divIcon({
-    className: "",
-    html: `<div style="width:16px;height:16px;background:${bg};border:2px solid #fff;display:flex;align-items:center;justify-content:center;color:#fff;font-size:9px;font-weight:800;box-shadow:0 2px 6px rgba(0,0,0,.4)">${letter}</div>`,
-    iconSize: [16, 16],
-    iconAnchor: [8, 8],
-  });
-}
-const lotteIcon     = makeDeptIcon("L", "#a4133c");  // 와인 레드
-const hyundaiIcon   = makeDeptIcon("H", "#1d3557");  // 다크 네이비
-const shinsegaeIcon = makeDeptIcon("S", "#495057");  // 다크 그레이
-const akIcon        = makeDeptIcon("AK","#6f1d77");  // AK 보라
-const galleriaIcon  = makeDeptIcon("G", "#2d5016");  // 갤러리아 다크그린
-
-// 그 외 — 작은 사각 7px
-function makeSmallSquareIcon(bg: string) {
-  return L.divIcon({
-    className: "",
-    html: `<div style="width:8px;height:8px;background:${bg};border:1.5px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.3)"></div>`,
-    iconSize: [8, 8],
-    iconAnchor: [4, 4],
-  });
-}
-const entersixIcon = makeSmallSquareIcon("#ff6f3c");
-const modaIcon     = makeSmallSquareIcon("#00b4a0");
-const savezoneIcon = makeSmallSquareIcon("#95a847");
-const lfIcon       = makeSmallSquareIcon("#a08260");
-const saturIcon    = makeSmallSquareIcon("#7c3aed"); // 보라 — 세터
-
-// 마트 — 원형 10px (백화점보다 작게, 체인보다 약간 큼)
-function makeCircleIcon(bg: string) {
-  return L.divIcon({
-    className: "",
-    html: `<div style="width:11px;height:11px;background:${bg};border:2px solid #fff;border-radius:50%;box-shadow:0 1px 4px rgba(0,0,0,.35)"></div>`,
-    iconSize: [11, 11],
-    iconAnchor: [5.5, 5.5],
-  });
-}
-const emartIcon      = makeCircleIcon("#ffc107"); // 노랑
-const lottemartIcon  = makeCircleIcon("#d62828"); // 빨강
-const hanaromartIcon = makeCircleIcon("#2d6a4f"); // 농협 초록
-
-type FlyTarget = { lat: number; lng: number; zoom?: number; key: string };
 
 export default function HomeplusMapClient() {
   // URL ?layer=X 로 진입한 체인 레이어 자동 활성화 (사이드바 하위 메뉴)
