@@ -1,7 +1,7 @@
 "use client";
 
 import "leaflet/dist/leaflet.css";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import {
   MapContainer,
@@ -225,15 +225,17 @@ export default function HomeplusMapClient() {
   }, [initialLayer, isChainView]);
   // 클릭한 점포 좌표로 지도 이동 트리거. key를 매번 새로 만들어 같은 점포 재클릭도 동작.
   const [flyTarget, setFlyTarget] = useState<FlyTarget | null>(null);
+  // 고유 key 생성용 단조 증가 카운터 (렌더 순수성 위해 Date.now() 대신 ref 사용)
+  const flyKeySeq = useRef(0);
 
   function selectHomeplus(s: HomeplusStore) {
     setSelected(s);
-    setFlyTarget({ lat: s.lat, lng: s.lng, zoom: 13, key: `hp-${s.name}-${Date.now()}` });
+    setFlyTarget({ lat: s.lat, lng: s.lng, zoom: 13, key: `hp-${s.name}-${++flyKeySeq.current}` });
   }
   function flyToEland(id: number) {
     const e = ELAND_STORES.find((x) => x.id === id);
     if (!e) return;
-    setFlyTarget({ lat: e.lat, lng: e.lng, zoom: 14, key: `el-${e.id}-${Date.now()}` });
+    setFlyTarget({ lat: e.lat, lng: e.lng, zoom: 14, key: `el-${e.id}-${++flyKeySeq.current}` });
   }
 
   const filtered = useMemo(

@@ -196,6 +196,13 @@ export default function GoalsTable({ goals: initialGoals }: Props) {
 
 // ── GoalRow ───────────────────────────────────────────────────
 
+// 렌더 순수성: "오늘 자정" 기준값을 모듈 로드 시 1회 고정 (렌더 중 Date.now() 호출 회피)
+const TODAY_MS = (() => {
+  const d = new Date();
+  d.setHours(0, 0, 0, 0);
+  return d.getTime();
+})();
+
 function GoalRow({
   goal,
   onDelete,
@@ -210,7 +217,7 @@ function GoalRow({
     : 0;
 
   const daysLeft = Math.ceil(
-    (new Date(goal.endDate).getTime() - Date.now()) / 86_400_000,
+    (new Date(goal.endDate).getTime() - TODAY_MS) / 86_400_000,
   );
 
   return (
