@@ -27,13 +27,6 @@ export interface BrandRecord {
   code: string;
   name: string;
   summary: PeriodTotals;
-  monthly: {
-    month: string;
-    revenue_current: number | null;
-    revenue_prev: number | null;
-    profit_current: number | null;
-    profit_prev: number | null;
-  }[];
 }
 
 export interface GroupRecord extends PeriodTotals {
@@ -54,6 +47,26 @@ export interface MonthSummary {
   profit_growth: number;
 }
 
+// 지점별 입점 브랜드 (드릴다운용)
+export interface StoreBrand {
+  code: string;
+  name: string;
+  revenue_current: number;
+  revenue_prev: number | null;
+  revenue_growth: number | null;
+  profit_current: number | null;
+}
+
+// 지점 합계 + 브랜드 드릴다운 (41개 마스터만)
+export interface StoreRecord extends PeriodTotals {
+  storeId: number;
+  plant: string;
+  name: string;
+  brand: string;
+  brandCount: number;
+  brands: StoreBrand[];
+}
+
 interface SalesFile {
   version: string;
   compiledAt: string;
@@ -61,6 +74,7 @@ interface SalesFile {
   overallTotal: PeriodTotals | null;
   monthSummary: MonthSummary[];
   groups: GroupRecord[];
+  stores: StoreRecord[];
   brands: BrandRecord[];
 }
 
@@ -85,6 +99,10 @@ export function getMonthSummary(): MonthSummary[] {
 
 export function getGroups(): GroupRecord[] {
   return file.groups;
+}
+
+export function getStores(): StoreRecord[] {
+  return file.stores;
 }
 
 export function getBrands(): BrandRecord[] {

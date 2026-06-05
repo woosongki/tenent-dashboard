@@ -6,11 +6,13 @@ import {
   getOverallTotal,
   getMonthSummary,
   getGroups,
+  getStores,
   getBrands,
 } from "@/lib/sales/csvData";
 import MonthlyComparisonChart from "./_components/MonthlyComparisonChart";
 import SalesSummaryCards from "./_components/SalesSummaryCards";
 import GroupComparisonTable from "./_components/GroupComparisonTable";
+import StoreComparisonTable from "./_components/StoreComparisonTable";
 import BrandComparisonTable from "./_components/BrandComparisonTable";
 import TopBar from "@/components/layout/TopBar";
 import PageHeader from "@/components/ui/PageHeader";
@@ -28,6 +30,7 @@ export default async function SalesPage() {
   const overall = getOverallTotal();
   const monthly = getMonthSummary();
   const groups = getGroups();
+  const stores = getStores();
   const brands = getBrands();
 
   return (
@@ -40,8 +43,8 @@ export default async function SalesPage() {
           <PageHeader
             eyebrow="SALES ANALYTICS"
             title="매출분석"
-            subtitle="구매그룹 4분류 · 월별 작년/올해 비교"
-            meta={`${meta.period1} vs ${meta.period2} · 브랜드 ${brands.length}개`}
+            subtitle="26년 1~5월 누적 · 구매그룹 · 지점 · 브랜드 3축"
+            meta={`${meta.period1} vs ${meta.period2} · 지점 ${stores.length}개 · 브랜드 ${brands.length}개`}
           />
 
         {/* 종합 + 월별 차트 */}
@@ -56,6 +59,16 @@ export default async function SalesPage() {
           <GroupComparisonTable groups={groups} />
         </section>
 
+        {/* 지점별 표 (드릴다운) */}
+        <section className="space-y-3">
+          <div className="inline-flex items-center gap-2 border-[2px] border-[#0a0a0a] bg-yellow-300 px-3 py-1 shadow-[2px_2px_0_0_#0a0a0a]">
+            <h2 className="font-display text-[18px] leading-none text-[#0a0a0a]">지점별 매출</h2>
+            <span className="font-mono text-[12px] font-extrabold tabular-nums text-[#0a0a0a]">{stores.length}</span>
+          </div>
+          <p className="text-[11px] font-bold text-[#0a0a0a]/45">지점 행을 클릭하면 입점 브랜드 매출 TOP을 펼쳐봅니다.</p>
+          <StoreComparisonTable stores={stores} />
+        </section>
+
         {/* 브랜드 표 (전체) */}
         <section className="space-y-3">
           <div className="inline-flex items-center gap-2 border-[2px] border-[#0a0a0a] bg-yellow-300 px-3 py-1 shadow-[2px_2px_0_0_#0a0a0a]">
@@ -66,7 +79,7 @@ export default async function SalesPage() {
         </section>
 
           <p className="text-[10px] font-bold uppercase tracking-wider text-[#0a0a0a]/55">
-            데이터 출처 <span className="font-mono">{meta.compiledAt}</span> 변환 · CSV 일매출 2기간 비교
+            데이터 출처 <span className="font-mono">{meta.compiledAt}</span> 변환 · 26년 1~5월 누적 실적 (구매그룹·브랜드 / 지점·브랜드) · 41개점 기준
           </p>
 
           <AppFooter />
