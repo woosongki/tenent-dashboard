@@ -18,8 +18,8 @@ export const metadata: Metadata = { title: "대시보드 — lifestyle" };
 function SummarySkeleton() {
   return (
     <div className="animate-pulse space-y-8">
-      <div className="grid grid-cols-2 gap-5 xl:grid-cols-4">
-        {Array.from({ length: 4 }).map((_, i) => (
+      <div className="grid grid-cols-2 gap-5 xl:grid-cols-5">
+        {Array.from({ length: 5 }).map((_, i) => (
           <div key={i} className="h-36 brutal bg-[#F1ECDB]" />
         ))}
       </div>
