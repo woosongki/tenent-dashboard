@@ -3,7 +3,6 @@ import type { DashboardSummary, OrgRow, CategoryGroup, CategoryStat } from "@/ty
 import { getPopupContactCount } from "@/lib/popupContacts";
 import {
   getGroups as getSalesGroups,
-  getOverallTotal,
   getTopByGrowthAmount,
   getTopByGrowth,
 } from "@/lib/sales/csvData";
@@ -40,19 +39,8 @@ export async function getDashboardSummary(): Promise<DashboardSummary> {
 
   // ── 매출 데이터 (CSV 변환본) ─────────────────────────
   const salesGroups = getSalesGroups();
-  const overall = getOverallTotal();
   const topByGrowthAmount = getTopByGrowthAmount(5);
   const topByGrowth = getTopByGrowth(5);
-
-  const totalSales = overall
-    ? {
-        revenue_current: overall.revenue_current ?? 0,
-        revenue_prev: overall.revenue_prev ?? 0,
-        revenue_growth: overall.revenue_growth,
-        profit_current: overall.profit_current ?? 0,
-        profit_growth: overall.profit_growth,
-      }
-    : null;
 
   // ── 입점계획 통계 (attraction_status — 사이드바 "입점계획(26년)"과 동일 소스) ──
   const attraction = await getAttractionStats();
@@ -88,7 +76,6 @@ export async function getDashboardSummary(): Promise<DashboardSummary> {
     pendingInvitations: invitationsRes.count ?? 0,
     mrr,
     mrrChange,
-    totalSales,
     topByGrowthAmount,
     topByGrowth,
     contentPoolCount,

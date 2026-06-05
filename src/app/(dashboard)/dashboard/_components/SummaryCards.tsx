@@ -1,7 +1,6 @@
 import Link from "next/link";
 import type { DashboardSummary } from "@/types/dashboard";
 import { TYPO } from "@/lib/tokens";
-import { formatKRWCompact } from "@/lib/sales/format";
 
 interface Props {
   summary: DashboardSummary;
@@ -77,29 +76,9 @@ export default function SummaryCards({ summary }: Props) {
     : 0;
   const pool = summary.contentPoolBreakdown;
   const poolBreakdown = `라이프 ${pool.lifestyle} · F&B ${pool.fnb} · 팝업 ${pool.popup}`;
-  const sales = summary.totalSales;
-  const salesGrowth = sales?.revenue_growth ?? null;
 
   return (
-    <div className="grid grid-cols-2 gap-5 xl:grid-cols-5">
-      {sales && (
-        <Kpi
-          href="/dashboard/sales"
-          accent="ink"
-          label="전사 누적매출"
-          value={formatKRWCompact(sales.revenue_current)}
-          caption={`26년 1~5월 · 전년 ${formatKRWCompact(sales.revenue_prev)}`}
-          trend={
-            salesGrowth !== null
-              ? {
-                  direction: salesGrowth >= 0 ? "up" : "down",
-                  value: `${salesGrowth >= 0 ? "+" : ""}${salesGrowth.toFixed(1)}%`,
-                  label: "",
-                }
-              : undefined
-          }
-        />
-      )}
+    <div className="grid grid-cols-2 gap-5 xl:grid-cols-4">
       <Kpi
         href="/dashboard/vacancy"
         accent="violet"

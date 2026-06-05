@@ -23,14 +23,6 @@ export interface DashboardSummary {
   pendingInvitations: number;
   mrr: number;
   mrrChange: number;
-  /** 전사 누적 매출 실적 (26년 1~5월, CSV 변환본) */
-  totalSales: {
-    revenue_current: number;
-    revenue_prev: number;
-    revenue_growth: number | null;
-    profit_current: number;
-    profit_growth: number | null;
-  } | null;
   /** 매출액 성장(증가액) Top 5 — 전년 동기 대비 +원 (CSV 변환본) */
   topByGrowthAmount: BrandRecord[];
   /** 매출 성장률 Top 5 — 전년 동기 대비 +% (CSV 변환본) */
