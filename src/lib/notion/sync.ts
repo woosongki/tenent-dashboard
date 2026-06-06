@@ -9,8 +9,14 @@ import {
  * 노션 → Supabase 풀 싱크.
  * Cron(매일 새벽) 또는 수동 트리거(/api/sync/notion)로 실행.
  *
- * 전략: notion_id를 기준으로 upsert (존재하면 업데이트, 없으면 insert).
+ * 전략: notion_url을 기준으로 upsert (존재하면 업데이트, 없으면 insert).
+ *   - DB: notion_url partial UNIQUE INDEX (supabase/*.sql) — 중복 INSERT를 DB가 거부.
+ *   - 코드: insert 대신 upsert(onConflict: notion_url) — 경합/재실행에도 1행 보장.
+ *   - 추가 방어: 매 sync 시작 시 과거 누적 중복을 dedupe로 자가치유.
  * 노션에서 삭제된 행은 별도 로직 없이 잔존 (운영 안전성 우선).
+ *
+ * ⚠ notion_url이 비어있는(null) 노션 페이지는 upsert 키가 없으므로 건너뛴다
+ *    (키 없는 INSERT는 매번 중복을 만들기 때문 — 신뢰성 우선).
  */
 
 interface SyncResult {
@@ -121,15 +127,6 @@ async function dedupeByNotionUrl(
   return { deleted: idsToDelete.length, errors };
 }
 
-/** notion_url → 정본 id 맵 (가장 오래된 1건). dedupe 후의 rows로 호출할 것. */
-function buildUrlToIdMap(rows: ExistingRow[]): Map<string, string> {
-  const map = new Map<string, string>();
-  for (const r of rows) {
-    if (r.notion_url && !map.has(r.notion_url)) map.set(r.notion_url, r.id);
-  }
-  return map;
-}
-
 // ── 1. 입점계획 (attraction_status) ──────────────────────────
 export async function syncAttraction(): Promise<SyncResult> {
   const result: SyncResult = { table: "attraction_status", fetched: 0, upserted: 0, deduped: 0, errors: [] };
@@ -146,7 +143,6 @@ export async function syncAttraction(): Promise<SyncResult> {
     const dedupe = await dedupeByNotionUrl(admin, "attraction_status", existing);
     result.deduped = dedupe.deleted;
     result.errors.push(...dedupe.errors);
-    const urlToId = buildUrlToIdMap(existing);
 
     for (const page of pages) {
       const props = (page as { properties: Record<string, unknown> }).properties;
@@ -154,6 +150,8 @@ export async function syncAttraction(): Promise<SyncResult> {
 
       const brandName = getTitle(props, "컨텐츠 브랜드");
       if (!brandName) continue;
+      // notion_url이 없으면 upsert 키가 없어 중복 위험 → 건너뜀
+      if (!url) { result.errors.push(`[${brandName}] notion_url 없음 — 건너뜀`); continue; }
 
       const record = {
         brand_name:   brandName,
@@ -167,10 +165,9 @@ export async function syncAttraction(): Promise<SyncResult> {
         notion_url:   url,
       };
 
-      const existingId = url ? urlToId.get(url) : undefined;
-      const { error } = existingId
-        ? await admin.from("attraction_status").update(record).eq("id", existingId)
-        : await admin.from("attraction_status").insert(record);
+      const { error } = await admin
+        .from("attraction_status")
+        .upsert(record, { onConflict: "notion_url" });
 
       if (error) result.errors.push(`[${brandName}] ${error.message}`);
       else result.upserted++;
@@ -195,7 +192,6 @@ export async function syncVendorFnb(): Promise<SyncResult> {
     const dedupe = await dedupeByNotionUrl(admin, "vendor_fnb", existing);
     result.deduped = dedupe.deleted;
     result.errors.push(...dedupe.errors);
-    const urlToId = buildUrlToIdMap(existing);
 
     for (const page of pages) {
       const props = (page as { properties: Record<string, unknown> }).properties;
@@ -203,6 +199,7 @@ export async function syncVendorFnb(): Promise<SyncResult> {
 
       const name = getTitle(props, "업체명");
       if (!name) continue;
+      if (!notionUrl) { result.errors.push(`[${name}] notion_url 없음 — 건너뜀`); continue; }
 
       const record = {
         name,
@@ -217,10 +214,9 @@ export async function syncVendorFnb(): Promise<SyncResult> {
         notion_url: notionUrl,
       };
 
-      const existingId = notionUrl ? urlToId.get(notionUrl) : undefined;
-      const { error } = existingId
-        ? await admin.from("vendor_fnb").update(record).eq("id", existingId)
-        : await admin.from("vendor_fnb").insert(record);
+      const { error } = await admin
+        .from("vendor_fnb")
+        .upsert(record, { onConflict: "notion_url" });
 
       if (error) result.errors.push(`[${name}] ${error.message}`);
       else result.upserted++;
@@ -250,7 +246,6 @@ export async function syncVendorLease(): Promise<SyncResult> {
     const dedupe = await dedupeByNotionUrl(admin, "vendor_lease", existing);
     result.deduped = dedupe.deleted;
     result.errors.push(...dedupe.errors);
-    const urlToId = buildUrlToIdMap(existing);
 
     for (const page of pages) {
       const props = (page as { properties: Record<string, unknown> }).properties;
@@ -259,6 +254,7 @@ export async function syncVendorLease(): Promise<SyncResult> {
       // title 컬럼명이 "업체명" 또는 "이름" 둘 다 허용
       const name = getTitle(props, "업체명") || getTitle(props, "이름");
       if (!name) continue;
+      if (!notionUrl) { result.errors.push(`[${name}] notion_url 없음 — 건너뜀`); continue; }
 
       const record = {
         name,
@@ -273,10 +269,9 @@ export async function syncVendorLease(): Promise<SyncResult> {
         notion_url: notionUrl,
       };
 
-      const existingId = notionUrl ? urlToId.get(notionUrl) : undefined;
-      const { error } = existingId
-        ? await admin.from("vendor_lease").update(record).eq("id", existingId)
-        : await admin.from("vendor_lease").insert(record);
+      const { error } = await admin
+        .from("vendor_lease")
+        .upsert(record, { onConflict: "notion_url" });
 
       if (error) result.errors.push(`[${name}] ${error.message}`);
       else result.upserted++;
