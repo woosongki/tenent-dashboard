@@ -97,11 +97,17 @@ const CHAINS = [
     outFile: "modernhouse.ts",
     varName: "MODERNHOUSE_STORES",
     label: "모던하우스",
-    // "모던하우스 OO점" 형식만 (모던하우스공통(MODERN HOUSE) 등 노이즈 제외)
+    // "모던하우스/모던하우스아울렛 ...점" — 공백 포함 지점명 허용 (몰 입점형 포함)
     matcher: (name) => {
       const n = name.trim();
-      if (n.includes("(") || n.includes("공통") || n.includes("주차") || n.includes("창고")) return false;
-      return /^모던하우스\s\S{1,15}점$/.test(n);
+      // 접두사 변형 업체 제외 (강남모던하우스, LEE모던하우스 등)
+      if (!/^모던하우스(\s|아울렛)/.test(n)) return false;
+      // 노이즈 업종/시설 제외
+      if (/주차|창고|입구|B동|고시텔|오피스텔|원룸|인테리어|가구|디자인|\d차$|\(/.test(n)) return false;
+      // 키즈 라인 제외 (사용자 요청)
+      if (/모던하우스\s*키즈/.test(n)) return false;
+      // "점"으로 끝나야 함 (접미사 없는 단순 "모던하우스" POI 노이즈 제외)
+      return /점$/.test(n);
     },
   },
   // ── 마트 ──

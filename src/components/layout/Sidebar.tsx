@@ -191,7 +191,7 @@ const NAV: NavGroup[] = [
           { href: "/dashboard/homeplus?layer=savezone",        label: "세이브존 9점",        layer: "savezone",   dotColor: "#95a847", group: "기타" },
           { href: "/dashboard/homeplus?layer=lf",              label: "LF스퀘어 3점",        layer: "lf",         dotColor: "#a08260", group: "기타" },
           { href: "/dashboard/homeplus?layer=satur",           label: "세터 47점",           layer: "satur",      dotColor: "#7c3aed", group: "기타" },
-          { href: "/dashboard/homeplus?layer=modernhouse",     label: "모던하우스 117점",    layer: "modernhouse", dotColor: "#6a2c70", group: "기타" },
+          { href: "/dashboard/homeplus?layer=modernhouse",     label: "모던하우스 143점",    layer: "modernhouse", dotColor: "#6a2c70", group: "기타" },
           // 마트
           { href: "/dashboard/homeplus?layer=emart",           label: "이마트 127점",        layer: "emart",      dotColor: "#ffc107", group: "마트" },
           { href: "/dashboard/homeplus?layer=lottemart",       label: "롯데마트 101점",      layer: "lottemart",  dotColor: "#d62828", group: "마트" },
