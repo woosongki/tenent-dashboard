@@ -121,6 +121,10 @@ export default function HomeplusMapClient() {
   const [showLottemart, setShowLottemart] = useState(initialLayer === "lottemart");
   const [showHanaromart, setShowHanaromart] = useState(initialLayer === "hanaromart");
 
+  // 출점 공백지 발굴: 반경 N km 이내 이랜드 점포가 없는 체인 매장만 표시
+  const [gapMode, setGapMode] = useState(false);
+  const [gapRadius, setGapRadius] = useState(5);  // km
+
   // 사이드바 하위 메뉴 클릭으로 layer가 바뀌면 토글/tier 자동 동기화.
   useEffect(() => {
     setShowArtbox(initialLayer === "artbox");
@@ -241,6 +245,43 @@ export default function HomeplusMapClient() {
               <span className="font-bold text-[#0a0a0a]">매칭선</span>
             </label>
           </div>
+        </div>
+
+        {/* 출점 공백지 발굴 모드 */}
+        <div className="border-b-[2px] border-[#0a0a0a] bg-yellow-50 p-3">
+          <label className="flex cursor-pointer items-center gap-2">
+            <input
+              type="checkbox"
+              checked={gapMode}
+              onChange={(e) => setGapMode(e.target.checked)}
+              className="h-4 w-4 accent-rose-500"
+            />
+            <span className="text-[12px] font-extrabold text-[#0a0a0a]">🎯 출점 공백지 모드</span>
+          </label>
+          {gapMode && (
+            <div className="mt-2 flex items-center gap-2 text-[11px]">
+              <span className="text-slate-600">이랜드 반경</span>
+              <div className="flex gap-1">
+                {[3, 5, 10].map((r) => (
+                  <button
+                    key={r}
+                    onClick={() => setGapRadius(r)}
+                    className={`border-[2px] border-[#0a0a0a] px-2 py-0.5 font-bold transition ${
+                      gapRadius === r ? "bg-rose-400 text-white" : "bg-white hover:bg-rose-50"
+                    }`}
+                  >
+                    {r}km
+                  </button>
+                ))}
+              </div>
+              <span className="text-slate-500">밖 매장만</span>
+            </div>
+          )}
+          {gapMode && (
+            <p className="mt-1.5 text-[10px] leading-tight text-slate-500">
+              💡 켠 체인 중 이랜드 점포 {gapRadius}km 이내에 없는 매장만 표시 → 미입점 상권 발굴
+            </p>
+          )}
         </div>
 
         {/* 체인 매장 레이어 — 별도 섹션 */}
@@ -616,6 +657,7 @@ export default function HomeplusMapClient() {
                     key={`${c.k}-${s.id}`}
                     store={s} icon={c.icon} color={c.color} emoji={c.emoji}
                     offsetY={c.off} dbNote={c.dbNote}
+                    gapRadius={gapMode ? gapRadius : null}
                   />
                 ))
               : null,
@@ -803,7 +845,7 @@ interface ChainLayerCfg {
 }
 
 function ChainMarker({
-  store, icon, color, emoji, offsetY, dbNote,
+  store, icon, color, emoji, offsetY, dbNote, gapRadius,
 }: {
   store: ChainStore;
   icon: Icon | DivIcon;
@@ -811,8 +853,11 @@ function ChainMarker({
   emoji: string;
   offsetY: number;
   dbNote?: boolean;
+  gapRadius?: number | null;  // 설정 시 이 반경(km) 이내 이랜드 있으면 숨김
 }) {
   const near = nearestEland(store.lat, store.lng);
+  // 공백지 모드: 반경 내 이랜드가 있으면 렌더 안 함
+  if (gapRadius != null && near && near.distanceKm <= gapRadius) return null;
   return (
     <Marker position={[store.lat, store.lng]} icon={icon}>
       <Tooltip direction="top" offset={[0, -offsetY]}>

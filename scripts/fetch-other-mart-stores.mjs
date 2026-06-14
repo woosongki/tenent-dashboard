@@ -130,10 +130,13 @@ const CHAINS = [
     outFile: "lottemart.ts",
     varName: "LOTTEMART_STORES",
     label: "롯데마트",
+    // 제타플렉스/그랑그로서리/맥스 등 본 포맷 포함 (공백 지점명 허용),
+    // 문화센터/수선/주차 등 서비스·시설 제외
     matcher: (name) => {
       const n = name.trim();
-      if (/VIC/.test(n)) return false;  // 빅마켓 별도 분류
-      return /^롯데마트\s\S{1,12}점$/.test(n) || /^롯데Mart\s\S{1,12}점$/i.test(n);
+      if (!/^롯데(마트|Mart)/i.test(n)) return false;
+      if (/VIC|문화센터|아카데미|주차|수선|입구/.test(n)) return false;
+      return /점$/.test(n);
     },
   },
   {
