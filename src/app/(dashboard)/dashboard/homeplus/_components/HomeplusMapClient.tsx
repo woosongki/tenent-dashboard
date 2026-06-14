@@ -32,6 +32,7 @@ import {
   savezoneIcon,
   lfIcon,
   saturIcon,
+  modernhouseIcon,
   emartIcon,
   lottemartIcon,
   hanaromartIcon,
@@ -57,6 +58,7 @@ import { ENTERSIX_STORES } from "@/data/entersix";
 import { MODA_STORES } from "@/data/moda";
 import { SAVEZONE_STORES } from "@/data/savezone";
 import { LF_STORES } from "@/data/lf";
+import { MODERNHOUSE_STORES } from "@/data/modernhouse";
 import { SATUR_STORES } from "@/data/satur";
 // ── 마트 ──
 import { EMART_STORES } from "@/data/emart";
@@ -73,7 +75,7 @@ export default function HomeplusMapClient() {
   const CHAIN_LAYERS = [
     "artbox","daiso","oliveyoung",
     "lotte","hyundai","shinsegae","ak","galleria",
-    "entersix","moda","savezone","lf",
+    "entersix","moda","savezone","lf","satur","modernhouse",
     "emart","lottemart","hanaromart",
   ];
   const isChainView = CHAIN_LAYERS.includes(initialLayer);
@@ -110,6 +112,7 @@ export default function HomeplusMapClient() {
   const [showSavezone, setShowSavezone] = useState(initialLayer === "savezone");
   const [showLf, setShowLf] = useState(initialLayer === "lf");
   const [showSatur, setShowSatur] = useState(initialLayer === "satur");
+  const [showModernhouse, setShowModernhouse] = useState(initialLayer === "modernhouse");
   // 마트
   const [showEmart, setShowEmart] = useState(initialLayer === "emart");
   const [showLottemart, setShowLottemart] = useState(initialLayer === "lottemart");
@@ -129,6 +132,8 @@ export default function HomeplusMapClient() {
     setShowModa(initialLayer === "moda");
     setShowSavezone(initialLayer === "savezone");
     setShowLf(initialLayer === "lf");
+    setShowSatur(initialLayer === "satur");
+    setShowModernhouse(initialLayer === "modernhouse");
     setShowEmart(initialLayer === "emart");
     setShowLottemart(initialLayer === "lottemart");
     setShowHanaromart(initialLayer === "hanaromart");
@@ -396,6 +401,11 @@ export default function HomeplusMapClient() {
                 <input type="checkbox" checked={showSatur} onChange={(e) => setShowSatur(e.target.checked)} disabled={SATUR_STORES.length === 0} className="h-3.5 w-3.5 disabled:opacity-40" />
                 <span className="inline-block h-2 w-2" style={{ background: "#7c3aed" }} />
                 <span className="font-bold text-[#0a0a0a]">세터 ({SATUR_STORES.length})</span>
+              </label>
+              <label className="flex cursor-pointer items-center gap-1.5">
+                <input type="checkbox" checked={showModernhouse} onChange={(e) => setShowModernhouse(e.target.checked)} disabled={MODERNHOUSE_STORES.length === 0} className="h-3.5 w-3.5 disabled:opacity-40" />
+                <span className="inline-block h-2 w-2" style={{ background: "#6a2c70" }} />
+                <span className="font-bold text-[#0a0a0a]">모던하우스 ({MODERNHOUSE_STORES.length})</span>
               </label>
             </div>
             )}
@@ -730,6 +740,16 @@ export default function HomeplusMapClient() {
               <Tooltip direction="top" offset={[0, -4]}>
                 <div style={{ minWidth: 160 }}>
                   <div style={{ fontWeight: 700, fontSize: 12, color: "#5b21b6" }}>👜 {s.name}</div>
+                  <div style={{ fontSize: 10, color: "#666", marginTop: 2 }}>{s.addr}</div>
+                </div>
+              </Tooltip>
+            </Marker>
+          ))}
+          {showModernhouse && MODERNHOUSE_STORES.map((s) => (
+            <Marker key={`mh-${s.id}`} position={[s.lat, s.lng]} icon={modernhouseIcon}>
+              <Tooltip direction="top" offset={[0, -4]}>
+                <div style={{ minWidth: 160 }}>
+                  <div style={{ fontWeight: 700, fontSize: 12, color: "#6a2c70" }}>🏡 {s.name}</div>
                   <div style={{ fontSize: 10, color: "#666", marginTop: 2 }}>{s.addr}</div>
                 </div>
               </Tooltip>

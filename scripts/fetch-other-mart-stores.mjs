@@ -92,6 +92,18 @@ const CHAINS = [
     // 정확히 "LF스퀘어 OO점" 형식만 (주차장/화장실 노이즈 제외)
     matcher: (name) => /^LF스퀘어\s\S{1,12}점$/i.test(name.trim()),
   },
+  {
+    keyword: "모던하우스",
+    outFile: "modernhouse.ts",
+    varName: "MODERNHOUSE_STORES",
+    label: "모던하우스",
+    // "모던하우스 OO점" 형식만 (모던하우스공통(MODERN HOUSE) 등 노이즈 제외)
+    matcher: (name) => {
+      const n = name.trim();
+      if (n.includes("(") || n.includes("공통") || n.includes("주차") || n.includes("창고")) return false;
+      return /^모던하우스\s\S{1,15}점$/.test(n);
+    },
+  },
   // ── 마트 ──
   {
     keyword: "이마트",

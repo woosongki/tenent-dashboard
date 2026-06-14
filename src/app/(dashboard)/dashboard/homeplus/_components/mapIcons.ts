@@ -81,6 +81,7 @@ export const modaIcon     = makeSmallSquareIcon("#00b4a0");
 export const savezoneIcon = makeSmallSquareIcon("#95a847");
 export const lfIcon       = makeSmallSquareIcon("#a08260");
 export const saturIcon    = makeSmallSquareIcon("#7c3aed"); // 보라 — 세터
+export const modernhouseIcon = makeSmallSquareIcon("#6a2c70"); // 자줏빛 보라 — 모던하우스
 
 // 마트 — 원형 10px (백화점보다 작게, 체인보다 약간 큼)
 function makeCircleIcon(bg: string) {
