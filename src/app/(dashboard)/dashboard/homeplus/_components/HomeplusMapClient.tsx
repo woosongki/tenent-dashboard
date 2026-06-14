@@ -13,6 +13,9 @@ import {
   Popup,
 } from "react-leaflet";
 import FlyToTarget, { type FlyTarget } from "./FlyToTarget";
+import { nearestEland } from "./nearestEland";
+import type { ChainStore } from "@/data/artbox";
+import type { Icon, DivIcon } from "leaflet";
 import {
   TIER_COLOR,
   TIER_LABEL,
@@ -587,206 +590,36 @@ export default function HomeplusMapClient() {
               </Marker>
             ))}
 
-          {/* 아트박스 매장 */}
-          {showArtbox &&
-            ARTBOX_STORES.map((a) => (
-              <Marker key={`artbox-${a.id}`} position={[a.lat, a.lng]} icon={artboxIcon}>
-                <Tooltip direction="top" offset={[0, -5]}>
-                  <div style={{ minWidth: 160 }}>
-                    <div style={{ fontWeight: 700, fontSize: 12, color: "#c1166b" }}>🎨 {a.name}</div>
-                    <div style={{ fontSize: 10, color: "#666", marginTop: 2 }}>{a.addr}</div>
-                  </div>
-                </Tooltip>
-              </Marker>
-            ))}
-
-          {/* 다이소 매장 */}
-          {showDaiso &&
-            DAISO_STORES.map((d) => (
-              <Marker key={`daiso-${d.id}`} position={[d.lat, d.lng]} icon={daisoIcon}>
-                <Tooltip direction="top" offset={[0, -5]}>
-                  <div style={{ minWidth: 160 }}>
-                    <div style={{ fontWeight: 700, fontSize: 12, color: "#b88a00" }}>🛒 {d.name}</div>
-                    <div style={{ fontSize: 10, color: "#666", marginTop: 2 }}>{d.addr}</div>
-                  </div>
-                </Tooltip>
-              </Marker>
-            ))}
-
-          {/* 올리브영 매장 */}
-          {showOliveYoung &&
-            OLIVEYOUNG_STORES.map((o) => (
-              <Marker key={`oy-${o.id}`} position={[o.lat, o.lng]} icon={oliveyoungIcon}>
-                <Tooltip direction="top" offset={[0, -5]}>
-                  <div style={{ minWidth: 160 }}>
-                    <div style={{ fontWeight: 700, fontSize: 12, color: "#2d6a4f" }}>💄 {o.name}</div>
-                    <div style={{ fontSize: 10, color: "#666", marginTop: 2 }}>{o.addr}</div>
-                  </div>
-                </Tooltip>
-              </Marker>
-            ))}
-
-          {/* 롯데백화점 */}
-          {showLotte &&
-            LOTTE_STORES.map((s) => (
-              <Marker key={`lotte-${s.id}`} position={[s.lat, s.lng]} icon={lotteIcon}>
-                <Tooltip direction="top" offset={[0, -8]}>
-                  <div style={{ minWidth: 180 }}>
-                    <div style={{ fontWeight: 700, fontSize: 12, color: "#a4133c" }}>🏬 {s.name}</div>
-                    <div style={{ fontSize: 10, color: "#666", marginTop: 2 }}>{s.addr}</div>
-                    <div style={{ fontSize: 9, color: "#999", marginTop: 4, fontStyle: "italic" }}>입점 컨텐츠 DB 준비 중</div>
-                  </div>
-                </Tooltip>
-              </Marker>
-            ))}
-
-          {/* 현대백화점 */}
-          {showHyundai &&
-            HYUNDAI_STORES.map((s) => (
-              <Marker key={`hyundai-${s.id}`} position={[s.lat, s.lng]} icon={hyundaiIcon}>
-                <Tooltip direction="top" offset={[0, -8]}>
-                  <div style={{ minWidth: 180 }}>
-                    <div style={{ fontWeight: 700, fontSize: 12, color: "#1d3557" }}>🏬 {s.name}</div>
-                    <div style={{ fontSize: 10, color: "#666", marginTop: 2 }}>{s.addr}</div>
-                    <div style={{ fontSize: 9, color: "#999", marginTop: 4, fontStyle: "italic" }}>입점 컨텐츠 DB 준비 중</div>
-                  </div>
-                </Tooltip>
-              </Marker>
-            ))}
-
-          {/* 신세계백화점 */}
-          {showShinsegae &&
-            SHINSEGAE_STORES.map((s) => (
-              <Marker key={`ss-${s.id}`} position={[s.lat, s.lng]} icon={shinsegaeIcon}>
-                <Tooltip direction="top" offset={[0, -8]}>
-                  <div style={{ minWidth: 180 }}>
-                    <div style={{ fontWeight: 700, fontSize: 12, color: "#495057" }}>🏬 {s.name}</div>
-                    <div style={{ fontSize: 10, color: "#666", marginTop: 2 }}>{s.addr}</div>
-                    <div style={{ fontSize: 9, color: "#999", marginTop: 4, fontStyle: "italic" }}>입점 컨텐츠 DB 준비 중</div>
-                  </div>
-                </Tooltip>
-              </Marker>
-            ))}
-
-          {/* AK백화점 */}
-          {showAk && AK_STORES.map((s) => (
-            <Marker key={`ak-${s.id}`} position={[s.lat, s.lng]} icon={akIcon}>
-              <Tooltip direction="top" offset={[0, -8]}>
-                <div style={{ minWidth: 180 }}>
-                  <div style={{ fontWeight: 700, fontSize: 12, color: "#6f1d77" }}>🏬 {s.name}</div>
-                  <div style={{ fontSize: 10, color: "#666", marginTop: 2 }}>{s.addr}</div>
-                  <div style={{ fontSize: 9, color: "#999", marginTop: 4, fontStyle: "italic" }}>입점 컨텐츠 DB 준비 중</div>
-                </div>
-              </Tooltip>
-            </Marker>
-          ))}
-
-          {/* 갤러리아 */}
-          {showGalleria && GALLERIA_STORES.map((s) => (
-            <Marker key={`gl-${s.id}`} position={[s.lat, s.lng]} icon={galleriaIcon}>
-              <Tooltip direction="top" offset={[0, -8]}>
-                <div style={{ minWidth: 180 }}>
-                  <div style={{ fontWeight: 700, fontSize: 12, color: "#2d5016" }}>🏬 {s.name}</div>
-                  <div style={{ fontSize: 10, color: "#666", marginTop: 2 }}>{s.addr}</div>
-                  <div style={{ fontSize: 9, color: "#999", marginTop: 4, fontStyle: "italic" }}>입점 컨텐츠 DB 준비 중</div>
-                </div>
-              </Tooltip>
-            </Marker>
-          ))}
-
-          {/* ── 그 외 ── */}
-          {showEntersix && ENTERSIX_STORES.map((s) => (
-            <Marker key={`es-${s.id}`} position={[s.lat, s.lng]} icon={entersixIcon}>
-              <Tooltip direction="top" offset={[0, -4]}>
-                <div style={{ minWidth: 160 }}>
-                  <div style={{ fontWeight: 700, fontSize: 12, color: "#cc5429" }}>{s.name}</div>
-                  <div style={{ fontSize: 10, color: "#666", marginTop: 2 }}>{s.addr}</div>
-                </div>
-              </Tooltip>
-            </Marker>
-          ))}
-          {showModa && MODA_STORES.map((s) => (
-            <Marker key={`md-${s.id}`} position={[s.lat, s.lng]} icon={modaIcon}>
-              <Tooltip direction="top" offset={[0, -4]}>
-                <div style={{ minWidth: 160 }}>
-                  <div style={{ fontWeight: 700, fontSize: 12, color: "#007a6e" }}>{s.name}</div>
-                  <div style={{ fontSize: 10, color: "#666", marginTop: 2 }}>{s.addr}</div>
-                </div>
-              </Tooltip>
-            </Marker>
-          ))}
-          {showSavezone && SAVEZONE_STORES.map((s) => (
-            <Marker key={`sv-${s.id}`} position={[s.lat, s.lng]} icon={savezoneIcon}>
-              <Tooltip direction="top" offset={[0, -4]}>
-                <div style={{ minWidth: 160 }}>
-                  <div style={{ fontWeight: 700, fontSize: 12, color: "#6e7a2e" }}>{s.name}</div>
-                  <div style={{ fontSize: 10, color: "#666", marginTop: 2 }}>{s.addr}</div>
-                </div>
-              </Tooltip>
-            </Marker>
-          ))}
-          {showLf && LF_STORES.map((s) => (
-            <Marker key={`lf-${s.id}`} position={[s.lat, s.lng]} icon={lfIcon}>
-              <Tooltip direction="top" offset={[0, -4]}>
-                <div style={{ minWidth: 160 }}>
-                  <div style={{ fontWeight: 700, fontSize: 12, color: "#6e5538" }}>🛍️ {s.name}</div>
-                  <div style={{ fontSize: 10, color: "#666", marginTop: 2 }}>{s.addr}</div>
-                </div>
-              </Tooltip>
-            </Marker>
-          ))}
-          {showSatur && SATUR_STORES.map((s) => (
-            <Marker key={`sa-${s.id}`} position={[s.lat, s.lng]} icon={saturIcon}>
-              <Tooltip direction="top" offset={[0, -4]}>
-                <div style={{ minWidth: 160 }}>
-                  <div style={{ fontWeight: 700, fontSize: 12, color: "#5b21b6" }}>👜 {s.name}</div>
-                  <div style={{ fontSize: 10, color: "#666", marginTop: 2 }}>{s.addr}</div>
-                </div>
-              </Tooltip>
-            </Marker>
-          ))}
-          {showModernhouse && MODERNHOUSE_STORES.map((s) => (
-            <Marker key={`mh-${s.id}`} position={[s.lat, s.lng]} icon={modernhouseIcon}>
-              <Tooltip direction="top" offset={[0, -4]}>
-                <div style={{ minWidth: 160 }}>
-                  <div style={{ fontWeight: 700, fontSize: 12, color: "#6a2c70" }}>🏡 {s.name}</div>
-                  <div style={{ fontSize: 10, color: "#666", marginTop: 2 }}>{s.addr}</div>
-                </div>
-              </Tooltip>
-            </Marker>
-          ))}
-
-          {/* ── 마트 ── */}
-          {showEmart && EMART_STORES.map((s) => (
-            <Marker key={`em-${s.id}`} position={[s.lat, s.lng]} icon={emartIcon}>
-              <Tooltip direction="top" offset={[0, -6]}>
-                <div style={{ minWidth: 160 }}>
-                  <div style={{ fontWeight: 700, fontSize: 12, color: "#b88a00" }}>🛒 {s.name}</div>
-                  <div style={{ fontSize: 10, color: "#666", marginTop: 2 }}>{s.addr}</div>
-                </div>
-              </Tooltip>
-            </Marker>
-          ))}
-          {showLottemart && LOTTEMART_STORES.map((s) => (
-            <Marker key={`lm-${s.id}`} position={[s.lat, s.lng]} icon={lottemartIcon}>
-              <Tooltip direction="top" offset={[0, -6]}>
-                <div style={{ minWidth: 160 }}>
-                  <div style={{ fontWeight: 700, fontSize: 12, color: "#a01a1a" }}>🛒 {s.name}</div>
-                  <div style={{ fontSize: 10, color: "#666", marginTop: 2 }}>{s.addr}</div>
-                </div>
-              </Tooltip>
-            </Marker>
-          ))}
-          {showHanaromart && HANAROMART_STORES.map((s) => (
-            <Marker key={`hm-${s.id}`} position={[s.lat, s.lng]} icon={hanaromartIcon}>
-              <Tooltip direction="top" offset={[0, -6]}>
-                <div style={{ minWidth: 160 }}>
-                  <div style={{ fontWeight: 700, fontSize: 12, color: "#1f4d3a" }}>🛒 {s.name}</div>
-                  <div style={{ fontSize: 10, color: "#666", marginTop: 2 }}>{s.addr}</div>
-                </div>
-              </Tooltip>
-            </Marker>
-          ))}
+          {/* ── 체인/백화점/그외/마트 매장 (최근접 이랜드 거리 툴팁 포함) ── */}
+          {([
+            { show: showArtbox,      stores: ARTBOX_STORES,      icon: artboxIcon,      color: "#c1166b", emoji: "🎨", k: "artbox", off: 5 },
+            { show: showDaiso,       stores: DAISO_STORES,       icon: daisoIcon,       color: "#b88a00", emoji: "🛒", k: "daiso", off: 5 },
+            { show: showOliveYoung,  stores: OLIVEYOUNG_STORES,  icon: oliveyoungIcon,  color: "#2d6a4f", emoji: "💄", k: "oy", off: 5 },
+            { show: showLotte,       stores: LOTTE_STORES,       icon: lotteIcon,       color: "#a4133c", emoji: "🏬", k: "lotte", off: 8, dbNote: true },
+            { show: showHyundai,     stores: HYUNDAI_STORES,     icon: hyundaiIcon,     color: "#1d3557", emoji: "🏬", k: "hyundai", off: 8, dbNote: true },
+            { show: showShinsegae,   stores: SHINSEGAE_STORES,   icon: shinsegaeIcon,   color: "#495057", emoji: "🏬", k: "ss", off: 8, dbNote: true },
+            { show: showAk,          stores: AK_STORES,          icon: akIcon,          color: "#6f1d77", emoji: "🏬", k: "ak", off: 8, dbNote: true },
+            { show: showGalleria,    stores: GALLERIA_STORES,    icon: galleriaIcon,    color: "#2d5016", emoji: "🏬", k: "gl", off: 8, dbNote: true },
+            { show: showEntersix,    stores: ENTERSIX_STORES,    icon: entersixIcon,    color: "#cc5429", emoji: "", k: "es", off: 4 },
+            { show: showModa,        stores: MODA_STORES,        icon: modaIcon,        color: "#007a6e", emoji: "", k: "md", off: 4 },
+            { show: showSavezone,    stores: SAVEZONE_STORES,    icon: savezoneIcon,    color: "#6e7a2e", emoji: "", k: "sv", off: 4 },
+            { show: showLf,          stores: LF_STORES,          icon: lfIcon,          color: "#6e5538", emoji: "🛍️", k: "lf", off: 4 },
+            { show: showSatur,       stores: SATUR_STORES,       icon: saturIcon,       color: "#5b21b6", emoji: "👜", k: "sa", off: 4 },
+            { show: showModernhouse, stores: MODERNHOUSE_STORES, icon: modernhouseIcon, color: "#6a2c70", emoji: "🏡", k: "mh", off: 4 },
+            { show: showEmart,       stores: EMART_STORES,       icon: emartIcon,       color: "#b88a00", emoji: "🛒", k: "em", off: 6 },
+            { show: showLottemart,   stores: LOTTEMART_STORES,   icon: lottemartIcon,   color: "#a01a1a", emoji: "🛒", k: "lm", off: 6 },
+            { show: showHanaromart,  stores: HANAROMART_STORES,  icon: hanaromartIcon,  color: "#1f4d3a", emoji: "🛒", k: "hm", off: 6 },
+          ] as ChainLayerCfg[]).map((c) =>
+            c.show
+              ? c.stores.map((s) => (
+                  <ChainMarker
+                    key={`${c.k}-${s.id}`}
+                    store={s} icon={c.icon} color={c.color} emoji={c.emoji}
+                    offsetY={c.off} dbNote={c.dbNote}
+                  />
+                ))
+              : null,
+          )}
 
           {/* 클릭한 점포로 지도 이동 */}
           <FlyToTarget target={flyTarget} />
@@ -954,5 +787,52 @@ export default function HomeplusMapClient() {
         )}
       </div>
     </div>
+  );
+}
+
+// ── 체인 매장 마커 (최근접 이랜드 거리 툴팁) ──
+interface ChainLayerCfg {
+  show: boolean;
+  stores: ChainStore[];
+  icon: Icon | DivIcon;
+  color: string;
+  emoji: string;
+  k: string;
+  off: number;
+  dbNote?: boolean;
+}
+
+function ChainMarker({
+  store, icon, color, emoji, offsetY, dbNote,
+}: {
+  store: ChainStore;
+  icon: Icon | DivIcon;
+  color: string;
+  emoji: string;
+  offsetY: number;
+  dbNote?: boolean;
+}) {
+  const near = nearestEland(store.lat, store.lng);
+  return (
+    <Marker position={[store.lat, store.lng]} icon={icon}>
+      <Tooltip direction="top" offset={[0, -offsetY]}>
+        <div style={{ minWidth: 180 }}>
+          <div style={{ fontWeight: 700, fontSize: 12, color }}>
+            {emoji ? `${emoji} ` : ""}{store.name}
+          </div>
+          <div style={{ fontSize: 10, color: "#666", marginTop: 2 }}>{store.addr}</div>
+          {near && (
+            <div style={{ fontSize: 10, marginTop: 4, paddingTop: 4, borderTop: "1px solid #eee" }}>
+              <span style={{ color: "#888" }}>최근접 이랜드 </span>
+              <b style={{ color: "#0891b2" }}>{near.store.brand} {near.store.name}</b>
+              <span style={{ color: "#0a0a0a", fontWeight: 700 }}> · {near.distanceKm.toFixed(2)}km</span>
+            </div>
+          )}
+          {dbNote && (
+            <div style={{ fontSize: 9, color: "#999", marginTop: 4, fontStyle: "italic" }}>입점 컨텐츠 DB 준비 중</div>
+          )}
+        </div>
+      </Tooltip>
+    </Marker>
   );
 }
