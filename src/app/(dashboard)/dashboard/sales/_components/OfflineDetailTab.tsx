@@ -41,6 +41,7 @@ export default function OfflineDetailTab(p: Props) {
   const [sel, setSel] = useState<Sel>(chips[0] ? { type: chips[0].type, key: chips[0].key } : { type: "div", key: "패션" });
   const [expanded, setExpanded] = useState<string | null>(null);
   const [limit, setLimit] = useState(20);
+  const [q, setQ] = useState("");
   // 브랜드 랭킹 정렬
   const [bSort, setBSort] = useState<BSortKey>("s");
   const [bDir, setBDir] = useState<Dir>("desc");
@@ -48,14 +49,18 @@ export default function OfflineDetailTab(p: Props) {
   const [sSort, setSSort] = useState<SSortKey>("s");
   const [sDir, setSDir] = useState<Dir>("desc");
 
-  // 선택 카테고리로 브랜드 필터 + 정렬
+  // 선택 카테고리 브랜드 (요약·칩 기준 — 검색 무관)
+  const catRows = useMemo(() =>
+    p.brands.filter((b) => sel.type === "cat" ? (b.division === "패션" && b.cat === sel.key) : b.division === sel.key),
+  [p.brands, sel]);
+
+  // 표시 행: 검색어 있으면 전 부문에서 브랜드명 검색, 없으면 선택 카테고리. + 정렬
   const rows = useMemo(() => {
-    const f = p.brands.filter((b) =>
-      sel.type === "cat" ? (b.division === "패션" && b.cat === sel.key) : b.division === sel.key);
+    const base = q ? p.brands.filter((b) => b.key.includes(q)) : catRows;
     const dir = bDir === "asc" ? 1 : -1;
-    return [...f].sort((a, b) =>
+    return [...base].sort((a, b) =>
       bSort === "key" ? a.key.localeCompare(b.key, "ko") * dir : ((a[bSort] as number) - (b[bSort] as number)) * dir);
-  }, [p.brands, sel, bSort, bDir]);
+  }, [p.brands, catRows, q, bSort, bDir]);
 
   function toggleB(k: BSortKey) {
     if (bSort === k) setBDir((d) => d === "asc" ? "desc" : "asc");
@@ -75,19 +80,19 @@ export default function OfflineDetailTab(p: Props) {
   }
 
   const summary = useMemo(() => {
-    const s = rows.reduce((t, r) => t + r.s, 0);
-    const ps = rows.reduce((t, r) => t + r.ps, 0);
-    const g = rows.reduce((t, r) => t + r.g, 0);
+    const s = catRows.reduce((t, r) => t + r.s, 0);
+    const ps = catRows.reduce((t, r) => t + r.ps, 0);
+    const g = catRows.reduce((t, r) => t + r.g, 0);
     // 일평당 = Σ매출 / Σ(평·일). dppSales=매출/평일 이므로 평일=매출/dpp → 역산 합산
     let areaDays = 0;
-    for (const r of rows) if (r.dppSales) areaDays += r.s / r.dppSales;
+    for (const r of catRows) if (r.dppSales) areaDays += r.s / r.dppSales;
     return {
       s, ps, g, gpm: s ? +(g / s * 100).toFixed(1) : 0,
-      yoyPct: ps ? +((s - ps) / ps * 100).toFixed(1) : 0, brands: rows.length,
+      yoyPct: ps ? +((s - ps) / ps * 100).toFixed(1) : 0, brands: catRows.length,
       dppSales: areaDays ? Math.round(s / areaDays) : 0,
       dppGp: areaDays ? Math.round(g / areaDays) : 0,
     };
-  }, [rows]);
+  }, [catRows]);
 
   const visible = rows.slice(0, limit);
   const selLabel = chips.find((c) => c.type === sel.type && c.key === sel.key)?.label ?? sel.key;
@@ -110,6 +115,15 @@ export default function OfflineDetailTab(p: Props) {
             </button>
           );
         })}
+      </div>
+
+      {/* 브랜드 검색 (입력 시 전 부문에서 탐색) */}
+      <div className="flex items-center gap-2">
+        <input type="text" value={q} onChange={(e) => { setQ(e.target.value); setExpanded(null); setLimit(20); }}
+          placeholder="브랜드 검색 (전 부문)"
+          className="w-full max-w-[280px] border-[2px] border-[#0a0a0a] px-3 py-1.5 text-[12px] focus:outline-none focus:bg-yellow-50" />
+        {q && <button onClick={() => setQ("")} className="text-[11px] text-slate-500 underline">초기화</button>}
+        {q && <span className="text-[11px] text-slate-500">{rows.length}개 검색됨 (요약은 선택 카테고리 기준)</span>}
       </div>
 
       {/* 선택 요약 */}
