@@ -40,19 +40,20 @@ create table if not exists public.sales_store_meta (
 );
 create index if not exists idx_sales_meta_lookup on public.sales_store_meta (division, cat, brand, store);
 
--- ── 3. 온라인 월별 (채널별) ──
+-- ── 3. 온라인 월별 (지점×브랜드×채널) ──
+-- ERP 매출상세분석 익스포트 기준. 온라인은 매출만 관리 (GP 없음).
 create table if not exists public.sales_online_monthly (
   id        bigint generated always as identity primary key,
   division  text   not null,
-  cat       text   not null,
+  cat       text   not null,                -- 복종명 (캐쥬얼/스포츠/여성 ...)
   brand     text   not null,
-  channel   text   not null,                -- '자사몰'|'지마켓'|'쿠팡'|... 자유
-  ym        text   not null,
-  sales     bigint not null default 0,
-  gp        bigint not null default 0,
-  unique (division, cat, brand, channel, ym)
+  store     text   not null,                -- 지점명 (온라인 귀속 지점)
+  channel   text   not null,                -- '쿠팡'|'11번가'|'네이버-스토어팜'|... 채널명
+  ym        text   not null,                -- 'YYYY-MM'
+  sales     bigint not null default 0,       -- 채널별 매출(원), 이익은 미관리
+  unique (division, cat, brand, store, channel, ym)
 );
-create index if not exists idx_sales_online_lookup on public.sales_online_monthly (division, cat, brand);
+create index if not exists idx_sales_online_lookup on public.sales_online_monthly (division, cat, brand, store);
 create index if not exists idx_sales_online_ym on public.sales_online_monthly (ym);
 
 -- ── RLS: 인증 유저 조회 / 수정 ──
@@ -71,7 +72,7 @@ create policy "sales_online: 인증 수정"   on public.sales_online_monthly for
 -- 입력 가이드 (CSV → 테이블)
 --   sales_monthly.csv        열: division,cat,brand,store,ym,sales,gp
 --   sales_store_meta.csv     열: division,cat,brand,store,area,grade,bcat
---   sales_online_monthly.csv 열: division,cat,brand,channel,ym,sales,gp
+--   sales_online_monthly.csv 열: division,cat,brand,store,channel,ym,sales
 -- Supabase 대시보드 → Table Editor → Import data from CSV
 --
 -- division 예시: 패션 / F&B / 기타

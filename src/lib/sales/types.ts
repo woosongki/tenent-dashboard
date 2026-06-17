@@ -35,10 +35,10 @@ export interface SalesOnlineRow {
   division: Division;
   cat: Cat;
   brand: string;
+  store: string;        // 지점명
   channel: string;
   ym: string;
-  sales: number;
-  gp: number;
+  sales: number;        // 온라인은 매출만 (GP 미관리)
 }
 
 // ── 집계 결과 (ACC_DATA / CUM_DATA 형태) ──
