@@ -350,6 +350,15 @@ export async function getOnlineCumMeta() {
 }
 
 // ── 오프라인 매출 (5번 누적 / 6번 당월) — 매출+이익 ──
+export interface OffSub {
+  key: string;
+  s: number; ps: number;          // 매출 당기/전기
+  g: number; pg: number;          // 이익 당기/전기
+  growthS: number; growthPct: number;   // 매출 성장액/율
+  growthG: number; growthGPct: number;  // 매총익 성장액/율
+  area: number;                   // 전용면적(평)
+  storeCnt: number;               // 매장수
+}
 export interface OffRank {
   key: string;
   cat?: string;
@@ -359,10 +368,12 @@ export interface OffRank {
   gpm: number;                    // 이익률 %
   yoyPct: number;                 // 매출 전년비
   subCount: number;               // 하위 개수 (브랜드→매장수 / 지점→브랜드수)
-  bySub?: { key: string; s: number; g: number }[];
+  dppSales: number;               // 일평당매출 (당기, 매출/면적합)
+  dppGp: number;                  // 일평당이익
+  bySub?: OffSub[];
 }
 
-interface OffRow { division: string; cat: string; brand: string; store: string; sales: number; gp: number; }
+interface OffRow { division: string; cat: string; brand: string; store: string; sales: number; gp: number; area_raw: number; store_cnt: number; }
 
 async function fetchOff(table: "sales_offline_cum" | "sales_offline_month", col: "year" | "ym", periods: string[]): Promise<(OffRow & { p: string })[]> {
   const supabase = await createClient();
@@ -370,7 +381,7 @@ async function fetchOff(table: "sales_offline_cum" | "sales_offline_month", col:
   let from = 0; const PAGE = 1000;
   for (;;) {
     const { data, error } = await supabase
-      .from(table).select(`division,cat,brand,store,sales,gp,${col}`).in(col, periods)
+      .from(table).select(`division,cat,brand,store,sales,gp,area_raw,store_cnt,${col}`).in(col, periods)
       .range(from, from + PAGE - 1);
     if (error) throw new Error(`${table}: ${error.message}`);
     all.push(...(data ?? []).map((r) => ({ ...r, p: (r as Record<string, string>)[col] })) as (OffRow & { p: string })[]);
@@ -381,23 +392,36 @@ async function fetchOff(table: "sales_offline_cum" | "sales_offline_month", col:
 }
 
 function buildOff(
-  rows: (OffRow & { p: string })[], cur: string, prev: string, divisions: string[] | null,
+  rows: (OffRow & { p: string })[], cur: string, prev: string, divisions: string[] | null, days: number,
 ) {
   const filtered = divisions ? rows.filter((r) => divisions.includes(r.division)) : rows;
 
+  type SubAgg = { s: number; g: number; ps: number; pg: number; area: number; cnt: number };
   function rank(keyOf: (r: OffRow) => string, withCat: boolean, subOf?: (r: OffRow) => string): OffRank[] {
-    const c = new Map<string, { s: number; g: number; cat: string; division: string; sub: Map<string, { s: number; g: number }> }>();
+    const c = new Map<string, { s: number; g: number; area: number; cat: string; division: string; sub: Map<string, SubAgg> }>();
     const p = new Map<string, { s: number; g: number }>();
+    const subEnsure = (m: Map<string, SubAgg>, sk: string) => {
+      let e = m.get(sk); if (!e) { e = { s: 0, g: 0, ps: 0, pg: 0, area: 0, cnt: 0 }; m.set(sk, e); } return e;
+    };
     for (const r of filtered) {
       const k = keyOf(r);
       if (r.p === cur) {
-        const e = c.get(k) ?? { s: 0, g: 0, cat: r.cat, division: r.division, sub: new Map() };
-        e.s += r.sales; e.g += r.gp;
-        if (subOf) { const sk = subOf(r); const se = e.sub.get(sk) ?? { s: 0, g: 0 }; se.s += r.sales; se.g += r.gp; e.sub.set(sk, se); }
+        const e = c.get(k) ?? { s: 0, g: 0, area: 0, cat: r.cat, division: r.division, sub: new Map() };
+        e.s += r.sales; e.g += r.gp; e.area += r.area_raw;
+        if (subOf) { const se = subEnsure(e.sub, subOf(r)); se.s += r.sales; se.g += r.gp; se.area += r.area_raw; se.cnt += r.store_cnt; }
         c.set(k, e);
       } else if (r.p === prev) {
         const e = p.get(k) ?? { s: 0, g: 0 }; e.s += r.sales; e.g += r.gp; p.set(k, e);
+        // 하위(지점)의 전년 값도 누적 — 성장 계산용 (cur 그룹에 미리 있을 수도, 없을 수도)
       }
+    }
+    // 전년 하위값: cur 그룹의 sub에 prev를 합산하려면 prev 행도 같은 sub 키로 매칭 필요
+    for (const r of filtered) {
+      if (r.p !== prev || !subOf) continue;
+      const k = keyOf(r);
+      const e = c.get(k); if (!e) continue;
+      const se = e.sub.get(subOf(r)); if (!se) continue;
+      se.ps += r.sales; se.pg += r.gp;
     }
     const out: OffRank[] = [];
     for (const [k, e] of c) {
@@ -408,7 +432,14 @@ function buildOff(
         gpm: e.s ? +(e.g / e.s * 100).toFixed(1) : 0,
         yoyPct: pv.s ? +((e.s - pv.s) / pv.s * 100).toFixed(1) : 0,
         subCount: e.sub.size,
-        bySub: subOf ? [...e.sub.entries()].map(([key, v]) => ({ key, s: v.s, g: v.g })).sort((a, b) => b.s - a.s).slice(0, 50) : undefined,
+        dppSales: e.area ? Math.round(e.s / e.area) : 0,   // 일평당매출 = 매출/(평·일)
+        dppGp: e.area ? Math.round(e.g / e.area) : 0,        // 일평당이익
+        bySub: subOf ? [...e.sub.entries()].map(([key, v]) => ({
+          key, s: v.s, ps: v.ps, g: v.g, pg: v.pg,
+          growthS: v.s - v.ps, growthPct: v.ps ? +((v.s - v.ps) / v.ps * 100).toFixed(1) : 0,
+          growthG: v.g - v.pg, growthGPct: v.pg ? +((v.g - v.pg) / v.pg * 100).toFixed(1) : 0,
+          area: days ? Math.round(v.area / days) : 0, storeCnt: v.cnt,  // 전용면적(평)
+        })).sort((a, b) => b.s - a.s).slice(0, 50) : undefined,
       });
     }
     return out.sort((a, b) => b.s - a.s);
@@ -455,16 +486,16 @@ function buildOff(
   };
 }
 
-/** 오프라인 누적 (5번) */
+/** 오프라인 누적 (5번) — 평당 일수 181 (Jan~Jun) */
 export async function getOfflineCum(year: string, prevYear: string, divisions: string[] | null = null) {
   const rows = await fetchOff("sales_offline_cum", "year", [year, prevYear]);
-  return { year, prevYear, ...buildOff(rows, year, prevYear, divisions) };
+  return { year, prevYear, ...buildOff(rows, year, prevYear, divisions, 181) };
 }
 
-/** 오프라인 당월 (6번) */
+/** 오프라인 당월 (6번) — 평당 일수 30 */
 export async function getOfflineMonth(ym: string, prevYm: string, divisions: string[] | null = null) {
   const rows = await fetchOff("sales_offline_month", "ym", [ym, prevYm]);
-  return { ym, prevYm, ...buildOff(rows, ym, prevYm, divisions) };
+  return { ym, prevYm, ...buildOff(rows, ym, prevYm, divisions, 30) };
 }
 
 /** 오프라인 가용 기간 */

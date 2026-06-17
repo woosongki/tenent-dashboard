@@ -43,7 +43,15 @@ export default function OfflineDetailTab(p: Props) {
     const s = rows.reduce((t, r) => t + r.s, 0);
     const ps = rows.reduce((t, r) => t + r.ps, 0);
     const g = rows.reduce((t, r) => t + r.g, 0);
-    return { s, ps, g, gpm: s ? +(g / s * 100).toFixed(1) : 0, yoyPct: ps ? +((s - ps) / ps * 100).toFixed(1) : 0, brands: rows.length };
+    // 일평당 = Σ매출 / Σ(평·일). dppSales=매출/평일 이므로 평일=매출/dpp → 역산 합산
+    let areaDays = 0;
+    for (const r of rows) if (r.dppSales) areaDays += r.s / r.dppSales;
+    return {
+      s, ps, g, gpm: s ? +(g / s * 100).toFixed(1) : 0,
+      yoyPct: ps ? +((s - ps) / ps * 100).toFixed(1) : 0, brands: rows.length,
+      dppSales: areaDays ? Math.round(s / areaDays) : 0,
+      dppGp: areaDays ? Math.round(g / areaDays) : 0,
+    };
   }, [rows]);
 
   const visible = rows.slice(0, limit);
@@ -70,11 +78,13 @@ export default function OfflineDetailTab(p: Props) {
       </div>
 
       {/* 선택 요약 */}
-      <div className="grid grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-3 xl:grid-cols-6">
         <Card label={`${selLabel} 매출`} value={`${eok(summary.s)}억`} sub={`${won(summary.s)}원`} accent />
         <Card label={`전년 (${p.prevLabel})`} value={`${eok(summary.ps)}억`} />
         <Card label="전년대비" value={`${summary.yoyPct >= 0 ? "+" : ""}${summary.yoyPct}%`} tone={summary.yoyPct >= 0 ? "up" : "down"} />
         <Card label="이익률 / 브랜드수" value={`${summary.gpm}%`} sub={`${summary.brands}개 브랜드`} />
+        <Card label="일평당매출" value={won(summary.dppSales)} sub="원/평·일" />
+        <Card label="일평당이익" value={won(summary.dppGp)} sub="원/평·일" />
       </div>
 
       {/* 브랜드 랭킹 (지점 드릴다운) */}
@@ -109,19 +119,38 @@ export default function OfflineDetailTab(p: Props) {
                     <tr className="bg-slate-50">
                       <td></td>
                       <td colSpan={6} className="px-3 py-2">
-                        <div className="mb-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400">지점별 매출 ({r.bySub.length})</div>
-                        <div className="flex flex-col gap-1">
-                          {r.bySub.map((s) => {
-                            const pct = r.s ? (s.s / r.s) * 100 : 0;
-                            return (
-                              <div key={s.key} className="flex items-center gap-2 text-[11px]">
-                                <span className="w-28 shrink-0 truncate font-bold text-[#0a0a0a] sm:w-32">{s.key}</span>
-                                <div className="flex-1 h-2.5 bg-slate-200"><div className="h-full bg-violet-400" style={{ width: `${pct}%` }} /></div>
-                                <span className="w-10 text-right font-mono text-slate-400">{pct.toFixed(0)}%</span>
-                                <span className="w-24 text-right font-mono font-bold">{won(s.s)}</span>
-                              </div>
-                            );
-                          })}
+                        <div className="mb-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400">지점별 상세 ({r.bySub.length})</div>
+                        <div className="overflow-x-auto">
+                          <table className="w-full min-w-[680px] text-[11px]">
+                            <thead className="text-slate-500">
+                              <tr className="border-b border-slate-200">
+                                <th className="px-2 py-1 text-left">지점</th>
+                                <th className="px-2 py-1 text-right">매출</th>
+                                <th className="px-2 py-1 text-right">성장액</th>
+                                <th className="px-2 py-1 text-right">성장율</th>
+                                <th className="px-2 py-1 text-right">매총익</th>
+                                <th className="px-2 py-1 text-right">매총익성장액</th>
+                                <th className="px-2 py-1 text-right">매총익성장율</th>
+                                <th className="px-2 py-1 text-right">전용면적</th>
+                                <th className="px-2 py-1 text-right">매장수</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {r.bySub.map((s) => (
+                                <tr key={s.key} className="border-b border-slate-100">
+                                  <td className="px-2 py-1 font-bold text-[#0a0a0a] whitespace-nowrap">{s.key}</td>
+                                  <td className="px-2 py-1 text-right font-mono font-bold">{won(s.s)}</td>
+                                  <td className="px-2 py-1 text-right font-mono" style={{ color: s.growthS >= 0 ? "#0d9e6e" : "#e53e3e" }}>{s.growthS >= 0 ? "+" : ""}{won(s.growthS)}</td>
+                                  <td className="px-2 py-1 text-right"><YoY pct={s.growthPct} /></td>
+                                  <td className="px-2 py-1 text-right font-mono">{won(s.g)}</td>
+                                  <td className="px-2 py-1 text-right font-mono" style={{ color: s.growthG >= 0 ? "#0d9e6e" : "#e53e3e" }}>{s.growthG >= 0 ? "+" : ""}{won(s.growthG)}</td>
+                                  <td className="px-2 py-1 text-right"><YoY pct={s.growthGPct} /></td>
+                                  <td className="px-2 py-1 text-right font-mono text-slate-500">{s.area ? `${s.area}평` : "—"}</td>
+                                  <td className="px-2 py-1 text-right font-mono text-slate-500">{s.storeCnt || "—"}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
                         </div>
                       </td>
                     </tr>
