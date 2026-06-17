@@ -124,6 +124,8 @@ export default function HomeplusMapClient() {
   // 출점 공백지 발굴: 반경 N km 이내 이랜드 점포가 없는 체인 매장만 표시
   const [gapMode, setGapMode] = useState(false);
   const [gapRadius, setGapRadius] = useState(5);  // km
+  // 모바일 필터 드로어
+  const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
 
   // 사이드바 하위 메뉴 클릭으로 layer가 바뀌면 토글/tier 자동 동기화.
   useEffect(() => {
@@ -183,16 +185,30 @@ export default function HomeplusMapClient() {
   }
 
   return (
-    <div className="flex h-full w-full bg-[#FAF7EC]">
-      {/* ── 좌측 이슈 리스트 ── */}
-      <aside className="hidden w-[300px] shrink-0 flex-col border-r-[3px] border-[#0a0a0a] bg-white md:flex">
-        <div className="border-b-[3px] border-[#0a0a0a] px-4 py-3">
-          <div className="font-display text-[18px] leading-none text-[#0a0a0a]">
-            홈플 영업중단 33점
+    <div className="relative flex h-full w-full bg-[#FAF7EC]">
+      {/* 모바일 필터 오버레이 배경 */}
+      {mobileFilterOpen && (
+        <div className="fixed inset-0 z-[1500] bg-black/40 md:hidden" onClick={() => setMobileFilterOpen(false)} aria-hidden />
+      )}
+
+      {/* ── 좌측 이슈 리스트 (모바일=드로어) ── */}
+      <aside
+        className={`flex flex-col border-r-[3px] border-[#0a0a0a] bg-white
+          md:static md:w-[300px] md:shrink-0 md:translate-x-0
+          fixed inset-y-0 left-0 z-[1600] w-[85%] max-w-[340px] transition-transform duration-300
+          ${mobileFilterOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}`}
+      >
+        <div className="flex items-center justify-between border-b-[3px] border-[#0a0a0a] px-4 py-3">
+          <div>
+            <div className="font-display text-[18px] leading-none text-[#0a0a0a]">
+              홈플 영업중단 33점
+            </div>
+            <div className="mt-1 text-[10px] font-bold uppercase tracking-[.14em] text-slate-500">
+              총 {TOTAL_BRANDS}개 브랜드
+            </div>
           </div>
-          <div className="mt-1 text-[10px] font-bold uppercase tracking-[.14em] text-slate-500">
-            총 {TOTAL_BRANDS}개 브랜드
-          </div>
+          <button onClick={() => setMobileFilterOpen(false)}
+            className="md:hidden border-[2px] border-[#0a0a0a] bg-white px-2 py-1 text-[12px] font-bold" aria-label="닫기">✕</button>
         </div>
 
         {/* tier 필터 */}
@@ -534,6 +550,13 @@ export default function HomeplusMapClient() {
 
       {/* ── 지도 + 우측 상세 ── */}
       <div className="relative flex-1">
+        {/* 모바일 필터 열기 버튼 */}
+        <button
+          onClick={() => setMobileFilterOpen(true)}
+          className="md:hidden absolute left-3 top-3 z-[500] border-[2px] border-[#0a0a0a] bg-yellow-300 px-3 py-2 text-[12px] font-extrabold text-[#0a0a0a] shadow-[2px_2px_0_0_#0a0a0a]"
+        >
+          ☰ 필터
+        </button>
         <MapContainer
           center={[36.5, 127.8]}
           zoom={7}
@@ -738,7 +761,7 @@ export default function HomeplusMapClient() {
         {/* 우측 상세 패널 */}
         {selected && (
           <div
-            className="absolute right-4 top-4 z-[400] max-h-[calc(100%-2rem)] w-[320px] overflow-y-auto border-[3px] border-[#0a0a0a] bg-white"
+            className="absolute right-2 top-2 z-[400] max-h-[calc(100%-1rem)] w-[calc(100%-1rem)] max-w-[320px] overflow-y-auto border-[3px] border-[#0a0a0a] bg-white sm:right-4 sm:top-4 sm:w-[320px]"
             style={{ boxShadow: "5px 5px 0 0 #0a0a0a" }}
           >
             <div className="border-b-[2px] border-[#0a0a0a] p-3">
