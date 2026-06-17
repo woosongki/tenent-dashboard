@@ -15,7 +15,10 @@ interface Props {
 
 const won = (n: number) => n.toLocaleString("ko-KR");
 const eok = (n: number) => (n / 1e8).toFixed(1);
-function YoY({ pct }: { pct: number }) {
+function YoY({ pct, prev }: { pct: number; prev?: number }) {
+  if (prev !== undefined && prev === 0) {
+    return <span style={{ color: "#7c3aed", fontWeight: 700 }} title="전년 동기간 실적 없음 (신규 또는 미집계)">신규</span>;
+  }
   const up = pct >= 0;
   return <span style={{ color: up ? "#0d9e6e" : "#e53e3e", fontWeight: 700 }}>{up ? "▲" : "▼"} {Math.abs(pct).toFixed(1)}%</span>;
 }
@@ -113,7 +116,7 @@ export default function OfflineDetailTab(p: Props) {
                     <td className="px-3 py-2 text-right font-mono font-bold">{won(r.s)}</td>
                     <td className="px-3 py-2 text-right font-mono">{won(r.g)}</td>
                     <td className="px-3 py-2 text-right font-mono text-slate-500">{r.gpm}%</td>
-                    <td className="px-3 py-2 text-right"><YoY pct={r.yoyPct} /></td>
+                    <td className="px-3 py-2 text-right"><YoY pct={r.yoyPct} prev={r.ps} /></td>
                   </tr>
                   {open && r.bySub && (
                     <tr className="bg-slate-50">
@@ -140,11 +143,11 @@ export default function OfflineDetailTab(p: Props) {
                                 <tr key={s.key} className="border-b border-slate-100">
                                   <td className="px-2 py-1 font-bold text-[#0a0a0a] whitespace-nowrap">{s.key}</td>
                                   <td className="px-2 py-1 text-right font-mono font-bold">{won(s.s)}</td>
-                                  <td className="px-2 py-1 text-right font-mono" style={{ color: s.growthS >= 0 ? "#0d9e6e" : "#e53e3e" }}>{s.growthS >= 0 ? "+" : ""}{won(s.growthS)}</td>
-                                  <td className="px-2 py-1 text-right"><YoY pct={s.growthPct} /></td>
+                                  <td className="px-2 py-1 text-right font-mono" style={{ color: s.ps === 0 ? "#7c3aed" : s.growthS >= 0 ? "#0d9e6e" : "#e53e3e" }}>{s.ps === 0 ? "—" : `${s.growthS >= 0 ? "+" : ""}${won(s.growthS)}`}</td>
+                                  <td className="px-2 py-1 text-right"><YoY pct={s.growthPct} prev={s.ps} /></td>
                                   <td className="px-2 py-1 text-right font-mono">{won(s.g)}</td>
-                                  <td className="px-2 py-1 text-right font-mono" style={{ color: s.growthG >= 0 ? "#0d9e6e" : "#e53e3e" }}>{s.growthG >= 0 ? "+" : ""}{won(s.growthG)}</td>
-                                  <td className="px-2 py-1 text-right"><YoY pct={s.growthGPct} /></td>
+                                  <td className="px-2 py-1 text-right font-mono" style={{ color: s.pg === 0 ? "#7c3aed" : s.growthG >= 0 ? "#0d9e6e" : "#e53e3e" }}>{s.pg === 0 ? "—" : `${s.growthG >= 0 ? "+" : ""}${won(s.growthG)}`}</td>
+                                  <td className="px-2 py-1 text-right"><YoY pct={s.growthGPct} prev={s.pg} /></td>
                                   <td className="px-2 py-1 text-right font-mono text-slate-500">{s.area ? `${s.area}평` : "—"}</td>
                                   <td className="px-2 py-1 text-right font-mono text-slate-500">{s.storeCnt || "—"}</td>
                                 </tr>

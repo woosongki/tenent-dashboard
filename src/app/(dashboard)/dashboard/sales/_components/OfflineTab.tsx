@@ -16,7 +16,11 @@ interface Props {
 
 const won = (n: number) => n.toLocaleString("ko-KR");
 const eok = (n: number) => (n / 1e8).toFixed(1);
-function YoY({ pct }: { pct: number }) {
+function YoY({ pct, prev }: { pct: number; prev?: number }) {
+  // 전년 실적 자체가 없으면 0% 정체가 아니라 "신규/전년없음" — 구분 표시
+  if (prev !== undefined && prev === 0) {
+    return <span style={{ color: "#7c3aed", fontWeight: 700 }} title="전년 동기간 실적 없음 (신규 또는 미집계)">신규</span>;
+  }
   const up = pct >= 0;
   return <span style={{ color: up ? "#0d9e6e" : "#e53e3e", fontWeight: 700 }}>{up ? "▲" : "▼"} {Math.abs(pct).toFixed(1)}%</span>;
 }
@@ -67,13 +71,13 @@ export default function OfflineTab(p: Props) {
 
       {/* 부문별 요약 */}
       <BarSection title={`부문별 매출 (${p.periodLabel})`} barColor="#a78bfa"
-        rows={p.divisions.map((d) => ({ label: d.division, s: d.s, gpm: d.gpm, yoyPct: d.yoyPct }))}
+        rows={p.divisions.map((d) => ({ label: d.division, s: d.s, ps: d.ps, gpm: d.gpm, yoyPct: d.yoyPct }))}
         total={p.total} activeKey={div} onPick={(k) => setDiv(div === k ? null : k)} />
 
       {/* 패션 복종별 요약 */}
       {p.fashionCats.length > 0 && (
         <BarSection title={`패션 복종별 매출 (${p.periodLabel})`} barColor="#f472b6"
-          rows={p.fashionCats.map((c) => ({ label: c.cat, s: c.s, gpm: c.gpm, yoyPct: c.yoyPct }))}
+          rows={p.fashionCats.map((c) => ({ label: c.cat, s: c.s, ps: c.ps, gpm: c.gpm, yoyPct: c.yoyPct }))}
           total={p.fashionCats.reduce((t, c) => t + c.s, 0)} activeKey={null} onPick={() => {}} />
       )}
 
@@ -151,7 +155,7 @@ const RankRow = memo(function RankRow({
         <td className="px-3 py-2 text-right font-mono font-bold">{won(row.s)}</td>
         <td className="px-3 py-2 text-right font-mono">{won(row.g)}</td>
         <td className="px-3 py-2 text-right font-mono text-slate-500">{row.gpm}%</td>
-        <td className="px-3 py-2 text-right"><YoY pct={row.yoyPct} /></td>
+        <td className="px-3 py-2 text-right"><YoY pct={row.yoyPct} prev={row.ps} /></td>
       </tr>
       {open && row.bySub && (
         <tr className="bg-slate-50">
@@ -181,7 +185,7 @@ const RankRow = memo(function RankRow({
 
 function BarSection({ title, barColor, rows, total, activeKey, onPick }: {
   title: string; barColor: string;
-  rows: { label: string; s: number; gpm: number; yoyPct: number }[];
+  rows: { label: string; s: number; ps: number; gpm: number; yoyPct: number }[];
   total: number; activeKey: string | null; onPick: (k: string) => void;
 }) {
   return (
@@ -199,7 +203,7 @@ function BarSection({ title, barColor, rows, total, activeKey, onPick }: {
               <span className="hidden w-10 text-right font-mono text-slate-500 sm:inline">{pct.toFixed(0)}%</span>
               <span className="w-20 text-right font-mono font-bold sm:w-24">{won(d.s)}</span>
               <span className="hidden w-14 text-right font-mono text-slate-500 sm:inline">GPM{d.gpm}</span>
-              <span className="w-14 text-right sm:w-16"><YoY pct={d.yoyPct} /></span>
+              <span className="w-14 text-right sm:w-16"><YoY pct={d.yoyPct} prev={d.ps} /></span>
             </button>
           );
         })}
