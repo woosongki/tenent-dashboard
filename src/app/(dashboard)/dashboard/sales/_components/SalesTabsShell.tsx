@@ -22,7 +22,7 @@ interface OnlineProps {
 interface OffProps {
   periodLabel: string; prevLabel: string;
   total: number; prevTotal: number; gTotal: number; gpm: number; yoyPct: number;
-  brands: OffRank[]; stores: OffRank[];
+  brands: OffRank[]; stores: OffRank[]; detailBrands: OffRank[];
   divisions: { division: string; s: number; ps: number; g: number; gpm: number; yoyPct: number }[];
   fashionCats: { cat: string; s: number; ps: number; g: number; gpm: number; yoyPct: number }[];
 }
@@ -69,9 +69,9 @@ export default function SalesTabsShell({ offCum, offMonth, online, onlineCum, ch
 
       {/* 탭 내용 */}
       {tab === "off-cum" && (offCum ? <OfflineTab {...offCum} /> : <Empty table="sales_offline_cum" />)}
-      {tab === "off-cum-detail" && (offCum ? <OfflineDetailTab periodLabel={offCum.periodLabel} prevLabel={offCum.prevLabel} brands={offCum.brands} divisions={offCum.divisions} fashionCats={offCum.fashionCats} /> : <Empty table="sales_offline_cum" />)}
+      {tab === "off-cum-detail" && (offCum ? <OfflineDetailTab periodLabel={offCum.periodLabel} prevLabel={offCum.prevLabel} brands={offCum.detailBrands} divisions={offCum.divisions} fashionCats={offCum.fashionCats} /> : <Empty table="sales_offline_cum" />)}
       {tab === "off-month" && (offMonth ? <OfflineTab {...offMonth} /> : <Empty table="sales_offline_month" />)}
-      {tab === "off-month-detail" && (offMonth ? <OfflineDetailTab periodLabel={offMonth.periodLabel} prevLabel={offMonth.prevLabel} brands={offMonth.brands} divisions={offMonth.divisions} fashionCats={offMonth.fashionCats} /> : <Empty table="sales_offline_month" />)}
+      {tab === "off-month-detail" && (offMonth ? <OfflineDetailTab periodLabel={offMonth.periodLabel} prevLabel={offMonth.prevLabel} brands={offMonth.detailBrands} divisions={offMonth.divisions} fashionCats={offMonth.fashionCats} /> : <Empty table="sales_offline_month" />)}
       {tab === "summary" && <div>{children}</div>}
       {tab === "online-cum" && (onlineCum ? <OnlineMonthTab {...onlineCum} periodLabel="온라인 누적" /> : <Empty table="sales_online_cum" />)}
       {tab === "online-month" && (online ? <OnlineMonthTab {...online} /> : <Empty table="sales_online_monthly" />)}

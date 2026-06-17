@@ -399,8 +399,9 @@ function buildOff(
   const filtered = divisions ? rows.filter((r) => divisions.includes(r.division)) : rows;
 
   type SubAgg = { s: number; g: number; ps: number; pg: number; area: number; cnt: number };
-  function rank(keyOf: (r: OffRow) => string, withCat: boolean, subOf?: (r: OffRow) => string): OffRank[] {
-    const c = new Map<string, { s: number; g: number; area: number; cat: string; division: string; sub: Map<string, SubAgg> }>();
+  // keyOf: 그룹 키, labelOf: 표시명(없으면 키와 동일)
+  function rank(keyOf: (r: OffRow) => string, withCat: boolean, subOf?: (r: OffRow) => string, labelOf?: (r: OffRow) => string): OffRank[] {
+    const c = new Map<string, { s: number; g: number; area: number; label: string; cat: string; division: string; sub: Map<string, SubAgg> }>();
     const p = new Map<string, { s: number; g: number }>();
     const subEnsure = (m: Map<string, SubAgg>, sk: string) => {
       let e = m.get(sk); if (!e) { e = { s: 0, g: 0, ps: 0, pg: 0, area: 0, cnt: 0 }; m.set(sk, e); } return e;
@@ -408,7 +409,7 @@ function buildOff(
     for (const r of filtered) {
       const k = keyOf(r);
       if (r.p === cur) {
-        const e = c.get(k) ?? { s: 0, g: 0, area: 0, cat: r.cat, division: r.division, sub: new Map() };
+        const e = c.get(k) ?? { s: 0, g: 0, area: 0, label: labelOf ? labelOf(r) : k, cat: r.cat, division: r.division, sub: new Map() };
         e.s += r.sales; e.g += r.gp; e.area += r.area_raw;
         if (subOf) { const se = subEnsure(e.sub, subOf(r)); se.s += r.sales; se.g += r.gp; se.area += r.area_raw; se.cnt += r.store_cnt; }
         c.set(k, e);
@@ -429,7 +430,7 @@ function buildOff(
     for (const [k, e] of c) {
       const pv = p.get(k) ?? { s: 0, g: 0 };
       out.push({
-        key: k, cat: withCat ? e.cat : undefined, division: withCat ? e.division : undefined,
+        key: e.label, cat: withCat ? e.cat : undefined, division: withCat ? e.division : undefined,
         s: e.s, ps: pv.s, g: e.g, pg: pv.g,
         gpm: e.s ? +(e.g / e.s * 100).toFixed(1) : 0,
         yoyPct: pv.s ? +((e.s - pv.s) / pv.s * 100).toFixed(1) : 0,
@@ -478,6 +479,8 @@ function buildOff(
     yoyPct: prevTotal ? +((total - prevTotal) / prevTotal * 100).toFixed(1) : 0,
     brands: rank((r) => r.brand, true, (r) => r.store),
     stores: rank((r) => r.store, false, (r) => r.brand),
+    // 상세용: (부문|복종|브랜드) 단위 — 중복부문 브랜드 분리, 부문/복종 합과 정확히 일치
+    detailBrands: rank((r) => `${r.division}|${r.cat}|${r.brand}`, true, (r) => r.store, (r) => r.brand),
     divisions: [...divMap.entries()]
       .map(([division, v]) => ({ division, s: v.s, ps: v.ps, g: v.g,
         gpm: v.s ? +(v.g / v.s * 100).toFixed(1) : 0,
