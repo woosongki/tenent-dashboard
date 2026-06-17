@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { JetBrains_Mono, Archivo_Black, Black_Han_Sans } from "next/font/google";
 import { Toaster } from "sonner";
 import "./globals.css";
@@ -27,6 +27,16 @@ const blackHanSans = Black_Han_Sans({
 export const metadata: Metadata = {
   title: "lifestyle — 이랜드리테일",
   description: "이랜드리테일 lifestyle 컨텐츠 운영 대시보드",
+  manifest: "/manifest.webmanifest",
+  appleWebApp: { capable: true, title: "lifestyle", statusBarStyle: "default" },
+  icons: { apple: "/icon-192.png" },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#0a0a0a",
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
 };
 
 export default function RootLayout({

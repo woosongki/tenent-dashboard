@@ -12,7 +12,7 @@ export default function AuthForm() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4">
-      <div className="w-full max-w-sm space-y-6  bg-white p-8 shadow-sm ring-1 ring-gray-200">
+      <div className="w-full max-w-sm space-y-6 bg-white p-6 shadow-sm ring-1 ring-gray-200 sm:p-8">
 
         {/* Logo / Title */}
         <div className="text-center">
