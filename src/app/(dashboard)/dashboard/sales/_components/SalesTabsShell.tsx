@@ -23,6 +23,7 @@ interface OffProps {
   total: number; prevTotal: number; gTotal: number; gpm: number; yoyPct: number;
   brands: OffRank[]; stores: OffRank[];
   divisions: { division: string; s: number; ps: number; g: number; gpm: number; yoyPct: number }[];
+  fashionCats: { cat: string; s: number; ps: number; g: number; gpm: number; yoyPct: number }[];
 }
 
 interface Props {

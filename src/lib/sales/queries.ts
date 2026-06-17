@@ -420,6 +420,16 @@ function buildOff(
     else if (r.p === prev) { e.ps += r.sales; e.pg += r.gp; }
     divMap.set(r.division, e);
   }
+  // 패션 부문 복종(cat)별 요약
+  const fashMap = new Map<string, { s: number; ps: number; g: number; pg: number }>();
+  for (const r of filtered) {
+    if (r.division !== "패션") continue;
+    const e = fashMap.get(r.cat) ?? { s: 0, ps: 0, g: 0, pg: 0 };
+    if (r.p === cur) { e.s += r.sales; e.g += r.gp; }
+    else if (r.p === prev) { e.ps += r.sales; e.pg += r.gp; }
+    fashMap.set(r.cat, e);
+  }
+
   const total = filtered.filter((r) => r.p === cur).reduce((t, r) => t + r.sales, 0);
   const prevTotal = filtered.filter((r) => r.p === prev).reduce((t, r) => t + r.sales, 0);
   const gTotal = filtered.filter((r) => r.p === cur).reduce((t, r) => t + r.gp, 0);
@@ -432,6 +442,11 @@ function buildOff(
     stores: rank((r) => r.store, false, (r) => r.brand),
     divisions: [...divMap.entries()]
       .map(([division, v]) => ({ division, s: v.s, ps: v.ps, g: v.g,
+        gpm: v.s ? +(v.g / v.s * 100).toFixed(1) : 0,
+        yoyPct: v.ps ? +((v.s - v.ps) / v.ps * 100).toFixed(1) : 0 }))
+      .sort((a, b) => b.s - a.s),
+    fashionCats: [...fashMap.entries()]
+      .map(([cat, v]) => ({ cat, s: v.s, ps: v.ps, g: v.g,
         gpm: v.s ? +(v.g / v.s * 100).toFixed(1) : 0,
         yoyPct: v.ps ? +((v.s - v.ps) / v.ps * 100).toFixed(1) : 0 }))
       .sort((a, b) => b.s - a.s),
