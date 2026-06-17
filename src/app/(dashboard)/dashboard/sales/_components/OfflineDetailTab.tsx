@@ -27,6 +27,10 @@ function YoY({ pct, prev }: { pct: number; prev?: number }) {
 }
 
 type Sel = { type: "cat" | "div"; key: string };
+type Dir = "asc" | "desc";
+type BSortKey = "key" | "subCount" | "s" | "g" | "gpm" | "yoyPct";
+type SSortKey = "key" | "s" | "growthS" | "growthPct" | "g" | "growthG" | "growthGPct" | "area" | "dppSales" | "dppGp";
+type OffSubLite = import("@/lib/sales/queries").OffSub;
 
 export default function OfflineDetailTab(p: Props) {
   // 선택 칩 목록: 패션 복종 + 비패션 부문(F&B/기타/온라인)
@@ -37,13 +41,38 @@ export default function OfflineDetailTab(p: Props) {
   const [sel, setSel] = useState<Sel>(chips[0] ? { type: chips[0].type, key: chips[0].key } : { type: "div", key: "패션" });
   const [expanded, setExpanded] = useState<string | null>(null);
   const [limit, setLimit] = useState(20);
+  // 브랜드 랭킹 정렬
+  const [bSort, setBSort] = useState<BSortKey>("s");
+  const [bDir, setBDir] = useState<Dir>("desc");
+  // 지점 상세 정렬 (펼친 행 공통)
+  const [sSort, setSSort] = useState<SSortKey>("s");
+  const [sDir, setSDir] = useState<Dir>("desc");
 
-  // 선택 카테고리로 브랜드 필터
+  // 선택 카테고리로 브랜드 필터 + 정렬
   const rows = useMemo(() => {
     const f = p.brands.filter((b) =>
       sel.type === "cat" ? (b.division === "패션" && b.cat === sel.key) : b.division === sel.key);
-    return [...f].sort((a, b) => b.s - a.s);
-  }, [p.brands, sel]);
+    const dir = bDir === "asc" ? 1 : -1;
+    return [...f].sort((a, b) =>
+      bSort === "key" ? a.key.localeCompare(b.key, "ko") * dir : ((a[bSort] as number) - (b[bSort] as number)) * dir);
+  }, [p.brands, sel, bSort, bDir]);
+
+  function toggleB(k: BSortKey) {
+    if (bSort === k) setBDir((d) => d === "asc" ? "desc" : "asc");
+    else { setBSort(k); setBDir(k === "key" ? "asc" : "desc"); }
+    setExpanded(null); setLimit(20);
+  }
+  function toggleS(k: SSortKey) {
+    if (sSort === k) setSDir((d) => d === "asc" ? "desc" : "asc");
+    else { setSSort(k); setSDir(k === "key" ? "asc" : "desc"); }
+  }
+  const bArrow = (k: BSortKey) => bSort === k ? (bDir === "asc" ? " ▲" : " ▼") : "";
+  const sArrow = (k: SSortKey) => sSort === k ? (sDir === "asc" ? " ▲" : " ▼") : "";
+  function sortSub(sub: OffSubLite[]) {
+    const dir = sDir === "asc" ? 1 : -1;
+    return [...sub].sort((a, b) =>
+      sSort === "key" ? a.key.localeCompare(b.key, "ko") * dir : ((a[sSort] as number) - (b[sSort] as number)) * dir);
+  }
 
   const summary = useMemo(() => {
     const s = rows.reduce((t, r) => t + r.s, 0);
@@ -96,15 +125,15 @@ export default function OfflineDetailTab(p: Props) {
       {/* 브랜드 랭킹 (지점 드릴다운) */}
       <div className="border-[2px] border-[#0a0a0a] bg-white overflow-x-auto">
         <table className="w-full min-w-[560px] text-[12px]">
-          <thead className="bg-[#0a0a0a] text-white">
+          <thead className="bg-[#0a0a0a] text-white select-none">
             <tr>
               <th className="px-3 py-2 text-left w-10">#</th>
-              <th className="px-3 py-2 text-left">브랜드</th>
-              <th className="px-3 py-2 text-right whitespace-nowrap">매장수</th>
-              <th className="px-3 py-2 text-right">매출(백만)</th>
-              <th className="px-3 py-2 text-right">이익(백만)</th>
-              <th className="px-3 py-2 text-right">이익률</th>
-              <th className="px-3 py-2 text-right">전년비</th>
+              <th className="px-3 py-2 text-left cursor-pointer hover:bg-white/10" onClick={() => toggleB("key")}>브랜드{bArrow("key")}</th>
+              <th className="px-3 py-2 text-right whitespace-nowrap cursor-pointer hover:bg-white/10" onClick={() => toggleB("subCount")}>매장수{bArrow("subCount")}</th>
+              <th className="px-3 py-2 text-right cursor-pointer hover:bg-white/10" onClick={() => toggleB("s")}>매출(백만){bArrow("s")}</th>
+              <th className="px-3 py-2 text-right cursor-pointer hover:bg-white/10" onClick={() => toggleB("g")}>이익(백만){bArrow("g")}</th>
+              <th className="px-3 py-2 text-right cursor-pointer hover:bg-white/10" onClick={() => toggleB("gpm")}>이익률{bArrow("gpm")}</th>
+              <th className="px-3 py-2 text-right cursor-pointer hover:bg-white/10" onClick={() => toggleB("yoyPct")}>전년비{bArrow("yoyPct")}</th>
             </tr>
           </thead>
           <tbody>
@@ -128,22 +157,22 @@ export default function OfflineDetailTab(p: Props) {
                         <div className="mb-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400">지점별 상세 ({r.bySub.length})</div>
                         <div className="overflow-x-auto">
                           <table className="w-full min-w-[720px] text-[11px]">
-                            <thead className="text-slate-500">
+                            <thead className="text-slate-500 select-none">
                               <tr className="border-b border-slate-200">
-                                <th className="px-2 py-1 text-left">지점</th>
-                                <th className="px-2 py-1 text-right">매출(백만)</th>
-                                <th className="px-2 py-1 text-right">성장액(백만)</th>
-                                <th className="px-2 py-1 text-right">성장율</th>
-                                <th className="px-2 py-1 text-right">매총익(백만)</th>
-                                <th className="px-2 py-1 text-right">매총익성장액(백만)</th>
-                                <th className="px-2 py-1 text-right">매총익성장율</th>
-                                <th className="px-2 py-1 text-right">전용면적</th>
-                                <th className="px-2 py-1 text-right">일평당매출</th>
-                                <th className="px-2 py-1 text-right">일평당이익</th>
+                                <th className="px-2 py-1 text-left cursor-pointer hover:text-[#0a0a0a]" onClick={() => toggleS("key")}>지점{sArrow("key")}</th>
+                                <th className="px-2 py-1 text-right cursor-pointer hover:text-[#0a0a0a]" onClick={() => toggleS("s")}>매출(백만){sArrow("s")}</th>
+                                <th className="px-2 py-1 text-right cursor-pointer hover:text-[#0a0a0a]" onClick={() => toggleS("growthS")}>성장액(백만){sArrow("growthS")}</th>
+                                <th className="px-2 py-1 text-right cursor-pointer hover:text-[#0a0a0a]" onClick={() => toggleS("growthPct")}>성장율{sArrow("growthPct")}</th>
+                                <th className="px-2 py-1 text-right cursor-pointer hover:text-[#0a0a0a]" onClick={() => toggleS("g")}>매총익(백만){sArrow("g")}</th>
+                                <th className="px-2 py-1 text-right cursor-pointer hover:text-[#0a0a0a]" onClick={() => toggleS("growthG")}>매총익성장액(백만){sArrow("growthG")}</th>
+                                <th className="px-2 py-1 text-right cursor-pointer hover:text-[#0a0a0a]" onClick={() => toggleS("growthGPct")}>매총익성장율{sArrow("growthGPct")}</th>
+                                <th className="px-2 py-1 text-right cursor-pointer hover:text-[#0a0a0a]" onClick={() => toggleS("area")}>전용면적{sArrow("area")}</th>
+                                <th className="px-2 py-1 text-right cursor-pointer hover:text-[#0a0a0a]" onClick={() => toggleS("dppSales")}>일평당매출{sArrow("dppSales")}</th>
+                                <th className="px-2 py-1 text-right cursor-pointer hover:text-[#0a0a0a]" onClick={() => toggleS("dppGp")}>일평당이익{sArrow("dppGp")}</th>
                               </tr>
                             </thead>
                             <tbody>
-                              {r.bySub.map((s) => (
+                              {sortSub(r.bySub).map((s) => (
                                 <tr key={s.key} className="border-b border-slate-100">
                                   <td className="px-2 py-1 font-bold text-[#0a0a0a] whitespace-nowrap">{s.key}</td>
                                   <td className="px-2 py-1 text-right font-mono font-bold">{mil(s.s)}</td>
