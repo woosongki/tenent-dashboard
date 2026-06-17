@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useMounted } from "@/hooks/useMounted";
 import {
   ResponsiveContainer,
   BarChart,
@@ -35,6 +36,7 @@ interface Props {
 function shortDate(d: string) { return d.slice(5); }
 
 export default function StackedBarChart({ data }: Props) {
+  const mounted = useMounted();
   const [metric, setMetric] = useState<Metric>("sessions");
 
   const brands = useMemo<Brand[]>(() => {
@@ -91,6 +93,7 @@ export default function StackedBarChart({ data }: Props) {
       </div>
 
       <div className="h-[180px] w-full min-w-0 sm:h-[220px] lg:h-[260px]">
+        {mounted && (
         <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
           <BarChart data={chartData} margin={{ top: 4, right: 8, left: 0, bottom: 0 }} barSize={10}>
             <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" vertical={false} />
@@ -137,6 +140,7 @@ export default function StackedBarChart({ data }: Props) {
             ))}
           </BarChart>
         </ResponsiveContainer>
+        )}
       </div>
     </div>
   );

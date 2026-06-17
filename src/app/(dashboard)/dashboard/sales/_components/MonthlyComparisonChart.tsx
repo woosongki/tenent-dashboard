@@ -1,5 +1,6 @@
 "use client";
 
+import { useMounted } from "@/hooks/useMounted";
 import {
   ResponsiveContainer,
   BarChart,
@@ -34,6 +35,8 @@ interface ChartPoint {
 }
 
 export default function MonthlyComparisonChart({ monthly }: Props) {
+  const mounted = useMounted();  // SSR/0-size 시 recharts width(-1) 경고 방지
+
   if (monthly.length === 0) {
     return (
       <div className="brutal bg-white p-6 text-center text-[12px] font-bold uppercase tracking-wider text-[#0a0a0a]/40">
@@ -59,6 +62,7 @@ export default function MonthlyComparisonChart({ monthly }: Props) {
       </div>
 
       <div className="h-[280px] w-full min-w-0">
+        {mounted && (
         <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
           <BarChart data={data} margin={{ top: 10, right: 8, bottom: 0, left: 0 }}>
             <CartesianGrid strokeDasharray="2 2" vertical={false} stroke="#0a0a0a" strokeOpacity={0.08} />
@@ -84,6 +88,7 @@ export default function MonthlyComparisonChart({ monthly }: Props) {
             <Bar dataKey="current" fill="#8b5cf6" stroke="#0a0a0a" strokeWidth={1.5} name="올해" />
           </BarChart>
         </ResponsiveContainer>
+        )}
       </div>
 
       {/* 월별 성장률 미니 카드 */}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useMounted } from "@/hooks/useMounted";
 import {
   PieChart, Pie, Cell, Tooltip, ResponsiveContainer,
 } from "recharts";
@@ -63,6 +64,7 @@ function CustomTooltip({ active, payload }: { active?: boolean; payload?: Toolti
 
 export default function CategoryDonutChart({ stats }: Props) {
   const router = useRouter();
+  const mounted = useMounted();
   if (!stats.length) return null;
 
   const totalRevenue = stats.reduce((s, c) => s + c.revenue, 0);
@@ -88,6 +90,7 @@ export default function CategoryDonutChart({ stats }: Props) {
       <div className="flex flex-col gap-6 sm:flex-row sm:items-center">
         {/* 도넛 차트 */}
         <div className="h-[220px] w-full min-w-0 sm:w-[240px] shrink-0">
+          {mounted && (
           <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
             <PieChart>
               <Pie
@@ -111,6 +114,7 @@ export default function CategoryDonutChart({ stats }: Props) {
               <Tooltip content={<CustomTooltip />} />
             </PieChart>
           </ResponsiveContainer>
+          )}
         </div>
 
         {/* 범례 + 진행률 */}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
+import { useMounted } from "@/hooks/useMounted";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 import type { VerifyBrief, VerifyProgressEvent, BusinessSwot } from "@/lib/verify/types";
 
@@ -197,6 +198,7 @@ function BriefCard({ brief }: { brief: VerifyBrief }) {
 
 // C1: 5년 재무 추이 라인차트
 function FinancialChart({ brief }: { brief: VerifyBrief }) {
+  const mounted = useMounted();
   const years = brief.financials.years.filter((y) => y.revenue !== null);
   if (years.length < 2) return null;
 
@@ -219,6 +221,7 @@ function FinancialChart({ brief }: { brief: VerifyBrief }) {
         5년 재무 추이 (단위: 억원 / %)
       </p>
       <div className="h-48">
+        {mounted && (
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={data} margin={{ top: 5, right: 30, left: 0, bottom: 5 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
@@ -238,6 +241,7 @@ function FinancialChart({ brief }: { brief: VerifyBrief }) {
             <Line yAxisId="right" type="monotone" dataKey="영업이익률" stroke="#f97316" strokeWidth={2} strokeDasharray="4 2" dot={{ r: 3 }} />
           </LineChart>
         </ResponsiveContainer>
+        )}
       </div>
     </div>
   );
