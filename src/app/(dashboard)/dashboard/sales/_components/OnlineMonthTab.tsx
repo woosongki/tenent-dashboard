@@ -29,16 +29,34 @@ function yoyBadge(pct: number) {
   );
 }
 
+type SortKey = "key" | "s" | "ps" | "yoyPct";
+
 export default function OnlineMonthTab(p: Props) {
   const [view, setView] = useState<"brand" | "store">("brand");
   const [q, setQ] = useState("");
   const [expanded, setExpanded] = useState<string | null>(null);
+  const [sortKey, setSortKey] = useState<SortKey>("s");
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
 
   const rows = view === "brand" ? p.brands : p.stores;
-  const filtered = useMemo(
-    () => (q ? rows.filter((r) => r.key.includes(q) || (r.cat ?? "").includes(q)) : rows),
-    [rows, q],
-  );
+  const filtered = useMemo(() => {
+    const list = q ? rows.filter((r) => r.key.includes(q) || (r.cat ?? "").includes(q)) : [...rows];
+    const dir = sortDir === "asc" ? 1 : -1;
+    list.sort((a, b) => {
+      if (sortKey === "key") return a.key.localeCompare(b.key, "ko") * dir;
+      return ((a[sortKey] as number) - (b[sortKey] as number)) * dir;
+    });
+    return list;
+  }, [rows, q, sortKey, sortDir]);
+
+  // 헤더 클릭: 같은 키면 방향 토글, 다른 키면 내림차순부터
+  function toggleSort(k: SortKey) {
+    if (sortKey === k) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    else { setSortKey(k); setSortDir(k === "key" ? "asc" : "desc"); }
+    setExpanded(null);
+  }
+  const arrow = (k: SortKey) => (sortKey === k ? (sortDir === "asc" ? " ▲" : " ▼") : "");
+
   // 뷰 전환 시 펼침 초기화
   function switchView(v: "brand" | "store") { setView(v); setExpanded(null); }
   const subLabel = view === "brand" ? "지점" : "브랜드";
@@ -105,14 +123,22 @@ export default function OnlineMonthTab(p: Props) {
       {/* 랭킹 테이블 */}
       <div className="border-[2px] border-[#0a0a0a] bg-white overflow-x-auto">
         <table className="w-full text-[12px]">
-          <thead className="bg-[#0a0a0a] text-white">
+          <thead className="bg-[#0a0a0a] text-white select-none">
             <tr>
               <th className="px-3 py-2 text-left w-10">#</th>
-              <th className="px-3 py-2 text-left">{view === "brand" ? "브랜드" : "지점"}</th>
+              <th className="px-3 py-2 text-left cursor-pointer hover:bg-white/10" onClick={() => toggleSort("key")}>
+                {view === "brand" ? "브랜드" : "지점"}{arrow("key")}
+              </th>
               {view === "brand" && <th className="px-3 py-2 text-left">복종</th>}
-              <th className="px-3 py-2 text-right">{p.ym} 매출</th>
-              <th className="px-3 py-2 text-right">{p.prevYm}</th>
-              <th className="px-3 py-2 text-right">전년비</th>
+              <th className="px-3 py-2 text-right cursor-pointer hover:bg-white/10" onClick={() => toggleSort("s")}>
+                {p.ym} 매출{arrow("s")}
+              </th>
+              <th className="px-3 py-2 text-right cursor-pointer hover:bg-white/10" onClick={() => toggleSort("ps")}>
+                {p.prevYm}{arrow("ps")}
+              </th>
+              <th className="px-3 py-2 text-right cursor-pointer hover:bg-white/10" onClick={() => toggleSort("yoyPct")}>
+                전년비{arrow("yoyPct")}
+              </th>
               <th className="px-3 py-2 text-left">주력 채널</th>
             </tr>
           </thead>
