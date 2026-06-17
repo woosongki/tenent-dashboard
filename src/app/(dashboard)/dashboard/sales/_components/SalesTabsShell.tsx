@@ -13,6 +13,7 @@ interface OnlineProps {
   brands: OnlineRank[];
   stores: OnlineRank[];
   channels: { channel: string; s: number; ps: number; yoyPct: number }[];
+  cats: { cat: string; s: number; ps: number; yoyPct: number }[];
 }
 
 interface Props {
