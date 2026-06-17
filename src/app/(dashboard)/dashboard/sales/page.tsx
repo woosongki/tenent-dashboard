@@ -14,6 +14,8 @@ import SalesSummaryCards from "./_components/SalesSummaryCards";
 import GroupComparisonTable from "./_components/GroupComparisonTable";
 import StoreComparisonTable from "./_components/StoreComparisonTable";
 import BrandComparisonTable from "./_components/BrandComparisonTable";
+import SalesTabsShell from "./_components/SalesTabsShell";
+import { getOnlineMeta, getOnlineMonth } from "@/lib/sales/queries";
 import TopBar from "@/components/layout/TopBar";
 import PageHeader from "@/components/ui/PageHeader";
 import AppFooter from "@/components/ui/AppFooter";
@@ -33,6 +35,15 @@ export default async function SalesPage() {
   const stores = getStores();
   const brands = getBrands();
 
+  // 온라인(당월) — 가장 최근 월 + 전년동월 자동 선택
+  const onlineMeta = await getOnlineMeta();
+  let online = null;
+  if (onlineMeta.hasData) {
+    const ym = onlineMeta.yms[0];                   // 최신 월 (예: 2026-06)
+    const prevYm = `${Number(ym.slice(0, 4)) - 1}${ym.slice(4)}`;  // 전년동월
+    online = await getOnlineMonth(ym, prevYm);
+  }
+
   return (
     <div className="flex flex-col h-full overflow-hidden">
       <TopBar
@@ -47,36 +58,37 @@ export default async function SalesPage() {
             meta={`${meta.period1} vs ${meta.period2} · 지점 ${stores.length}개 · 브랜드 ${brands.length}개`}
           />
 
-        {/* 종합 + 월별 차트 */}
-        <SalesSummaryCards overall={overall} monthly={monthly} />
-        <MonthlyComparisonChart monthly={monthly} />
+        <SalesTabsShell online={online}>
+          {/* ── 매출 요약 탭 (기존 오프라인 콘텐츠) ── */}
+          <div className="space-y-6">
+            <SalesSummaryCards overall={overall} monthly={monthly} />
+            <MonthlyComparisonChart monthly={monthly} />
 
-        {/* 그룹별 표 */}
-        <section className="space-y-3">
-          <div className="inline-block border-[2px] border-[#0a0a0a] bg-yellow-300 px-3 py-1 shadow-[2px_2px_0_0_#0a0a0a]">
-            <h2 className="font-display text-[18px] leading-none text-[#0a0a0a]">구매그룹별 매출</h2>
-          </div>
-          <GroupComparisonTable groups={groups} />
-        </section>
+            <section className="space-y-3">
+              <div className="inline-block border-[2px] border-[#0a0a0a] bg-yellow-300 px-3 py-1 shadow-[2px_2px_0_0_#0a0a0a]">
+                <h2 className="font-display text-[18px] leading-none text-[#0a0a0a]">구매그룹별 매출</h2>
+              </div>
+              <GroupComparisonTable groups={groups} />
+            </section>
 
-        {/* 지점별 표 (드릴다운) */}
-        <section className="space-y-3">
-          <div className="inline-flex items-center gap-2 border-[2px] border-[#0a0a0a] bg-yellow-300 px-3 py-1 shadow-[2px_2px_0_0_#0a0a0a]">
-            <h2 className="font-display text-[18px] leading-none text-[#0a0a0a]">지점별 매출</h2>
-            <span className="font-mono text-[12px] font-extrabold tabular-nums text-[#0a0a0a]">{stores.length}</span>
-          </div>
-          <p className="text-[11px] font-bold text-[#0a0a0a]/45">지점 행을 클릭하면 입점 브랜드 매출 TOP을 펼쳐봅니다.</p>
-          <StoreComparisonTable stores={stores} />
-        </section>
+            <section className="space-y-3">
+              <div className="inline-flex items-center gap-2 border-[2px] border-[#0a0a0a] bg-yellow-300 px-3 py-1 shadow-[2px_2px_0_0_#0a0a0a]">
+                <h2 className="font-display text-[18px] leading-none text-[#0a0a0a]">지점별 매출</h2>
+                <span className="font-mono text-[12px] font-extrabold tabular-nums text-[#0a0a0a]">{stores.length}</span>
+              </div>
+              <p className="text-[11px] font-bold text-[#0a0a0a]/45">지점 행을 클릭하면 입점 브랜드 매출 TOP을 펼쳐봅니다.</p>
+              <StoreComparisonTable stores={stores} />
+            </section>
 
-        {/* 브랜드 표 (전체) */}
-        <section className="space-y-3">
-          <div className="inline-flex items-center gap-2 border-[2px] border-[#0a0a0a] bg-yellow-300 px-3 py-1 shadow-[2px_2px_0_0_#0a0a0a]">
-            <h2 className="font-display text-[18px] leading-none text-[#0a0a0a]">브랜드별 매출</h2>
-            <span className="font-mono text-[12px] font-extrabold tabular-nums text-[#0a0a0a]">{brands.length}</span>
+            <section className="space-y-3">
+              <div className="inline-flex items-center gap-2 border-[2px] border-[#0a0a0a] bg-yellow-300 px-3 py-1 shadow-[2px_2px_0_0_#0a0a0a]">
+                <h2 className="font-display text-[18px] leading-none text-[#0a0a0a]">브랜드별 매출</h2>
+                <span className="font-mono text-[12px] font-extrabold tabular-nums text-[#0a0a0a]">{brands.length}</span>
+              </div>
+              <BrandComparisonTable brands={brands} />
+            </section>
           </div>
-          <BrandComparisonTable brands={brands} />
-        </section>
+        </SalesTabsShell>
 
           <p className="text-[10px] font-bold uppercase tracking-wider text-[#0a0a0a]/55">
             데이터 출처 <span className="font-mono">{meta.compiledAt}</span> 변환 · 26년 1~5월 누적 실적 (구매그룹·브랜드 / 지점·브랜드) · 41개점 기준

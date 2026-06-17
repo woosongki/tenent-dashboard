@@ -129,6 +129,103 @@ export function summarizeBy(
   return out.sort((a, b) => b.s - a.s);
 }
 
+// ── 온라인(당월) 집계 ──
+export interface OnlineRank {
+  key: string;        // 브랜드명 또는 지점명
+  cat?: string;       // 브랜드 랭킹일 때 복종
+  s: number;          // 당월 매출
+  ps: number;         // 전년동월 매출
+  yoyPct: number;
+  byChannel: { channel: string; s: number }[];  // 채널별 (당월)
+}
+
+interface OnlineRow { cat: string; brand: string; store: string; channel: string; ym: string; sales: number; }
+
+async function fetchOnline(yms: string[]): Promise<OnlineRow[]> {
+  const supabase = await createClient();
+  // 페이지네이션 (Supabase 기본 1000행 제한 회피)
+  const all: OnlineRow[] = [];
+  let from = 0;
+  const PAGE = 1000;
+  for (;;) {
+    const { data, error } = await supabase
+      .from("sales_online_monthly")
+      .select("cat,brand,store,channel,ym,sales")
+      .in("ym", yms)
+      .range(from, from + PAGE - 1);
+    if (error) throw new Error(`sales_online_monthly: ${error.message}`);
+    all.push(...(data ?? []) as OnlineRow[]);
+    if (!data || data.length < PAGE) break;
+    from += PAGE;
+  }
+  return all;
+}
+
+/**
+ * 온라인 당월 집계 — 브랜드 랭킹 + 지점 랭킹 (전년동월비 포함)
+ * @param ym 당월 'YYYY-MM'  @param prevYm 전년동월 'YYYY-MM'
+ */
+export async function getOnlineMonth(ym: string, prevYm: string) {
+  const rows = await fetchOnline([ym, prevYm]);
+
+  function rank(keyOf: (r: OnlineRow) => string, withCat: boolean): OnlineRank[] {
+    const cur = new Map<string, { s: number; cat: string; ch: Map<string, number> }>();
+    const prev = new Map<string, number>();
+    for (const r of rows) {
+      const k = keyOf(r);
+      if (r.ym === ym) {
+        const e = cur.get(k) ?? { s: 0, cat: r.cat, ch: new Map() };
+        e.s += r.sales;
+        e.ch.set(r.channel, (e.ch.get(r.channel) ?? 0) + r.sales);
+        cur.set(k, e);
+      } else {
+        prev.set(k, (prev.get(k) ?? 0) + r.sales);
+      }
+    }
+    const out: OnlineRank[] = [];
+    for (const [k, e] of cur) {
+      const ps = prev.get(k) ?? 0;
+      out.push({
+        key: k,
+        cat: withCat ? e.cat : undefined,
+        s: e.s, ps,
+        yoyPct: ps ? +((e.s - ps) / ps * 100).toFixed(1) : 0,
+        byChannel: [...e.ch.entries()].map(([channel, s]) => ({ channel, s })).sort((a, b) => b.s - a.s),
+      });
+    }
+    return out.sort((a, b) => b.s - a.s);
+  }
+
+  // 채널 전체 합계 (당월/전년)
+  const chTotals = new Map<string, { s: number; ps: number }>();
+  for (const r of rows) {
+    const e = chTotals.get(r.channel) ?? { s: 0, ps: 0 };
+    if (r.ym === ym) e.s += r.sales; else e.ps += r.sales;
+    chTotals.set(r.channel, e);
+  }
+
+  const total = rows.filter((r) => r.ym === ym).reduce((t, r) => t + r.sales, 0);
+  const prevTotal = rows.filter((r) => r.ym === prevYm).reduce((t, r) => t + r.sales, 0);
+
+  return {
+    ym, prevYm, total, prevTotal,
+    yoyPct: prevTotal ? +((total - prevTotal) / prevTotal * 100).toFixed(1) : 0,
+    brands: rank((r) => r.brand, true),
+    stores: rank((r) => r.store, false),
+    channels: [...chTotals.entries()]
+      .map(([channel, v]) => ({ channel, ...v, yoyPct: v.ps ? +((v.s - v.ps) / v.ps * 100).toFixed(1) : 0 }))
+      .sort((a, b) => b.s - a.s),
+  };
+}
+
+/** 온라인 가용 월 목록 */
+export async function getOnlineMeta() {
+  const supabase = await createClient();
+  const { data } = await supabase.from("sales_online_monthly").select("ym");
+  const yms = [...new Set((data ?? []).map((d) => d.ym))].sort().reverse();
+  return { yms, hasData: yms.length > 0 };
+}
+
 /** 데이터 존재 여부 + 가용 기간 + 부문 목록 (UI 초기화용) */
 export async function getSalesMeta() {
   const supabase = await createClient();
