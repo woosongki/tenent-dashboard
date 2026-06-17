@@ -58,7 +58,7 @@ export default function OfflineTab(p: Props) {
   return (
     <div className="space-y-5">
       {/* 요약 카드 */}
-      <div className="grid grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-4">
         <Card label={`${p.periodLabel} 매출`} value={`${eok(p.total)}억`} sub={`${won(p.total)}원`} accent />
         <Card label={`전년 (${p.prevLabel})`} value={`${eok(p.prevTotal)}억`} sub={`${won(p.prevTotal)}원`} />
         <Card label="전년대비" value={`${p.yoyPct >= 0 ? "+" : ""}${p.yoyPct}%`} tone={p.yoyPct >= 0 ? "up" : "down"} />
@@ -95,7 +95,7 @@ export default function OfflineTab(p: Props) {
 
       {/* 랭킹 */}
       <div className="border-[2px] border-[#0a0a0a] bg-white overflow-x-auto">
-        <table className="w-full text-[12px]">
+        <table className="w-full min-w-[560px] text-[12px]">
           <thead className="bg-[#0a0a0a] text-white select-none">
             <tr>
               <th className="px-3 py-2 text-left w-10">#</th>
@@ -191,13 +191,13 @@ function BarSection({ title, barColor, rows, total, activeKey, onPick }: {
           const active = activeKey === d.label;
           return (
             <button key={d.label} onClick={() => onPick(d.label)}
-              className={`flex w-full items-center gap-3 px-3 py-2 text-[12px] text-left transition ${active ? "bg-yellow-100" : "hover:bg-slate-50"}`}>
-              <span className="w-24 shrink-0 truncate font-bold text-[#0a0a0a]">{d.label || "(미분류)"}</span>
-              <div className="flex-1"><div className="h-3 bg-slate-100"><div className="h-full" style={{ width: `${pct}%`, background: barColor }} /></div></div>
-              <span className="w-10 text-right font-mono text-slate-500">{pct.toFixed(0)}%</span>
-              <span className="w-24 text-right font-mono font-bold">{won(d.s)}</span>
-              <span className="w-14 text-right font-mono text-slate-500">GPM{d.gpm}</span>
-              <span className="w-16 text-right"><YoY pct={d.yoyPct} /></span>
+              className={`flex w-full items-center gap-2 px-3 py-2 text-[11px] text-left transition sm:gap-3 sm:text-[12px] ${active ? "bg-yellow-100" : "hover:bg-slate-50"}`}>
+              <span className="w-16 shrink-0 truncate font-bold text-[#0a0a0a] sm:w-24">{d.label || "(미분류)"}</span>
+              <div className="flex-1 min-w-[40px]"><div className="h-3 bg-slate-100"><div className="h-full" style={{ width: `${pct}%`, background: barColor }} /></div></div>
+              <span className="hidden w-10 text-right font-mono text-slate-500 sm:inline">{pct.toFixed(0)}%</span>
+              <span className="w-20 text-right font-mono font-bold sm:w-24">{won(d.s)}</span>
+              <span className="hidden w-14 text-right font-mono text-slate-500 sm:inline">GPM{d.gpm}</span>
+              <span className="w-14 text-right sm:w-16"><YoY pct={d.yoyPct} /></span>
             </button>
           );
         })}

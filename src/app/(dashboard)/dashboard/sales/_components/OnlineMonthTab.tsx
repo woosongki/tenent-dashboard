@@ -65,7 +65,7 @@ export default function OnlineMonthTab(p: Props) {
   return (
     <div className="space-y-5">
       {/* 요약 카드 */}
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-3 gap-2 sm:gap-3">
         <SummaryCard label={`${p.ym} ${p.periodLabel ?? "온라인 매출"}`} value={`${eok(p.total)}억`} sub={`${won(p.total)}원`} accent />
         <SummaryCard label={`전년 (${p.prevYm})`} value={`${eok(p.prevTotal)}억`} sub={`${won(p.prevTotal)}원`} />
         <SummaryCard label="전년대비" value={`${p.yoyPct >= 0 ? "+" : ""}${p.yoyPct}%`}
@@ -81,16 +81,16 @@ export default function OnlineMonthTab(p: Props) {
           {p.channels.map((c) => {
             const pctOfTotal = p.total ? (c.s / p.total) * 100 : 0;
             return (
-              <div key={c.channel} className="flex items-center gap-3 px-3 py-2 text-[12px]">
-                <span className="w-32 shrink-0 font-bold text-[#0a0a0a]">{c.channel}</span>
-                <div className="flex-1">
+              <div key={c.channel} className="flex items-center gap-2 px-3 py-2 text-[11px] sm:gap-3 sm:text-[12px]">
+                <span className="w-20 shrink-0 truncate font-bold text-[#0a0a0a] sm:w-32">{c.channel}</span>
+                <div className="flex-1 min-w-[40px]">
                   <div className="h-3 bg-slate-100">
                     <div className="h-full bg-yellow-400" style={{ width: `${Math.max(pctOfTotal, 0)}%` }} />
                   </div>
                 </div>
-                <span className="w-12 text-right font-mono text-slate-500">{pctOfTotal.toFixed(1)}%</span>
-                <span className="w-24 text-right font-mono font-bold">{won(c.s)}</span>
-                <span className="w-20 text-right">{yoyBadge(c.yoyPct)}</span>
+                <span className="hidden w-12 text-right font-mono text-slate-500 sm:inline">{pctOfTotal.toFixed(1)}%</span>
+                <span className="w-20 text-right font-mono font-bold sm:w-24">{won(c.s)}</span>
+                <span className="w-14 text-right sm:w-20">{yoyBadge(c.yoyPct)}</span>
               </div>
             );
           })}
@@ -106,16 +106,16 @@ export default function OnlineMonthTab(p: Props) {
           {p.cats.map((c) => {
             const pctOfTotal = p.total ? (c.s / p.total) * 100 : 0;
             return (
-              <div key={c.cat} className="flex items-center gap-3 px-3 py-2 text-[12px]">
-                <span className="w-32 shrink-0 font-bold text-[#0a0a0a]">{c.cat || "(미분류)"}</span>
-                <div className="flex-1">
+              <div key={c.cat} className="flex items-center gap-2 px-3 py-2 text-[11px] sm:gap-3 sm:text-[12px]">
+                <span className="w-20 shrink-0 truncate font-bold text-[#0a0a0a] sm:w-32">{c.cat || "(미분류)"}</span>
+                <div className="flex-1 min-w-[40px]">
                   <div className="h-3 bg-slate-100">
                     <div className="h-full bg-cyan-400" style={{ width: `${Math.max(pctOfTotal, 0)}%` }} />
                   </div>
                 </div>
-                <span className="w-12 text-right font-mono text-slate-500">{pctOfTotal.toFixed(1)}%</span>
-                <span className="w-24 text-right font-mono font-bold">{won(c.s)}</span>
-                <span className="w-20 text-right">{yoyBadge(c.yoyPct)}</span>
+                <span className="hidden w-12 text-right font-mono text-slate-500 sm:inline">{pctOfTotal.toFixed(1)}%</span>
+                <span className="w-20 text-right font-mono font-bold sm:w-24">{won(c.s)}</span>
+                <span className="w-14 text-right sm:w-20">{yoyBadge(c.yoyPct)}</span>
               </div>
             );
           })}
@@ -148,7 +148,7 @@ export default function OnlineMonthTab(p: Props) {
 
       {/* 랭킹 테이블 */}
       <div className="border-[2px] border-[#0a0a0a] bg-white overflow-x-auto">
-        <table className="w-full text-[12px]">
+        <table className="w-full min-w-[560px] text-[12px]">
           <thead className="bg-[#0a0a0a] text-white select-none">
             <tr>
               <th className="px-3 py-2 text-left w-10">#</th>

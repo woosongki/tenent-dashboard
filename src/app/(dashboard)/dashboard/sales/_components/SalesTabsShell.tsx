@@ -42,7 +42,7 @@ export default function SalesTabsShell({ offCum, offMonth, online, onlineCum, ch
   return (
     <div className="space-y-4">
       {/* 탭 바 */}
-      <div className="flex flex-wrap gap-1.5 border-b-[2px] border-[#0a0a0a] pb-px">
+      <div className="flex gap-1.5 overflow-x-auto border-b-[2px] border-[#0a0a0a] pb-px [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         <TabBtn active={tab === "off-cum"} onClick={() => setTab("off-cum")}>
           🏆 누적{offCum ? ` · ${offCum.periodLabel}` : ""}
         </TabBtn>
@@ -82,7 +82,7 @@ function TabBtn({ active, onClick, children }: { active: boolean; onClick: () =>
   return (
     <button
       onClick={onClick}
-      className={`border-[2px] border-b-0 px-4 py-2 text-[13px] font-bold transition ${
+      className={`shrink-0 whitespace-nowrap border-[2px] border-b-0 px-3 py-2 text-[12px] font-bold transition sm:px-4 sm:text-[13px] ${
         active
           ? "border-[#0a0a0a] bg-yellow-300 text-[#0a0a0a]"
           : "border-transparent bg-transparent text-slate-400 hover:text-[#0a0a0a]"
