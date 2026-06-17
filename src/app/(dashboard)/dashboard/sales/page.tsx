@@ -15,7 +15,10 @@ import GroupComparisonTable from "./_components/GroupComparisonTable";
 import StoreComparisonTable from "./_components/StoreComparisonTable";
 import BrandComparisonTable from "./_components/BrandComparisonTable";
 import SalesTabsShell from "./_components/SalesTabsShell";
-import { getOnlineMeta, getOnlineMonth, getOnlineCumMeta, getOnlineCumulative } from "@/lib/sales/queries";
+import {
+  getOnlineMeta, getOnlineMonth, getOnlineCumMeta, getOnlineCumulative,
+  getOfflineMeta, getOfflineCum, getOfflineMonth,
+} from "@/lib/sales/queries";
 import TopBar from "@/components/layout/TopBar";
 import PageHeader from "@/components/ui/PageHeader";
 import AppFooter from "@/components/ui/AppFooter";
@@ -56,6 +59,20 @@ export default async function SalesPage() {
     onlineCum = { ...c, ym: `${year} 누적`, prevYm: `${prevYear} 누적` };
   }
 
+  // 오프라인 매출 (5번 누적 / 6번 당월)
+  const offMeta = await getOfflineMeta();
+  let offCum = null, offMonth = null;
+  if (offMeta.cumYear) {
+    const py = String(Number(offMeta.cumYear) - 1);
+    const c = await getOfflineCum(offMeta.cumYear, py);
+    offCum = { ...c, periodLabel: `${offMeta.cumYear} 누적`, prevLabel: `${py} 누적` };
+  }
+  if (offMeta.monthYm) {
+    const pym = `${Number(offMeta.monthYm.slice(0, 4)) - 1}${offMeta.monthYm.slice(4)}`;
+    const m = await getOfflineMonth(offMeta.monthYm, pym);
+    offMonth = { ...m, periodLabel: offMeta.monthYm, prevLabel: pym };
+  }
+
   return (
     <div className="flex flex-col h-full overflow-hidden">
       <TopBar
@@ -70,7 +87,7 @@ export default async function SalesPage() {
             meta={`${meta.period1} vs ${meta.period2} · 지점 ${stores.length}개 · 브랜드 ${brands.length}개`}
           />
 
-        <SalesTabsShell online={online} onlineCum={onlineCum}>
+        <SalesTabsShell online={online} onlineCum={onlineCum} offCum={offCum} offMonth={offMonth}>
           {/* ── 매출 요약 탭 (기존 오프라인 콘텐츠) ── */}
           <div className="space-y-6">
             <SalesSummaryCards overall={overall} monthly={monthly} />

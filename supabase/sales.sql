@@ -72,8 +72,39 @@ create table if not exists public.sales_online_cum (
 create index if not exists idx_sales_online_cum_lookup on public.sales_online_cum (division, cat, brand, store);
 create index if not exists idx_sales_online_cum_year on public.sales_online_cum (year);
 
+-- ── 5. 오프라인 누적 (5번, 연 단위, 매출+이익) ──
+create table if not exists public.sales_offline_cum (
+  id        bigint generated always as identity primary key,
+  division  text not null, cat text not null, brand text not null, store text not null,
+  year      text not null,
+  sales     bigint not null default 0,
+  gp        bigint not null default 0,
+  unique (division, cat, brand, store, year)
+);
+create index if not exists idx_offcum_lookup on public.sales_offline_cum (division, cat, brand, store);
+create index if not exists idx_offcum_year on public.sales_offline_cum (year);
+
+-- ── 6. 오프라인 당월 (6번, 월 단위, 매출+이익) ──
+create table if not exists public.sales_offline_month (
+  id        bigint generated always as identity primary key,
+  division  text not null, cat text not null, brand text not null, store text not null,
+  ym        text not null,
+  sales     bigint not null default 0,
+  gp        bigint not null default 0,
+  unique (division, cat, brand, store, ym)
+);
+create index if not exists idx_offmon_lookup on public.sales_offline_month (division, cat, brand, store);
+create index if not exists idx_offmon_ym on public.sales_offline_month (ym);
+
 -- ── RLS: 인증 유저 조회 / 수정 ──
 alter table public.sales_monthly        enable row level security;
+alter table public.sales_offline_cum    enable row level security;
+alter table public.sales_offline_month  enable row level security;
+
+create policy "offcum sel" on public.sales_offline_cum for select using (auth.uid() is not null);
+create policy "offcum all" on public.sales_offline_cum for all using (auth.uid() is not null) with check (auth.uid() is not null);
+create policy "offmon sel" on public.sales_offline_month for select using (auth.uid() is not null);
+create policy "offmon all" on public.sales_offline_month for all using (auth.uid() is not null) with check (auth.uid() is not null);
 alter table public.sales_store_meta     enable row level security;
 alter table public.sales_online_monthly enable row level security;
 alter table public.sales_online_cum     enable row level security;

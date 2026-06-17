@@ -349,6 +349,117 @@ export async function getOnlineCumMeta() {
   return { years, hasData: !!max };
 }
 
+// ── 오프라인 매출 (5번 누적 / 6번 당월) — 매출+이익 ──
+export interface OffRank {
+  key: string;
+  cat?: string;
+  division?: string;
+  s: number; ps: number;          // 매출 당기/전기
+  g: number; pg: number;          // 이익 당기/전기
+  gpm: number;                    // 이익률 %
+  yoyPct: number;                 // 매출 전년비
+  bySub?: { key: string; s: number; g: number }[];
+}
+
+interface OffRow { division: string; cat: string; brand: string; store: string; sales: number; gp: number; }
+
+async function fetchOff(table: "sales_offline_cum" | "sales_offline_month", col: "year" | "ym", periods: string[]): Promise<(OffRow & { p: string })[]> {
+  const supabase = await createClient();
+  const all: (OffRow & { p: string })[] = [];
+  let from = 0; const PAGE = 1000;
+  for (;;) {
+    const { data, error } = await supabase
+      .from(table).select(`division,cat,brand,store,sales,gp,${col}`).in(col, periods)
+      .range(from, from + PAGE - 1);
+    if (error) throw new Error(`${table}: ${error.message}`);
+    all.push(...(data ?? []).map((r) => ({ ...r, p: (r as Record<string, string>)[col] })) as (OffRow & { p: string })[]);
+    if (!data || data.length < PAGE) break;
+    from += PAGE;
+  }
+  return all;
+}
+
+function buildOff(
+  rows: (OffRow & { p: string })[], cur: string, prev: string, divisions: string[] | null,
+) {
+  const filtered = divisions ? rows.filter((r) => divisions.includes(r.division)) : rows;
+
+  function rank(keyOf: (r: OffRow) => string, withCat: boolean, subOf?: (r: OffRow) => string): OffRank[] {
+    const c = new Map<string, { s: number; g: number; cat: string; division: string; sub: Map<string, { s: number; g: number }> }>();
+    const p = new Map<string, { s: number; g: number }>();
+    for (const r of filtered) {
+      const k = keyOf(r);
+      if (r.p === cur) {
+        const e = c.get(k) ?? { s: 0, g: 0, cat: r.cat, division: r.division, sub: new Map() };
+        e.s += r.sales; e.g += r.gp;
+        if (subOf) { const sk = subOf(r); const se = e.sub.get(sk) ?? { s: 0, g: 0 }; se.s += r.sales; se.g += r.gp; e.sub.set(sk, se); }
+        c.set(k, e);
+      } else if (r.p === prev) {
+        const e = p.get(k) ?? { s: 0, g: 0 }; e.s += r.sales; e.g += r.gp; p.set(k, e);
+      }
+    }
+    const out: OffRank[] = [];
+    for (const [k, e] of c) {
+      const pv = p.get(k) ?? { s: 0, g: 0 };
+      out.push({
+        key: k, cat: withCat ? e.cat : undefined, division: withCat ? e.division : undefined,
+        s: e.s, ps: pv.s, g: e.g, pg: pv.g,
+        gpm: e.s ? +(e.g / e.s * 100).toFixed(1) : 0,
+        yoyPct: pv.s ? +((e.s - pv.s) / pv.s * 100).toFixed(1) : 0,
+        bySub: subOf ? [...e.sub.entries()].map(([key, v]) => ({ key, s: v.s, g: v.g })).sort((a, b) => b.s - a.s) : undefined,
+      });
+    }
+    return out.sort((a, b) => b.s - a.s);
+  }
+
+  // 부문(division)별 요약
+  const divMap = new Map<string, { s: number; ps: number; g: number; pg: number }>();
+  for (const r of filtered) {
+    const e = divMap.get(r.division) ?? { s: 0, ps: 0, g: 0, pg: 0 };
+    if (r.p === cur) { e.s += r.sales; e.g += r.gp; }
+    else if (r.p === prev) { e.ps += r.sales; e.pg += r.gp; }
+    divMap.set(r.division, e);
+  }
+  const total = filtered.filter((r) => r.p === cur).reduce((t, r) => t + r.sales, 0);
+  const prevTotal = filtered.filter((r) => r.p === prev).reduce((t, r) => t + r.sales, 0);
+  const gTotal = filtered.filter((r) => r.p === cur).reduce((t, r) => t + r.gp, 0);
+
+  return {
+    total, prevTotal, gTotal,
+    gpm: total ? +(gTotal / total * 100).toFixed(1) : 0,
+    yoyPct: prevTotal ? +((total - prevTotal) / prevTotal * 100).toFixed(1) : 0,
+    brands: rank((r) => r.brand, true, (r) => r.store),
+    stores: rank((r) => r.store, false, (r) => r.brand),
+    divisions: [...divMap.entries()]
+      .map(([division, v]) => ({ division, s: v.s, ps: v.ps, g: v.g,
+        gpm: v.s ? +(v.g / v.s * 100).toFixed(1) : 0,
+        yoyPct: v.ps ? +((v.s - v.ps) / v.ps * 100).toFixed(1) : 0 }))
+      .sort((a, b) => b.s - a.s),
+  };
+}
+
+/** 오프라인 누적 (5번) */
+export async function getOfflineCum(year: string, prevYear: string, divisions: string[] | null = null) {
+  const rows = await fetchOff("sales_offline_cum", "year", [year, prevYear]);
+  return { year, prevYear, ...buildOff(rows, year, prevYear, divisions) };
+}
+
+/** 오프라인 당월 (6번) */
+export async function getOfflineMonth(ym: string, prevYm: string, divisions: string[] | null = null) {
+  const rows = await fetchOff("sales_offline_month", "ym", [ym, prevYm]);
+  return { ym, prevYm, ...buildOff(rows, ym, prevYm, divisions) };
+}
+
+/** 오프라인 가용 기간 */
+export async function getOfflineMeta() {
+  const supabase = await createClient();
+  const [{ data: cy }, { data: my }] = await Promise.all([
+    supabase.from("sales_offline_cum").select("year").order("year", { ascending: false }).limit(1),
+    supabase.from("sales_offline_month").select("ym").order("ym", { ascending: false }).limit(1),
+  ]);
+  return { cumYear: cy?.[0]?.year ?? null, monthYm: my?.[0]?.ym ?? null };
+}
+
 /** 데이터 존재 여부 + 가용 기간 + 부문 목록 (UI 초기화용) */
 export async function getSalesMeta() {
   const supabase = await createClient();

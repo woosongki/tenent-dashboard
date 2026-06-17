@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import OnlineMonthTab from "./OnlineMonthTab";
-import type { OnlineRank } from "@/lib/sales/queries";
+import OfflineTab from "./OfflineTab";
+import type { OnlineRank, OffRank } from "@/lib/sales/queries";
 
 interface OnlineProps {
   ym: string;
@@ -16,23 +17,36 @@ interface OnlineProps {
   cats: { cat: string; s: number; ps: number; yoyPct: number }[];
 }
 
-interface Props {
-  online: OnlineProps | null;     // 당월 (9번)
-  onlineCum: OnlineProps | null;  // 누적 (8번)
-  children: React.ReactNode;      // 기존 매출분석(오프라인) 콘텐츠
+// OfflineTab props 타입
+interface OffProps {
+  periodLabel: string; prevLabel: string;
+  total: number; prevTotal: number; gTotal: number; gpm: number; yoyPct: number;
+  brands: OffRank[]; stores: OffRank[];
+  divisions: { division: string; s: number; ps: number; g: number; gpm: number; yoyPct: number }[];
 }
 
-type TabKey = "offline" | "online-cum" | "online-month";
+interface Props {
+  offCum: OffProps | null;        // 오프라인 누적 (5번)
+  offMonth: OffProps | null;      // 오프라인 당월 (6번)
+  online: OnlineProps | null;     // 온라인 당월 (9번)
+  onlineCum: OnlineProps | null;  // 온라인 누적 (8번)
+  children: React.ReactNode;      // 기존 매출 요약(레거시 CSV)
+}
 
-export default function SalesTabsShell({ online, onlineCum, children }: Props) {
-  const [tab, setTab] = useState<TabKey>("offline");
+type TabKey = "off-cum" | "off-month" | "summary" | "online-cum" | "online-month";
+
+export default function SalesTabsShell({ offCum, offMonth, online, onlineCum, children }: Props) {
+  const [tab, setTab] = useState<TabKey>(offCum ? "off-cum" : "summary");
 
   return (
     <div className="space-y-4">
       {/* 탭 바 */}
-      <div className="flex gap-1.5 border-b-[2px] border-[#0a0a0a] pb-px">
-        <TabBtn active={tab === "offline"} onClick={() => setTab("offline")}>
-          📊 매출 요약
+      <div className="flex flex-wrap gap-1.5 border-b-[2px] border-[#0a0a0a] pb-px">
+        <TabBtn active={tab === "off-cum"} onClick={() => setTab("off-cum")}>
+          🏆 누적{offCum ? ` · ${offCum.periodLabel}` : ""}
+        </TabBtn>
+        <TabBtn active={tab === "off-month"} onClick={() => setTab("off-month")}>
+          📅 당월{offMonth ? ` · ${offMonth.periodLabel}` : ""}
         </TabBtn>
         <TabBtn active={tab === "online-cum"} onClick={() => setTab("online-cum")}>
           🛒 온라인(누적){onlineCum ? ` · ${onlineCum.ym}` : ""}
@@ -40,20 +54,17 @@ export default function SalesTabsShell({ online, onlineCum, children }: Props) {
         <TabBtn active={tab === "online-month"} onClick={() => setTab("online-month")}>
           📱 온라인(당월){online ? ` · ${online.ym}` : ""}
         </TabBtn>
+        <TabBtn active={tab === "summary"} onClick={() => setTab("summary")}>
+          📊 매출 요약(구)
+        </TabBtn>
       </div>
 
       {/* 탭 내용 */}
-      {tab === "offline" && <div>{children}</div>}
-      {tab === "online-cum" && (
-        onlineCum
-          ? <OnlineMonthTab {...onlineCum} periodLabel="온라인 누적" />
-          : <Empty table="sales_online_cum" />
-      )}
-      {tab === "online-month" && (
-        online
-          ? <OnlineMonthTab {...online} />
-          : <Empty table="sales_online_monthly" />
-      )}
+      {tab === "off-cum" && (offCum ? <OfflineTab {...offCum} /> : <Empty table="sales_offline_cum" />)}
+      {tab === "off-month" && (offMonth ? <OfflineTab {...offMonth} /> : <Empty table="sales_offline_month" />)}
+      {tab === "summary" && <div>{children}</div>}
+      {tab === "online-cum" && (onlineCum ? <OnlineMonthTab {...onlineCum} periodLabel="온라인 누적" /> : <Empty table="sales_online_cum" />)}
+      {tab === "online-month" && (online ? <OnlineMonthTab {...online} /> : <Empty table="sales_online_monthly" />)}
     </div>
   );
 }
