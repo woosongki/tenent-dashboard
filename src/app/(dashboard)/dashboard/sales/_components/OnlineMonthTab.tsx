@@ -4,14 +4,15 @@ import { useMemo, useState } from "react";
 import type { OnlineRank } from "@/lib/sales/queries";
 
 interface Props {
-  ym: string;
-  prevYm: string;
+  ym: string;          // 당월 'YYYY-MM' 또는 누적 라벨 'YYYY 누적'
+  prevYm: string;      // 비교 기간 라벨
   total: number;
   prevTotal: number;
   yoyPct: number;
   brands: OnlineRank[];
   stores: OnlineRank[];
   channels: { channel: string; s: number; ps: number; yoyPct: number }[];
+  periodLabel?: string;  // "온라인 매출" 라벨 접두 (기본: 당월)
 }
 
 const won = (n: number) => n.toLocaleString("ko-KR");
@@ -40,8 +41,8 @@ export default function OnlineMonthTab(p: Props) {
     <div className="space-y-5">
       {/* 요약 카드 */}
       <div className="grid grid-cols-3 gap-3">
-        <SummaryCard label={`${p.ym} 온라인 매출`} value={`${eok(p.total)}억`} sub={`${won(p.total)}원`} accent />
-        <SummaryCard label={`전년동월 (${p.prevYm})`} value={`${eok(p.prevTotal)}억`} sub={`${won(p.prevTotal)}원`} />
+        <SummaryCard label={`${p.ym} ${p.periodLabel ?? "온라인 매출"}`} value={`${eok(p.total)}억`} sub={`${won(p.total)}원`} accent />
+        <SummaryCard label={`전년 (${p.prevYm})`} value={`${eok(p.prevTotal)}억`} sub={`${won(p.prevTotal)}원`} />
         <SummaryCard label="전년대비" value={`${p.yoyPct >= 0 ? "+" : ""}${p.yoyPct}%`}
           sub={`${won(p.total - p.prevTotal)}원`} tone={p.yoyPct >= 0 ? "up" : "down"} />
       </div>

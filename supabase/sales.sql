@@ -56,10 +56,30 @@ create table if not exists public.sales_online_monthly (
 create index if not exists idx_sales_online_lookup on public.sales_online_monthly (division, cat, brand, store);
 create index if not exists idx_sales_online_ym on public.sales_online_monthly (ym);
 
+-- ── 4. 온라인 누적 (연 누적, 지점×브랜드×채널) ──
+-- 8번 온라인(전체) 탭. 연초~기준월 누적이라 월 분해 불가 → 연(year) 단위 저장.
+create table if not exists public.sales_online_cum (
+  id        bigint generated always as identity primary key,
+  division  text   not null,
+  cat       text   not null,
+  brand     text   not null,
+  store     text   not null,
+  channel   text   not null,
+  year      text   not null,                -- 'YYYY' (예: '2026' = 26년 누적)
+  sales     bigint not null default 0,
+  unique (division, cat, brand, store, channel, year)
+);
+create index if not exists idx_sales_online_cum_lookup on public.sales_online_cum (division, cat, brand, store);
+create index if not exists idx_sales_online_cum_year on public.sales_online_cum (year);
+
 -- ── RLS: 인증 유저 조회 / 수정 ──
 alter table public.sales_monthly        enable row level security;
 alter table public.sales_store_meta     enable row level security;
 alter table public.sales_online_monthly enable row level security;
+alter table public.sales_online_cum     enable row level security;
+
+create policy "sales_online_cum: 인증 조회" on public.sales_online_cum for select using (auth.uid() is not null);
+create policy "sales_online_cum: 인증 수정" on public.sales_online_cum for all    using (auth.uid() is not null) with check (auth.uid() is not null);
 
 create policy "sales_monthly: 인증 조회"  on public.sales_monthly        for select using (auth.uid() is not null);
 create policy "sales_monthly: 인증 수정"  on public.sales_monthly        for all    using (auth.uid() is not null) with check (auth.uid() is not null);

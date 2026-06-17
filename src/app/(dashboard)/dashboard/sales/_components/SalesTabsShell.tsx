@@ -16,13 +16,14 @@ interface OnlineProps {
 }
 
 interface Props {
-  online: OnlineProps | null;   // null = 온라인 데이터 없음
-  children: React.ReactNode;    // 기존 매출분석(오프라인) 콘텐츠
+  online: OnlineProps | null;     // 당월 (9번)
+  onlineCum: OnlineProps | null;  // 누적 (8번)
+  children: React.ReactNode;      // 기존 매출분석(오프라인) 콘텐츠
 }
 
-type TabKey = "offline" | "online-month";
+type TabKey = "offline" | "online-cum" | "online-month";
 
-export default function SalesTabsShell({ online, children }: Props) {
+export default function SalesTabsShell({ online, onlineCum, children }: Props) {
   const [tab, setTab] = useState<TabKey>("offline");
 
   return (
@@ -32,6 +33,9 @@ export default function SalesTabsShell({ online, children }: Props) {
         <TabBtn active={tab === "offline"} onClick={() => setTab("offline")}>
           📊 매출 요약
         </TabBtn>
+        <TabBtn active={tab === "online-cum"} onClick={() => setTab("online-cum")}>
+          🛒 온라인(누적){onlineCum ? ` · ${onlineCum.ym}` : ""}
+        </TabBtn>
         <TabBtn active={tab === "online-month"} onClick={() => setTab("online-month")}>
           📱 온라인(당월){online ? ` · ${online.ym}` : ""}
         </TabBtn>
@@ -39,13 +43,24 @@ export default function SalesTabsShell({ online, children }: Props) {
 
       {/* 탭 내용 */}
       {tab === "offline" && <div>{children}</div>}
+      {tab === "online-cum" && (
+        onlineCum
+          ? <OnlineMonthTab {...onlineCum} periodLabel="온라인 누적" />
+          : <Empty table="sales_online_cum" />
+      )}
       {tab === "online-month" && (
         online
           ? <OnlineMonthTab {...online} />
-          : <div className="border-[2px] border-dashed border-slate-300 p-10 text-center text-[13px] text-slate-400">
-              온라인 데이터가 없습니다. <code className="text-[11px]">sales_online_monthly</code> 테이블에 CSV를 import 하세요.
-            </div>
+          : <Empty table="sales_online_monthly" />
       )}
+    </div>
+  );
+}
+
+function Empty({ table }: { table: string }) {
+  return (
+    <div className="border-[2px] border-dashed border-slate-300 p-10 text-center text-[13px] text-slate-400">
+      데이터가 없습니다. <code className="text-[11px]">{table}</code> 테이블에 CSV를 import 하세요.
     </div>
   );
 }

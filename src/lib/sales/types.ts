@@ -41,6 +41,17 @@ export interface SalesOnlineRow {
   sales: number;        // 온라인은 매출만 (GP 미관리)
 }
 
+// 온라인 누적 (연 단위, 8번 탭)
+export interface SalesOnlineCumRow {
+  division: Division;
+  cat: Cat;
+  brand: string;
+  store: string;
+  channel: string;
+  year: string;         // 'YYYY'
+  sales: number;
+}
+
 // ── 집계 결과 (ACC_DATA / CUM_DATA 형태) ──
 export interface AggRow {
   division: Division;

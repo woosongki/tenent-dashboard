@@ -15,7 +15,7 @@ import GroupComparisonTable from "./_components/GroupComparisonTable";
 import StoreComparisonTable from "./_components/StoreComparisonTable";
 import BrandComparisonTable from "./_components/BrandComparisonTable";
 import SalesTabsShell from "./_components/SalesTabsShell";
-import { getOnlineMeta, getOnlineMonth } from "@/lib/sales/queries";
+import { getOnlineMeta, getOnlineMonth, getOnlineCumMeta, getOnlineCumulative } from "@/lib/sales/queries";
 import TopBar from "@/components/layout/TopBar";
 import PageHeader from "@/components/ui/PageHeader";
 import AppFooter from "@/components/ui/AppFooter";
@@ -41,7 +41,19 @@ export default async function SalesPage() {
   if (onlineMeta.hasData) {
     const ym = onlineMeta.yms[0];                   // 최신 월 (예: 2026-06)
     const prevYm = `${Number(ym.slice(0, 4)) - 1}${ym.slice(4)}`;  // 전년동월
-    online = await getOnlineMonth(ym, prevYm);
+    const o = await getOnlineMonth(ym, prevYm);
+    online = { ...o, ym: o.ym, prevYm: o.prevYm };
+  }
+
+  // 온라인(누적) — 최신 연도 + 전년 누적
+  const cumMeta = await getOnlineCumMeta();
+  let onlineCum = null;
+  if (cumMeta.hasData) {
+    const year = cumMeta.years[0];                  // 최신 연 (예: 2026)
+    const prevYear = String(Number(year) - 1);
+    const c = await getOnlineCumulative(year, prevYear);
+    // OnlineMonthTab은 ym/prevYm 라벨을 받으므로 연 누적 라벨로 매핑
+    onlineCum = { ...c, ym: `${year} 누적`, prevYm: `${prevYear} 누적` };
   }
 
   return (
@@ -58,7 +70,7 @@ export default async function SalesPage() {
             meta={`${meta.period1} vs ${meta.period2} · 지점 ${stores.length}개 · 브랜드 ${brands.length}개`}
           />
 
-        <SalesTabsShell online={online}>
+        <SalesTabsShell online={online} onlineCum={onlineCum}>
           {/* ── 매출 요약 탭 (기존 오프라인 콘텐츠) ── */}
           <div className="space-y-6">
             <SalesSummaryCards overall={overall} monthly={monthly} />

@@ -226,6 +226,89 @@ export async function getOnlineMeta() {
   return { yms, hasData: yms.length > 0 };
 }
 
+// ── 온라인 누적 (연 단위, 8번 탭) ──
+interface OnlineCumRow { cat: string; brand: string; store: string; channel: string; year: string; sales: number; }
+
+async function fetchOnlineCum(years: string[]): Promise<OnlineCumRow[]> {
+  const supabase = await createClient();
+  const all: OnlineCumRow[] = [];
+  let from = 0;
+  const PAGE = 1000;
+  for (;;) {
+    const { data, error } = await supabase
+      .from("sales_online_cum")
+      .select("cat,brand,store,channel,year,sales")
+      .in("year", years)
+      .range(from, from + PAGE - 1);
+    if (error) throw new Error(`sales_online_cum: ${error.message}`);
+    all.push(...(data ?? []) as OnlineCumRow[]);
+    if (!data || data.length < PAGE) break;
+    from += PAGE;
+  }
+  return all;
+}
+
+/**
+ * 온라인 누적 집계 — 브랜드/지점 랭킹 (전년 누적비)
+ * @param year '2026'  @param prevYear '2025'
+ */
+export async function getOnlineCumulative(year: string, prevYear: string) {
+  const rows = await fetchOnlineCum([year, prevYear]);
+
+  function rank(keyOf: (r: OnlineCumRow) => string, withCat: boolean): OnlineRank[] {
+    const cur = new Map<string, { s: number; cat: string; ch: Map<string, number> }>();
+    const prev = new Map<string, number>();
+    for (const r of rows) {
+      const k = keyOf(r);
+      if (r.year === year) {
+        const e = cur.get(k) ?? { s: 0, cat: r.cat, ch: new Map() };
+        e.s += r.sales;
+        e.ch.set(r.channel, (e.ch.get(r.channel) ?? 0) + r.sales);
+        cur.set(k, e);
+      } else {
+        prev.set(k, (prev.get(k) ?? 0) + r.sales);
+      }
+    }
+    const out: OnlineRank[] = [];
+    for (const [k, e] of cur) {
+      const ps = prev.get(k) ?? 0;
+      out.push({
+        key: k, cat: withCat ? e.cat : undefined,
+        s: e.s, ps, yoyPct: ps ? +((e.s - ps) / ps * 100).toFixed(1) : 0,
+        byChannel: [...e.ch.entries()].map(([channel, s]) => ({ channel, s })).sort((a, b) => b.s - a.s),
+      });
+    }
+    return out.sort((a, b) => b.s - a.s);
+  }
+
+  const chTotals = new Map<string, { s: number; ps: number }>();
+  for (const r of rows) {
+    const e = chTotals.get(r.channel) ?? { s: 0, ps: 0 };
+    if (r.year === year) e.s += r.sales; else e.ps += r.sales;
+    chTotals.set(r.channel, e);
+  }
+  const total = rows.filter((r) => r.year === year).reduce((t, r) => t + r.sales, 0);
+  const prevTotal = rows.filter((r) => r.year === prevYear).reduce((t, r) => t + r.sales, 0);
+
+  return {
+    year, prevYear, total, prevTotal,
+    yoyPct: prevTotal ? +((total - prevTotal) / prevTotal * 100).toFixed(1) : 0,
+    brands: rank((r) => r.brand, true),
+    stores: rank((r) => r.store, false),
+    channels: [...chTotals.entries()]
+      .map(([channel, v]) => ({ channel, ...v, yoyPct: v.ps ? +((v.s - v.ps) / v.ps * 100).toFixed(1) : 0 }))
+      .sort((a, b) => b.s - a.s),
+  };
+}
+
+/** 온라인 누적 가용 연도 */
+export async function getOnlineCumMeta() {
+  const supabase = await createClient();
+  const { data } = await supabase.from("sales_online_cum").select("year");
+  const years = [...new Set((data ?? []).map((d) => d.year))].sort().reverse();
+  return { years, hasData: years.length > 0 };
+}
+
 /** 데이터 존재 여부 + 가용 기간 + 부문 목록 (UI 초기화용) */
 export async function getSalesMeta() {
   const supabase = await createClient();
