@@ -95,11 +95,12 @@ export default function OfflineTab(p: Props) {
 
       {/* 랭킹 */}
       <div className="border-[2px] border-[#0a0a0a] bg-white overflow-x-auto">
-        <table className="w-full min-w-[560px] text-[12px]">
+        <table className="w-full min-w-[620px] text-[12px]">
           <thead className="bg-[#0a0a0a] text-white select-none">
             <tr>
               <th className="px-3 py-2 text-left w-10">#</th>
               <th className="px-3 py-2 text-left cursor-pointer hover:bg-white/10" onClick={() => toggleSort("key")}>{view === "brand" ? "브랜드" : "지점"}{arrow("key")}</th>
+              <th className="px-3 py-2 text-right whitespace-nowrap">{view === "brand" ? "매장수" : "브랜드수"}</th>
               {view === "brand" && <th className="px-3 py-2 text-left">복종</th>}
               <th className="px-3 py-2 text-right cursor-pointer hover:bg-white/10" onClick={() => toggleSort("s")}>매출{arrow("s")}</th>
               <th className="px-3 py-2 text-right cursor-pointer hover:bg-white/10" onClick={() => toggleSort("g")}>이익{arrow("g")}</th>
@@ -112,14 +113,14 @@ export default function OfflineTab(p: Props) {
               <RankRow key={r.key} rank={i + 1} row={r} showCat={view === "brand"}
                 open={expanded === r.key} onToggle={onToggleRow} subLabel={subLabel} />
             ))}
-            {filtered.length === 0 && <tr><td colSpan={view === "brand" ? 7 : 6} className="px-3 py-8 text-center text-slate-400">결과 없음</td></tr>}
+            {filtered.length === 0 && <tr><td colSpan={view === "brand" ? 8 : 7} className="px-3 py-8 text-center text-slate-400">결과 없음</td></tr>}
           </tbody>
         </table>
         {filtered.length > visible.length && (
           <div className="flex border-t-[2px] border-[#0a0a0a]">
-            <button onClick={() => setLimit((l) => l + 10)}
+            <button onClick={() => setLimit((l) => l + 20)}
               className="flex-1 bg-yellow-50 py-2.5 text-[12px] font-bold text-[#0a0a0a] hover:bg-yellow-100">
-              더 보기 (+10)
+              더 보기 (+20)
             </button>
             <button onClick={() => setLimit(filtered.length)}
               className="border-l-[2px] border-[#0a0a0a] bg-white px-4 py-2.5 text-[12px] font-bold text-slate-600 hover:bg-slate-100">
@@ -139,12 +140,13 @@ const RankRow = memo(function RankRow({
   rank: number; row: OffRank; showCat: boolean; open: boolean;
   onToggle: (key: string) => void; subLabel: string;
 }) {
-  const cols = showCat ? 7 : 6;
+  const cols = showCat ? 8 : 7;
   return (
     <>
       <tr className={`border-t border-slate-100 cursor-pointer hover:bg-yellow-50 ${open ? "bg-yellow-50" : ""}`} onClick={() => onToggle(row.key)}>
         <td className="px-3 py-2 font-mono text-slate-400"><span className="mr-1 text-[9px]">{open ? "▼" : "▶"}</span>{rank}</td>
         <td className="px-3 py-2 font-bold text-[#0a0a0a]">{row.key}</td>
+        <td className="px-3 py-2 text-right font-mono text-slate-500">{row.subCount}</td>
         {showCat && <td className="px-3 py-2 text-slate-500">{row.cat}</td>}
         <td className="px-3 py-2 text-right font-mono font-bold">{won(row.s)}</td>
         <td className="px-3 py-2 text-right font-mono">{won(row.g)}</td>

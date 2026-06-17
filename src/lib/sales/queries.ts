@@ -358,6 +358,7 @@ export interface OffRank {
   g: number; pg: number;          // 이익 당기/전기
   gpm: number;                    // 이익률 %
   yoyPct: number;                 // 매출 전년비
+  subCount: number;               // 하위 개수 (브랜드→매장수 / 지점→브랜드수)
   bySub?: { key: string; s: number; g: number }[];
 }
 
@@ -406,6 +407,7 @@ function buildOff(
         s: e.s, ps: pv.s, g: e.g, pg: pv.g,
         gpm: e.s ? +(e.g / e.s * 100).toFixed(1) : 0,
         yoyPct: pv.s ? +((e.s - pv.s) / pv.s * 100).toFixed(1) : 0,
+        subCount: e.sub.size,
         bySub: subOf ? [...e.sub.entries()].map(([key, v]) => ({ key, s: v.s, g: v.g })).sort((a, b) => b.s - a.s).slice(0, 50) : undefined,
       });
     }
