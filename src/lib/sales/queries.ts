@@ -137,6 +137,7 @@ export interface OnlineRank {
   ps: number;         // 전년동월 매출
   yoyPct: number;
   byChannel: { channel: string; s: number }[];  // 채널별 (당월)
+  bySub?: { key: string; s: number }[];          // 하위 분해 (브랜드→지점 등)
 }
 
 interface OnlineRow { cat: string; brand: string; store: string; channel: string; ym: string; sales: number; }
@@ -168,15 +169,19 @@ async function fetchOnline(yms: string[]): Promise<OnlineRow[]> {
 export async function getOnlineMonth(ym: string, prevYm: string) {
   const rows = await fetchOnline([ym, prevYm]);
 
-  function rank(keyOf: (r: OnlineRow) => string, withCat: boolean): OnlineRank[] {
-    const cur = new Map<string, { s: number; cat: string; ch: Map<string, number> }>();
+  function rank(
+    keyOf: (r: OnlineRow) => string, withCat: boolean,
+    subOf?: (r: OnlineRow) => string,
+  ): OnlineRank[] {
+    const cur = new Map<string, { s: number; cat: string; ch: Map<string, number>; sub: Map<string, number> }>();
     const prev = new Map<string, number>();
     for (const r of rows) {
       const k = keyOf(r);
       if (r.ym === ym) {
-        const e = cur.get(k) ?? { s: 0, cat: r.cat, ch: new Map() };
+        const e = cur.get(k) ?? { s: 0, cat: r.cat, ch: new Map(), sub: new Map() };
         e.s += r.sales;
         e.ch.set(r.channel, (e.ch.get(r.channel) ?? 0) + r.sales);
+        if (subOf) { const sk = subOf(r); e.sub.set(sk, (e.sub.get(sk) ?? 0) + r.sales); }
         cur.set(k, e);
       } else {
         prev.set(k, (prev.get(k) ?? 0) + r.sales);
@@ -191,6 +196,7 @@ export async function getOnlineMonth(ym: string, prevYm: string) {
         s: e.s, ps,
         yoyPct: ps ? +((e.s - ps) / ps * 100).toFixed(1) : 0,
         byChannel: [...e.ch.entries()].map(([channel, s]) => ({ channel, s })).sort((a, b) => b.s - a.s),
+        bySub: subOf ? [...e.sub.entries()].map(([key, s]) => ({ key, s })).sort((a, b) => b.s - a.s) : undefined,
       });
     }
     return out.sort((a, b) => b.s - a.s);
@@ -210,8 +216,8 @@ export async function getOnlineMonth(ym: string, prevYm: string) {
   return {
     ym, prevYm, total, prevTotal,
     yoyPct: prevTotal ? +((total - prevTotal) / prevTotal * 100).toFixed(1) : 0,
-    brands: rank((r) => r.brand, true),
-    stores: rank((r) => r.store, false),
+    brands: rank((r) => r.brand, true, (r) => r.store),   // 브랜드 → 지점 분해
+    stores: rank((r) => r.store, false, (r) => r.brand),  // 지점 → 브랜드 분해
     channels: [...chTotals.entries()]
       .map(([channel, v]) => ({ channel, ...v, yoyPct: v.ps ? +((v.s - v.ps) / v.ps * 100).toFixed(1) : 0 }))
       .sort((a, b) => b.s - a.s),
@@ -255,15 +261,19 @@ async function fetchOnlineCum(years: string[]): Promise<OnlineCumRow[]> {
 export async function getOnlineCumulative(year: string, prevYear: string) {
   const rows = await fetchOnlineCum([year, prevYear]);
 
-  function rank(keyOf: (r: OnlineCumRow) => string, withCat: boolean): OnlineRank[] {
-    const cur = new Map<string, { s: number; cat: string; ch: Map<string, number> }>();
+  function rank(
+    keyOf: (r: OnlineCumRow) => string, withCat: boolean,
+    subOf?: (r: OnlineCumRow) => string,
+  ): OnlineRank[] {
+    const cur = new Map<string, { s: number; cat: string; ch: Map<string, number>; sub: Map<string, number> }>();
     const prev = new Map<string, number>();
     for (const r of rows) {
       const k = keyOf(r);
       if (r.year === year) {
-        const e = cur.get(k) ?? { s: 0, cat: r.cat, ch: new Map() };
+        const e = cur.get(k) ?? { s: 0, cat: r.cat, ch: new Map(), sub: new Map() };
         e.s += r.sales;
         e.ch.set(r.channel, (e.ch.get(r.channel) ?? 0) + r.sales);
+        if (subOf) { const sk = subOf(r); e.sub.set(sk, (e.sub.get(sk) ?? 0) + r.sales); }
         cur.set(k, e);
       } else {
         prev.set(k, (prev.get(k) ?? 0) + r.sales);
@@ -276,6 +286,7 @@ export async function getOnlineCumulative(year: string, prevYear: string) {
         key: k, cat: withCat ? e.cat : undefined,
         s: e.s, ps, yoyPct: ps ? +((e.s - ps) / ps * 100).toFixed(1) : 0,
         byChannel: [...e.ch.entries()].map(([channel, s]) => ({ channel, s })).sort((a, b) => b.s - a.s),
+        bySub: subOf ? [...e.sub.entries()].map(([key, s]) => ({ key, s })).sort((a, b) => b.s - a.s) : undefined,
       });
     }
     return out.sort((a, b) => b.s - a.s);
@@ -293,8 +304,8 @@ export async function getOnlineCumulative(year: string, prevYear: string) {
   return {
     year, prevYear, total, prevTotal,
     yoyPct: prevTotal ? +((total - prevTotal) / prevTotal * 100).toFixed(1) : 0,
-    brands: rank((r) => r.brand, true),
-    stores: rank((r) => r.store, false),
+    brands: rank((r) => r.brand, true, (r) => r.store),
+    stores: rank((r) => r.store, false, (r) => r.brand),
     channels: [...chTotals.entries()]
       .map(([channel, v]) => ({ channel, ...v, yoyPct: v.ps ? +((v.s - v.ps) / v.ps * 100).toFixed(1) : 0 }))
       .sort((a, b) => b.s - a.s),
