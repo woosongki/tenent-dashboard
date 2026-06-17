@@ -224,12 +224,20 @@ export async function getOnlineMonth(ym: string, prevYm: string) {
   };
 }
 
-/** 온라인 가용 월 목록 */
+/** 온라인 가용 월 목록 (최신순) — order로 확정 선택, 1000행 제한 영향 없음 */
 export async function getOnlineMeta() {
   const supabase = await createClient();
-  const { data } = await supabase.from("sales_online_monthly").select("ym");
-  const yms = [...new Set((data ?? []).map((d) => d.ym))].sort().reverse();
-  return { yms, hasData: yms.length > 0 };
+  // 최신 월
+  const { data: latest } = await supabase
+    .from("sales_online_monthly").select("ym").order("ym", { ascending: false }).limit(1);
+  // 가장 오래된 월
+  const { data: earliest } = await supabase
+    .from("sales_online_monthly").select("ym").order("ym", { ascending: true }).limit(1);
+  const max = latest?.[0]?.ym ?? null;
+  const min = earliest?.[0]?.ym ?? null;
+  // 구간 내 distinct는 별도 필요 없음 — 현재 UI는 최신월만 사용
+  const yms = max ? (min && min !== max ? [max, min] : [max]) : [];
+  return { yms, hasData: !!max };
 }
 
 // ── 온라인 누적 (연 단위, 8번 탭) ──
@@ -312,12 +320,17 @@ export async function getOnlineCumulative(year: string, prevYear: string) {
   };
 }
 
-/** 온라인 누적 가용 연도 */
+/** 온라인 누적 가용 연도 (최신순) — order로 확정 선택 */
 export async function getOnlineCumMeta() {
   const supabase = await createClient();
-  const { data } = await supabase.from("sales_online_cum").select("year");
-  const years = [...new Set((data ?? []).map((d) => d.year))].sort().reverse();
-  return { years, hasData: years.length > 0 };
+  const { data: latest } = await supabase
+    .from("sales_online_cum").select("year").order("year", { ascending: false }).limit(1);
+  const { data: earliest } = await supabase
+    .from("sales_online_cum").select("year").order("year", { ascending: true }).limit(1);
+  const max = latest?.[0]?.year ?? null;
+  const min = earliest?.[0]?.year ?? null;
+  const years = max ? (min && min !== max ? [max, min] : [max]) : [];
+  return { years, hasData: !!max };
 }
 
 /** 데이터 존재 여부 + 가용 기간 + 부문 목록 (UI 초기화용) */
