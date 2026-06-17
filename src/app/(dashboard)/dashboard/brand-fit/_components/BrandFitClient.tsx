@@ -262,14 +262,14 @@ export default function BrandFitClient() {
             ⚠️ 정성 데이터가 비어있는 지점이 많으면 결과 신뢰도가 낮습니다. <code className="text-[11px]">src/data/eland-meta.ts</code> 에 데이터를 채워주세요.
           </p>
 
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
             {results.map((r, i) => (
               <ResultCard key={r.store.id} rank={i + 1} fit={r} />
             ))}
           </div>
 
-          <div className="mt-6 border-[2px] border-[#0a0a0a] bg-white">
-            <table className="w-full text-[12px]">
+          <div className="mt-6 border-[2px] border-[#0a0a0a] bg-white overflow-x-auto">
+            <table className="w-full min-w-[520px] text-[12px]">
               <thead className="bg-[#0a0a0a] text-white">
                 <tr>
                   <th className="px-3 py-2 text-left">지점</th>

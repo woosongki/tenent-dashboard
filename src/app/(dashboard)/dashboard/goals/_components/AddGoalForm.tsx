@@ -118,7 +118,7 @@ export default function AddGoalForm({ organizationId, poolType }: Props) {
               </div>
 
               {/* 목표값 + 현재값 + 단위 */}
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
                 <Field label="목표값" required>
                   <input name="targetValue" type="number" required min={0.01} step="any"
                     placeholder="100" className={inputCls} />
