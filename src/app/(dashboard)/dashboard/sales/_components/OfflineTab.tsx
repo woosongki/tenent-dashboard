@@ -29,6 +29,7 @@ export default function OfflineTab(p: Props) {
   const [expanded, setExpanded] = useState<string | null>(null);
   const [sortKey, setSortKey] = useState<SortKey>("s");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
+  const [limit, setLimit] = useState(50);   // 초기 표시 행 수 (점진 확장)
 
   const base = view === "brand" ? p.brands : p.stores;
   const filtered = useMemo(() => {
@@ -40,13 +41,17 @@ export default function OfflineTab(p: Props) {
       sortKey === "key" ? a.key.localeCompare(b.key, "ko") * dir : ((a[sortKey] as number) - (b[sortKey] as number)) * dir);
   }, [base, q, div, view, sortKey, sortDir]);
 
-  const switchView = useCallback((v: "brand" | "store") => { setView(v); setExpanded(null); }, []);
+  // 실제 렌더할 행 (상위 limit개만 — 수백 행 동시 렌더로 인한 멈춤 방지)
+  const visible = useMemo(() => filtered.slice(0, limit), [filtered, limit]);
+
+  const switchView = useCallback((v: "brand" | "store") => { setView(v); setExpanded(null); setLimit(50); }, []);
   const onToggleRow = useCallback((key: string) => setExpanded((cur) => (cur === key ? null : key)), []);
   function toggleSort(k: SortKey) {
     if (sortKey === k) setSortDir((d) => d === "asc" ? "desc" : "asc");
     else { setSortKey(k); setSortDir(k === "key" ? "asc" : "desc"); }
-    setExpanded(null);
+    setExpanded(null); setLimit(50);
   }
+  function onSearch(v: string) { setQ(v); setExpanded(null); setLimit(50); }
   const arrow = (k: SortKey) => sortKey === k ? (sortDir === "asc" ? " ▲" : " ▼") : "";
   const subLabel = view === "brand" ? "지점" : "브랜드";
 
@@ -84,7 +89,7 @@ export default function OfflineTab(p: Props) {
             </button>
           ))}
         </div>
-        <input type="text" value={q} onChange={(e) => setQ(e.target.value)} placeholder={view === "brand" ? "브랜드/복종 검색" : "지점 검색"}
+        <input type="text" value={q} onChange={(e) => onSearch(e.target.value)} placeholder={view === "brand" ? "브랜드/복종 검색" : "지점 검색"}
           className="border-[2px] border-[#0a0a0a] px-3 py-1.5 text-[12px] focus:outline-none focus:bg-yellow-50" />
       </div>
 
@@ -103,13 +108,19 @@ export default function OfflineTab(p: Props) {
             </tr>
           </thead>
           <tbody>
-            {filtered.map((r, i) => (
+            {visible.map((r, i) => (
               <RankRow key={r.key} rank={i + 1} row={r} showCat={view === "brand"}
                 open={expanded === r.key} onToggle={onToggleRow} subLabel={subLabel} />
             ))}
             {filtered.length === 0 && <tr><td colSpan={view === "brand" ? 7 : 6} className="px-3 py-8 text-center text-slate-400">결과 없음</td></tr>}
           </tbody>
         </table>
+        {filtered.length > visible.length && (
+          <button onClick={() => setLimit((l) => l + 100)}
+            className="w-full border-t-[2px] border-[#0a0a0a] bg-yellow-50 py-2.5 text-[12px] font-bold text-[#0a0a0a] hover:bg-yellow-100">
+            더 보기 ({visible.length} / {filtered.length})
+          </button>
+        )}
       </div>
     </div>
   );

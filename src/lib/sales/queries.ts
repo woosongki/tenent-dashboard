@@ -406,7 +406,7 @@ function buildOff(
         s: e.s, ps: pv.s, g: e.g, pg: pv.g,
         gpm: e.s ? +(e.g / e.s * 100).toFixed(1) : 0,
         yoyPct: pv.s ? +((e.s - pv.s) / pv.s * 100).toFixed(1) : 0,
-        bySub: subOf ? [...e.sub.entries()].map(([key, v]) => ({ key, s: v.s, g: v.g })).sort((a, b) => b.s - a.s) : undefined,
+        bySub: subOf ? [...e.sub.entries()].map(([key, v]) => ({ key, s: v.s, g: v.g })).sort((a, b) => b.s - a.s).slice(0, 50) : undefined,
       });
     }
     return out.sort((a, b) => b.s - a.s);
