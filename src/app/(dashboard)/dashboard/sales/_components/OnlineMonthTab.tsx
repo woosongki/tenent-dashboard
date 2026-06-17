@@ -2,6 +2,7 @@
 
 import { Fragment, useMemo, useState } from "react";
 import type { OnlineRank } from "@/lib/sales/queries";
+import { downloadCsv } from "@/lib/sales/exportCsv";
 
 const FragmentRow = Fragment;
 
@@ -137,13 +138,30 @@ export default function OnlineMonthTab(p: Props) {
             </button>
           ))}
         </div>
-        <input
-          type="text"
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
-          placeholder={view === "brand" ? "브랜드/복종 검색" : "지점 검색"}
-          className="border-[2px] border-[#0a0a0a] px-3 py-1.5 text-[12px] focus:outline-none focus:bg-yellow-50"
-        />
+        <div className="flex items-center gap-2">
+          <input
+            type="text"
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            placeholder={view === "brand" ? "브랜드/복종 검색" : "지점 검색"}
+            className="border-[2px] border-[#0a0a0a] px-3 py-1.5 text-[12px] focus:outline-none focus:bg-yellow-50"
+          />
+          <button
+            onClick={() => {
+              const header = view === "brand"
+                ? ["순위", "브랜드", "복종", "매출", "전년매출", "전년비%", "주력채널"]
+                : ["순위", "지점", "매출", "전년매출", "전년비%", "주력채널"];
+              const body = filtered.map((r, i) => view === "brand"
+                ? [i + 1, r.key, r.cat ?? "", r.s, r.ps, r.yoyPct, r.byChannel.slice(0, 3).map((c) => `${c.channel}:${c.s}`).join(" ")]
+                : [i + 1, r.key, r.s, r.ps, r.yoyPct, r.byChannel.slice(0, 3).map((c) => `${c.channel}:${c.s}`).join(" ")]);
+              downloadCsv(`온라인_${p.ym}_${view === "brand" ? "브랜드" : "지점"}`, [header, ...body]);
+            }}
+            className="shrink-0 border-[2px] border-[#0a0a0a] bg-white px-3 py-1.5 text-[12px] font-bold hover:bg-yellow-100"
+            title="현재 표를 엑셀(CSV)로 다운로드"
+          >
+            ⬇ 엑셀
+          </button>
+        </div>
       </div>
 
       {/* 랭킹 테이블 */}

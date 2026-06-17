@@ -2,6 +2,7 @@
 
 import { memo, useCallback, useMemo, useState } from "react";
 import type { OffRank } from "@/lib/sales/queries";
+import { downloadCsv } from "@/lib/sales/exportCsv";
 
 interface DivSummary { division: string; s: number; ps: number; g: number; gpm: number; yoyPct: number }
 interface CatSummary { cat: string; s: number; ps: number; g: number; gpm: number; yoyPct: number }
@@ -93,8 +94,25 @@ export default function OfflineTab(p: Props) {
             </button>
           ))}
         </div>
-        <input type="text" value={q} onChange={(e) => onSearch(e.target.value)} placeholder={view === "brand" ? "브랜드/복종 검색" : "지점 검색"}
-          className="border-[2px] border-[#0a0a0a] px-3 py-1.5 text-[12px] focus:outline-none focus:bg-yellow-50" />
+        <div className="flex items-center gap-2">
+          <input type="text" value={q} onChange={(e) => onSearch(e.target.value)} placeholder={view === "brand" ? "브랜드/복종 검색" : "지점 검색"}
+            className="border-[2px] border-[#0a0a0a] px-3 py-1.5 text-[12px] focus:outline-none focus:bg-yellow-50" />
+          <button
+            onClick={() => {
+              const header = view === "brand"
+                ? ["순위", "브랜드", "복종", "매장수", "매출", "이익", "이익률%", "전년매출", "전년비%"]
+                : ["순위", "지점", "브랜드수", "매출", "이익", "이익률%", "전년매출", "전년비%"];
+              const body = filtered.map((r, i) => view === "brand"
+                ? [i + 1, r.key, r.cat ?? "", r.subCount, r.s, r.g, r.gpm, r.ps, r.ps === 0 ? "신규" : r.yoyPct]
+                : [i + 1, r.key, r.subCount, r.s, r.g, r.gpm, r.ps, r.ps === 0 ? "신규" : r.yoyPct]);
+              downloadCsv(`${p.periodLabel}_${view === "brand" ? "브랜드" : "지점"}_랭킹`, [header, ...body]);
+            }}
+            className="shrink-0 border-[2px] border-[#0a0a0a] bg-white px-3 py-1.5 text-[12px] font-bold hover:bg-yellow-100"
+            title="현재 표를 엑셀(CSV)로 다운로드"
+          >
+            ⬇ 엑셀
+          </button>
+        </div>
       </div>
 
       {/* 랭킹 */}
