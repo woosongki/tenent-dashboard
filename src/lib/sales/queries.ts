@@ -202,12 +202,15 @@ export async function getOnlineMonth(ym: string, prevYm: string) {
     return out.sort((a, b) => b.s - a.s);
   }
 
-  // 채널 전체 합계 (당월/전년)
+  // 채널 / 복종 전체 합계 (당월/전년)
   const chTotals = new Map<string, { s: number; ps: number }>();
+  const catTotals = new Map<string, { s: number; ps: number }>();
   for (const r of rows) {
-    const e = chTotals.get(r.channel) ?? { s: 0, ps: 0 };
-    if (r.ym === ym) e.s += r.sales; else e.ps += r.sales;
-    chTotals.set(r.channel, e);
+    const ch = chTotals.get(r.channel) ?? { s: 0, ps: 0 };
+    const ca = catTotals.get(r.cat) ?? { s: 0, ps: 0 };
+    if (r.ym === ym) { ch.s += r.sales; ca.s += r.sales; }
+    else { ch.ps += r.sales; ca.ps += r.sales; }
+    chTotals.set(r.channel, ch); catTotals.set(r.cat, ca);
   }
 
   const total = rows.filter((r) => r.ym === ym).reduce((t, r) => t + r.sales, 0);
@@ -220,6 +223,9 @@ export async function getOnlineMonth(ym: string, prevYm: string) {
     stores: rank((r) => r.store, false, (r) => r.brand),  // 지점 → 브랜드 분해
     channels: [...chTotals.entries()]
       .map(([channel, v]) => ({ channel, ...v, yoyPct: v.ps ? +((v.s - v.ps) / v.ps * 100).toFixed(1) : 0 }))
+      .sort((a, b) => b.s - a.s),
+    cats: [...catTotals.entries()]
+      .map(([cat, v]) => ({ cat, ...v, yoyPct: v.ps ? +((v.s - v.ps) / v.ps * 100).toFixed(1) : 0 }))
       .sort((a, b) => b.s - a.s),
   };
 }
@@ -305,10 +311,13 @@ export async function getOnlineCumulative(year: string, prevYear: string) {
   }
 
   const chTotals = new Map<string, { s: number; ps: number }>();
+  const catTotals = new Map<string, { s: number; ps: number }>();
   for (const r of rows) {
-    const e = chTotals.get(r.channel) ?? { s: 0, ps: 0 };
-    if (r.year === year) e.s += r.sales; else e.ps += r.sales;
-    chTotals.set(r.channel, e);
+    const ch = chTotals.get(r.channel) ?? { s: 0, ps: 0 };
+    const ca = catTotals.get(r.cat) ?? { s: 0, ps: 0 };
+    if (r.year === year) { ch.s += r.sales; ca.s += r.sales; }
+    else { ch.ps += r.sales; ca.ps += r.sales; }
+    chTotals.set(r.channel, ch); catTotals.set(r.cat, ca);
   }
   const total = rows.filter((r) => r.year === year).reduce((t, r) => t + r.sales, 0);
   const prevTotal = rows.filter((r) => r.year === prevYear).reduce((t, r) => t + r.sales, 0);
@@ -320,6 +329,9 @@ export async function getOnlineCumulative(year: string, prevYear: string) {
     stores: rank((r) => r.store, false, (r) => r.brand),
     channels: [...chTotals.entries()]
       .map(([channel, v]) => ({ channel, ...v, yoyPct: v.ps ? +((v.s - v.ps) / v.ps * 100).toFixed(1) : 0 }))
+      .sort((a, b) => b.s - a.s),
+    cats: [...catTotals.entries()]
+      .map(([cat, v]) => ({ cat, ...v, yoyPct: v.ps ? +((v.s - v.ps) / v.ps * 100).toFixed(1) : 0 }))
       .sort((a, b) => b.s - a.s),
   };
 }

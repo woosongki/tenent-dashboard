@@ -14,6 +14,7 @@ interface Props {
   brands: OnlineRank[];
   stores: OnlineRank[];
   channels: { channel: string; s: number; ps: number; yoyPct: number }[];
+  cats: { cat: string; s: number; ps: number; yoyPct: number }[];
   periodLabel?: string;  // "온라인 매출" 라벨 접두 (기본: 당월)
 }
 
@@ -85,6 +86,31 @@ export default function OnlineMonthTab(p: Props) {
                 <div className="flex-1">
                   <div className="h-3 bg-slate-100">
                     <div className="h-full bg-yellow-400" style={{ width: `${Math.max(pctOfTotal, 0)}%` }} />
+                  </div>
+                </div>
+                <span className="w-12 text-right font-mono text-slate-500">{pctOfTotal.toFixed(1)}%</span>
+                <span className="w-24 text-right font-mono font-bold">{won(c.s)}</span>
+                <span className="w-20 text-right">{yoyBadge(c.yoyPct)}</span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* 복종별 요약 */}
+      <div className="border-[2px] border-[#0a0a0a] bg-white">
+        <div className="border-b-[2px] border-[#0a0a0a] bg-[#0a0a0a] px-3 py-2 text-[12px] font-bold text-white">
+          복종별 매출 ({p.ym})
+        </div>
+        <div className="divide-y divide-slate-100">
+          {p.cats.map((c) => {
+            const pctOfTotal = p.total ? (c.s / p.total) * 100 : 0;
+            return (
+              <div key={c.cat} className="flex items-center gap-3 px-3 py-2 text-[12px]">
+                <span className="w-32 shrink-0 font-bold text-[#0a0a0a]">{c.cat || "(미분류)"}</span>
+                <div className="flex-1">
+                  <div className="h-3 bg-slate-100">
+                    <div className="h-full bg-cyan-400" style={{ width: `${Math.max(pctOfTotal, 0)}%` }} />
                   </div>
                 </div>
                 <span className="w-12 text-right font-mono text-slate-500">{pctOfTotal.toFixed(1)}%</span>
