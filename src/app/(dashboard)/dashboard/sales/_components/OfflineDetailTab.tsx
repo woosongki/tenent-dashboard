@@ -1,6 +1,7 @@
 "use client";
 
 import { Fragment, useMemo, useState } from "react";
+import ScrollHint from "@/components/ui/ScrollHint";
 import type { OffRank } from "@/lib/sales/queries";
 
 interface DivSummary { division: string; s: number; ps: number; g: number; gpm: number; yoyPct: number }
@@ -137,7 +138,7 @@ export default function OfflineDetailTab(p: Props) {
       </div>
 
       {/* 브랜드 랭킹 (지점 드릴다운) */}
-      <div className="border-[2px] border-[#0a0a0a] bg-white overflow-x-auto">
+      <ScrollHint className="border-[2px] border-[#0a0a0a] bg-white">
         <table className="w-full min-w-[560px] text-[12px]">
           <thead className="bg-[#0a0a0a] text-white select-none">
             <tr>
@@ -169,7 +170,7 @@ export default function OfflineDetailTab(p: Props) {
                       <td></td>
                       <td colSpan={6} className="px-3 py-2">
                         <div className="mb-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400">지점별 상세 ({r.bySub.length})</div>
-                        <div className="overflow-x-auto">
+                        <ScrollHint>
                           <table className="w-full min-w-[720px] text-[11px]">
                             <thead className="text-slate-500 select-none">
                               <tr className="border-b border-slate-200">
@@ -202,7 +203,7 @@ export default function OfflineDetailTab(p: Props) {
                               ))}
                             </tbody>
                           </table>
-                        </div>
+                        </ScrollHint>
                       </td>
                     </tr>
                   )}
@@ -218,7 +219,7 @@ export default function OfflineDetailTab(p: Props) {
             더 보기 (+20) · {visible.length}/{rows.length}
           </button>
         )}
-      </div>
+      </ScrollHint>
     </div>
   );
 }

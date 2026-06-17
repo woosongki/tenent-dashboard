@@ -3,6 +3,7 @@
 import { Fragment, useMemo, useState } from "react";
 import type { OnlineRank } from "@/lib/sales/queries";
 import { downloadCsv } from "@/lib/sales/exportCsv";
+import ScrollHint from "@/components/ui/ScrollHint";
 
 const FragmentRow = Fragment;
 
@@ -165,7 +166,7 @@ export default function OnlineMonthTab(p: Props) {
       </div>
 
       {/* 랭킹 테이블 */}
-      <div className="border-[2px] border-[#0a0a0a] bg-white overflow-x-auto">
+      <ScrollHint className="border-[2px] border-[#0a0a0a] bg-white">
         <table className="w-full min-w-[560px] text-[12px]">
           <thead className="bg-[#0a0a0a] text-white select-none">
             <tr>
@@ -241,7 +242,7 @@ export default function OnlineMonthTab(p: Props) {
             )}
           </tbody>
         </table>
-      </div>
+      </ScrollHint>
     </div>
   );
 }

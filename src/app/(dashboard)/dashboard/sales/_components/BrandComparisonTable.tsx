@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import ScrollHint from "@/components/ui/ScrollHint";
 import { GROUP_COLOR, shortBrandName, formatKRWCompact } from "@/lib/sales/format";
 import type { BrandRecord } from "@/lib/sales/csvData";
 
@@ -77,7 +78,7 @@ export default function BrandComparisonTable({ brands }: Props) {
         />
       </div>
 
-      <div className="overflow-x-auto">
+      <ScrollHint>
         <table className="w-full text-[13px]">
           <thead className="bg-[#F1ECDB] border-b-[2px] border-[#0a0a0a]">
             <tr>
@@ -142,7 +143,7 @@ export default function BrandComparisonTable({ brands }: Props) {
             )}
           </tbody>
         </table>
-      </div>
+      </ScrollHint>
       {filtered.length > 100 && (
         <p className="px-4 py-2 text-[11px] font-bold uppercase tracking-wider text-[#0a0a0a]/55 border-t-[2px] border-[#0a0a0a] bg-[#FAF7EC]">
           상위 100개 표시 · 검색어/필터로 좁혀보세요 <span className="font-mono">(전체 {filtered.length})</span>

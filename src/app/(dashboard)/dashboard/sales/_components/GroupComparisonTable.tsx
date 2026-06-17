@@ -1,3 +1,4 @@
+import ScrollHint from "@/components/ui/ScrollHint";
 import { GROUP_COLOR, formatKRWCompact } from "@/lib/sales/format";
 import type { GroupRecord } from "@/lib/sales/csvData";
 
@@ -17,7 +18,7 @@ export default function GroupComparisonTable({ groups }: Props) {
   const totalCurrent = groups.reduce((s, g) => s + (g.revenue_current ?? 0), 0);
 
   return (
-    <div className="overflow-x-auto brutal bg-white">
+    <ScrollHint className="brutal bg-white">
       <table className="w-full text-[13px]">
         <thead className="bg-[#F1ECDB] border-b-[2px] border-[#0a0a0a]">
           <tr>
@@ -80,7 +81,7 @@ export default function GroupComparisonTable({ groups }: Props) {
           })}
         </tbody>
       </table>
-    </div>
+    </ScrollHint>
   );
 }
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { Fragment, useState } from "react";
+import ScrollHint from "@/components/ui/ScrollHint";
 import { formatKRWCompact, shortBrandName } from "@/lib/sales/format";
 import type { StoreRecord } from "@/lib/sales/csvData";
 
@@ -29,7 +30,7 @@ export default function StoreComparisonTable({ stores }: Props) {
   const maxRevenue = Math.max(...stores.map((s) => s.revenue_current ?? 0));
 
   return (
-    <div className="overflow-x-auto brutal bg-white">
+    <ScrollHint className="brutal bg-white">
       <table className="w-full text-[13px]">
         <thead className="bg-[#F1ECDB] border-b-[2px] border-[#0a0a0a]">
           <tr>
@@ -126,7 +127,7 @@ export default function StoreComparisonTable({ stores }: Props) {
           })}
         </tbody>
       </table>
-    </div>
+    </ScrollHint>
   );
 }
 

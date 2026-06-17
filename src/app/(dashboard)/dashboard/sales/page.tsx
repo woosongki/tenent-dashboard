@@ -21,6 +21,7 @@ import {
 } from "@/lib/sales/queries";
 import TopBar from "@/components/layout/TopBar";
 import PageHeader from "@/components/ui/PageHeader";
+import DataFreshnessBadge from "@/components/ui/DataFreshnessBadge";
 import AppFooter from "@/components/ui/AppFooter";
 import { SPACE } from "@/lib/tokens";
 
@@ -85,6 +86,7 @@ export default async function SalesPage() {
             title="매출분석"
             subtitle="26년 1~5월 누적 · 구매그룹 · 지점 · 브랜드 3축"
             meta={`${meta.period1} vs ${meta.period2} · 지점 ${stores.length}개 · 브랜드 ${brands.length}개`}
+            action={<DataFreshnessBadge monthYm={offMeta.monthYm} />}
           />
 
         <SalesTabsShell online={online} onlineCum={onlineCum} offCum={offCum} offMonth={offMonth}>
