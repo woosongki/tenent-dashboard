@@ -29,7 +29,7 @@ export default function OfflineTab(p: Props) {
   const [expanded, setExpanded] = useState<string | null>(null);
   const [sortKey, setSortKey] = useState<SortKey>("s");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
-  const [limit, setLimit] = useState(50);   // 초기 표시 행 수 (점진 확장)
+  const [limit, setLimit] = useState(10);   // 초기 표시 행 수 (점진 확장)
 
   const base = view === "brand" ? p.brands : p.stores;
   const filtered = useMemo(() => {
@@ -44,14 +44,14 @@ export default function OfflineTab(p: Props) {
   // 실제 렌더할 행 (상위 limit개만 — 수백 행 동시 렌더로 인한 멈춤 방지)
   const visible = useMemo(() => filtered.slice(0, limit), [filtered, limit]);
 
-  const switchView = useCallback((v: "brand" | "store") => { setView(v); setExpanded(null); setLimit(50); }, []);
+  const switchView = useCallback((v: "brand" | "store") => { setView(v); setExpanded(null); setLimit(10); }, []);
   const onToggleRow = useCallback((key: string) => setExpanded((cur) => (cur === key ? null : key)), []);
   function toggleSort(k: SortKey) {
     if (sortKey === k) setSortDir((d) => d === "asc" ? "desc" : "asc");
     else { setSortKey(k); setSortDir(k === "key" ? "asc" : "desc"); }
-    setExpanded(null); setLimit(50);
+    setExpanded(null); setLimit(10);
   }
-  function onSearch(v: string) { setQ(v); setExpanded(null); setLimit(50); }
+  function onSearch(v: string) { setQ(v); setExpanded(null); setLimit(10); }
   const arrow = (k: SortKey) => sortKey === k ? (sortDir === "asc" ? " ▲" : " ▼") : "";
   const subLabel = view === "brand" ? "지점" : "브랜드";
 
@@ -116,10 +116,16 @@ export default function OfflineTab(p: Props) {
           </tbody>
         </table>
         {filtered.length > visible.length && (
-          <button onClick={() => setLimit((l) => l + 100)}
-            className="w-full border-t-[2px] border-[#0a0a0a] bg-yellow-50 py-2.5 text-[12px] font-bold text-[#0a0a0a] hover:bg-yellow-100">
-            더 보기 ({visible.length} / {filtered.length})
-          </button>
+          <div className="flex border-t-[2px] border-[#0a0a0a]">
+            <button onClick={() => setLimit((l) => l + 10)}
+              className="flex-1 bg-yellow-50 py-2.5 text-[12px] font-bold text-[#0a0a0a] hover:bg-yellow-100">
+              더 보기 (+10)
+            </button>
+            <button onClick={() => setLimit(filtered.length)}
+              className="border-l-[2px] border-[#0a0a0a] bg-white px-4 py-2.5 text-[12px] font-bold text-slate-600 hover:bg-slate-100">
+              전체 ({filtered.length})
+            </button>
+          </div>
         )}
       </div>
     </div>
