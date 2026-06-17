@@ -262,12 +262,16 @@ async function fetchOnlineCum(years: string[]): Promise<OnlineCumRow[]> {
   return all;
 }
 
+// 누적에서 제외할 채널 (운영 종료/미사용 — 데이터가 들어와도 무시)
+const EXCLUDED_CUM_CHANNELS = new Set(["옥션", "G마켓"]);
+
 /**
  * 온라인 누적 집계 — 브랜드/지점 랭킹 (전년 누적비)
  * @param year '2026'  @param prevYear '2025'
  */
 export async function getOnlineCumulative(year: string, prevYear: string) {
-  const rows = await fetchOnlineCum([year, prevYear]);
+  const rows = (await fetchOnlineCum([year, prevYear]))
+    .filter((r) => !EXCLUDED_CUM_CHANNELS.has(r.channel));
 
   function rank(
     keyOf: (r: OnlineCumRow) => string, withCat: boolean,
