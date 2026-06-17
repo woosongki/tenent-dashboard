@@ -15,6 +15,9 @@ interface Props {
 
 const won = (n: number) => n.toLocaleString("ko-KR");
 const eok = (n: number) => (n / 1e8).toFixed(1);
+// 백만 단위 (상세 브랜드/지점 금액 통일)
+const mil = (n: number) => Math.round(n / 1e6).toLocaleString("ko-KR");
+const milSigned = (n: number) => `${n >= 0 ? "+" : ""}${Math.round(n / 1e6).toLocaleString("ko-KR")}`;
 function YoY({ pct, prev }: { pct: number; prev?: number }) {
   if (prev !== undefined && prev === 0) {
     return <span style={{ color: "#7c3aed", fontWeight: 700 }} title="전년 동기간 실적 없음 (신규 또는 미집계)">신규</span>;
@@ -98,8 +101,8 @@ export default function OfflineDetailTab(p: Props) {
               <th className="px-3 py-2 text-left w-10">#</th>
               <th className="px-3 py-2 text-left">브랜드</th>
               <th className="px-3 py-2 text-right whitespace-nowrap">매장수</th>
-              <th className="px-3 py-2 text-right">매출</th>
-              <th className="px-3 py-2 text-right">이익</th>
+              <th className="px-3 py-2 text-right">매출(백만)</th>
+              <th className="px-3 py-2 text-right">이익(백만)</th>
               <th className="px-3 py-2 text-right">이익률</th>
               <th className="px-3 py-2 text-right">전년비</th>
             </tr>
@@ -113,8 +116,8 @@ export default function OfflineDetailTab(p: Props) {
                     <td className="px-3 py-2 font-mono text-slate-400"><span className="mr-1 text-[9px]">{open ? "▼" : "▶"}</span>{i + 1}</td>
                     <td className="px-3 py-2 font-bold text-[#0a0a0a]">{r.key}</td>
                     <td className="px-3 py-2 text-right font-mono text-slate-500">{r.subCount}</td>
-                    <td className="px-3 py-2 text-right font-mono font-bold">{won(r.s)}</td>
-                    <td className="px-3 py-2 text-right font-mono">{won(r.g)}</td>
+                    <td className="px-3 py-2 text-right font-mono font-bold">{mil(r.s)}</td>
+                    <td className="px-3 py-2 text-right font-mono">{mil(r.g)}</td>
                     <td className="px-3 py-2 text-right font-mono text-slate-500">{r.gpm}%</td>
                     <td className="px-3 py-2 text-right"><YoY pct={r.yoyPct} prev={r.ps} /></td>
                   </tr>
@@ -124,32 +127,34 @@ export default function OfflineDetailTab(p: Props) {
                       <td colSpan={6} className="px-3 py-2">
                         <div className="mb-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400">지점별 상세 ({r.bySub.length})</div>
                         <div className="overflow-x-auto">
-                          <table className="w-full min-w-[680px] text-[11px]">
+                          <table className="w-full min-w-[720px] text-[11px]">
                             <thead className="text-slate-500">
                               <tr className="border-b border-slate-200">
                                 <th className="px-2 py-1 text-left">지점</th>
-                                <th className="px-2 py-1 text-right">매출</th>
-                                <th className="px-2 py-1 text-right">성장액</th>
+                                <th className="px-2 py-1 text-right">매출(백만)</th>
+                                <th className="px-2 py-1 text-right">성장액(백만)</th>
                                 <th className="px-2 py-1 text-right">성장율</th>
-                                <th className="px-2 py-1 text-right">매총익</th>
-                                <th className="px-2 py-1 text-right">매총익성장액</th>
+                                <th className="px-2 py-1 text-right">매총익(백만)</th>
+                                <th className="px-2 py-1 text-right">매총익성장액(백만)</th>
                                 <th className="px-2 py-1 text-right">매총익성장율</th>
                                 <th className="px-2 py-1 text-right">전용면적</th>
-                                <th className="px-2 py-1 text-right">매장수</th>
+                                <th className="px-2 py-1 text-right">일평당매출</th>
+                                <th className="px-2 py-1 text-right">일평당이익</th>
                               </tr>
                             </thead>
                             <tbody>
                               {r.bySub.map((s) => (
                                 <tr key={s.key} className="border-b border-slate-100">
                                   <td className="px-2 py-1 font-bold text-[#0a0a0a] whitespace-nowrap">{s.key}</td>
-                                  <td className="px-2 py-1 text-right font-mono font-bold">{won(s.s)}</td>
-                                  <td className="px-2 py-1 text-right font-mono" style={{ color: s.ps === 0 ? "#7c3aed" : s.growthS >= 0 ? "#0d9e6e" : "#e53e3e" }}>{s.ps === 0 ? "—" : `${s.growthS >= 0 ? "+" : ""}${won(s.growthS)}`}</td>
+                                  <td className="px-2 py-1 text-right font-mono font-bold">{mil(s.s)}</td>
+                                  <td className="px-2 py-1 text-right font-mono" style={{ color: s.ps === 0 ? "#7c3aed" : s.growthS >= 0 ? "#0d9e6e" : "#e53e3e" }}>{s.ps === 0 ? "—" : milSigned(s.growthS)}</td>
                                   <td className="px-2 py-1 text-right"><YoY pct={s.growthPct} prev={s.ps} /></td>
-                                  <td className="px-2 py-1 text-right font-mono">{won(s.g)}</td>
-                                  <td className="px-2 py-1 text-right font-mono" style={{ color: s.pg === 0 ? "#7c3aed" : s.growthG >= 0 ? "#0d9e6e" : "#e53e3e" }}>{s.pg === 0 ? "—" : `${s.growthG >= 0 ? "+" : ""}${won(s.growthG)}`}</td>
+                                  <td className="px-2 py-1 text-right font-mono">{mil(s.g)}</td>
+                                  <td className="px-2 py-1 text-right font-mono" style={{ color: s.pg === 0 ? "#7c3aed" : s.growthG >= 0 ? "#0d9e6e" : "#e53e3e" }}>{s.pg === 0 ? "—" : milSigned(s.growthG)}</td>
                                   <td className="px-2 py-1 text-right"><YoY pct={s.growthGPct} prev={s.pg} /></td>
                                   <td className="px-2 py-1 text-right font-mono text-slate-500">{s.area ? `${s.area}평` : "—"}</td>
-                                  <td className="px-2 py-1 text-right font-mono text-slate-500">{s.storeCnt || "—"}</td>
+                                  <td className="px-2 py-1 text-right font-mono text-slate-500">{s.dppSales ? won(s.dppSales) : "—"}</td>
+                                  <td className="px-2 py-1 text-right font-mono text-slate-500">{s.dppGp ? won(s.dppGp) : "—"}</td>
                                 </tr>
                               ))}
                             </tbody>

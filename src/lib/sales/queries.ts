@@ -357,7 +357,9 @@ export interface OffSub {
   growthS: number; growthPct: number;   // 매출 성장액/율
   growthG: number; growthGPct: number;  // 매총익 성장액/율
   area: number;                   // 전용면적(평)
-  storeCnt: number;               // 매장수
+  dppSales: number;               // 일평당매출
+  dppGp: number;                  // 일평당이익
+  storeCnt: number;               // 매장수(참고)
 }
 export interface OffRank {
   key: string;
@@ -438,7 +440,10 @@ function buildOff(
           key, s: v.s, ps: v.ps, g: v.g, pg: v.pg,
           growthS: v.s - v.ps, growthPct: v.ps ? +((v.s - v.ps) / v.ps * 100).toFixed(1) : 0,
           growthG: v.g - v.pg, growthGPct: v.pg ? +((v.g - v.pg) / v.pg * 100).toFixed(1) : 0,
-          area: days ? Math.round(v.area / days) : 0, storeCnt: v.cnt,  // 전용면적(평)
+          area: days ? Math.round(v.area / days) : 0,         // 전용면적(평)
+          dppSales: v.area ? Math.round(v.s / v.area) : 0,    // 일평당매출 = 매출/(평·일)
+          dppGp: v.area ? Math.round(v.g / v.area) : 0,       // 일평당이익
+          storeCnt: v.cnt,
         })).sort((a, b) => b.s - a.s).slice(0, 50) : undefined,
       });
     }
