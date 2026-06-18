@@ -329,11 +329,13 @@ const SubBreakdownTable = memo(function SubBreakdownTable({ bySub, firstColLabel
   bySub: OffSubLite[]; firstColLabel: string;
   sSort: SSortKey; sDir: Dir; toggleS: (k: SSortKey) => void;
 }) {
+  const [limit, setLimit] = useState(10);
   const rows = useMemo(() => {
     const dir = sDir === "asc" ? 1 : -1;
     return [...bySub].sort((a, b) =>
       sSort === "key" ? a.key.localeCompare(b.key, "ko") * dir : ((a[sSort] as number) - (b[sSort] as number)) * dir);
   }, [bySub, sSort, sDir]);
+  const shown = rows.slice(0, limit);
   const sArrow = (k: SSortKey) => sSort === k ? (sDir === "asc" ? " ▲" : " ▼") : "";
   return (
     <ScrollHint>
@@ -353,7 +355,7 @@ const SubBreakdownTable = memo(function SubBreakdownTable({ bySub, firstColLabel
           </tr>
         </thead>
         <tbody>
-          {rows.map((s) => (
+          {shown.map((s) => (
             <tr key={s.key} className={`border-b border-slate-100 ${s.closed ? "opacity-60" : ""}`}>
               <td className="px-2 py-1 font-bold text-[#0a0a0a] whitespace-nowrap">
                 {s.key}
@@ -372,6 +374,12 @@ const SubBreakdownTable = memo(function SubBreakdownTable({ bySub, firstColLabel
           ))}
         </tbody>
       </table>
+      {rows.length > shown.length && (
+        <button onClick={() => setLimit((l) => l + 10)}
+          className="w-full border-t border-slate-200 bg-slate-50 py-2 text-[11px] font-bold text-slate-600 hover:bg-slate-100">
+          더 보기 (+10) · {shown.length}/{rows.length}
+        </button>
+      )}
     </ScrollHint>
   );
 });
