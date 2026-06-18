@@ -372,6 +372,7 @@ export interface OffRank {
   subCount: number;               // 하위 개수 (브랜드→매장수 / 지점→브랜드수)
   dppSales: number;               // 일평당매출 (당기, 매출/면적합)
   dppGp: number;                  // 일평당이익
+  closed?: boolean;               // 퇴점: 전년 실적만 있고 올해 매출 없음
   bySub?: OffSub[];
 }
 
@@ -402,7 +403,7 @@ function buildOff(
   // keyOf: 그룹 키, labelOf: 표시명(없으면 키와 동일)
   function rank(keyOf: (r: OffRow) => string, withCat: boolean, subOf?: (r: OffRow) => string, labelOf?: (r: OffRow) => string): OffRank[] {
     const c = new Map<string, { s: number; g: number; area: number; label: string; cat: string; division: string; sub: Map<string, SubAgg> }>();
-    const p = new Map<string, { s: number; g: number }>();
+    const p = new Map<string, { s: number; g: number; label: string; cat: string; division: string }>();
     const subEnsure = (m: Map<string, SubAgg>, sk: string) => {
       let e = m.get(sk); if (!e) { e = { s: 0, g: 0, ps: 0, pg: 0, area: 0, cnt: 0 }; m.set(sk, e); } return e;
     };
@@ -414,7 +415,8 @@ function buildOff(
         if (subOf) { const se = subEnsure(e.sub, subOf(r)); se.s += r.sales; se.g += r.gp; se.area += r.area_raw; se.cnt += r.store_cnt; }
         c.set(k, e);
       } else if (r.p === prev) {
-        const e = p.get(k) ?? { s: 0, g: 0 }; e.s += r.sales; e.g += r.gp; p.set(k, e);
+        const e = p.get(k) ?? { s: 0, g: 0, label: labelOf ? labelOf(r) : k, cat: r.cat, division: r.division };
+        e.s += r.sales; e.g += r.gp; p.set(k, e);
         // 하위(지점)의 전년 값도 누적 — 성장 계산용 (cur 그룹에 미리 있을 수도, 없을 수도)
       }
     }
@@ -446,6 +448,17 @@ function buildOff(
           dppGp: v.area ? Math.round(v.g / v.area) : 0,       // 일평당이익
           storeCnt: v.cnt,
         })).sort((a, b) => b.s - a.s).slice(0, 50) : undefined,
+      });
+    }
+    // 퇴점: 전년(prev)에는 있었으나 올해(cur)에 없는 항목 — s=0, 전년 실적만 보유
+    for (const [k, pv] of p) {
+      if (c.has(k)) continue;
+      out.push({
+        key: pv.label, cat: withCat ? pv.cat : undefined, division: withCat ? pv.division : undefined,
+        s: 0, ps: pv.s, g: 0, pg: pv.g,
+        gpm: 0, yoyPct: -100, subCount: 0,
+        dppSales: 0, dppGp: 0, closed: true,
+        bySub: subOf ? [] : undefined,
       });
     }
     return out.sort((a, b) => b.s - a.s);

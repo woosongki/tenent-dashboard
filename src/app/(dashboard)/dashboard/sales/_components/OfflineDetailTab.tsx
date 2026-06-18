@@ -19,7 +19,10 @@ const eok = (n: number) => (n / 1e8).toFixed(1);
 // 백만 단위 (상세 브랜드/지점 금액 통일)
 const mil = (n: number) => Math.round(n / 1e6).toLocaleString("ko-KR");
 const milSigned = (n: number) => `${n >= 0 ? "+" : ""}${Math.round(n / 1e6).toLocaleString("ko-KR")}`;
-function YoY({ pct, prev }: { pct: number; prev?: number }) {
+function YoY({ pct, prev, closed }: { pct: number; prev?: number; closed?: boolean }) {
+  if (closed) {
+    return <span style={{ color: "#e53e3e", fontWeight: 700 }} title="전년 실적은 있으나 올해 매출 없음 (퇴점)">퇴점</span>;
+  }
   if (prev !== undefined && prev === 0) {
     return <span style={{ color: "#7c3aed", fontWeight: 700 }} title="전년 동기간 실적 없음 (신규 또는 미집계)">신규</span>;
   }
@@ -89,7 +92,9 @@ export default function OfflineDetailTab(p: Props) {
     for (const r of catRows) if (r.dppSales) areaDays += r.s / r.dppSales;
     return {
       s, ps, g, gpm: s ? +(g / s * 100).toFixed(1) : 0,
-      yoyPct: ps ? +((s - ps) / ps * 100).toFixed(1) : 0, brands: catRows.length,
+      yoyPct: ps ? +((s - ps) / ps * 100).toFixed(1) : 0,
+      brands: catRows.filter((r) => !r.closed).length,
+      closedCount: catRows.filter((r) => r.closed).length,
       dppSales: areaDays ? Math.round(s / areaDays) : 0,
       dppGp: areaDays ? Math.round(g / areaDays) : 0,
     };
@@ -132,7 +137,7 @@ export default function OfflineDetailTab(p: Props) {
         <Card label={`${selLabel} 매출`} value={`${eok(summary.s)}억`} sub={`${won(summary.s)}원`} accent />
         <Card label={`전년 (${p.prevLabel})`} value={`${eok(summary.ps)}억`} />
         <Card label="전년대비" value={`${summary.yoyPct >= 0 ? "+" : ""}${summary.yoyPct}%`} tone={summary.yoyPct >= 0 ? "up" : "down"} />
-        <Card label="이익률 / 브랜드수" value={`${summary.gpm}%`} sub={`${summary.brands}개 브랜드`} />
+        <Card label="이익률 / 브랜드수" value={`${summary.gpm}%`} sub={`${summary.brands}개 브랜드${summary.closedCount ? ` · 퇴점 ${summary.closedCount}` : ""}`} />
         <Card label="일평당매출" value={won(summary.dppSales)} sub="원/평·일" />
         <Card label="일평당이익" value={won(summary.dppGp)} sub="원/평·일" />
       </div>
@@ -156,16 +161,19 @@ export default function OfflineDetailTab(p: Props) {
               const open = expanded === r.key;
               return (
                 <Fragment key={r.key}>
-                  <tr className={`border-t border-slate-100 cursor-pointer hover:bg-yellow-50 ${open ? "bg-yellow-50" : ""}`} onClick={() => setExpanded(open ? null : r.key)}>
-                    <td className="px-3 py-2 font-mono text-slate-400"><span className="mr-1 text-[9px]">{open ? "▼" : "▶"}</span>{i + 1}</td>
-                    <td className="px-3 py-2 font-bold text-[#0a0a0a]">{r.key}</td>
+                  <tr className={`border-t border-slate-100 ${r.closed ? "opacity-60" : "cursor-pointer hover:bg-yellow-50"} ${open ? "bg-yellow-50" : ""}`} onClick={() => { if (!r.closed) setExpanded(open ? null : r.key); }}>
+                    <td className="px-3 py-2 font-mono text-slate-400"><span className="mr-1 text-[9px]">{r.closed ? "" : open ? "▼" : "▶"}</span>{i + 1}</td>
+                    <td className="px-3 py-2 font-bold text-[#0a0a0a]">
+                      {r.key}
+                      {r.closed && <span className="ml-1.5 border border-rose-500 px-1 py-0 text-[9px] font-extrabold text-rose-600 align-middle">퇴점</span>}
+                    </td>
                     <td className="px-3 py-2 text-right font-mono text-slate-500">{r.subCount}</td>
-                    <td className="px-3 py-2 text-right font-mono font-bold">{mil(r.s)}</td>
-                    <td className="px-3 py-2 text-right font-mono">{mil(r.g)}</td>
-                    <td className="px-3 py-2 text-right font-mono text-slate-500">{r.gpm}%</td>
-                    <td className="px-3 py-2 text-right"><YoY pct={r.yoyPct} prev={r.ps} /></td>
+                    <td className="px-3 py-2 text-right font-mono font-bold">{r.closed ? "—" : mil(r.s)}</td>
+                    <td className="px-3 py-2 text-right font-mono">{r.closed ? "—" : mil(r.g)}</td>
+                    <td className="px-3 py-2 text-right font-mono text-slate-500">{r.closed ? "—" : `${r.gpm}%`}</td>
+                    <td className="px-3 py-2 text-right"><YoY pct={r.yoyPct} prev={r.ps} closed={r.closed} /></td>
                   </tr>
-                  {open && r.bySub && (
+                  {open && r.bySub && r.bySub.length > 0 && (
                     <tr className="bg-slate-50">
                       <td></td>
                       <td colSpan={6} className="px-3 py-2">

@@ -18,7 +18,11 @@ interface Props {
 
 const won = (n: number) => n.toLocaleString("ko-KR");
 const eok = (n: number) => (n / 1e8).toFixed(1);
-function YoY({ pct, prev }: { pct: number; prev?: number }) {
+function YoY({ pct, prev, closed }: { pct: number; prev?: number; closed?: boolean }) {
+  // 퇴점: 전년 실적은 있으나 올해 매출 없음
+  if (closed) {
+    return <span style={{ color: "#e53e3e", fontWeight: 700 }} title="전년 실적은 있으나 올해 매출 없음 (퇴점)">퇴점</span>;
+  }
   // 전년 실적 자체가 없으면 0% 정체가 아니라 "신규/전년없음" — 구분 표시
   if (prev !== undefined && prev === 0) {
     return <span style={{ color: "#7c3aed", fontWeight: 700 }} title="전년 동기간 실적 없음 (신규 또는 미집계)">신규</span>;
@@ -36,16 +40,19 @@ export default function OfflineTab(p: Props) {
   const [sortKey, setSortKey] = useState<SortKey>("s");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
   const [limit, setLimit] = useState(10);   // 초기 표시 행 수 (점진 확장)
+  const [closedOnly, setClosedOnly] = useState(false);   // 퇴점만 보기
 
   const base = view === "brand" ? p.brands : p.stores;
+  const closedCount = useMemo(() => base.filter((r) => r.closed).length, [base]);
   const filtered = useMemo(() => {
     let list = base;
+    if (closedOnly) list = list.filter((r) => r.closed);
     if (div && view === "brand") list = list.filter((r) => r.division === div);
     if (q) list = list.filter((r) => r.key.includes(q) || (r.cat ?? "").includes(q));
     const dir = sortDir === "asc" ? 1 : -1;
     return [...list].sort((a, b) =>
       sortKey === "key" ? a.key.localeCompare(b.key, "ko") * dir : ((a[sortKey] as number) - (b[sortKey] as number)) * dir);
-  }, [base, q, div, view, sortKey, sortDir]);
+  }, [base, q, div, view, sortKey, sortDir, closedOnly]);
 
   // 실제 렌더할 행 (상위 limit개만 — 수백 행 동시 렌더로 인한 멈춤 방지)
   const visible = useMemo(() => filtered.slice(0, limit), [filtered, limit]);
@@ -94,6 +101,13 @@ export default function OfflineTab(p: Props) {
               {v === "brand" ? `브랜드 (${p.brands.length})` : `지점 (${p.stores.length})`}
             </button>
           ))}
+          {closedCount > 0 && (
+            <button onClick={() => { setClosedOnly((c) => !c); setExpanded(null); setLimit(closedOnly ? 10 : closedCount); }}
+              className={`border-[2px] border-rose-500 px-3 py-1.5 text-[12px] font-bold transition ${closedOnly ? "bg-rose-500 text-white shadow-[2px_2px_0_0_#0a0a0a]" : "bg-white text-rose-600 hover:bg-rose-50"}`}
+              title="전년 실적은 있으나 올해 매출 없는 항목만 보기">
+              퇴점 {closedCount}
+            </button>
+          )}
         </div>
         <div className="flex items-center gap-2">
           <input type="text" value={q} onChange={(e) => onSearch(e.target.value)} placeholder={view === "brand" ? "브랜드/복종 검색" : "지점 검색"}
@@ -103,9 +117,10 @@ export default function OfflineTab(p: Props) {
               const header = view === "brand"
                 ? ["순위", "브랜드", "복종", "매장수", "매출", "이익", "이익률%", "전년매출", "전년비%"]
                 : ["순위", "지점", "브랜드수", "매출", "이익", "이익률%", "전년매출", "전년비%"];
+              const yoyCell = (r: OffRank) => r.closed ? "퇴점" : r.ps === 0 ? "신규" : r.yoyPct;
               const body = filtered.map((r, i) => view === "brand"
-                ? [i + 1, r.key, r.cat ?? "", r.subCount, r.s, r.g, r.gpm, r.ps, r.ps === 0 ? "신규" : r.yoyPct]
-                : [i + 1, r.key, r.subCount, r.s, r.g, r.gpm, r.ps, r.ps === 0 ? "신규" : r.yoyPct]);
+                ? [i + 1, r.key, r.cat ?? "", r.subCount, r.s, r.g, r.gpm, r.ps, yoyCell(r)]
+                : [i + 1, r.key, r.subCount, r.s, r.g, r.gpm, r.ps, yoyCell(r)]);
               downloadCsv(`${p.periodLabel}_${view === "brand" ? "브랜드" : "지점"}_랭킹`, [header, ...body]);
             }}
             className="shrink-0 border-[2px] border-[#0a0a0a] bg-white px-3 py-1.5 text-[12px] font-bold hover:bg-yellow-100"
@@ -166,15 +181,18 @@ const RankRow = memo(function RankRow({
   const cols = showCat ? 8 : 7;
   return (
     <>
-      <tr className={`border-t border-slate-100 cursor-pointer hover:bg-yellow-50 ${open ? "bg-yellow-50" : ""}`} onClick={() => onToggle(row.key)}>
-        <td className="px-3 py-2 font-mono text-slate-400"><span className="mr-1 text-[9px]">{open ? "▼" : "▶"}</span>{rank}</td>
-        <td className="px-3 py-2 font-bold text-[#0a0a0a]">{row.key}</td>
+      <tr className={`border-t border-slate-100 ${row.closed ? "opacity-60" : "cursor-pointer hover:bg-yellow-50"} ${open ? "bg-yellow-50" : ""}`} onClick={() => { if (!row.closed) onToggle(row.key); }}>
+        <td className="px-3 py-2 font-mono text-slate-400"><span className="mr-1 text-[9px]">{row.closed ? "" : open ? "▼" : "▶"}</span>{rank}</td>
+        <td className="px-3 py-2 font-bold text-[#0a0a0a]">
+          {row.key}
+          {row.closed && <span className="ml-1.5 border border-rose-500 px-1 py-0 text-[9px] font-extrabold text-rose-600 align-middle">퇴점</span>}
+        </td>
         <td className="px-3 py-2 text-right font-mono text-slate-500">{row.subCount}</td>
         {showCat && <td className="px-3 py-2 text-slate-500">{row.cat}</td>}
-        <td className="px-3 py-2 text-right font-mono font-bold">{won(row.s)}</td>
-        <td className="px-3 py-2 text-right font-mono">{won(row.g)}</td>
-        <td className="px-3 py-2 text-right font-mono text-slate-500">{row.gpm}%</td>
-        <td className="px-3 py-2 text-right"><YoY pct={row.yoyPct} prev={row.ps} /></td>
+        <td className="px-3 py-2 text-right font-mono font-bold">{row.closed ? "—" : won(row.s)}</td>
+        <td className="px-3 py-2 text-right font-mono">{row.closed ? "—" : won(row.g)}</td>
+        <td className="px-3 py-2 text-right font-mono text-slate-500">{row.closed ? "—" : `${row.gpm}%`}</td>
+        <td className="px-3 py-2 text-right"><YoY pct={row.yoyPct} prev={row.ps} closed={row.closed} /></td>
       </tr>
       {open && row.bySub && (
         <tr className="bg-slate-50">
