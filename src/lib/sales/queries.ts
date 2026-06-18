@@ -136,6 +136,7 @@ export interface OnlineRank {
   s: number;          // 당월 매출
   ps: number;         // 전년동월 매출
   yoyPct: number;
+  closed?: boolean;   // 퇴점: 전년 실적만 있고 올해 매출 없음
   byChannel: { channel: string; s: number }[];  // 채널별 (당월)
   bySub?: { key: string; s: number }[];          // 하위 분해 (브랜드→지점 등)
 }
@@ -174,7 +175,7 @@ export async function getOnlineMonth(ym: string, prevYm: string) {
     subOf?: (r: OnlineRow) => string,
   ): OnlineRank[] {
     const cur = new Map<string, { s: number; cat: string; ch: Map<string, number>; sub: Map<string, number> }>();
-    const prev = new Map<string, number>();
+    const prev = new Map<string, { s: number; cat: string }>();
     for (const r of rows) {
       const k = keyOf(r);
       if (r.ym === ym) {
@@ -184,12 +185,13 @@ export async function getOnlineMonth(ym: string, prevYm: string) {
         if (subOf) { const sk = subOf(r); e.sub.set(sk, (e.sub.get(sk) ?? 0) + r.sales); }
         cur.set(k, e);
       } else {
-        prev.set(k, (prev.get(k) ?? 0) + r.sales);
+        const e = prev.get(k) ?? { s: 0, cat: r.cat };
+        e.s += r.sales; prev.set(k, e);
       }
     }
     const out: OnlineRank[] = [];
     for (const [k, e] of cur) {
-      const ps = prev.get(k) ?? 0;
+      const ps = prev.get(k)?.s ?? 0;
       out.push({
         key: k,
         cat: withCat ? e.cat : undefined,
@@ -197,6 +199,15 @@ export async function getOnlineMonth(ym: string, prevYm: string) {
         yoyPct: ps ? +((e.s - ps) / ps * 100).toFixed(1) : 0,
         byChannel: [...e.ch.entries()].map(([channel, s]) => ({ channel, s })).sort((a, b) => b.s - a.s),
         bySub: subOf ? [...e.sub.entries()].map(([key, s]) => ({ key, s })).sort((a, b) => b.s - a.s) : undefined,
+      });
+    }
+    // 퇴점: 전년에만 있고 올해 없는 항목
+    for (const [k, pv] of prev) {
+      if (cur.has(k)) continue;
+      out.push({
+        key: k, cat: withCat ? pv.cat : undefined,
+        s: 0, ps: pv.s, yoyPct: -100, closed: true,
+        byChannel: [], bySub: subOf ? [] : undefined,
       });
     }
     return out.sort((a, b) => b.s - a.s);
@@ -284,7 +295,7 @@ export async function getOnlineCumulative(year: string, prevYear: string) {
     subOf?: (r: OnlineCumRow) => string,
   ): OnlineRank[] {
     const cur = new Map<string, { s: number; cat: string; ch: Map<string, number>; sub: Map<string, number> }>();
-    const prev = new Map<string, number>();
+    const prev = new Map<string, { s: number; cat: string }>();
     for (const r of rows) {
       const k = keyOf(r);
       if (r.year === year) {
@@ -294,17 +305,27 @@ export async function getOnlineCumulative(year: string, prevYear: string) {
         if (subOf) { const sk = subOf(r); e.sub.set(sk, (e.sub.get(sk) ?? 0) + r.sales); }
         cur.set(k, e);
       } else {
-        prev.set(k, (prev.get(k) ?? 0) + r.sales);
+        const e = prev.get(k) ?? { s: 0, cat: r.cat };
+        e.s += r.sales; prev.set(k, e);
       }
     }
     const out: OnlineRank[] = [];
     for (const [k, e] of cur) {
-      const ps = prev.get(k) ?? 0;
+      const ps = prev.get(k)?.s ?? 0;
       out.push({
         key: k, cat: withCat ? e.cat : undefined,
         s: e.s, ps, yoyPct: ps ? +((e.s - ps) / ps * 100).toFixed(1) : 0,
         byChannel: [...e.ch.entries()].map(([channel, s]) => ({ channel, s })).sort((a, b) => b.s - a.s),
         bySub: subOf ? [...e.sub.entries()].map(([key, s]) => ({ key, s })).sort((a, b) => b.s - a.s) : undefined,
+      });
+    }
+    // 퇴점: 전년에만 있고 올해 없는 항목
+    for (const [k, pv] of prev) {
+      if (cur.has(k)) continue;
+      out.push({
+        key: k, cat: withCat ? pv.cat : undefined,
+        s: 0, ps: pv.s, yoyPct: -100, closed: true,
+        byChannel: [], bySub: subOf ? [] : undefined,
       });
     }
     return out.sort((a, b) => b.s - a.s);

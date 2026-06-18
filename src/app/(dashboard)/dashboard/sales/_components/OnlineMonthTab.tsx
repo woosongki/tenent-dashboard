@@ -23,7 +23,10 @@ interface Props {
 const won = (n: number) => n.toLocaleString("ko-KR");
 /** 억 단위 (소수1) */
 const eok = (n: number) => (n / 1e8).toFixed(1);
-function yoyBadge(pct: number) {
+function yoyBadge(pct: number, closed?: boolean) {
+  if (closed) {
+    return <span style={{ color: "#e53e3e", fontWeight: 700 }} title="전년 실적은 있으나 올해 매출 없음 (퇴점)">퇴점</span>;
+  }
   const up = pct >= 0;
   return (
     <span style={{ color: up ? "#0d9e6e" : "#e53e3e", fontWeight: 700 }}>
@@ -40,17 +43,20 @@ export default function OnlineMonthTab(p: Props) {
   const [expanded, setExpanded] = useState<string | null>(null);
   const [sortKey, setSortKey] = useState<SortKey>("s");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
+  const [closedOnly, setClosedOnly] = useState(false);
 
   const rows = view === "brand" ? p.brands : p.stores;
+  const closedCount = useMemo(() => rows.filter((r) => r.closed).length, [rows]);
   const filtered = useMemo(() => {
-    const list = q ? rows.filter((r) => r.key.includes(q) || (r.cat ?? "").includes(q)) : [...rows];
+    let list = closedOnly ? rows.filter((r) => r.closed) : [...rows];
+    if (q) list = list.filter((r) => r.key.includes(q) || (r.cat ?? "").includes(q));
     const dir = sortDir === "asc" ? 1 : -1;
     list.sort((a, b) => {
       if (sortKey === "key") return a.key.localeCompare(b.key, "ko") * dir;
       return ((a[sortKey] as number) - (b[sortKey] as number)) * dir;
     });
     return list;
-  }, [rows, q, sortKey, sortDir]);
+  }, [rows, q, sortKey, sortDir, closedOnly]);
 
   // 헤더 클릭: 같은 키면 방향 토글, 다른 키면 내림차순부터
   function toggleSort(k: SortKey) {
@@ -138,6 +144,13 @@ export default function OnlineMonthTab(p: Props) {
               {v === "brand" ? `브랜드 랭킹 (${p.brands.length})` : `지점별 집계 (${p.stores.length})`}
             </button>
           ))}
+          {closedCount > 0 && (
+            <button onClick={() => { setClosedOnly((c) => !c); setExpanded(null); }}
+              className={`border-[2px] border-rose-500 px-3 py-1.5 text-[12px] font-bold transition ${closedOnly ? "bg-rose-500 text-white shadow-[2px_2px_0_0_#0a0a0a]" : "bg-white text-rose-600 hover:bg-rose-50"}`}
+              title="전년 실적은 있으나 올해 매출 없는 항목만 보기">
+              퇴점 {closedCount}
+            </button>
+          )}
         </div>
         <div className="flex items-center gap-2">
           <input
@@ -152,9 +165,10 @@ export default function OnlineMonthTab(p: Props) {
               const header = view === "brand"
                 ? ["순위", "브랜드", "복종", "매출", "전년매출", "전년비%", "주력채널"]
                 : ["순위", "지점", "매출", "전년매출", "전년비%", "주력채널"];
+              const yoyCell = (r: OnlineRank) => r.closed ? "퇴점" : r.yoyPct;
               const body = filtered.map((r, i) => view === "brand"
-                ? [i + 1, r.key, r.cat ?? "", r.s, r.ps, r.yoyPct, r.byChannel.slice(0, 3).map((c) => `${c.channel}:${c.s}`).join(" ")]
-                : [i + 1, r.key, r.s, r.ps, r.yoyPct, r.byChannel.slice(0, 3).map((c) => `${c.channel}:${c.s}`).join(" ")]);
+                ? [i + 1, r.key, r.cat ?? "", r.s, r.ps, yoyCell(r), r.byChannel.slice(0, 3).map((c) => `${c.channel}:${c.s}`).join(" ")]
+                : [i + 1, r.key, r.s, r.ps, yoyCell(r), r.byChannel.slice(0, 3).map((c) => `${c.channel}:${c.s}`).join(" ")]);
               downloadCsv(`온라인_${p.ym}_${view === "brand" ? "브랜드" : "지점"}`, [header, ...body]);
             }}
             className="shrink-0 border-[2px] border-[#0a0a0a] bg-white px-3 py-1.5 text-[12px] font-bold hover:bg-yellow-100"
@@ -194,22 +208,25 @@ export default function OnlineMonthTab(p: Props) {
               return (
                 <FragmentRow key={r.key}>
                   <tr
-                    className={`border-t border-slate-100 cursor-pointer hover:bg-yellow-50 ${open ? "bg-yellow-50" : ""}`}
-                    onClick={() => setExpanded(open ? null : r.key)}
+                    className={`border-t border-slate-100 ${r.closed ? "opacity-60" : "cursor-pointer hover:bg-yellow-50"} ${open ? "bg-yellow-50" : ""}`}
+                    onClick={() => { if (!r.closed) setExpanded(open ? null : r.key); }}
                   >
                     <td className="px-3 py-2 font-mono text-slate-400">
-                      <span className="mr-1 inline-block text-[9px] text-slate-400">{open ? "▼" : "▶"}</span>{i + 1}
+                      <span className="mr-1 inline-block text-[9px] text-slate-400">{r.closed ? "" : open ? "▼" : "▶"}</span>{i + 1}
                     </td>
-                    <td className="px-3 py-2 font-bold text-[#0a0a0a]">{r.key}</td>
+                    <td className="px-3 py-2 font-bold text-[#0a0a0a]">
+                      {r.key}
+                      {r.closed && <span className="ml-1.5 border border-rose-500 px-1 py-0 text-[9px] font-extrabold text-rose-600 align-middle">퇴점</span>}
+                    </td>
                     {view === "brand" && <td className="px-3 py-2 text-slate-500">{r.cat}</td>}
-                    <td className="px-3 py-2 text-right font-mono font-bold">{won(r.s)}</td>
+                    <td className="px-3 py-2 text-right font-mono font-bold">{r.closed ? "—" : won(r.s)}</td>
                     <td className="px-3 py-2 text-right font-mono text-slate-500">{won(r.ps)}</td>
-                    <td className="px-3 py-2 text-right">{yoyBadge(r.yoyPct)}</td>
+                    <td className="px-3 py-2 text-right">{yoyBadge(r.yoyPct, r.closed)}</td>
                     <td className="px-3 py-2 text-[11px] text-slate-600">
                       {r.byChannel.slice(0, 3).map((c) => `${c.channel} ${eok(c.s)}억`).join(" · ")}
                     </td>
                   </tr>
-                  {open && r.bySub && (
+                  {open && r.bySub && r.bySub.length > 0 && (
                     <tr className="bg-slate-50">
                       <td></td>
                       <td colSpan={colCount - 1} className="px-3 py-2">
