@@ -196,14 +196,17 @@ export default function OfflineDetailTab(p: Props) {
                             </thead>
                             <tbody>
                               {sortSub(r.bySub).map((s) => (
-                                <tr key={s.key} className="border-b border-slate-100">
-                                  <td className="px-2 py-1 font-bold text-[#0a0a0a] whitespace-nowrap">{s.key}</td>
-                                  <td className="px-2 py-1 text-right font-mono font-bold">{mil(s.s)}</td>
+                                <tr key={s.key} className={`border-b border-slate-100 ${s.closed ? "opacity-60" : ""}`}>
+                                  <td className="px-2 py-1 font-bold text-[#0a0a0a] whitespace-nowrap">
+                                    {s.key}
+                                    {s.closed && <span className="ml-1.5 border border-rose-500 px-1 py-0 text-[9px] font-extrabold text-rose-600 align-middle">퇴점</span>}
+                                  </td>
+                                  <td className="px-2 py-1 text-right font-mono font-bold">{s.closed ? "—" : mil(s.s)}</td>
                                   <td className="px-2 py-1 text-right font-mono" style={{ color: s.ps === 0 ? "#7c3aed" : s.growthS >= 0 ? "#0d9e6e" : "#e53e3e" }}>{s.ps === 0 ? "—" : milSigned(s.growthS)}</td>
-                                  <td className="px-2 py-1 text-right"><YoY pct={s.growthPct} prev={s.ps} /></td>
-                                  <td className="px-2 py-1 text-right font-mono">{mil(s.g)}</td>
+                                  <td className="px-2 py-1 text-right"><YoY pct={s.growthPct} prev={s.ps} closed={s.closed} /></td>
+                                  <td className="px-2 py-1 text-right font-mono">{s.closed ? "—" : mil(s.g)}</td>
                                   <td className="px-2 py-1 text-right font-mono" style={{ color: s.pg === 0 ? "#7c3aed" : s.growthG >= 0 ? "#0d9e6e" : "#e53e3e" }}>{s.pg === 0 ? "—" : milSigned(s.growthG)}</td>
-                                  <td className="px-2 py-1 text-right"><YoY pct={s.growthGPct} prev={s.pg} /></td>
+                                  <td className="px-2 py-1 text-right"><YoY pct={s.growthGPct} prev={s.pg} closed={s.closed} /></td>
                                   <td className="px-2 py-1 text-right font-mono text-slate-500">{s.area ? `${s.area}평` : "—"}</td>
                                   <td className="px-2 py-1 text-right font-mono text-slate-500">{s.dppSales ? won(s.dppSales) : "—"}</td>
                                   <td className="px-2 py-1 text-right font-mono text-slate-500">{s.dppGp ? won(s.dppGp) : "—"}</td>

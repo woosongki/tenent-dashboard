@@ -138,7 +138,17 @@ export interface OnlineRank {
   yoyPct: number;
   closed?: boolean;   // 퇴점: 전년 실적만 있고 올해 매출 없음
   byChannel: { channel: string; s: number }[];  // 채널별 (당월)
-  bySub?: { key: string; s: number }[];          // 하위 분해 (브랜드→지점 등)
+  bySub?: { key: string; s: number; closed?: boolean }[];   // 하위 분해 (브랜드→지점 등), closed=하위 단위 퇴점
+}
+
+/** 하위(지점/브랜드) 분해 — 올해 매출 + 전년에만 있던 항목(퇴점) 합쳐 정렬 */
+function buildSub(curSub: Map<string, number>, prevSub?: Map<string, number>): { key: string; s: number; closed?: boolean }[] {
+  const keys = new Set<string>([...curSub.keys(), ...(prevSub?.keys() ?? [])]);
+  return [...keys].map((key) => {
+    const s = curSub.get(key) ?? 0;
+    const ps = prevSub?.get(key) ?? 0;
+    return s === 0 && ps > 0 ? { key, s, closed: true } : { key, s };
+  }).sort((a, b) => b.s - a.s);
 }
 
 interface OnlineRow { cat: string; brand: string; store: string; channel: string; ym: string; sales: number; }
@@ -176,6 +186,7 @@ export async function getOnlineMonth(ym: string, prevYm: string) {
   ): OnlineRank[] {
     const cur = new Map<string, { s: number; cat: string; ch: Map<string, number>; sub: Map<string, number> }>();
     const prev = new Map<string, { s: number; cat: string }>();
+    const prevSub = new Map<string, Map<string, number>>();   // 전년 하위(지점/브랜드) — 하위 퇴점 노출용
     for (const r of rows) {
       const k = keyOf(r);
       if (r.ym === ym) {
@@ -187,6 +198,7 @@ export async function getOnlineMonth(ym: string, prevYm: string) {
       } else {
         const e = prev.get(k) ?? { s: 0, cat: r.cat };
         e.s += r.sales; prev.set(k, e);
+        if (subOf) { let m = prevSub.get(k); if (!m) { m = new Map(); prevSub.set(k, m); } const sk = subOf(r); m.set(sk, (m.get(sk) ?? 0) + r.sales); }
       }
     }
     const out: OnlineRank[] = [];
@@ -198,7 +210,7 @@ export async function getOnlineMonth(ym: string, prevYm: string) {
         s: e.s, ps,
         yoyPct: ps ? +((e.s - ps) / ps * 100).toFixed(1) : 0,
         byChannel: [...e.ch.entries()].map(([channel, s]) => ({ channel, s })).sort((a, b) => b.s - a.s),
-        bySub: subOf ? [...e.sub.entries()].map(([key, s]) => ({ key, s })).sort((a, b) => b.s - a.s) : undefined,
+        bySub: subOf ? buildSub(e.sub, prevSub.get(k)) : undefined,
       });
     }
     // 퇴점: 전년에만 있고 올해 없는 항목
@@ -296,6 +308,7 @@ export async function getOnlineCumulative(year: string, prevYear: string) {
   ): OnlineRank[] {
     const cur = new Map<string, { s: number; cat: string; ch: Map<string, number>; sub: Map<string, number> }>();
     const prev = new Map<string, { s: number; cat: string }>();
+    const prevSub = new Map<string, Map<string, number>>();   // 전년 하위 — 하위 퇴점 노출용
     for (const r of rows) {
       const k = keyOf(r);
       if (r.year === year) {
@@ -307,6 +320,7 @@ export async function getOnlineCumulative(year: string, prevYear: string) {
       } else {
         const e = prev.get(k) ?? { s: 0, cat: r.cat };
         e.s += r.sales; prev.set(k, e);
+        if (subOf) { let m = prevSub.get(k); if (!m) { m = new Map(); prevSub.set(k, m); } const sk = subOf(r); m.set(sk, (m.get(sk) ?? 0) + r.sales); }
       }
     }
     const out: OnlineRank[] = [];
@@ -316,7 +330,7 @@ export async function getOnlineCumulative(year: string, prevYear: string) {
         key: k, cat: withCat ? e.cat : undefined,
         s: e.s, ps, yoyPct: ps ? +((e.s - ps) / ps * 100).toFixed(1) : 0,
         byChannel: [...e.ch.entries()].map(([channel, s]) => ({ channel, s })).sort((a, b) => b.s - a.s),
-        bySub: subOf ? [...e.sub.entries()].map(([key, s]) => ({ key, s })).sort((a, b) => b.s - a.s) : undefined,
+        bySub: subOf ? buildSub(e.sub, prevSub.get(k)) : undefined,
       });
     }
     // 퇴점: 전년에만 있고 올해 없는 항목
@@ -381,6 +395,7 @@ export interface OffSub {
   dppSales: number;               // 일평당매출
   dppGp: number;                  // 일평당이익
   storeCnt: number;               // 매장수(참고)
+  closed?: boolean;               // 퇴점: 전년 실적만 있고 올해 매출 없음
 }
 export interface OffRank {
   key: string;
@@ -441,12 +456,12 @@ function buildOff(
         // 하위(지점)의 전년 값도 누적 — 성장 계산용 (cur 그룹에 미리 있을 수도, 없을 수도)
       }
     }
-    // 전년 하위값: cur 그룹의 sub에 prev를 합산하려면 prev 행도 같은 sub 키로 매칭 필요
+    // 전년 하위값: cur 그룹의 sub에 prev를 합산. 올해 없던 지점도 생성 → 지점 단위 퇴점 노출
     for (const r of filtered) {
       if (r.p !== prev || !subOf) continue;
       const k = keyOf(r);
       const e = c.get(k); if (!e) continue;
-      const se = e.sub.get(subOf(r)); if (!se) continue;
+      const se = subEnsure(e.sub, subOf(r));
       se.ps += r.sales; se.pg += r.gp;
     }
     const out: OffRank[] = [];
@@ -457,7 +472,7 @@ function buildOff(
         s: e.s, ps: pv.s, g: e.g, pg: pv.g,
         gpm: e.s ? +(e.g / e.s * 100).toFixed(1) : 0,
         yoyPct: pv.s ? +((e.s - pv.s) / pv.s * 100).toFixed(1) : 0,
-        subCount: e.sub.size,
+        subCount: [...e.sub.values()].filter((v) => v.s > 0).length,   // 운영 중 지점만
         dppSales: e.area ? Math.round(e.s / e.area) : 0,   // 일평당매출 = 매출/(평·일)
         dppGp: e.area ? Math.round(e.g / e.area) : 0,        // 일평당이익
         bySub: subOf ? [...e.sub.entries()].map(([key, v]) => ({
@@ -468,6 +483,7 @@ function buildOff(
           dppSales: v.area ? Math.round(v.s / v.area) : 0,    // 일평당매출 = 매출/(평·일)
           dppGp: v.area ? Math.round(v.g / v.area) : 0,       // 일평당이익
           storeCnt: v.cnt,
+          closed: v.s === 0 && v.ps > 0,                      // 지점 단위 퇴점
         })).sort((a, b) => b.s - a.s).slice(0, 50) : undefined,
       });
     }

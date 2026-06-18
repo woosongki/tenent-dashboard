@@ -237,13 +237,16 @@ export default function OnlineMonthTab(p: Props) {
                           {r.bySub.map((s) => {
                             const pct = r.s ? (s.s / r.s) * 100 : 0;
                             return (
-                              <div key={s.key} className="flex items-center gap-2 text-[11px]">
-                                <span className="w-32 shrink-0 font-bold text-[#0a0a0a]">{s.key}</span>
+                              <div key={s.key} className={`flex items-center gap-2 text-[11px] ${s.closed ? "opacity-60" : ""}`}>
+                                <span className="w-32 shrink-0 font-bold text-[#0a0a0a]">
+                                  {s.key}
+                                  {s.closed && <span className="ml-1 border border-rose-500 px-1 py-0 text-[9px] font-extrabold text-rose-600 align-middle">퇴점</span>}
+                                </span>
                                 <div className="flex-1 h-2.5 bg-slate-200">
                                   <div className="h-full bg-yellow-400" style={{ width: `${pct}%` }} />
                                 </div>
-                                <span className="w-10 text-right font-mono text-slate-400">{pct.toFixed(0)}%</span>
-                                <span className="w-24 text-right font-mono font-bold">{won(s.s)}</span>
+                                <span className="w-10 text-right font-mono text-slate-400">{s.closed ? "" : `${pct.toFixed(0)}%`}</span>
+                                <span className="w-24 text-right font-mono font-bold">{s.closed ? "—" : won(s.s)}</span>
                               </div>
                             );
                           })}
