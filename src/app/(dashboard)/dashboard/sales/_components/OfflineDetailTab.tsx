@@ -10,6 +10,7 @@ interface Props {
   periodLabel: string;
   prevLabel: string;
   brands: OffRank[];          // division/cat 포함
+  stores: OffRank[];          // 지점별 (하위=브랜드)
   divisions: DivSummary[];
   fashionCats: CatSummary[];
 }
@@ -52,6 +53,15 @@ export default function OfflineDetailTab(p: Props) {
   // 지점 상세 정렬 (펼친 행 공통)
   const [sSort, setSSort] = useState<SSortKey>("s");
   const [sDir, setSDir] = useState<Dir>("desc");
+  // 지점별 브랜드 상세 섹션
+  const [stExpanded, setStExpanded] = useState<string | null>(null);
+  const [stLimit, setStLimit] = useState(10);
+  const [stQ, setStQ] = useState("");
+  const storeRows = useMemo(() => {
+    const base = stQ ? p.stores.filter((s) => s.key.includes(stQ)) : p.stores;
+    return [...base].sort((a, b) => b.s - a.s);
+  }, [p.stores, stQ]);
+  const stVisible = storeRows.slice(0, stLimit);
 
   // 선택 카테고리 브랜드 (요약·칩 기준 — 검색 무관)
   const catRows = useMemo(() =>
@@ -178,43 +188,7 @@ export default function OfflineDetailTab(p: Props) {
                       <td></td>
                       <td colSpan={6} className="px-3 py-2">
                         <div className="mb-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400">지점별 상세 ({r.bySub.length})</div>
-                        <ScrollHint>
-                          <table className="w-full min-w-[720px] text-[11px]">
-                            <thead className="text-slate-500 select-none">
-                              <tr className="border-b border-slate-200">
-                                <th className="px-2 py-1 text-left cursor-pointer hover:text-[#0a0a0a]" onClick={() => toggleS("key")}>지점{sArrow("key")}</th>
-                                <th className="px-2 py-1 text-right cursor-pointer hover:text-[#0a0a0a]" onClick={() => toggleS("s")}>매출(백만){sArrow("s")}</th>
-                                <th className="px-2 py-1 text-right cursor-pointer hover:text-[#0a0a0a]" onClick={() => toggleS("growthS")}>성장액(백만){sArrow("growthS")}</th>
-                                <th className="px-2 py-1 text-right cursor-pointer hover:text-[#0a0a0a]" onClick={() => toggleS("growthPct")}>성장율{sArrow("growthPct")}</th>
-                                <th className="px-2 py-1 text-right cursor-pointer hover:text-[#0a0a0a]" onClick={() => toggleS("g")}>매총익(백만){sArrow("g")}</th>
-                                <th className="px-2 py-1 text-right cursor-pointer hover:text-[#0a0a0a]" onClick={() => toggleS("growthG")}>매총익성장액(백만){sArrow("growthG")}</th>
-                                <th className="px-2 py-1 text-right cursor-pointer hover:text-[#0a0a0a]" onClick={() => toggleS("growthGPct")}>매총익성장율{sArrow("growthGPct")}</th>
-                                <th className="px-2 py-1 text-right cursor-pointer hover:text-[#0a0a0a]" onClick={() => toggleS("area")}>전용면적{sArrow("area")}</th>
-                                <th className="px-2 py-1 text-right cursor-pointer hover:text-[#0a0a0a]" onClick={() => toggleS("dppSales")}>일평당매출{sArrow("dppSales")}</th>
-                                <th className="px-2 py-1 text-right cursor-pointer hover:text-[#0a0a0a]" onClick={() => toggleS("dppGp")}>일평당이익{sArrow("dppGp")}</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {sortSub(r.bySub).map((s) => (
-                                <tr key={s.key} className={`border-b border-slate-100 ${s.closed ? "opacity-60" : ""}`}>
-                                  <td className="px-2 py-1 font-bold text-[#0a0a0a] whitespace-nowrap">
-                                    {s.key}
-                                    {s.closed && <span className="ml-1.5 border border-rose-500 px-1 py-0 text-[9px] font-extrabold text-rose-600 align-middle">퇴점</span>}
-                                  </td>
-                                  <td className="px-2 py-1 text-right font-mono font-bold">{s.closed ? "—" : mil(s.s)}</td>
-                                  <td className="px-2 py-1 text-right font-mono" style={{ color: s.ps === 0 ? "#7c3aed" : s.growthS >= 0 ? "#0d9e6e" : "#e53e3e" }}>{s.ps === 0 ? "—" : milSigned(s.growthS)}</td>
-                                  <td className="px-2 py-1 text-right"><YoY pct={s.growthPct} prev={s.ps} closed={s.closed} /></td>
-                                  <td className="px-2 py-1 text-right font-mono">{s.closed ? "—" : mil(s.g)}</td>
-                                  <td className="px-2 py-1 text-right font-mono" style={{ color: s.pg === 0 ? "#7c3aed" : s.growthG >= 0 ? "#0d9e6e" : "#e53e3e" }}>{s.pg === 0 ? "—" : milSigned(s.growthG)}</td>
-                                  <td className="px-2 py-1 text-right"><YoY pct={s.growthGPct} prev={s.pg} closed={s.closed} /></td>
-                                  <td className="px-2 py-1 text-right font-mono text-slate-500">{s.area ? `${s.area}평` : "—"}</td>
-                                  <td className="px-2 py-1 text-right font-mono text-slate-500">{s.dppSales ? won(s.dppSales) : "—"}</td>
-                                  <td className="px-2 py-1 text-right font-mono text-slate-500">{s.dppGp ? won(s.dppGp) : "—"}</td>
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
-                        </ScrollHint>
+                        <SubBreakdownTable rows={sortSub(r.bySub)} firstColLabel="지점" toggleS={toggleS} sArrow={sArrow} />
                       </td>
                     </tr>
                   )}
@@ -231,7 +205,118 @@ export default function OfflineDetailTab(p: Props) {
           </button>
         )}
       </ScrollHint>
+
+      {/* 지점별 브랜드 상세 */}
+      <div className="flex items-center justify-between pt-2">
+        <div className="inline-flex items-center gap-2 border-[2px] border-[#0a0a0a] bg-yellow-300 px-3 py-1 shadow-[2px_2px_0_0_#0a0a0a]">
+          <h3 className="font-display text-[16px] leading-none text-[#0a0a0a]">지점별 브랜드 상세</h3>
+          <span className="font-mono text-[11px] font-extrabold tabular-nums text-[#0a0a0a]">{p.stores.length}</span>
+        </div>
+        <input type="text" value={stQ} onChange={(e) => { setStQ(e.target.value); setStExpanded(null); setStLimit(10); }}
+          placeholder="지점 검색"
+          className="w-full max-w-[200px] border-[2px] border-[#0a0a0a] px-3 py-1.5 text-[12px] focus:outline-none focus:bg-yellow-50" />
+      </div>
+      <p className="text-[11px] text-slate-500">지점을 클릭하면 입점 브랜드별 실적이 펼쳐집니다.</p>
+
+      <ScrollHint className="border-[2px] border-[#0a0a0a] bg-white">
+        <table className="w-full min-w-[560px] text-[12px]">
+          <thead className="bg-[#0a0a0a] text-white select-none">
+            <tr>
+              <th className="px-3 py-2 text-left w-10">#</th>
+              <th className="px-3 py-2 text-left">지점</th>
+              <th className="px-3 py-2 text-right whitespace-nowrap">브랜드수</th>
+              <th className="px-3 py-2 text-right">매출(백만)</th>
+              <th className="px-3 py-2 text-right">매총익(백만)</th>
+              <th className="px-3 py-2 text-right">이익률</th>
+              <th className="px-3 py-2 text-right">전년비</th>
+            </tr>
+          </thead>
+          <tbody>
+            {stVisible.map((st, i) => {
+              const open = stExpanded === st.key;
+              return (
+                <Fragment key={st.key}>
+                  <tr className={`border-t border-slate-100 ${st.closed ? "opacity-60" : "cursor-pointer hover:bg-yellow-50"} ${open ? "bg-yellow-50" : ""}`} onClick={() => { if (!st.closed) setStExpanded(open ? null : st.key); }}>
+                    <td className="px-3 py-2 font-mono text-slate-400"><span className="mr-1 text-[9px]">{st.closed ? "" : open ? "▼" : "▶"}</span>{i + 1}</td>
+                    <td className="px-3 py-2 font-bold text-[#0a0a0a]">
+                      {st.key}
+                      {st.closed && <span className="ml-1.5 border border-rose-500 px-1 py-0 text-[9px] font-extrabold text-rose-600 align-middle">퇴점</span>}
+                    </td>
+                    <td className="px-3 py-2 text-right font-mono text-slate-500">{st.subCount}</td>
+                    <td className="px-3 py-2 text-right font-mono font-bold">{st.closed ? "—" : mil(st.s)}</td>
+                    <td className="px-3 py-2 text-right font-mono">{st.closed ? "—" : mil(st.g)}</td>
+                    <td className="px-3 py-2 text-right font-mono text-slate-500">{st.closed ? "—" : `${st.gpm}%`}</td>
+                    <td className="px-3 py-2 text-right"><YoY pct={st.yoyPct} prev={st.ps} closed={st.closed} /></td>
+                  </tr>
+                  {open && st.bySub && st.bySub.length > 0 && (
+                    <tr className="bg-slate-50">
+                      <td></td>
+                      <td colSpan={6} className="px-3 py-2">
+                        <div className="mb-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400">브랜드별 상세 ({st.bySub.length})</div>
+                        <SubBreakdownTable rows={sortSub(st.bySub)} firstColLabel="브랜드" toggleS={toggleS} sArrow={sArrow} />
+                      </td>
+                    </tr>
+                  )}
+                </Fragment>
+              );
+            })}
+            {storeRows.length === 0 && <tr><td colSpan={7} className="px-3 py-8 text-center text-slate-400">지점 데이터 없음</td></tr>}
+          </tbody>
+        </table>
+        {storeRows.length > stVisible.length && (
+          <button onClick={() => setStLimit((l) => l + 10)}
+            className="w-full border-t-[2px] border-[#0a0a0a] bg-yellow-50 py-2.5 text-[12px] font-bold text-[#0a0a0a] hover:bg-yellow-100">
+            더 보기 (+10) · {stVisible.length}/{storeRows.length}
+          </button>
+        )}
+      </ScrollHint>
     </div>
+  );
+}
+
+// 드릴다운 하위 표 (브랜드→지점 / 지점→브랜드 공용)
+function SubBreakdownTable({ rows, firstColLabel, toggleS, sArrow }: {
+  rows: OffSubLite[]; firstColLabel: string;
+  toggleS: (k: SSortKey) => void; sArrow: (k: SSortKey) => string;
+}) {
+  return (
+    <ScrollHint>
+      <table className="w-full min-w-[720px] text-[11px]">
+        <thead className="text-slate-500 select-none">
+          <tr className="border-b border-slate-200">
+            <th className="px-2 py-1 text-left cursor-pointer hover:text-[#0a0a0a]" onClick={() => toggleS("key")}>{firstColLabel}{sArrow("key")}</th>
+            <th className="px-2 py-1 text-right cursor-pointer hover:text-[#0a0a0a]" onClick={() => toggleS("s")}>매출(백만){sArrow("s")}</th>
+            <th className="px-2 py-1 text-right cursor-pointer hover:text-[#0a0a0a]" onClick={() => toggleS("growthS")}>성장액(백만){sArrow("growthS")}</th>
+            <th className="px-2 py-1 text-right cursor-pointer hover:text-[#0a0a0a]" onClick={() => toggleS("growthPct")}>성장율{sArrow("growthPct")}</th>
+            <th className="px-2 py-1 text-right cursor-pointer hover:text-[#0a0a0a]" onClick={() => toggleS("g")}>매총익(백만){sArrow("g")}</th>
+            <th className="px-2 py-1 text-right cursor-pointer hover:text-[#0a0a0a]" onClick={() => toggleS("growthG")}>매총익성장액(백만){sArrow("growthG")}</th>
+            <th className="px-2 py-1 text-right cursor-pointer hover:text-[#0a0a0a]" onClick={() => toggleS("growthGPct")}>매총익성장율{sArrow("growthGPct")}</th>
+            <th className="px-2 py-1 text-right cursor-pointer hover:text-[#0a0a0a]" onClick={() => toggleS("area")}>전용면적{sArrow("area")}</th>
+            <th className="px-2 py-1 text-right cursor-pointer hover:text-[#0a0a0a]" onClick={() => toggleS("dppSales")}>일평당매출{sArrow("dppSales")}</th>
+            <th className="px-2 py-1 text-right cursor-pointer hover:text-[#0a0a0a]" onClick={() => toggleS("dppGp")}>일평당이익{sArrow("dppGp")}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((s) => (
+            <tr key={s.key} className={`border-b border-slate-100 ${s.closed ? "opacity-60" : ""}`}>
+              <td className="px-2 py-1 font-bold text-[#0a0a0a] whitespace-nowrap">
+                {s.key}
+                {s.closed && <span className="ml-1.5 border border-rose-500 px-1 py-0 text-[9px] font-extrabold text-rose-600 align-middle">퇴점</span>}
+              </td>
+              <td className="px-2 py-1 text-right font-mono font-bold">{s.closed ? "—" : mil(s.s)}</td>
+              <td className="px-2 py-1 text-right font-mono" style={{ color: s.ps === 0 ? "#7c3aed" : s.growthS >= 0 ? "#0d9e6e" : "#e53e3e" }}>{s.ps === 0 ? "—" : milSigned(s.growthS)}</td>
+              <td className="px-2 py-1 text-right"><YoY pct={s.growthPct} prev={s.ps} closed={s.closed} /></td>
+              <td className="px-2 py-1 text-right font-mono">{s.closed ? "—" : mil(s.g)}</td>
+              <td className="px-2 py-1 text-right font-mono" style={{ color: s.pg === 0 ? "#7c3aed" : s.growthG >= 0 ? "#0d9e6e" : "#e53e3e" }}>{s.pg === 0 ? "—" : milSigned(s.growthG)}</td>
+              <td className="px-2 py-1 text-right"><YoY pct={s.growthGPct} prev={s.pg} closed={s.closed} /></td>
+              <td className="px-2 py-1 text-right font-mono text-slate-500">{s.area ? `${s.area}평` : "—"}</td>
+              <td className="px-2 py-1 text-right font-mono text-slate-500">{s.dppSales ? won(s.dppSales) : "—"}</td>
+              <td className="px-2 py-1 text-right font-mono text-slate-500">{s.dppGp ? won(s.dppGp) : "—"}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </ScrollHint>
   );
 }
 
