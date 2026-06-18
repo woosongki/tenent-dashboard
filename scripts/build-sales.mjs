@@ -25,7 +25,25 @@ import { fileURLToPath } from "node:url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "..");
-const SRC_DIR = path.join(ROOT, "data/raw/sales-2026-05");
+
+// ── 기준월 인자 (--month YYYY-MM, 기본 2026-05) ──
+//   매월: data/raw/sales-YYYY-MM/{group-brand,store-brand}.csv 만 교체 후
+//   node scripts/build-sales.mjs --month 2026-06
+function argv(name, def = null) {
+  const i = process.argv.indexOf(name);
+  return i >= 0 ? process.argv[i + 1] : def;
+}
+const MONTH = argv("--month", "2026-05");
+if (!/^\d{4}-\d{2}$/.test(MONTH)) { console.error(`❌ --month 형식 오류: ${MONTH} (YYYY-MM)`); process.exit(1); }
+const [Y, M] = MONTH.split("-").map(Number);
+const lastDay = new Date(Y, M, 0).getDate();          // 해당 월 말일
+const mmEnd = String(lastDay).padStart(2, "0");
+const mm = String(M).padStart(2, "0");
+const PERIOD1 = `${Y}-01-01 - ${Y}-${mm}-${mmEnd}`;
+const PERIOD2 = `${Y - 1}-01-01 - ${Y - 1}-${mm}-${mmEnd}`;
+const SRC_LABEL = `라이프스타일 ${M}월누적 실적 (구매그룹·브랜드 / 지점·브랜드)`;
+
+const SRC_DIR = path.join(ROOT, `data/raw/sales-${MONTH}`);
 const F1 = path.join(SRC_DIR, "group-brand.csv");
 const F2 = path.join(SRC_DIR, "store-brand.csv");
 const OUT_PATH = path.join(ROOT, "data/sales/brand-sales.json");
@@ -234,9 +252,9 @@ async function main() {
     version: "1.0",
     compiledAt: new Date().toISOString().slice(0, 10),
     source: {
-      file: "라이프스타일 5월누적 실적 (구매그룹·브랜드 / 지점·브랜드)",
-      period1: "2026-01-01 - 2026-05-31",
-      period2: "2025-01-01 - 2025-05-31",
+      file: SRC_LABEL,
+      period1: PERIOD1,
+      period2: PERIOD2,
     },
     overallTotal,
     monthSummary,
