@@ -18,6 +18,7 @@ interface Props {
 
 const won = (n: number) => n.toLocaleString("ko-KR");
 const eok = (n: number) => (n / 1e8).toFixed(1);
+const mil = (n: number) => Math.round(n / 1e6).toLocaleString("ko-KR");   // 백만
 function YoY({ pct, prev, closed }: { pct: number; prev?: number; closed?: boolean }) {
   // 퇴점: 전년 실적은 있으나 올해 매출 없음
   if (closed) {
@@ -79,13 +80,13 @@ export default function OfflineTab(p: Props) {
       </div>
 
       {/* 부문별 요약 */}
-      <BarSection title={`부문별 매출 (${p.periodLabel})`} barColor="#a78bfa"
+      <BarSection title={`부문별 매출 (백만 · ${p.periodLabel})`} barColor="#a78bfa"
         rows={p.divisions.map((d) => ({ label: d.division, s: d.s, ps: d.ps, gpm: d.gpm, yoyPct: d.yoyPct }))}
         total={p.total} activeKey={div} onPick={(k) => setDiv(div === k ? null : k)} />
 
       {/* 패션 복종별 요약 */}
       {p.fashionCats.length > 0 && (
-        <BarSection title={`패션 복종별 매출 (${p.periodLabel})`} barColor="#f472b6"
+        <BarSection title={`패션 복종별 매출 (백만 · ${p.periodLabel})`} barColor="#f472b6"
           rows={p.fashionCats.map((c) => ({ label: c.cat, s: c.s, ps: c.ps, gpm: c.gpm, yoyPct: c.yoyPct }))}
           total={p.fashionCats.reduce((t, c) => t + c.s, 0)} activeKey={null} onPick={() => {}} />
       )}
@@ -140,8 +141,8 @@ export default function OfflineTab(p: Props) {
               <th className="px-3 py-2 text-left cursor-pointer hover:bg-white/10" onClick={() => toggleSort("key")}>{view === "brand" ? "브랜드" : "지점"}{arrow("key")}</th>
               <th className="px-3 py-2 text-right whitespace-nowrap">{view === "brand" ? "매장수" : "브랜드수"}</th>
               {view === "brand" && <th className="px-3 py-2 text-left">복종</th>}
-              <th className="px-3 py-2 text-right cursor-pointer hover:bg-white/10" onClick={() => toggleSort("s")}>매출{arrow("s")}</th>
-              <th className="px-3 py-2 text-right cursor-pointer hover:bg-white/10" onClick={() => toggleSort("g")}>이익{arrow("g")}</th>
+              <th className="px-3 py-2 text-right cursor-pointer hover:bg-white/10" onClick={() => toggleSort("s")}>매출(백만){arrow("s")}</th>
+              <th className="px-3 py-2 text-right cursor-pointer hover:bg-white/10" onClick={() => toggleSort("g")}>이익(백만){arrow("g")}</th>
               <th className="px-3 py-2 text-right cursor-pointer hover:bg-white/10" onClick={() => toggleSort("gpm")}>이익률{arrow("gpm")}</th>
               <th className="px-3 py-2 text-right cursor-pointer hover:bg-white/10" onClick={() => toggleSort("yoyPct")}>전년비{arrow("yoyPct")}</th>
             </tr>
@@ -189,8 +190,8 @@ const RankRow = memo(function RankRow({
         </td>
         <td className="px-3 py-2 text-right font-mono text-slate-500">{row.subCount}</td>
         {showCat && <td className="px-3 py-2 text-slate-500">{row.cat}</td>}
-        <td className="px-3 py-2 text-right font-mono font-bold">{row.closed ? "—" : won(row.s)}</td>
-        <td className="px-3 py-2 text-right font-mono">{row.closed ? "—" : won(row.g)}</td>
+        <td className="px-3 py-2 text-right font-mono font-bold">{row.closed ? "—" : mil(row.s)}</td>
+        <td className="px-3 py-2 text-right font-mono">{row.closed ? "—" : mil(row.g)}</td>
         <td className="px-3 py-2 text-right font-mono text-slate-500">{row.closed ? "—" : `${row.gpm}%`}</td>
         <td className="px-3 py-2 text-right"><YoY pct={row.yoyPct} prev={row.ps} closed={row.closed} /></td>
       </tr>
@@ -198,7 +199,7 @@ const RankRow = memo(function RankRow({
         <tr className="bg-slate-50">
           <td></td>
           <td colSpan={cols - 1} className="px-3 py-2">
-            <div className="mb-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400">{subLabel}별 매출 ({row.bySub.length})</div>
+            <div className="mb-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400">{subLabel}별 매출·이익 (백만, {row.bySub.length})</div>
             <div className="flex flex-col gap-1">
               {row.bySub.map((s) => {
                 const pct = row.s ? (s.s / row.s) * 100 : 0;
@@ -210,8 +211,8 @@ const RankRow = memo(function RankRow({
                     </span>
                     <div className="flex-1 h-2.5 bg-slate-200"><div className="h-full bg-violet-400" style={{ width: `${pct}%` }} /></div>
                     <span className="w-10 text-right font-mono text-slate-400">{s.closed ? "" : `${pct.toFixed(0)}%`}</span>
-                    <span className="w-24 text-right font-mono font-bold">{s.closed ? "—" : won(s.s)}</span>
-                    <span className="w-20 text-right font-mono text-slate-500">{s.closed ? "—" : won(s.g)}</span>
+                    <span className="w-24 text-right font-mono font-bold">{s.closed ? "—" : mil(s.s)}</span>
+                    <span className="w-20 text-right font-mono text-slate-500">{s.closed ? "—" : mil(s.g)}</span>
                   </div>
                 );
               })}
@@ -241,7 +242,7 @@ function BarSection({ title, barColor, rows, total, activeKey, onPick }: {
               <span className="w-16 shrink-0 truncate font-bold text-[#0a0a0a] sm:w-24">{d.label || "(미분류)"}</span>
               <div className="flex-1 min-w-[40px]"><div className="h-3 bg-slate-100"><div className="h-full" style={{ width: `${pct}%`, background: barColor }} /></div></div>
               <span className="hidden w-10 text-right font-mono text-slate-500 sm:inline">{pct.toFixed(0)}%</span>
-              <span className="w-20 text-right font-mono font-bold sm:w-24">{won(d.s)}</span>
+              <span className="w-20 text-right font-mono font-bold sm:w-24">{mil(d.s)}</span>
               <span className="hidden w-14 text-right font-mono text-slate-500 sm:inline">GPM{d.gpm}</span>
               <span className="w-14 text-right sm:w-16"><YoY pct={d.yoyPct} prev={d.ps} /></span>
             </button>

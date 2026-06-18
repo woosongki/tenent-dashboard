@@ -23,6 +23,8 @@ interface Props {
 const won = (n: number) => n.toLocaleString("ko-KR");
 /** 억 단위 (소수1) */
 const eok = (n: number) => (n / 1e8).toFixed(1);
+/** 백만 단위 */
+const mil = (n: number) => Math.round(n / 1e6).toLocaleString("ko-KR");
 function yoyBadge(pct: number, closed?: boolean) {
   if (closed) {
     return <span style={{ color: "#e53e3e", fontWeight: 700 }} title="전년 실적은 있으나 올해 매출 없음 (퇴점)">퇴점</span>;
@@ -77,13 +79,13 @@ export default function OnlineMonthTab(p: Props) {
         <SummaryCard label={`${p.ym} ${p.periodLabel ?? "온라인 매출"}`} value={`${eok(p.total)}억`} sub={`${won(p.total)}원`} accent />
         <SummaryCard label={`전년 (${p.prevYm})`} value={`${eok(p.prevTotal)}억`} sub={`${won(p.prevTotal)}원`} />
         <SummaryCard label="전년대비" value={`${p.yoyPct >= 0 ? "+" : ""}${p.yoyPct}%`}
-          sub={`${won(p.total - p.prevTotal)}원`} tone={p.yoyPct >= 0 ? "up" : "down"} />
+          sub={`${mil(p.total - p.prevTotal)}백만`} tone={p.yoyPct >= 0 ? "up" : "down"} />
       </div>
 
       {/* 채널별 요약 */}
       <div className="border-[2px] border-[#0a0a0a] bg-white">
         <div className="border-b-[2px] border-[#0a0a0a] bg-[#0a0a0a] px-3 py-2 text-[12px] font-bold text-white">
-          채널별 매출 ({p.ym})
+          채널별 매출 (백만 · {p.ym})
         </div>
         <div className="divide-y divide-slate-100">
           {p.channels.map((c) => {
@@ -97,7 +99,7 @@ export default function OnlineMonthTab(p: Props) {
                   </div>
                 </div>
                 <span className="hidden w-12 text-right font-mono text-slate-500 sm:inline">{pctOfTotal.toFixed(1)}%</span>
-                <span className="w-20 text-right font-mono font-bold sm:w-24">{won(c.s)}</span>
+                <span className="w-20 text-right font-mono font-bold sm:w-24">{mil(c.s)}</span>
                 <span className="w-14 text-right sm:w-20">{yoyBadge(c.yoyPct)}</span>
               </div>
             );
@@ -108,7 +110,7 @@ export default function OnlineMonthTab(p: Props) {
       {/* 복종별 요약 */}
       <div className="border-[2px] border-[#0a0a0a] bg-white">
         <div className="border-b-[2px] border-[#0a0a0a] bg-[#0a0a0a] px-3 py-2 text-[12px] font-bold text-white">
-          복종별 매출 ({p.ym})
+          복종별 매출 (백만 · {p.ym})
         </div>
         <div className="divide-y divide-slate-100">
           {p.cats.map((c) => {
@@ -122,7 +124,7 @@ export default function OnlineMonthTab(p: Props) {
                   </div>
                 </div>
                 <span className="hidden w-12 text-right font-mono text-slate-500 sm:inline">{pctOfTotal.toFixed(1)}%</span>
-                <span className="w-20 text-right font-mono font-bold sm:w-24">{won(c.s)}</span>
+                <span className="w-20 text-right font-mono font-bold sm:w-24">{mil(c.s)}</span>
                 <span className="w-14 text-right sm:w-20">{yoyBadge(c.yoyPct)}</span>
               </div>
             );
@@ -190,10 +192,10 @@ export default function OnlineMonthTab(p: Props) {
               </th>
               {view === "brand" && <th className="px-3 py-2 text-left">복종</th>}
               <th className="px-3 py-2 text-right cursor-pointer hover:bg-white/10" onClick={() => toggleSort("s")}>
-                {p.ym} 매출{arrow("s")}
+                {p.ym} 매출(백만){arrow("s")}
               </th>
               <th className="px-3 py-2 text-right cursor-pointer hover:bg-white/10" onClick={() => toggleSort("ps")}>
-                {p.prevYm}{arrow("ps")}
+                {p.prevYm}(백만){arrow("ps")}
               </th>
               <th className="px-3 py-2 text-right cursor-pointer hover:bg-white/10" onClick={() => toggleSort("yoyPct")}>
                 전년비{arrow("yoyPct")}
@@ -219,8 +221,8 @@ export default function OnlineMonthTab(p: Props) {
                       {r.closed && <span className="ml-1.5 border border-rose-500 px-1 py-0 text-[9px] font-extrabold text-rose-600 align-middle">퇴점</span>}
                     </td>
                     {view === "brand" && <td className="px-3 py-2 text-slate-500">{r.cat}</td>}
-                    <td className="px-3 py-2 text-right font-mono font-bold">{r.closed ? "—" : won(r.s)}</td>
-                    <td className="px-3 py-2 text-right font-mono text-slate-500">{won(r.ps)}</td>
+                    <td className="px-3 py-2 text-right font-mono font-bold">{r.closed ? "—" : mil(r.s)}</td>
+                    <td className="px-3 py-2 text-right font-mono text-slate-500">{mil(r.ps)}</td>
                     <td className="px-3 py-2 text-right">{yoyBadge(r.yoyPct, r.closed)}</td>
                     <td className="px-3 py-2 text-[11px] text-slate-600">
                       {r.byChannel.slice(0, 3).map((c) => `${c.channel} ${eok(c.s)}억`).join(" · ")}
@@ -231,7 +233,7 @@ export default function OnlineMonthTab(p: Props) {
                       <td></td>
                       <td colSpan={colCount - 1} className="px-3 py-2">
                         <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">
-                          {subLabel}별 매출 ({r.bySub.length})
+                          {subLabel}별 매출 (백만, {r.bySub.length})
                         </div>
                         <div className="flex flex-col gap-1">
                           {r.bySub.map((s) => {
@@ -246,7 +248,7 @@ export default function OnlineMonthTab(p: Props) {
                                   <div className="h-full bg-yellow-400" style={{ width: `${pct}%` }} />
                                 </div>
                                 <span className="w-10 text-right font-mono text-slate-400">{s.closed ? "" : `${pct.toFixed(0)}%`}</span>
-                                <span className="w-24 text-right font-mono font-bold">{s.closed ? "—" : won(s.s)}</span>
+                                <span className="w-24 text-right font-mono font-bold">{s.closed ? "—" : mil(s.s)}</span>
                               </div>
                             );
                           })}
