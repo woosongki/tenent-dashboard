@@ -58,10 +58,39 @@ export default function OfflineDetailTab(p: Props) {
   const [stExpanded, setStExpanded] = useState<string | null>(null);
   const [stLimit, setStLimit] = useState(10);
   const [stQ, setStQ] = useState("");
+  const [stSel, setStSel] = useState<Sel | null>(null);   // null = 전체 복종
+
+  // 선택 복종/부문 기준으로 지점별 데이터 구성 (detailBrands → 지점 피벗)
+  const storeData = useMemo<OffRank[]>(() => {
+    if (!stSel) return p.stores;   // 전체: 지점 전체 복종 합계
+    const selBrands = p.brands.filter((b) => stSel.type === "cat"
+      ? (b.division === "패션" && b.cat === stSel.key)
+      : b.division === stSel.key);
+    // 지점별로 해당 복종 브랜드들을 모음
+    const m = new Map<string, { s: number; ps: number; g: number; pg: number; subs: OffSubLite[] }>();
+    for (const b of selBrands) {
+      for (const sub of b.bySub ?? []) {
+        let e = m.get(sub.key);
+        if (!e) { e = { s: 0, ps: 0, g: 0, pg: 0, subs: [] }; m.set(sub.key, e); }
+        e.s += sub.s; e.ps += sub.ps; e.g += sub.g; e.pg += sub.pg;
+        e.subs.push({ ...sub, key: b.key });   // 하위 = 브랜드 (지점 내)
+      }
+    }
+    return [...m.entries()].map(([store, e]) => ({
+      key: store, s: e.s, ps: e.ps, g: e.g, pg: e.pg,
+      gpm: e.s ? +(e.g / e.s * 100).toFixed(1) : 0,
+      yoyPct: e.ps ? +((e.s - e.ps) / e.ps * 100).toFixed(1) : 0,
+      subCount: e.subs.filter((x) => x.s > 0).length,
+      dppSales: 0, dppGp: 0,
+      closed: e.s === 0 && e.ps > 0,
+      bySub: e.subs,
+    })).sort((a, b) => b.s - a.s);
+  }, [stSel, p.stores, p.brands]);
+
   const storeRows = useMemo(() => {
-    const base = stQ ? p.stores.filter((s) => s.key.includes(stQ)) : p.stores;
+    const base = stQ ? storeData.filter((s) => s.key.includes(stQ)) : storeData;
     return [...base].sort((a, b) => b.s - a.s);
-  }, [p.stores, stQ]);
+  }, [storeData, stQ]);
   const stVisible = storeRows.slice(0, stLimit);
 
   // 선택 카테고리 브랜드 (요약·칩 기준 — 검색 무관)
@@ -222,13 +251,31 @@ export default function OfflineDetailTab(p: Props) {
       </>)}
 
       {view === "store" && (<>
-      {/* 지점별 브랜드 상세 */}
-      <div className="flex items-center justify-end">
+      {/* 복종/부문 칩 (전체 + 각 복종) */}
+      <div className="flex flex-wrap gap-1.5">
+        <button onClick={() => { setStSel(null); setStExpanded(null); setStLimit(10); }}
+          className={`border-[2px] border-[#0a0a0a] px-3 py-1.5 text-[12px] font-bold transition ${!stSel ? "bg-[#0a0a0a] text-white shadow-[2px_2px_0_0_#0a0a0a]" : "bg-white hover:bg-slate-50"}`}>
+          전체
+        </button>
+        {chips.map((c) => {
+          const active = stSel?.type === c.type && stSel?.key === c.key;
+          const isFashion = c.type === "cat";
+          return (
+            <button key={`st-${c.type}-${c.key}`} onClick={() => { setStSel({ type: c.type, key: c.key }); setStExpanded(null); setStLimit(10); }}
+              className={`border-[2px] border-[#0a0a0a] px-3 py-1.5 text-[12px] font-bold transition ${active ? "text-white shadow-[2px_2px_0_0_#0a0a0a]" : "bg-white hover:bg-slate-50"}`}
+              style={active ? { background: isFashion ? "#db2777" : "#7c3aed" } : undefined}>
+              {c.label}
+            </button>
+          );
+        })}
+      </div>
+
+      <div className="flex items-center justify-between">
+        <p className="text-[11px] text-slate-500">지점을 클릭하면 {stSel ? "선택 복종" : "전 부문"} 입점 브랜드별 실적이 펼쳐집니다.</p>
         <input type="text" value={stQ} onChange={(e) => { setStQ(e.target.value); setStExpanded(null); setStLimit(10); }}
           placeholder="지점 검색"
           className="w-full max-w-[200px] border-[2px] border-[#0a0a0a] px-3 py-1.5 text-[12px] focus:outline-none focus:bg-yellow-50" />
       </div>
-      <p className="text-[11px] text-slate-500">지점을 클릭하면 입점 브랜드별 실적이 펼쳐집니다. (전 부문 통합)</p>
 
       <ScrollHint className="border-[2px] border-[#0a0a0a] bg-white">
         <table className="w-full min-w-[560px] text-[12px]">
