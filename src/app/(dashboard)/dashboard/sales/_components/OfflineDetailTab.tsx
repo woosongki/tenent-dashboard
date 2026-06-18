@@ -43,6 +43,7 @@ export default function OfflineDetailTab(p: Props) {
   const divChips = p.divisions.filter((d) => d.division !== "패션").map((d) => ({ type: "div" as const, key: d.division, label: d.division, s: d.s }));
   const chips = [...fashionChips, ...divChips];
 
+  const [view, setView] = useState<"brand" | "store">("brand");
   const [sel, setSel] = useState<Sel>(chips[0] ? { type: chips[0].type, key: chips[0].key } : { type: "div", key: "패션" });
   const [expanded, setExpanded] = useState<string | null>(null);
   const [limit, setLimit] = useState(20);
@@ -115,6 +116,19 @@ export default function OfflineDetailTab(p: Props) {
 
   return (
     <div className="space-y-4">
+      {/* 뷰 토글: 브랜드 / 지점 */}
+      <div className="flex gap-1.5">
+        <button onClick={() => setView("brand")}
+          className={`border-[2px] border-[#0a0a0a] px-4 py-1.5 text-[12px] font-bold transition ${view === "brand" ? "bg-yellow-300 shadow-[2px_2px_0_0_#0a0a0a]" : "bg-white hover:bg-yellow-50"}`}>
+          브랜드별
+        </button>
+        <button onClick={() => setView("store")}
+          className={`border-[2px] border-[#0a0a0a] px-4 py-1.5 text-[12px] font-bold transition ${view === "store" ? "bg-yellow-300 shadow-[2px_2px_0_0_#0a0a0a]" : "bg-white hover:bg-yellow-50"}`}>
+          지점별 ({p.stores.length})
+        </button>
+      </div>
+
+      {view === "brand" && (<>
       <p className="text-[11px] text-slate-500">복종(패션)·부문(F&B 등)을 선택해 상세 실적을 봅니다. 브랜드 클릭 시 지점별 매출이 펼쳐집니다.</p>
 
       {/* 카테고리 칩 */}
@@ -205,18 +219,16 @@ export default function OfflineDetailTab(p: Props) {
           </button>
         )}
       </ScrollHint>
+      </>)}
 
+      {view === "store" && (<>
       {/* 지점별 브랜드 상세 */}
-      <div className="flex items-center justify-between pt-2">
-        <div className="inline-flex items-center gap-2 border-[2px] border-[#0a0a0a] bg-yellow-300 px-3 py-1 shadow-[2px_2px_0_0_#0a0a0a]">
-          <h3 className="font-display text-[16px] leading-none text-[#0a0a0a]">지점별 브랜드 상세</h3>
-          <span className="font-mono text-[11px] font-extrabold tabular-nums text-[#0a0a0a]">{p.stores.length}</span>
-        </div>
+      <div className="flex items-center justify-end">
         <input type="text" value={stQ} onChange={(e) => { setStQ(e.target.value); setStExpanded(null); setStLimit(10); }}
           placeholder="지점 검색"
           className="w-full max-w-[200px] border-[2px] border-[#0a0a0a] px-3 py-1.5 text-[12px] focus:outline-none focus:bg-yellow-50" />
       </div>
-      <p className="text-[11px] text-slate-500">지점을 클릭하면 입점 브랜드별 실적이 펼쳐집니다.</p>
+      <p className="text-[11px] text-slate-500">지점을 클릭하면 입점 브랜드별 실적이 펼쳐집니다. (전 부문 통합)</p>
 
       <ScrollHint className="border-[2px] border-[#0a0a0a] bg-white">
         <table className="w-full min-w-[560px] text-[12px]">
@@ -270,6 +282,7 @@ export default function OfflineDetailTab(p: Props) {
           </button>
         )}
       </ScrollHint>
+      </>)}
     </div>
   );
 }
