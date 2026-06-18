@@ -225,7 +225,7 @@ export default function OnlineMonthTab(p: Props) {
                     <td className="px-3 py-2 text-right font-mono text-slate-500">{mil(r.ps)}</td>
                     <td className="px-3 py-2 text-right">{yoyBadge(r.yoyPct, r.closed)}</td>
                     <td className="px-3 py-2 text-[11px] text-slate-600">
-                      {r.byChannel.slice(0, 3).map((c) => `${c.channel} ${eok(c.s)}억`).join(" · ")}
+                      {r.byChannel.slice(0, 3).map((c) => `${c.channel} ${mil(c.s)}백만`).join(" · ")}
                     </td>
                   </tr>
                   {open && r.bySub && r.bySub.length > 0 && (

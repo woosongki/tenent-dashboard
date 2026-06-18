@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useMemo, useState } from "react";
+import { memo, useCallback, useMemo, useState } from "react";
 import ScrollHint from "@/components/ui/ScrollHint";
 import type { OffRank } from "@/lib/sales/queries";
 
@@ -121,17 +121,12 @@ export default function OfflineDetailTab(p: Props) {
     else { setBSort(k); setBDir(k === "key" ? "asc" : "desc"); }
     setExpanded(null); setLimit(20);
   }
-  function toggleS(k: SSortKey) {
-    if (sSort === k) setSDir((d) => d === "asc" ? "desc" : "asc");
-    else { setSSort(k); setSDir(k === "key" ? "asc" : "desc"); }
-  }
+  const toggleS = useCallback((k: SSortKey) => {
+    setSSort((cur) => { if (cur === k) { setSDir((d) => d === "asc" ? "desc" : "asc"); return cur; } setSDir(k === "key" ? "asc" : "desc"); return k; });
+  }, []);
+  const onToggleBrand = useCallback((key: string) => setExpanded((cur) => cur === key ? null : key), []);
+  const onToggleStore = useCallback((key: string) => setStExpanded((cur) => cur === key ? null : key), []);
   const bArrow = (k: BSortKey) => bSort === k ? (bDir === "asc" ? " ▲" : " ▼") : "";
-  const sArrow = (k: SSortKey) => sSort === k ? (sDir === "asc" ? " ▲" : " ▼") : "";
-  function sortSub(sub: OffSubLite[]) {
-    const dir = sDir === "asc" ? 1 : -1;
-    return [...sub].sort((a, b) =>
-      sSort === "key" ? a.key.localeCompare(b.key, "ko") * dir : ((a[sSort] as number) - (b[sSort] as number)) * dir);
-  }
 
   const summary = useMemo(() => {
     const s = catRows.reduce((t, r) => t + r.s, 0);
@@ -220,34 +215,10 @@ export default function OfflineDetailTab(p: Props) {
             </tr>
           </thead>
           <tbody>
-            {visible.map((r, i) => {
-              const open = expanded === r.key;
-              return (
-                <Fragment key={r.key}>
-                  <tr className={`border-t border-slate-100 ${r.closed ? "opacity-60" : "cursor-pointer hover:bg-yellow-50"} ${open ? "bg-yellow-50" : ""}`} onClick={() => { if (!r.closed) setExpanded(open ? null : r.key); }}>
-                    <td className="px-3 py-2 font-mono text-slate-400"><span className="mr-1 text-[9px]">{r.closed ? "" : open ? "▼" : "▶"}</span>{i + 1}</td>
-                    <td className="px-3 py-2 font-bold text-[#0a0a0a]">
-                      {r.key}
-                      {r.closed && <span className="ml-1.5 border border-rose-500 px-1 py-0 text-[9px] font-extrabold text-rose-600 align-middle">퇴점</span>}
-                    </td>
-                    <td className="px-3 py-2 text-right font-mono text-slate-500">{r.subCount}</td>
-                    <td className="px-3 py-2 text-right font-mono font-bold">{r.closed ? "—" : mil(r.s)}</td>
-                    <td className="px-3 py-2 text-right font-mono">{r.closed ? "—" : mil(r.g)}</td>
-                    <td className="px-3 py-2 text-right font-mono text-slate-500">{r.closed ? "—" : `${r.gpm}%`}</td>
-                    <td className="px-3 py-2 text-right"><YoY pct={r.yoyPct} prev={r.ps} closed={r.closed} /></td>
-                  </tr>
-                  {open && r.bySub && r.bySub.length > 0 && (
-                    <tr className="bg-slate-50">
-                      <td></td>
-                      <td colSpan={6} className="px-3 py-2">
-                        <div className="mb-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400">지점별 상세 ({r.bySub.length})</div>
-                        <SubBreakdownTable rows={sortSub(r.bySub)} firstColLabel="지점" toggleS={toggleS} sArrow={sArrow} />
-                      </td>
-                    </tr>
-                  )}
-                </Fragment>
-              );
-            })}
+            {visible.map((r, i) => (
+              <DetailRow key={r.key} row={r} rank={i + 1} firstColLabel="지점"
+                open={expanded === r.key} onToggle={onToggleBrand} sSort={sSort} sDir={sDir} toggleS={toggleS} />
+            ))}
             {rows.length === 0 && <tr><td colSpan={7} className="px-3 py-8 text-center text-slate-400">데이터 없음</td></tr>}
           </tbody>
         </table>
@@ -301,34 +272,10 @@ export default function OfflineDetailTab(p: Props) {
             </tr>
           </thead>
           <tbody>
-            {stVisible.map((st, i) => {
-              const open = stExpanded === st.key;
-              return (
-                <Fragment key={st.key}>
-                  <tr className={`border-t border-slate-100 ${st.closed ? "opacity-60" : "cursor-pointer hover:bg-yellow-50"} ${open ? "bg-yellow-50" : ""}`} onClick={() => { if (!st.closed) setStExpanded(open ? null : st.key); }}>
-                    <td className="px-3 py-2 font-mono text-slate-400"><span className="mr-1 text-[9px]">{st.closed ? "" : open ? "▼" : "▶"}</span>{i + 1}</td>
-                    <td className="px-3 py-2 font-bold text-[#0a0a0a]">
-                      {st.key}
-                      {st.closed && <span className="ml-1.5 border border-rose-500 px-1 py-0 text-[9px] font-extrabold text-rose-600 align-middle">퇴점</span>}
-                    </td>
-                    <td className="px-3 py-2 text-right font-mono text-slate-500">{st.subCount}</td>
-                    <td className="px-3 py-2 text-right font-mono font-bold">{st.closed ? "—" : mil(st.s)}</td>
-                    <td className="px-3 py-2 text-right font-mono">{st.closed ? "—" : mil(st.g)}</td>
-                    <td className="px-3 py-2 text-right font-mono text-slate-500">{st.closed ? "—" : `${st.gpm}%`}</td>
-                    <td className="px-3 py-2 text-right"><YoY pct={st.yoyPct} prev={st.ps} closed={st.closed} /></td>
-                  </tr>
-                  {open && st.bySub && st.bySub.length > 0 && (
-                    <tr className="bg-slate-50">
-                      <td></td>
-                      <td colSpan={6} className="px-3 py-2">
-                        <div className="mb-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400">브랜드별 상세 ({st.bySub.length})</div>
-                        <SubBreakdownTable rows={sortSub(st.bySub)} firstColLabel="브랜드" toggleS={toggleS} sArrow={sArrow} />
-                      </td>
-                    </tr>
-                  )}
-                </Fragment>
-              );
-            })}
+            {stVisible.map((st, i) => (
+              <DetailRow key={st.key} row={st} rank={i + 1} firstColLabel="브랜드"
+                open={stExpanded === st.key} onToggle={onToggleStore} sSort={sSort} sDir={sDir} toggleS={toggleS} />
+            ))}
             {storeRows.length === 0 && <tr><td colSpan={7} className="px-3 py-8 text-center text-slate-400">지점 데이터 없음</td></tr>}
           </tbody>
         </table>
@@ -345,10 +292,49 @@ export default function OfflineDetailTab(p: Props) {
 }
 
 // 드릴다운 하위 표 (브랜드→지점 / 지점→브랜드 공용)
-function SubBreakdownTable({ rows, firstColLabel, toggleS, sArrow }: {
-  rows: OffSubLite[]; firstColLabel: string;
-  toggleS: (k: SSortKey) => void; sArrow: (k: SSortKey) => string;
+// 브랜드/지점 공용 행 (메모 — 펼침 토글 시 해당 행만 리렌더)
+const DetailRow = memo(function DetailRow({ row, rank, firstColLabel, open, onToggle, sSort, sDir, toggleS }: {
+  row: OffRank; rank: number; firstColLabel: string; open: boolean;
+  onToggle: (key: string) => void; sSort: SSortKey; sDir: Dir; toggleS: (k: SSortKey) => void;
 }) {
+  const subTitle = firstColLabel === "지점" ? "지점별 상세" : "브랜드별 상세";
+  return (
+    <>
+      <tr className={`border-t border-slate-100 ${row.closed ? "opacity-60" : "cursor-pointer hover:bg-yellow-50"} ${open ? "bg-yellow-50" : ""}`} onClick={() => { if (!row.closed) onToggle(row.key); }}>
+        <td className="px-3 py-2 font-mono text-slate-400"><span className="mr-1 text-[9px]">{row.closed ? "" : open ? "▼" : "▶"}</span>{rank}</td>
+        <td className="px-3 py-2 font-bold text-[#0a0a0a]">
+          {row.key}
+          {row.closed && <span className="ml-1.5 border border-rose-500 px-1 py-0 text-[9px] font-extrabold text-rose-600 align-middle">퇴점</span>}
+        </td>
+        <td className="px-3 py-2 text-right font-mono text-slate-500">{row.subCount}</td>
+        <td className="px-3 py-2 text-right font-mono font-bold">{row.closed ? "—" : mil(row.s)}</td>
+        <td className="px-3 py-2 text-right font-mono">{row.closed ? "—" : mil(row.g)}</td>
+        <td className="px-3 py-2 text-right font-mono text-slate-500">{row.closed ? "—" : `${row.gpm}%`}</td>
+        <td className="px-3 py-2 text-right"><YoY pct={row.yoyPct} prev={row.ps} closed={row.closed} /></td>
+      </tr>
+      {open && row.bySub && row.bySub.length > 0 && (
+        <tr className="bg-slate-50">
+          <td></td>
+          <td colSpan={6} className="px-3 py-2">
+            <div className="mb-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400">{subTitle} ({row.bySub.length})</div>
+            <SubBreakdownTable bySub={row.bySub} firstColLabel={firstColLabel} sSort={sSort} sDir={sDir} toggleS={toggleS} />
+          </td>
+        </tr>
+      )}
+    </>
+  );
+});
+
+const SubBreakdownTable = memo(function SubBreakdownTable({ bySub, firstColLabel, sSort, sDir, toggleS }: {
+  bySub: OffSubLite[]; firstColLabel: string;
+  sSort: SSortKey; sDir: Dir; toggleS: (k: SSortKey) => void;
+}) {
+  const rows = useMemo(() => {
+    const dir = sDir === "asc" ? 1 : -1;
+    return [...bySub].sort((a, b) =>
+      sSort === "key" ? a.key.localeCompare(b.key, "ko") * dir : ((a[sSort] as number) - (b[sSort] as number)) * dir);
+  }, [bySub, sSort, sDir]);
+  const sArrow = (k: SSortKey) => sSort === k ? (sDir === "asc" ? " ▲" : " ▼") : "";
   return (
     <ScrollHint>
       <table className="w-full min-w-[720px] text-[11px]">
@@ -388,7 +374,7 @@ function SubBreakdownTable({ rows, firstColLabel, toggleS, sArrow }: {
       </table>
     </ScrollHint>
   );
-}
+});
 
 function Card({ label, value, sub, accent, tone }: { label: string; value: string; sub?: string; accent?: boolean; tone?: "up" | "down" }) {
   const color = tone === "up" ? "#0d9e6e" : tone === "down" ? "#e53e3e" : "#0a0a0a";
