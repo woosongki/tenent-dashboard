@@ -43,9 +43,16 @@ export default function OnlineMonthTab(p: Props) {
   const [view, setView] = useState<"brand" | "store">("brand");
   const [q, setQ] = useState("");
   const [expanded, setExpanded] = useState<string | null>(null);
+  const [subLimit, setSubLimit] = useState(10);   // 드릴다운 하위 표시 개수
   const [sortKey, setSortKey] = useState<SortKey>("s");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
   const [closedOnly, setClosedOnly] = useState(false);
+
+  // 행 펼치기/접기 (펼칠 때 하위 표시 10개로 초기화)
+  function toggleRow(key: string) {
+    setExpanded((cur) => (cur === key ? null : key));
+    setSubLimit(10);
+  }
 
   const rows = view === "brand" ? p.brands : p.stores;
   const closedCount = useMemo(() => rows.filter((r) => r.closed).length, [rows]);
@@ -211,7 +218,7 @@ export default function OnlineMonthTab(p: Props) {
                 <FragmentRow key={r.key}>
                   <tr
                     className={`border-t border-slate-100 ${r.closed ? "opacity-60" : "cursor-pointer hover:bg-yellow-50"} ${open ? "bg-yellow-50" : ""}`}
-                    onClick={() => { if (!r.closed) setExpanded(open ? null : r.key); }}
+                    onClick={() => { if (!r.closed) toggleRow(r.key); }}
                   >
                     <td className="px-3 py-2 font-mono text-slate-400">
                       <span className="mr-1 inline-block text-[9px] text-slate-400">{r.closed ? "" : open ? "▼" : "▶"}</span>{i + 1}
@@ -236,7 +243,7 @@ export default function OnlineMonthTab(p: Props) {
                           {subLabel}별 매출 (백만, {r.bySub.length})
                         </div>
                         <div className="flex flex-col gap-1">
-                          {r.bySub.map((s) => {
+                          {r.bySub.slice(0, subLimit).map((s) => {
                             const pct = r.s ? (s.s / r.s) * 100 : 0;
                             return (
                               <div key={s.key} className={`flex items-center gap-2 text-[11px] ${s.closed ? "opacity-60" : ""}`}>
@@ -252,6 +259,12 @@ export default function OnlineMonthTab(p: Props) {
                               </div>
                             );
                           })}
+                          {r.bySub.length > subLimit && (
+                            <button onClick={(e) => { e.stopPropagation(); setSubLimit((l) => l + 10); }}
+                              className="mt-1 w-full border border-slate-200 bg-white py-1.5 text-[11px] font-bold text-slate-600 hover:bg-slate-50">
+                              더 보기 (+10) · {Math.min(subLimit, r.bySub.length)}/{r.bySub.length}
+                            </button>
+                          )}
                         </div>
                       </td>
                     </tr>
