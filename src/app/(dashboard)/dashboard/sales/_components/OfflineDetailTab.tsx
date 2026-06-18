@@ -59,6 +59,8 @@ export default function OfflineDetailTab(p: Props) {
   const [stLimit, setStLimit] = useState(10);
   const [stQ, setStQ] = useState("");
   const [stSel, setStSel] = useState<Sel | null>(null);   // null = 전체 복종
+  const [stSort, setStSort] = useState<BSortKey>("s");    // 지점 랭킹 정렬
+  const [stDir, setStDir] = useState<Dir>("desc");
 
   // 선택 복종/부문 기준으로 지점별 데이터 구성 (detailBrands → 지점 피벗)
   const storeData = useMemo<OffRank[]>(() => {
@@ -89,9 +91,17 @@ export default function OfflineDetailTab(p: Props) {
 
   const storeRows = useMemo(() => {
     const base = stQ ? storeData.filter((s) => s.key.includes(stQ)) : storeData;
-    return [...base].sort((a, b) => b.s - a.s);
-  }, [storeData, stQ]);
+    const dir = stDir === "asc" ? 1 : -1;
+    return [...base].sort((a, b) =>
+      stSort === "key" ? a.key.localeCompare(b.key, "ko") * dir : ((a[stSort] as number) - (b[stSort] as number)) * dir);
+  }, [storeData, stQ, stSort, stDir]);
   const stVisible = storeRows.slice(0, stLimit);
+  function toggleSt(k: BSortKey) {
+    if (stSort === k) setStDir((d) => d === "asc" ? "desc" : "asc");
+    else { setStSort(k); setStDir(k === "key" ? "asc" : "desc"); }
+    setStExpanded(null); setStLimit(10);
+  }
+  const stArrow = (k: BSortKey) => stSort === k ? (stDir === "asc" ? " ▲" : " ▼") : "";
 
   // 선택 카테고리 브랜드 (요약·칩 기준 — 검색 무관)
   const catRows = useMemo(() =>
@@ -282,12 +292,12 @@ export default function OfflineDetailTab(p: Props) {
           <thead className="bg-[#0a0a0a] text-white select-none">
             <tr>
               <th className="px-3 py-2 text-left w-10">#</th>
-              <th className="px-3 py-2 text-left">지점</th>
-              <th className="px-3 py-2 text-right whitespace-nowrap">브랜드수</th>
-              <th className="px-3 py-2 text-right">매출(백만)</th>
-              <th className="px-3 py-2 text-right">매총익(백만)</th>
-              <th className="px-3 py-2 text-right">이익률</th>
-              <th className="px-3 py-2 text-right">전년비</th>
+              <th className="px-3 py-2 text-left cursor-pointer hover:bg-white/10" onClick={() => toggleSt("key")}>지점{stArrow("key")}</th>
+              <th className="px-3 py-2 text-right whitespace-nowrap cursor-pointer hover:bg-white/10" onClick={() => toggleSt("subCount")}>브랜드수{stArrow("subCount")}</th>
+              <th className="px-3 py-2 text-right cursor-pointer hover:bg-white/10" onClick={() => toggleSt("s")}>매출(백만){stArrow("s")}</th>
+              <th className="px-3 py-2 text-right cursor-pointer hover:bg-white/10" onClick={() => toggleSt("g")}>매총익(백만){stArrow("g")}</th>
+              <th className="px-3 py-2 text-right cursor-pointer hover:bg-white/10" onClick={() => toggleSt("gpm")}>이익률{stArrow("gpm")}</th>
+              <th className="px-3 py-2 text-right cursor-pointer hover:bg-white/10" onClick={() => toggleSt("yoyPct")}>전년비{stArrow("yoyPct")}</th>
             </tr>
           </thead>
           <tbody>
