@@ -220,10 +220,13 @@ export default function OfflineDetailTab(p: Props) {
             </tr>
           </thead>
           <tbody>
-            {visible.map((r, i) => (
-              <DetailRow key={r.key} row={r} rank={i + 1} firstColLabel="지점"
-                open={expanded === r.key} onToggle={onToggleBrand} sSort={sSort} sDir={sDir} toggleS={toggleS} />
-            ))}
+            {visible.map((r, i) => {
+              const id = `${r.division ?? ""}|${r.cat ?? ""}|${r.key}`;
+              return (
+                <DetailRow key={id} id={id} row={r} rank={i + 1} firstColLabel="지점"
+                  open={expanded === id} onToggle={onToggleBrand} sSort={sSort} sDir={sDir} toggleS={toggleS} />
+              );
+            })}
             {rows.length === 0 && <tr><td colSpan={7} className="px-3 py-8 text-center text-slate-400">데이터 없음</td></tr>}
           </tbody>
         </table>
@@ -278,7 +281,7 @@ export default function OfflineDetailTab(p: Props) {
           </thead>
           <tbody>
             {stVisible.map((st, i) => (
-              <DetailRow key={st.key} row={st} rank={i + 1} firstColLabel="브랜드"
+              <DetailRow key={st.key} id={st.key} row={st} rank={i + 1} firstColLabel="브랜드"
                 open={stExpanded === st.key} onToggle={onToggleStore} sSort={sSort} sDir={sDir} toggleS={toggleS} />
             ))}
             {storeRows.length === 0 && <tr><td colSpan={7} className="px-3 py-8 text-center text-slate-400">지점 데이터 없음</td></tr>}
@@ -298,14 +301,14 @@ export default function OfflineDetailTab(p: Props) {
 
 // 드릴다운 하위 표 (브랜드→지점 / 지점→브랜드 공용)
 // 브랜드/지점 공용 행 (메모 — 펼침 토글 시 해당 행만 리렌더)
-const DetailRow = memo(function DetailRow({ row, rank, firstColLabel, open, onToggle, sSort, sDir, toggleS }: {
-  row: OffRank; rank: number; firstColLabel: string; open: boolean;
-  onToggle: (key: string) => void; sSort: SSortKey; sDir: Dir; toggleS: (k: SSortKey) => void;
+const DetailRow = memo(function DetailRow({ row, id, rank, firstColLabel, open, onToggle, sSort, sDir, toggleS }: {
+  row: OffRank; id: string; rank: number; firstColLabel: string; open: boolean;
+  onToggle: (id: string) => void; sSort: SSortKey; sDir: Dir; toggleS: (k: SSortKey) => void;
 }) {
   const subTitle = firstColLabel === "지점" ? "지점별 상세" : "브랜드별 상세";
   return (
     <>
-      <tr className={`border-t border-slate-100 ${row.closed ? "opacity-60" : "cursor-pointer hover:bg-yellow-50"} ${open ? "bg-yellow-50" : ""}`} onClick={() => { if (!row.closed) onToggle(row.key); }}>
+      <tr className={`border-t border-slate-100 ${row.closed ? "opacity-60" : "cursor-pointer hover:bg-yellow-50"} ${open ? "bg-yellow-50" : ""}`} onClick={() => { if (!row.closed) onToggle(id); }}>
         <td className="px-3 py-2 font-mono text-slate-400"><span className="mr-1 text-[9px]">{row.closed ? "" : open ? "▼" : "▶"}</span>{rank}</td>
         <td className="px-3 py-2 font-bold text-[#0a0a0a]">
           {row.key}
