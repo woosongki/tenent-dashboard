@@ -24,41 +24,49 @@ export const TIER_ORDER: Record<Tier, number> = {
 
 export const ALL_TIERS: Tier[] = ["동일상권", "인접상권", "근접권", "별도상권"];
 
+// 모든 마커는 28x28 투명 wrapper 안에 시인용 div를 배치 — 마커 근처에 커서가 가도 hover/tooltip이 트리거되도록 hit-area를 넓힘.
+// 시인 크기는 종전 대비 약간 키워 클릭 타깃을 키움.
+const HIT = 28;
+const HALF = HIT / 2;
+function wrap(inner: string) {
+  return `<div style="width:${HIT}px;height:${HIT}px;display:flex;align-items:center;justify-content:center;">${inner}</div>`;
+}
+
 // 다이아몬드 모양 이랜드 마커
 export const elandIcon = L.divIcon({
   className: "",
-  html: `<div style="width:14px;height:14px;background:#4cc9f0;border:2px solid #fff;transform:rotate(45deg);box-shadow:0 2px 6px rgba(0,0,0,.4)"></div>`,
-  iconSize: [14, 14],
-  iconAnchor: [7, 7],
+  html: wrap(`<div style="width:16px;height:16px;background:#4cc9f0;border:2px solid #fff;transform:rotate(45deg);box-shadow:0 2px 6px rgba(0,0,0,.4)"></div>`),
+  iconSize: [HIT, HIT],
+  iconAnchor: [HALF, HALF],
 });
 
 // 체인 매장 마커 (브랜드 컬러)
 export const artboxIcon = L.divIcon({
   className: "",
-  html: `<div style="width:10px;height:10px;background:#f72585;border:1.5px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.35)"></div>`,
-  iconSize: [10, 10],
-  iconAnchor: [5, 5],
+  html: wrap(`<div style="width:13px;height:13px;background:#f72585;border:1.5px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.35)"></div>`),
+  iconSize: [HIT, HIT],
+  iconAnchor: [HALF, HALF],
 });
 export const daisoIcon = L.divIcon({
   className: "",
-  html: `<div style="width:10px;height:10px;background:#f9c74f;border:1.5px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.35)"></div>`,
-  iconSize: [10, 10],
-  iconAnchor: [5, 5],
+  html: wrap(`<div style="width:13px;height:13px;background:#f9c74f;border:1.5px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.35)"></div>`),
+  iconSize: [HIT, HIT],
+  iconAnchor: [HALF, HALF],
 });
 export const oliveyoungIcon = L.divIcon({
   className: "",
-  html: `<div style="width:10px;height:10px;background:#52b788;border:1.5px solid #fff;border-radius:50%;box-shadow:0 1px 4px rgba(0,0,0,.35)"></div>`,
-  iconSize: [10, 10],
-  iconAnchor: [5, 5],
+  html: wrap(`<div style="width:13px;height:13px;background:#52b788;border:1.5px solid #fff;border-radius:50%;box-shadow:0 1px 4px rgba(0,0,0,.35)"></div>`),
+  iconSize: [HIT, HIT],
+  iconAnchor: [HALF, HALF],
 });
 
 // 백화점 — 사각형 + 글자 라벨 (앵커 매장이라 더 크게)
 function makeDeptIcon(letter: string, bg: string) {
   return L.divIcon({
     className: "",
-    html: `<div style="width:16px;height:16px;background:${bg};border:2px solid #fff;display:flex;align-items:center;justify-content:center;color:#fff;font-size:9px;font-weight:800;box-shadow:0 2px 6px rgba(0,0,0,.4)">${letter}</div>`,
-    iconSize: [16, 16],
-    iconAnchor: [8, 8],
+    html: wrap(`<div style="width:18px;height:18px;background:${bg};border:2px solid #fff;display:flex;align-items:center;justify-content:center;color:#fff;font-size:10px;font-weight:800;box-shadow:0 2px 6px rgba(0,0,0,.4)">${letter}</div>`),
+    iconSize: [HIT, HIT],
+    iconAnchor: [HALF, HALF],
   });
 }
 export const lotteIcon     = makeDeptIcon("L", "#a4133c");  // 와인 레드
@@ -67,13 +75,13 @@ export const shinsegaeIcon = makeDeptIcon("S", "#495057");  // 다크 그레이
 export const akIcon        = makeDeptIcon("AK","#6f1d77");  // AK 보라
 export const galleriaIcon  = makeDeptIcon("G", "#2d5016");  // 갤러리아 다크그린
 
-// 그 외 — 작은 사각 7px
+// 그 외 — 작은 사각
 function makeSmallSquareIcon(bg: string) {
   return L.divIcon({
     className: "",
-    html: `<div style="width:8px;height:8px;background:${bg};border:1.5px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.3)"></div>`,
-    iconSize: [8, 8],
-    iconAnchor: [4, 4],
+    html: wrap(`<div style="width:11px;height:11px;background:${bg};border:1.5px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.3)"></div>`),
+    iconSize: [HIT, HIT],
+    iconAnchor: [HALF, HALF],
   });
 }
 export const entersixIcon = makeSmallSquareIcon("#ff6f3c");
@@ -83,13 +91,13 @@ export const lfIcon       = makeSmallSquareIcon("#a08260");
 export const saturIcon    = makeSmallSquareIcon("#7c3aed"); // 보라 — 세터
 export const modernhouseIcon = makeSmallSquareIcon("#6a2c70"); // 자줏빛 보라 — 모던하우스
 
-// 마트 — 원형 10px (백화점보다 작게, 체인보다 약간 큼)
+// 마트 — 원형 (백화점보다 작게, 체인보다 약간 큼)
 function makeCircleIcon(bg: string) {
   return L.divIcon({
     className: "",
-    html: `<div style="width:11px;height:11px;background:${bg};border:2px solid #fff;border-radius:50%;box-shadow:0 1px 4px rgba(0,0,0,.35)"></div>`,
-    iconSize: [11, 11],
-    iconAnchor: [5.5, 5.5],
+    html: wrap(`<div style="width:14px;height:14px;background:${bg};border:2px solid #fff;border-radius:50%;box-shadow:0 1px 4px rgba(0,0,0,.35)"></div>`),
+    iconSize: [HIT, HIT],
+    iconAnchor: [HALF, HALF],
   });
 }
 export const emartIcon      = makeCircleIcon("#ffc107"); // 노랑

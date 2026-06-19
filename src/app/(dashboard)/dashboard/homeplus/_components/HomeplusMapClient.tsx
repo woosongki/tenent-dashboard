@@ -675,7 +675,7 @@ export default function HomeplusMapClient() {
 
           {/* 홈플 마커 */}
           {filtered.map((s) => {
-            const radius = 8 + Math.min(s.total_brands, 18) / 1.5;
+            const radius = 10 + Math.min(s.total_brands, 18) / 1.5;
             const isSel = selected?.name === s.name;
             return (
               <CircleMarker
@@ -692,7 +692,7 @@ export default function HomeplusMapClient() {
                   click: () => selectHomeplus(s),
                 }}
               >
-                <Tooltip direction="top" offset={[0, -radius]}>
+                <Tooltip direction="top" offset={[0, -radius]} sticky>
                   <div style={{ minWidth: 180 }}>
                     <div style={{ fontWeight: 700, fontSize: 13 }}>
                       홈플 {s.name}
@@ -953,7 +953,7 @@ function ChainMarker({
 }) {
   return (
     <Marker position={[store.lat, store.lng]} icon={icon}>
-      <Tooltip direction="top" offset={[0, -offsetY]}>
+      <Tooltip direction="top" offset={[0, -offsetY]} sticky>
         <div style={{ minWidth: 180 }}>
           <div style={{ fontWeight: 700, fontSize: 12, color }}>
             {emoji ? `${emoji} ` : ""}{store.name}
