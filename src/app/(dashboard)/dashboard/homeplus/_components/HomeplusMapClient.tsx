@@ -13,7 +13,7 @@ import {
   Popup,
 } from "react-leaflet";
 import FlyToTarget, { type FlyTarget } from "./FlyToTarget";
-import { nearestEland } from "./nearestEland";
+import { nearestEland, type NearestEland } from "./nearestEland";
 import type { ChainStore } from "@/data/artbox";
 import type { Icon, DivIcon } from "leaflet";
 import {
@@ -68,24 +68,23 @@ import { EMART_STORES } from "@/data/emart";
 import { LOTTEMART_STORES } from "@/data/lottemart";
 import { HANAROMART_STORES } from "@/data/hanaromart";
 
+// 거리(km) → 상권 tier. 홈플 데이터(tier 사전계산)와 같은 임계값 사용.
+function tierFromDistance(km: number): Tier {
+  if (km <= 1) return "동일상권";
+  if (km <= 3) return "인접상권";
+  if (km <= 5) return "근접권";
+  return "별도상권";
+}
+
 export default function HomeplusMapClient() {
   // URL ?layer=X 로 진입한 체인 레이어 자동 활성화 (사이드바 하위 메뉴)
   const searchParams = useSearchParams();
   const initialLayer = searchParams?.get("layer") ?? "";
 
-  // 체인 메뉴(아트박스/다이소/올리브영)로 진입했으면 홈플 33점은 기본 OFF.
-  // 홈플 메뉴 또는 쿼리 없음(기본 진입)은 4개 tier 모두 ON.
-  const CHAIN_LAYERS = [
-    "artbox","daiso","oliveyoung",
-    "lotte","hyundai","shinsegae","ak","galleria",
-    "entersix","moda","savezone","lf","satur","modernhouse",
-    "emart","lottemart","hanaromart",
-  ];
-  const isChainView = CHAIN_LAYERS.includes(initialLayer);
-
-  const [activeTiers, setActiveTiers] = useState<Set<Tier>>(
-    isChainView ? new Set() : new Set(ALL_TIERS),
-  );
+  // 상권 필터는 항상 4개 tier 기본 ON — 홈플/타 체인 매장 모두에 동일하게 적용.
+  // 홈플 33점 가시성은 별도 토글(showHomeplus)로 분리 → 마트 섹션 체크박스로 단독 제어.
+  const [activeTiers, setActiveTiers] = useState<Set<Tier>>(new Set(ALL_TIERS));
+  const [showHomeplus, setShowHomeplus] = useState(initialLayer === "homeplus");
   const [selected, setSelected] = useState<HomeplusStore | null>(null);
   const [showLines, setShowLines] = useState(true);
   const [showEland, setShowEland] = useState(true);
@@ -127,8 +126,10 @@ export default function HomeplusMapClient() {
   // 모바일 필터 드로어
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
 
-  // 사이드바 하위 메뉴 클릭으로 layer가 바뀌면 토글/tier 자동 동기화.
+  // 사이드바 하위 메뉴 클릭으로 layer가 바뀌면 가시성 토글 동기화.
+  // activeTiers는 사용자가 직접 조정한 상태를 보존(레이어 전환 시 리셋 안 함).
   useEffect(() => {
+    setShowHomeplus(initialLayer === "homeplus");
     setShowArtbox(initialLayer === "artbox");
     setShowDaiso(initialLayer === "daiso");
     setShowOliveYoung(initialLayer === "oliveyoung");
@@ -146,9 +147,7 @@ export default function HomeplusMapClient() {
     setShowEmart(initialLayer === "emart");
     setShowLottemart(initialLayer === "lottemart");
     setShowHanaromart(initialLayer === "hanaromart");
-    // 체인 뷰 → 홈플 tier 모두 OFF / 홈플 뷰 → 모두 ON
-    setActiveTiers(isChainView ? new Set() : new Set(ALL_TIERS));
-  }, [initialLayer, isChainView]);
+  }, [initialLayer]);
   // 클릭한 점포 좌표로 지도 이동 트리거. key를 매번 새로 만들어 같은 점포 재클릭도 동작.
   const [flyTarget, setFlyTarget] = useState<FlyTarget | null>(null);
   // 고유 key 생성용 단조 증가 카운터 (렌더 순수성 위해 Date.now() 대신 ref 사용)
@@ -165,9 +164,54 @@ export default function HomeplusMapClient() {
   }
 
   const filtered = useMemo(
-    () => HOMEPLUS_STORES.filter((s) => activeTiers.has(s.tier)),
-    [activeTiers],
+    () =>
+      showHomeplus
+        ? HOMEPLUS_STORES.filter((s) => activeTiers.has(s.tier))
+        : [],
+    [activeTiers, showHomeplus],
   );
+
+  // 체인/백화점/그외/마트 매장 통합 처리: 가시성 + 최근접 이랜드 거리 + tier 계산 + 상권필터/공백지필터 적용.
+  // 결과는 마커/매칭선 양쪽에서 공유.
+  const chainLayers = useMemo(() => {
+    const cfgs = [
+      { show: showArtbox,      stores: ARTBOX_STORES,      icon: artboxIcon,      color: "#c1166b", emoji: "🎨", k: "artbox", off: 5 },
+      { show: showDaiso,       stores: DAISO_STORES,       icon: daisoIcon,       color: "#b88a00", emoji: "🛒", k: "daiso", off: 5 },
+      { show: showOliveYoung,  stores: OLIVEYOUNG_STORES,  icon: oliveyoungIcon,  color: "#2d6a4f", emoji: "💄", k: "oy", off: 5 },
+      { show: showLotte,       stores: LOTTE_STORES,       icon: lotteIcon,       color: "#a4133c", emoji: "🏬", k: "lotte", off: 8, dbNote: true },
+      { show: showHyundai,     stores: HYUNDAI_STORES,     icon: hyundaiIcon,     color: "#1d3557", emoji: "🏬", k: "hyundai", off: 8, dbNote: true },
+      { show: showShinsegae,   stores: SHINSEGAE_STORES,   icon: shinsegaeIcon,   color: "#495057", emoji: "🏬", k: "ss", off: 8, dbNote: true },
+      { show: showAk,          stores: AK_STORES,          icon: akIcon,          color: "#6f1d77", emoji: "🏬", k: "ak", off: 8, dbNote: true },
+      { show: showGalleria,    stores: GALLERIA_STORES,    icon: galleriaIcon,    color: "#2d5016", emoji: "🏬", k: "gl", off: 8, dbNote: true },
+      { show: showEntersix,    stores: ENTERSIX_STORES,    icon: entersixIcon,    color: "#cc5429", emoji: "", k: "es", off: 4 },
+      { show: showModa,        stores: MODA_STORES,        icon: modaIcon,        color: "#007a6e", emoji: "", k: "md", off: 4 },
+      { show: showSavezone,    stores: SAVEZONE_STORES,    icon: savezoneIcon,    color: "#6e7a2e", emoji: "", k: "sv", off: 4 },
+      { show: showLf,          stores: LF_STORES,          icon: lfIcon,          color: "#6e5538", emoji: "🛍️", k: "lf", off: 4 },
+      { show: showSatur,       stores: SATUR_STORES,       icon: saturIcon,       color: "#5b21b6", emoji: "👜", k: "sa", off: 4 },
+      { show: showModernhouse, stores: MODERNHOUSE_STORES, icon: modernhouseIcon, color: "#6a2c70", emoji: "🏡", k: "mh", off: 4 },
+      { show: showEmart,       stores: EMART_STORES,       icon: emartIcon,       color: "#b88a00", emoji: "🛒", k: "em", off: 6 },
+      { show: showLottemart,   stores: LOTTEMART_STORES,   icon: lottemartIcon,   color: "#a01a1a", emoji: "🛒", k: "lm", off: 6 },
+      { show: showHanaromart,  stores: HANAROMART_STORES,  icon: hanaromartIcon,  color: "#1f4d3a", emoji: "🛒", k: "hm", off: 6 },
+    ] as ChainLayerCfg[];
+    return cfgs.map((c) => {
+      if (!c.show) return { cfg: c, items: [] as EnrichedChainItem[] };
+      const items: EnrichedChainItem[] = [];
+      for (const s of c.stores) {
+        const near = nearestEland(s.lat, s.lng);
+        const tier: Tier = near ? tierFromDistance(near.distanceKm) : "별도상권";
+        if (!activeTiers.has(tier)) continue;
+        if (gapMode && near && near.distanceKm <= gapRadius) continue;
+        items.push({ store: s, near, tier });
+      }
+      return { cfg: c, items };
+    });
+  }, [
+    showArtbox, showDaiso, showOliveYoung,
+    showLotte, showHyundai, showShinsegae, showAk, showGalleria,
+    showEntersix, showModa, showSavezone, showLf, showSatur, showModernhouse,
+    showEmart, showLottemart, showHanaromart,
+    activeTiers, gapMode, gapRadius,
+  ]);
 
   const sortedAll = useMemo(
     () =>
@@ -201,10 +245,10 @@ export default function HomeplusMapClient() {
         <div className="flex items-center justify-between border-b-[3px] border-[#0a0a0a] px-4 py-3">
           <div>
             <div className="font-display text-[18px] leading-none text-[#0a0a0a]">
-              홈플 영업중단 33점
+              리테일 지도
             </div>
             <div className="mt-1 text-[10px] font-bold uppercase tracking-[.14em] text-slate-500">
-              총 {TOTAL_BRANDS}개 브랜드
+              상권 분석 · 이랜드 매칭
             </div>
           </div>
           <button onClick={() => setMobileFilterOpen(false)}
@@ -486,8 +530,8 @@ export default function HomeplusMapClient() {
               <label className="flex cursor-pointer items-center gap-1.5" title="홈플러스 영업중단 점포 전체 ON/OFF — 세부 tier는 상단 상권 필터에서 조정">
                 <input
                   type="checkbox"
-                  checked={activeTiers.size > 0}
-                  onChange={(e) => setActiveTiers(e.target.checked ? new Set(ALL_TIERS) : new Set())}
+                  checked={showHomeplus}
+                  onChange={(e) => setShowHomeplus(e.target.checked)}
                   className="h-3.5 w-3.5"
                 />
                 <span className="inline-block h-2.5 w-2.5 rounded-full" style={{ background: "#0a0a0a" }} />
@@ -513,9 +557,14 @@ export default function HomeplusMapClient() {
           </div>
         </div>
 
-        {/* 점포 카드 리스트 */}
+        {/* 점포 카드 리스트 — 홈플 영업중단 33점이 활성화된 경우에만 노출 */}
         <div className="flex-1 overflow-y-auto p-2">
-          {sortedAll
+          {showHomeplus && (
+            <div className="mb-2 border-[2px] border-[#0a0a0a] bg-yellow-50 px-2 py-1 text-[10px] font-extrabold uppercase tracking-[.12em] text-slate-600">
+              홈플 영업중단 33점 · 총 {TOTAL_BRANDS}개 브랜드
+            </div>
+          )}
+          {showHomeplus && sortedAll
             .filter((s) => activeTiers.has(s.tier))
             .map((s) => {
               const isSel = selected?.name === s.name;
@@ -578,7 +627,7 @@ export default function HomeplusMapClient() {
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
 
-          {/* 매칭 라인 */}
+          {/* 매칭 라인 — 홈플 */}
           {showLines &&
             filtered
               .filter((s) => s.tier !== "별도상권")
@@ -601,6 +650,28 @@ export default function HomeplusMapClient() {
                   />
                 );
               })}
+
+          {/* 매칭 라인 — 기타 체인/백화점/마트 (최근접 이랜드로 연결, 별도상권 제외) */}
+          {showLines &&
+            chainLayers.flatMap((layer) =>
+              layer.items
+                .filter((it) => it.tier !== "별도상권" && it.near)
+                .map((it) => (
+                  <Polyline
+                    key={`line-${layer.cfg.k}-${it.store.id}`}
+                    positions={[
+                      [it.store.lat, it.store.lng],
+                      [it.near!.store.lat, it.near!.store.lng],
+                    ]}
+                    pathOptions={{
+                      color: TIER_COLOR[it.tier],
+                      weight: it.tier === "동일상권" ? 2.5 : 1.5,
+                      opacity: 0.4,
+                      dashArray: it.tier === "근접권" ? "4,6" : undefined,
+                    }}
+                  />
+                )),
+            )}
 
           {/* 홈플 마커 */}
           {filtered.map((s) => {
@@ -665,35 +736,20 @@ export default function HomeplusMapClient() {
             ))}
 
           {/* ── 체인/백화점/그외/마트 매장 (최근접 이랜드 거리 툴팁 포함) ── */}
-          {([
-            { show: showArtbox,      stores: ARTBOX_STORES,      icon: artboxIcon,      color: "#c1166b", emoji: "🎨", k: "artbox", off: 5 },
-            { show: showDaiso,       stores: DAISO_STORES,       icon: daisoIcon,       color: "#b88a00", emoji: "🛒", k: "daiso", off: 5 },
-            { show: showOliveYoung,  stores: OLIVEYOUNG_STORES,  icon: oliveyoungIcon,  color: "#2d6a4f", emoji: "💄", k: "oy", off: 5 },
-            { show: showLotte,       stores: LOTTE_STORES,       icon: lotteIcon,       color: "#a4133c", emoji: "🏬", k: "lotte", off: 8, dbNote: true },
-            { show: showHyundai,     stores: HYUNDAI_STORES,     icon: hyundaiIcon,     color: "#1d3557", emoji: "🏬", k: "hyundai", off: 8, dbNote: true },
-            { show: showShinsegae,   stores: SHINSEGAE_STORES,   icon: shinsegaeIcon,   color: "#495057", emoji: "🏬", k: "ss", off: 8, dbNote: true },
-            { show: showAk,          stores: AK_STORES,          icon: akIcon,          color: "#6f1d77", emoji: "🏬", k: "ak", off: 8, dbNote: true },
-            { show: showGalleria,    stores: GALLERIA_STORES,    icon: galleriaIcon,    color: "#2d5016", emoji: "🏬", k: "gl", off: 8, dbNote: true },
-            { show: showEntersix,    stores: ENTERSIX_STORES,    icon: entersixIcon,    color: "#cc5429", emoji: "", k: "es", off: 4 },
-            { show: showModa,        stores: MODA_STORES,        icon: modaIcon,        color: "#007a6e", emoji: "", k: "md", off: 4 },
-            { show: showSavezone,    stores: SAVEZONE_STORES,    icon: savezoneIcon,    color: "#6e7a2e", emoji: "", k: "sv", off: 4 },
-            { show: showLf,          stores: LF_STORES,          icon: lfIcon,          color: "#6e5538", emoji: "🛍️", k: "lf", off: 4 },
-            { show: showSatur,       stores: SATUR_STORES,       icon: saturIcon,       color: "#5b21b6", emoji: "👜", k: "sa", off: 4 },
-            { show: showModernhouse, stores: MODERNHOUSE_STORES, icon: modernhouseIcon, color: "#6a2c70", emoji: "🏡", k: "mh", off: 4 },
-            { show: showEmart,       stores: EMART_STORES,       icon: emartIcon,       color: "#b88a00", emoji: "🛒", k: "em", off: 6 },
-            { show: showLottemart,   stores: LOTTEMART_STORES,   icon: lottemartIcon,   color: "#a01a1a", emoji: "🛒", k: "lm", off: 6 },
-            { show: showHanaromart,  stores: HANAROMART_STORES,  icon: hanaromartIcon,  color: "#1f4d3a", emoji: "🛒", k: "hm", off: 6 },
-          ] as ChainLayerCfg[]).map((c) =>
-            c.show
-              ? c.stores.map((s) => (
-                  <ChainMarker
-                    key={`${c.k}-${s.id}`}
-                    store={s} icon={c.icon} color={c.color} emoji={c.emoji}
-                    offsetY={c.off} dbNote={c.dbNote}
-                    gapRadius={gapMode ? gapRadius : null}
-                  />
-                ))
-              : null,
+          {chainLayers.map((layer) =>
+            layer.items.map((it) => (
+              <ChainMarker
+                key={`${layer.cfg.k}-${it.store.id}`}
+                store={it.store}
+                icon={layer.cfg.icon}
+                color={layer.cfg.color}
+                emoji={layer.cfg.emoji}
+                offsetY={layer.cfg.off}
+                dbNote={layer.cfg.dbNote}
+                near={it.near}
+                tier={it.tier}
+              />
+            )),
           )}
 
           {/* 클릭한 점포로 지도 이동 */}
@@ -865,7 +921,7 @@ export default function HomeplusMapClient() {
   );
 }
 
-// ── 체인 매장 마커 (최근접 이랜드 거리 툴팁) ──
+// ── 체인 매장 마커 (최근접 이랜드 거리 + 상권 tier 툴팁) ──
 interface ChainLayerCfg {
   show: boolean;
   stores: ChainStore[];
@@ -877,8 +933,14 @@ interface ChainLayerCfg {
   dbNote?: boolean;
 }
 
+interface EnrichedChainItem {
+  store: ChainStore;
+  near: NearestEland | null;
+  tier: Tier;
+}
+
 function ChainMarker({
-  store, icon, color, emoji, offsetY, dbNote, gapRadius,
+  store, icon, color, emoji, offsetY, dbNote, near, tier,
 }: {
   store: ChainStore;
   icon: Icon | DivIcon;
@@ -886,11 +948,9 @@ function ChainMarker({
   emoji: string;
   offsetY: number;
   dbNote?: boolean;
-  gapRadius?: number | null;  // 설정 시 이 반경(km) 이내 이랜드 있으면 숨김
+  near: NearestEland | null;
+  tier: Tier;
 }) {
-  const near = nearestEland(store.lat, store.lng);
-  // 공백지 모드: 반경 내 이랜드가 있으면 렌더 안 함
-  if (gapRadius != null && near && near.distanceKm <= gapRadius) return null;
   return (
     <Marker position={[store.lat, store.lng]} icon={icon}>
       <Tooltip direction="top" offset={[0, -offsetY]}>
@@ -901,7 +961,9 @@ function ChainMarker({
           <div style={{ fontSize: 10, color: "#666", marginTop: 2 }}>{store.addr}</div>
           {near && (
             <div style={{ fontSize: 10, marginTop: 4, paddingTop: 4, borderTop: "1px solid #eee" }}>
-              <span style={{ color: "#888" }}>최근접 이랜드 </span>
+              <span style={{ display: "inline-block", padding: "1px 5px", marginRight: 4, fontSize: 9, fontWeight: 800, color: tier === "별도상권" ? "#fff" : "#0a0a0a", background: TIER_COLOR[tier] }}>
+                {TIER_LABEL[tier]}
+              </span>
               <b style={{ color: "#0891b2" }}>{near.store.brand} {near.store.name}</b>
               <span style={{ color: "#0a0a0a", fontWeight: 700 }}> · {near.distanceKm.toFixed(2)}km</span>
             </div>
