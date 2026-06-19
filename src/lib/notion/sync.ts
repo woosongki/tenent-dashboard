@@ -144,6 +144,12 @@ export async function syncAttraction(): Promise<SyncResult> {
     result.deduped = dedupe.deleted;
     result.errors.push(...dedupe.errors);
 
+    // 노션 측 중복 방어: 같은 (브랜드+지점+층+카테고리) 조합이 여러 노션 페이지에
+    // 입력된 경우, 첫 페이지만 upsert하고 나머지는 건너뜀. 이전엔 둘 다 INSERT되어
+    // brand-level 중복이 누적됐다. 노션을 정리하기 전까지의 방어선.
+    const seenBrandKeys = new Set<string>();
+    const norm = (v: string | null) => (v ?? "").trim().toLowerCase();
+
     for (const page of pages) {
       const props = (page as { properties: Record<string, unknown> }).properties;
       const url   = (page as { url: string }).url;
@@ -153,11 +159,22 @@ export async function syncAttraction(): Promise<SyncResult> {
       // notion_url이 없으면 upsert 키가 없어 중복 위험 → 건너뜀
       if (!url) { result.errors.push(`[${brandName}] notion_url 없음 — 건너뜀`); continue; }
 
+      const branch   = getSelect(props, "지점");
+      const floor    = getSelect(props, "층");
+      const category = getSelect(props, "카테고리");
+
+      const brandKey = `${norm(brandName)}|${norm(branch)}|${norm(floor)}|${norm(category)}`;
+      if (seenBrandKeys.has(brandKey)) {
+        result.errors.push(`[${brandName}] ${branch ?? "-"}/${floor ?? "-"}/${category ?? "-"} 노션 중복 페이지 건너뜀`);
+        continue;
+      }
+      seenBrandKeys.add(brandKey);
+
       const record = {
         brand_name:   brandName,
-        branch:       getSelect(props, "지점"),
-        floor:        getSelect(props, "층"),
-        category:     getSelect(props, "카테고리"),
+        branch,
+        floor,
+        category,
         size_pyeong:  getNumber(props, "규모(평)"),
         manager:      getRichText(props, "담당자"),
         is_completed: getCheckbox(props, "완료여부"),
