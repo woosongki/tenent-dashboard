@@ -3,6 +3,7 @@
 import { memo, useCallback, useMemo, useState } from "react";
 import type { OffRank } from "@/lib/sales/queries";
 import { downloadCsv } from "@/lib/sales/exportCsv";
+import { displayDivision, isHiddenCat } from "@/lib/sales/labels";
 import ScrollHint from "@/components/ui/ScrollHint";
 
 interface DivSummary { division: string; s: number; ps: number; g: number; gpm: number; yoyPct: number }
@@ -81,17 +82,21 @@ export default function OfflineTab(p: Props) {
 
       {/* 부문별 요약 */}
       <BarSection title={`부문별 매출 (백만 · ${p.periodLabel})`} barColor="#a78bfa"
-        rows={p.divisions.map((d) => ({ label: d.division, s: d.s, ps: d.ps, gpm: d.gpm, yoyPct: d.yoyPct }))}
+        rows={p.divisions.map((d) => ({ key: d.division, label: displayDivision(d.division), s: d.s, ps: d.ps, gpm: d.gpm, yoyPct: d.yoyPct }))}
         total={p.total} activeKey={div} onPick={(k) => setDiv(div === k ? null : k)} />
 
-      {/* 패션 복종별 요약 */}
-      {p.fashionCats.length > 0 && (
-        <BarSection title={`패션 복종별 매출 (백만 · ${p.periodLabel})`} barColor="#f472b6"
-          rows={p.fashionCats.map((c) => ({ label: c.cat, s: c.s, ps: c.ps, gpm: c.gpm, yoyPct: c.yoyPct }))}
-          total={p.fashionCats.reduce((t, c) => t + c.s, 0)} activeKey={null} onPick={() => {}} />
-      )}
+      {/* 패션 복종별 요약 ("패션공통" 비노출) */}
+      {(() => {
+        const visibleCats = p.fashionCats.filter((c) => !isHiddenCat(c.cat));
+        if (visibleCats.length === 0) return null;
+        return (
+          <BarSection title={`패션 복종별 매출 (백만 · ${p.periodLabel})`} barColor="#f472b6"
+            rows={visibleCats.map((c) => ({ key: c.cat, label: c.cat, s: c.s, ps: c.ps, gpm: c.gpm, yoyPct: c.yoyPct }))}
+            total={visibleCats.reduce((t, c) => t + c.s, 0)} activeKey={null} onPick={() => {}} />
+        );
+      })()}
 
-      {div && <div className="border-[2px] border-[#0a0a0a] bg-yellow-50 px-3 py-1.5 text-[11px] text-slate-600">부문 <b>{div}</b> 필터 중 · <button onClick={() => setDiv(null)} className="underline">전체 보기</button></div>}
+      {div && <div className="border-[2px] border-[#0a0a0a] bg-yellow-50 px-3 py-1.5 text-[11px] text-slate-600">부문 <b>{displayDivision(div)}</b> 필터 중 · <button onClick={() => setDiv(null)} className="underline">전체 보기</button></div>}
 
       {/* 토글 + 검색 */}
       <div className="flex items-center justify-between">
@@ -226,7 +231,7 @@ const RankRow = memo(function RankRow({
 
 function BarSection({ title, barColor, rows, total, activeKey, onPick }: {
   title: string; barColor: string;
-  rows: { label: string; s: number; ps: number; gpm: number; yoyPct: number }[];
+  rows: { key: string; label: string; s: number; ps: number; gpm: number; yoyPct: number }[];
   total: number; activeKey: string | null; onPick: (k: string) => void;
 }) {
   return (
@@ -235,9 +240,9 @@ function BarSection({ title, barColor, rows, total, activeKey, onPick }: {
       <div className="divide-y divide-slate-100">
         {rows.map((d) => {
           const pct = total ? (d.s / total) * 100 : 0;
-          const active = activeKey === d.label;
+          const active = activeKey === d.key;
           return (
-            <button key={d.label} onClick={() => onPick(d.label)}
+            <button key={d.key} onClick={() => onPick(d.key)}
               className={`flex w-full items-center gap-2 px-3 py-2 text-[11px] text-left transition sm:gap-3 sm:text-[12px] ${active ? "bg-yellow-100" : "hover:bg-slate-50"}`}>
               <span className="w-16 shrink-0 truncate font-bold text-[#0a0a0a] sm:w-24">{d.label || "(미분류)"}</span>
               <div className="flex-1 min-w-[40px]"><div className="h-3 bg-slate-100"><div className="h-full" style={{ width: `${pct}%`, background: barColor }} /></div></div>

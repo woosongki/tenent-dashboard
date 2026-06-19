@@ -3,6 +3,7 @@
 import { Fragment, useMemo, useState } from "react";
 import type { OnlineRank } from "@/lib/sales/queries";
 import { downloadCsv } from "@/lib/sales/exportCsv";
+import { isHiddenCat } from "@/lib/sales/labels";
 import ScrollHint from "@/components/ui/ScrollHint";
 
 const FragmentRow = Fragment;
@@ -114,13 +115,13 @@ export default function OnlineMonthTab(p: Props) {
         </div>
       </div>
 
-      {/* 복종별 요약 */}
+      {/* 복종별 요약 ("패션공통" 비노출) */}
       <div className="border-[2px] border-[#0a0a0a] bg-white">
         <div className="border-b-[2px] border-[#0a0a0a] bg-[#0a0a0a] px-3 py-2 text-[12px] font-bold text-white">
           복종별 매출 (백만 · {p.ym})
         </div>
         <div className="divide-y divide-slate-100">
-          {p.cats.map((c) => {
+          {p.cats.filter((c) => !isHiddenCat(c.cat)).map((c) => {
             const pctOfTotal = p.total ? (c.s / p.total) * 100 : 0;
             return (
               <div key={c.cat} className="flex items-center gap-2 px-3 py-2 text-[11px] sm:gap-3 sm:text-[12px]">
