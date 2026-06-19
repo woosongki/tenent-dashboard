@@ -52,3 +52,6 @@ data/seoul-hotspots.xlsx
 # Claude Code — local 전용은 무시 (settings.json / MCP_SETUP.md는 공유)
 .claude/worktrees/
 .claude/settings.local.json
+
+# 매출 ERP 원본 (사내 데이터 — 절대 커밋 금지)
+/scoredata/
