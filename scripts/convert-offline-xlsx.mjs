@@ -70,6 +70,8 @@ function parsePyeong(ws) {
     const r = rows[i]; if (!r) continue;
     const store = r[1], cat = r[3], bcode = r[4], bname = r[5];
     if (!store || !bname || !bcode || bcode === "결과") continue;
+    // ERP 잡행 차단: "지정되지 않음"·"#"(소계/미분류) — build-sales.mjs와 동일 규칙
+    if (bname === "지정되지 않음" || bcode === "#") continue;
     map.set(`${store}|${cat}|${bname}`, { areaRaw: Number(r[7] || 0), cnt: Number(r[10] || 0) });
   }
   return map;
@@ -84,6 +86,9 @@ function parseMain(ws) {
     const r = rows[i]; if (!r) continue;
     const gcode = r[0], cat = r[1], bname = r[3], scode = r[4], sname = r[5];
     if (!sname || !scode || scode === "결과" || !String(scode).includes("/") || !bname) continue;
+    // ERP 잡행 차단: "지정되지 않음" — build-sales.mjs와 동일 규칙
+    // (매출비교 시트는 brand_code 컬럼 위치가 불확실해 brand_name만 필터)
+    if (bname === "지정되지 않음") continue;
     out.push({
       division: divisionOf(gcode), cat: String(cat || "").trim(),
       brand: String(bname).trim(), store: String(sname).trim(),
