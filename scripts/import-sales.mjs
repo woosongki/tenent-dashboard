@@ -32,7 +32,13 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
   }
 })();
 const sb = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY, { auth: { persistSession: false } });
-const DESKTOP = path.join(os.homedir(), "OneDrive", "바탕 화면");
+
+// CSV 입력 폴더. --in <dir>로 오버라이드 가능. 기본 ~/OneDrive/바탕 화면.
+function argv(name, def) {
+  const i = process.argv.indexOf(name);
+  return i >= 0 ? process.argv[i + 1] : def;
+}
+const DESKTOP = argv("--in", path.join(os.homedir(), "OneDrive", "바탕 화면"));
 
 function parseCsv(file) {
   const txt = readFileSync(file, "utf8").replace(/^﻿/, "");
