@@ -483,6 +483,16 @@ export default function HomeplusMapClient() {
             </button>
             {!collapsedSections.has("mart") && (
             <div className="flex flex-col gap-1.5 text-[11px]">
+              <label className="flex cursor-pointer items-center gap-1.5" title="홈플러스 영업중단 점포 전체 ON/OFF — 세부 tier는 상단 상권 필터에서 조정">
+                <input
+                  type="checkbox"
+                  checked={activeTiers.size > 0}
+                  onChange={(e) => setActiveTiers(e.target.checked ? new Set(ALL_TIERS) : new Set())}
+                  className="h-3.5 w-3.5"
+                />
+                <span className="inline-block h-2.5 w-2.5 rounded-full" style={{ background: "#0a0a0a" }} />
+                <span className="font-bold text-[#0a0a0a]">홈플 영업중단 ({HOMEPLUS_STORES.length})</span>
+              </label>
               <label className="flex cursor-pointer items-center gap-1.5">
                 <input type="checkbox" checked={showEmart} onChange={(e) => setShowEmart(e.target.checked)} disabled={EMART_STORES.length === 0} className="h-3.5 w-3.5 disabled:opacity-40" />
                 <span className="inline-block h-2.5 w-2.5 rounded-full" style={{ background: "#ffc107" }} />
