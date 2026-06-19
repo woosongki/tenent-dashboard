@@ -163,9 +163,11 @@ export async function syncAttraction(): Promise<SyncResult> {
       const floor    = getSelect(props, "층");
       const category = getSelect(props, "카테고리");
 
-      const brandKey = `${norm(brandName)}|${norm(branch)}|${norm(floor)}|${norm(category)}`;
+      // 느슨한 키: brand_name + branch만 보아 진행중↔완료, 층/카테고리 변경도
+      // 같은 컨텐츠로 본다 (캐노니컬한 1행만 sync에 통과).
+      const brandKey = `${norm(brandName)}|${norm(branch)}`;
       if (seenBrandKeys.has(brandKey)) {
-        result.errors.push(`[${brandName}] ${branch ?? "-"}/${floor ?? "-"}/${category ?? "-"} 노션 중복 페이지 건너뜀`);
+        result.errors.push(`[${brandName}] ${branch ?? "-"} 노션 중복 페이지 건너뜀 (브랜드+지점 동일)`);
         continue;
       }
       seenBrandKeys.add(brandKey);

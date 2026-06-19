@@ -4,11 +4,12 @@
  *
  * 두 종류의 중복을 모두 찾는다:
  *   1) notion_url 동일  — 기존 sync 로직의 1차 dedupe와 동일
- *   2) brand_name + branch + floor + category 동일
- *      — 노션에서 같은 브랜드를 실수로 두 페이지에 등록한 경우
- *         (서로 다른 notion_url을 가지므로 1차 dedupe로 안 잡힘)
+ *   2) brand_name + branch 동일 (느슨한 키)
+ *      — "진행중 → 완료"로 상태가 바뀌었거나 층/카테고리가 다르게 기재된
+ *        같은 브랜드 페이지를 하나로 본다.
  *
  * winner 선정 우선순위:
+ *   - is_completed=true 우선 (완료 정보가 캐노니컬)
  *   - notion_url 있는 행 > 없는 행 (수동 입력보다 노션 sync 결과 보존)
  *   - 채워진 필드 수가 많은 행 > 적은 행
  *   - 더 오래된 created_at
@@ -72,6 +73,9 @@ function score(r) {
 
 function pickWinner(rows) {
   return [...rows].sort((a, b) => {
+    const ac = a.is_completed ? 1 : 0;
+    const bc = b.is_completed ? 1 : 0;
+    if (ac !== bc) return bc - ac;
     const au = a.notion_url ? 1 : 0;
     const bu = b.notion_url ? 1 : 0;
     if (au !== bu) return bu - au;
@@ -82,7 +86,7 @@ function pickWinner(rows) {
 }
 
 const norm = (v) => (v ?? "").toString().trim().toLowerCase();
-const brandKey = (r) => `${norm(r.brand_name)}|${norm(r.branch)}|${norm(r.floor)}|${norm(r.category)}`;
+const brandKey = (r) => `${norm(r.brand_name)}|${norm(r.branch)}`;
 
 async function main() {
   console.log(`📋 ${TABLE} dedupe — ${APPLY ? "APPLY 모드 (삭제 수행)" : "DRY-RUN (확인만)"}`);
@@ -123,11 +127,13 @@ async function main() {
     arr.push(r);
     brandGroups.set(k, arr);
   }
+  const brandDupSamples = [];
   let brandDupGroups = 0;
   for (const [, arr] of brandGroups) {
     if (arr.length < 2) continue;
     brandDupGroups++;
     const winner = pickWinner(arr);
+    if (brandDupSamples.length < 20) brandDupSamples.push({ winner, arr });
     for (const r of arr) {
       if (r.id !== winner.id) {
         toDelete.set(r.id, r);
@@ -137,7 +143,7 @@ async function main() {
   }
 
   console.log(`\n   notion_url 중복 그룹: ${urlDupGroups}개`);
-  console.log(`   브랜드 키(브랜드+지점+층+카테고리) 중복 그룹: ${brandDupGroups}개`);
+  console.log(`   브랜드 키(브랜드+지점) 중복 그룹: ${brandDupGroups}개`);
   console.log(`   삭제 대상 행: ${toDelete.size}개`);
 
   if (toDelete.size === 0) {
@@ -145,10 +151,22 @@ async function main() {
     return;
   }
 
+  if (brandDupSamples.length > 0) {
+    console.log(`\n🔍 브랜드 키 중복 그룹 샘플 (최대 ${brandDupSamples.length}그룹):`);
+    for (const { winner, arr } of brandDupSamples) {
+      console.log(`   • [${winner.brand_name}] ${winner.branch ?? "-"}`);
+      for (const r of arr) {
+        const tag = r.id === winner.id ? "✔ KEEP " : "✘ DROP ";
+        const done = r.is_completed ? "완료" : "진행중";
+        console.log(`      ${tag} 층=${r.floor ?? "-"} 카테고리=${r.category ?? "-"} (${done}) id=${r.id.slice(0, 8)}`);
+      }
+    }
+  }
+
   const sample = [...toDelete.values()].slice(0, 20);
-  console.log(`\n📌 삭제 대상 샘플 (최대 ${sample.length}건):`);
+  console.log(`\n📌 전체 삭제 대상 샘플 (최대 ${sample.length}건):`);
   for (const r of sample) {
-    console.log(`   - [${r.brand_name}] 지점=${r.branch ?? "-"} 층=${r.floor ?? "-"} 카테고리=${r.category ?? "-"}  (${reasonOf.get(r.id)})`);
+    console.log(`   - [${r.brand_name}] 지점=${r.branch ?? "-"} 층=${r.floor ?? "-"} 카테고리=${r.category ?? "-"} (${r.is_completed ? "완료" : "진행중"}) (${reasonOf.get(r.id)})`);
   }
 
   if (!APPLY) {

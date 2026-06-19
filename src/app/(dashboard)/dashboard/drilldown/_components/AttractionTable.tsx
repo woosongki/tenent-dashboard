@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useTransition, useRef, useEffect } from "react";
+import { useState, useTransition, useRef, useEffect, useMemo } from "react";
 import { toast } from "sonner";
 import type { AttractionRow } from "@/types/attraction";
 import { ATTRACTION_CATEGORIES, ATTRACTION_BRANCHES, ATTRACTION_FLOORS } from "@/types/attraction";
-import { upsertAttractionRow, deleteAttractionRow } from "../_actions/attraction";
+import { upsertAttractionRow, deleteAttractionRow, deleteAttractionRows } from "../_actions/attraction";
 
 // ── Brutalist Badges ─────────────────────────────────────────
 const CAT_BG: Record<string, string> = {
@@ -37,6 +37,31 @@ function StatusBadge({ done }: { done: boolean }) {
     <span className="inline-flex items-center gap-1 border-[1.5px] border-[#0a0a0a] bg-yellow-300 px-1.5 py-0 text-[10px] font-extrabold uppercase tracking-wider text-[#0a0a0a]">
       <span className="h-1.5 w-1.5 rounded-full bg-amber-700" /> 진행중
     </span>
+  );
+}
+
+// ── Header checkbox (체크/언체크/부분선택 3-state) ─────────────
+function TriStateCheckbox({
+  checked, indeterminate, onChange, ariaLabel,
+}: {
+  checked: boolean;
+  indeterminate: boolean;
+  onChange: () => void;
+  ariaLabel: string;
+}) {
+  const ref = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    if (ref.current) ref.current.indeterminate = indeterminate;
+  }, [indeterminate]);
+  return (
+    <input
+      ref={ref}
+      type="checkbox"
+      checked={checked}
+      onChange={onChange}
+      aria-label={ariaLabel}
+      className="h-4 w-4 cursor-pointer accent-[#0a0a0a]"
+    />
   );
 }
 
@@ -267,6 +292,8 @@ export default function AttractionTable({
   const setFilterStatus = onFilterStatus ?? (() => {});
   const [editRow,      setEditRow]      = useState<Partial<AttractionRow> | null | undefined>(undefined);
   const [, startTransition]             = useTransition();
+  const [selected, setSelected]         = useState<Set<string>>(new Set());
+  const [bulkPending, startBulkTransition] = useTransition();
 
   const filtered = rows.filter((r) => {
     const catOk    = filterCat    === "전체" || r.category === filterCat;
@@ -275,6 +302,61 @@ export default function AttractionTable({
     const branchOk = !branchFilter || r.branch === branchFilter;
     return catOk && statusOk && branchOk;
   });
+
+  const filteredIds = useMemo(() => filtered.map((r) => r.id), [filtered]);
+  const selectedInView = useMemo(
+    () => filteredIds.filter((id) => selected.has(id)),
+    [filteredIds, selected],
+  );
+  const allSelected = filteredIds.length > 0 && selectedInView.length === filteredIds.length;
+  const partiallySelected = selectedInView.length > 0 && !allSelected;
+
+  function toggleRow(id: string) {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+
+  function toggleAllVisible() {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (allSelected) {
+        for (const id of filteredIds) next.delete(id);
+      } else {
+        for (const id of filteredIds) next.add(id);
+      }
+      return next;
+    });
+  }
+
+  function clearSelection() {
+    setSelected(new Set());
+  }
+
+  function handleBulkDelete() {
+    const ids = [...selected];
+    if (ids.length === 0) return;
+    toast(`선택한 ${ids.length}건을 삭제하시겠습니까?`, {
+      action: {
+        label: "삭제",
+        onClick: () => {
+          startBulkTransition(async () => {
+            const res = await deleteAttractionRows(ids);
+            if (res.error) {
+              toast.error("일괄 삭제에 실패했습니다.");
+            } else {
+              toast.success(`${res.deleted ?? ids.length}건 삭제됐습니다.`);
+              clearSelection();
+            }
+          });
+        },
+      },
+      cancel: { label: "취소", onClick: () => {} },
+    });
+  }
 
   function handleDelete(id: string, name: string) {
     toast("삭제하시겠습니까?", {
@@ -363,19 +445,57 @@ export default function AttractionTable({
         </div>
       )}
 
-      {/* Count summary */}
-      <p className="text-[11px] font-bold uppercase tracking-wider text-[#0a0a0a]/65">
-        총 <span className="font-mono font-extrabold text-[#0a0a0a]">{filtered.length}</span>건
-        {branchFilter && ` · ${branchFilter}`}
-        {filterCat !== "전체" && ` · ${filterCat}`}
-        {filterStatus !== "전체" && ` · ${filterStatus}`}
-      </p>
+      {/* Count summary + bulk selection bar */}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <p className="text-[11px] font-bold uppercase tracking-wider text-[#0a0a0a]/65">
+          총 <span className="font-mono font-extrabold text-[#0a0a0a]">{filtered.length}</span>건
+          {branchFilter && ` · ${branchFilter}`}
+          {filterCat !== "전체" && ` · ${filterCat}`}
+          {filterStatus !== "전체" && ` · ${filterStatus}`}
+        </p>
+        {selected.size > 0 && (
+          <div className="inline-flex items-center gap-2 border-[2px] border-[#0a0a0a] bg-yellow-300 px-3 py-1.5 shadow-[2px_2px_0_0_#0a0a0a]">
+            <span className="font-mono text-[12px] font-extrabold tabular-nums text-[#0a0a0a]">
+              {selected.size}건 선택
+            </span>
+            <button
+              type="button"
+              onClick={clearSelection}
+              className="text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 border-[1.5px] border-[#0a0a0a] bg-white text-[#0a0a0a] hover:bg-[#F1ECDB] transition-colors"
+            >
+              해제
+            </button>
+            <button
+              type="button"
+              disabled={bulkPending}
+              onClick={handleBulkDelete}
+              className="inline-flex items-center gap-1.5 text-[11px] font-extrabold uppercase tracking-wider px-3 py-1 border-[2px] border-[#0a0a0a] bg-rose-500 text-white shadow-[2px_2px_0_0_#0a0a0a] hover:translate-x-[-1px] hover:translate-y-[-1px] hover:shadow-[3px_3px_0_0_#0a0a0a] disabled:opacity-50 transition-all"
+            >
+              {bulkPending && (
+                <svg className="h-3 w-3 animate-spin" viewBox="0 0 24 24" fill="none">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
+                </svg>
+              )}
+              {selected.size}개 삭제
+            </button>
+          </div>
+        )}
+      </div>
 
       {/* Table */}
       <div className="overflow-hidden brutal bg-white overflow-x-auto">
         <table className="w-full min-w-[700px] text-sm">
           <thead>
             <tr className="border-b-[2px] border-[#0a0a0a] bg-[#F1ECDB]">
+              <th className="px-3 py-3 text-center w-10 text-[11px] font-extrabold uppercase tracking-[.12em] text-[#0a0a0a]">
+                <TriStateCheckbox
+                  checked={allSelected}
+                  indeterminate={partiallySelected}
+                  onChange={toggleAllVisible}
+                  ariaLabel="현재 보이는 행 전체 선택"
+                />
+              </th>
               <th className="px-4 py-3 text-left w-8 text-[11px] font-extrabold uppercase tracking-[.12em] text-[#0a0a0a]">#</th>
               <th className="px-4 py-3 text-left text-[11px] font-extrabold uppercase tracking-[.12em] text-[#0a0a0a]">브랜드명</th>
               <th className="px-4 py-3 text-left text-[11px] font-extrabold uppercase tracking-[.12em] text-[#0a0a0a]">지점</th>
@@ -391,16 +511,29 @@ export default function AttractionTable({
           <tbody>
             {filtered.length === 0 ? (
               <tr>
-                <td colSpan={10} className="py-12 text-center text-[12px] font-bold uppercase tracking-wider text-[#0a0a0a]/40">
+                <td colSpan={11} className="py-12 text-center text-[12px] font-bold uppercase tracking-wider text-[#0a0a0a]/40">
                   데이터가 없습니다
                 </td>
               </tr>
             ) : (
-              filtered.map((row, idx) => (
+              filtered.map((row, idx) => {
+                const isChecked = selected.has(row.id);
+                return (
                 <tr
                   key={row.id}
-                  className={`border-b border-[#0a0a0a]/10 transition-colors hover:bg-yellow-100 ${idx % 2 === 1 ? "bg-[#FAF7EC]/40" : "bg-white"}`}
+                  className={`border-b border-[#0a0a0a]/10 transition-colors hover:bg-yellow-100 ${
+                    isChecked ? "bg-yellow-100/60" : idx % 2 === 1 ? "bg-[#FAF7EC]/40" : "bg-white"
+                  }`}
                 >
+                  <td className="px-3 py-3 text-center">
+                    <input
+                      type="checkbox"
+                      checked={isChecked}
+                      onChange={() => toggleRow(row.id)}
+                      aria-label={`${row.brand_name} 선택`}
+                      className="h-4 w-4 cursor-pointer accent-[#0a0a0a]"
+                    />
+                  </td>
                   <td className="px-4 py-3 font-mono text-[11px] text-[#0a0a0a]/55 tabular-nums">{idx + 1}</td>
                   <td className="px-4 py-3 font-extrabold text-[#0a0a0a]">
                     {row.notion_url ? (
@@ -435,7 +568,8 @@ export default function AttractionTable({
                     />
                   </td>
                 </tr>
-              ))
+                );
+              })
             )}
           </tbody>
         </table>

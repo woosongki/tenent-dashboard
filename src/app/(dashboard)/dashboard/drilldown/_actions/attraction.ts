@@ -48,3 +48,15 @@ export async function deleteAttractionRow(id: string): Promise<{ error?: string 
   revalidatePath("/dashboard/drilldown");
   return {};
 }
+
+export async function deleteAttractionRows(ids: string[]): Promise<{ error?: string; deleted?: number }> {
+  if (ids.length === 0) return { deleted: 0 };
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("attraction_status")
+    .delete()
+    .in("id", ids);
+  if (error) return { error: error.message };
+  revalidatePath("/dashboard/drilldown");
+  return { deleted: ids.length };
+}
