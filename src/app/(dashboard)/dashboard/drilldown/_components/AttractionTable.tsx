@@ -251,11 +251,20 @@ interface Props {
   rows: AttractionRow[];
   branchFilter?: string | null;
   onClearBranch?: () => void;
+  /** 카테고리/상태 필터는 부모(BranchAttractionView)에서 관리해 그리드와 동기화 */
+  filterCat?: string;
+  onFilterCat?: (v: string) => void;
+  filterStatus?: string;
+  onFilterStatus?: (v: string) => void;
 }
 
-export default function AttractionTable({ rows, branchFilter = null, onClearBranch }: Props) {
-  const [filterCat,    setFilterCat]    = useState<string>("전체");
-  const [filterStatus, setFilterStatus] = useState<string>("전체");
+export default function AttractionTable({
+  rows, branchFilter = null, onClearBranch,
+  filterCat = "전체", onFilterCat,
+  filterStatus = "전체", onFilterStatus,
+}: Props) {
+  const setFilterCat    = onFilterCat    ?? (() => {});
+  const setFilterStatus = onFilterStatus ?? (() => {});
   const [editRow,      setEditRow]      = useState<Partial<AttractionRow> | null | undefined>(undefined);
   const [, startTransition]             = useTransition();
 

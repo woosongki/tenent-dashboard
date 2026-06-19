@@ -8,12 +8,15 @@ interface Props {
   rows: AttractionRow[];
   selectedBranch?: string | null;
   onSelectBranch?: (branch: string | null) => void;
+  /** 헤더에 표시될 현재 카테고리 필터 (필터 활성 시 부제로 노출) */
+  filterCat?: string;
 }
 
 export default function BranchProgressGrid({
   rows,
   selectedBranch = null,
   onSelectBranch,
+  filterCat = "전체",
 }: Props) {
   const stats = useMemo(() => {
     return ATTRACTION_BRANCHES.map((branch) => {
@@ -37,7 +40,12 @@ export default function BranchProgressGrid({
     <div className="brutal bg-white p-5">
       <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
         <div className="inline-block border-[2px] border-[#0a0a0a] bg-[#F1ECDB] px-3 py-1.5">
-          <h3 className="font-display text-[16px] leading-none text-[#0a0a0a]">지점별 입점 진행률</h3>
+          <h3 className="font-display text-[16px] leading-none text-[#0a0a0a]">
+            지점별 입점 진행률
+            {filterCat !== "전체" && (
+              <span className="ml-2 align-middle text-[12px] text-[#0a0a0a]/65">· {filterCat}</span>
+            )}
+          </h3>
           <p className="mt-1 text-[10px] font-bold uppercase tracking-wider text-[#0a0a0a]/65">
             지점 클릭 시 표 필터링
           </p>
