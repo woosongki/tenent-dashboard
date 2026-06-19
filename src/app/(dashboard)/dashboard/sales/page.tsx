@@ -60,17 +60,18 @@ export default async function SalesPage() {
     onlineCum = { ...c, ym: `${year} 누적`, prevYm: `${prevYear} 누적` };
   }
 
-  // 오프라인 매출 (5번 누적 / 6번 당월)
+  // 오프라인 매출 (5번 누적 / 6번 당월) — 온라인(I*) 부문 제외, 별도 온라인 탭에서 노출.
+  const OFFLINE_DIVISIONS = ["패션", "F&B", "기타"];
   const offMeta = await getOfflineMeta();
   let offCum = null, offMonth = null;
   if (offMeta.cumYear) {
     const py = String(Number(offMeta.cumYear) - 1);
-    const c = await getOfflineCum(offMeta.cumYear, py);
+    const c = await getOfflineCum(offMeta.cumYear, py, OFFLINE_DIVISIONS);
     offCum = { ...c, periodLabel: `${offMeta.cumYear} 누적`, prevLabel: `${py} 누적` };
   }
   if (offMeta.monthYm) {
     const pym = `${Number(offMeta.monthYm.slice(0, 4)) - 1}${offMeta.monthYm.slice(4)}`;
-    const m = await getOfflineMonth(offMeta.monthYm, pym);
+    const m = await getOfflineMonth(offMeta.monthYm, pym, OFFLINE_DIVISIONS);
     offMonth = { ...m, periodLabel: offMeta.monthYm, prevLabel: pym };
   }
 
