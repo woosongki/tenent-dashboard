@@ -174,8 +174,6 @@ const NAV: NavGroup[] = [
         label: "리테일 지도",
         icon: <IconAlert />,
         children: [
-          // 그룹 없음 — 항상 노출
-          { href: "/dashboard/homeplus?layer=homeplus",        label: "홈플 영업중단 33점", layer: "homeplus",   dotColor: "#ef476f" },
           // 백화점
           { href: "/dashboard/homeplus?layer=lotte",           label: "롯데백화점 30점",     layer: "lotte",      dotColor: "#a4133c", group: "백화점" },
           { href: "/dashboard/homeplus?layer=hyundai",         label: "현대백화점 13점",     layer: "hyundai",    dotColor: "#1d3557", group: "백화점" },
