@@ -1,9 +1,9 @@
 import Link from "next/link";
 import SectionCard from "@/components/ui/SectionCard";
-import type { SalesOverview, Mover } from "@/lib/dashboard/salesOverview";
+import CategoryMovers from "./CategoryMovers";
+import type { SalesOverview } from "@/lib/dashboard/salesOverview";
 
 const eok = (n: number) => (n / 1e8).toFixed(1);
-const milSigned = (n: number) => `${n >= 0 ? "+" : ""}${Math.round(n / 1e6).toLocaleString("ko-KR")}`;
 
 function Yoy({ pct }: { pct: number }) {
   const up = pct >= 0;
@@ -34,17 +34,6 @@ function SalesCard({ href, accentBg, accentText, label, value, unit, caption, tr
         {trend !== undefined && <Yoy pct={trend} />}
       </div>
     </Link>
-  );
-}
-
-function MoverCell({ m, tone }: { m: Mover | null; tone: "up" | "down" }) {
-  if (!m) return <span className="text-slate-300">—</span>;
-  const color = m.growth >= 0 ? "text-emerald-700" : "text-rose-600";
-  return (
-    <span className="inline-flex items-baseline gap-1.5">
-      <span className="font-bold text-[#0a0a0a]">{m.brand}</span>
-      <span className={`font-mono text-[11px] font-extrabold ${tone === "up" ? "text-emerald-700" : color}`}>{milSigned(m.growth)}</span>
-    </span>
   );
 }
 
@@ -84,35 +73,15 @@ export default function SalesOverviewSection({ data }: { data: SalesOverview }) 
         </div>
       </SectionCard>
 
-      {/* 카테고리별 대표 브랜드 (성장액 1위 · 최하위) */}
-      <SectionCard eyebrow="MOVERS" title="카테고리별 대표 브랜드"
-        description={`${data.cumLabel} · 성장액(올해−전년, 백만) 기준 카테고리별 1위·최하위`}
+      {/* 카테고리별 대표 브랜드 (당월 성장액, 클릭 → TOP 5) */}
+      <SectionCard eyebrow="MOVERS" title="카테고리별 대표 브랜드 (당월)"
+        description={`${data.monthLabel || "당월"} · 성장액(올해−전년동월, 백만) 1위 · 클릭하면 TOP 5`}
         action={
           <Link href="/dashboard/sales" className="inline-flex items-center gap-1 text-[11px] font-extrabold uppercase tracking-wider px-3 py-1.5 border-[2px] border-[#0a0a0a] bg-white text-[#0a0a0a] shadow-[2px_2px_0_0_#0a0a0a] hover:bg-yellow-300 transition-all">
             전체 보기 →
           </Link>
         }>
-        <div className="overflow-x-auto border-[2px] border-[#0a0a0a] bg-white">
-          <table className="w-full min-w-[520px] text-[12px]">
-            <thead className="bg-[#0a0a0a] text-white">
-              <tr>
-                <th className="px-3 py-2 text-left">카테고리</th>
-                <th className="px-3 py-2 text-left">🟢 성장액 1위</th>
-                <th className="px-3 py-2 text-left">🔴 최하위(역성장)</th>
-              </tr>
-            </thead>
-            <tbody>
-              {data.catMovers.map((c) => (
-                <tr key={c.category} className="border-t border-slate-100">
-                  <td className="px-3 py-2 font-extrabold text-[#0a0a0a] whitespace-nowrap">{c.category}</td>
-                  <td className="px-3 py-2"><MoverCell m={c.best} tone="up" /></td>
-                  <td className="px-3 py-2"><MoverCell m={c.worst} tone="down" /></td>
-                </tr>
-              ))}
-              {data.catMovers.length === 0 && <tr><td colSpan={3} className="px-3 py-6 text-center text-slate-400">데이터 없음</td></tr>}
-            </tbody>
-          </table>
-        </div>
+        <CategoryMovers catMovers={data.catMovers} />
       </SectionCard>
     </div>
   );

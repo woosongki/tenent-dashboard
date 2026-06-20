@@ -6,7 +6,7 @@ const OFFLINE_DIVISIONS = ["패션", "F&B", "기타"];
 
 export interface DivisionRow { division: string; s: number; yoyPct: number; }
 export interface Mover { brand: string; growth: number; s: number; }
-export interface CatMovers { category: string; best: Mover | null; worst: Mover | null; }
+export interface CatMovers { category: string; brands: Mover[] }   // 성장액 desc, 최대 5
 
 export interface SalesOverview {
   cumLabel: string;
@@ -14,7 +14,7 @@ export interface SalesOverview {
   cumTotal: number; cumPrev: number; cumYoy: number;
   monthTotal: number | null; monthYoy: number | null;
   divisions: DivisionRow[];
-  catMovers: CatMovers[];   // 카테고리별 성장액 대표 브랜드
+  catMovers: CatMovers[];   // 카테고리별 당월 성장액 대표 브랜드
   closedCount: number;      // 완전 퇴점 (올해 누적 0)
   leftCount: number;        // 이탈 (누적 있으나 당월 빠짐)
 }
@@ -30,12 +30,14 @@ export async function getSalesOverview(): Promise<SalesOverview | null> {
   let monthTotal: number | null = null;
   let monthYoy: number | null = null;
   let monthActive = new Set<string>();
+  let monthDetail: typeof cum.detailBrands = [];
   if (meta.monthYm) {
     const pym = `${Number(meta.monthYm.slice(0, 4)) - 1}${meta.monthYm.slice(4)}`;
     const month = await getOfflineMonth(meta.monthYm, pym, OFFLINE_DIVISIONS);
     monthTotal = month.total;
     monthYoy = month.yoyPct;
     monthActive = new Set(month.brands.filter((b) => b.s > 0).map((b) => b.key));
+    monthDetail = month.detailBrands;
   }
 
   const brands = cum.brands;
@@ -44,10 +46,10 @@ export async function getSalesOverview(): Promise<SalesOverview | null> {
     ? brands.filter((b) => !b.closed && b.s > 0 && !monthActive.has(b.key)).length
     : 0;
 
-  // 카테고리(복종 + F&B/라이프스타일)별 성장액 대표 브랜드 — detailBrands(부문|복종|브랜드) 기준
+  // 카테고리(복종 + F&B/라이프스타일)별 "당월" 성장액 대표 브랜드 — 당월 detailBrands 기준
   const catMap = new Map<string, { order: number; brands: Mover[] }>();
-  for (const b of cum.detailBrands) {
-    if (b.closed || b.s <= 0 || b.ps <= 0) continue;   // 전년 실적 있어야 성장액 비교
+  for (const b of monthDetail) {
+    if (b.closed || b.s <= 0 || b.ps <= 0) continue;   // 당월 올해·전년동월 모두 있어야 비교
     if (isHiddenCat(b.cat)) continue;                  // "패션공통" 제외
     const isFashion = b.division === "패션";
     const category = isFashion ? displayCat(b.cat) : displayDivision(b.division ?? "");
@@ -58,12 +60,10 @@ export async function getSalesOverview(): Promise<SalesOverview | null> {
   }
   const catMovers: CatMovers[] = [...catMap.entries()]
     .sort((a, b) => a[1].order - b[1].order)
-    .map(([category, e]) => {
-      const sorted = [...e.brands].sort((x, y) => y.growth - x.growth);
-      const best = sorted[0] ?? null;
-      const worst = sorted.length > 1 ? sorted[sorted.length - 1] : null;
-      return { category, best, worst };
-    });
+    .map(([category, e]) => ({
+      category,
+      brands: [...e.brands].sort((x, y) => y.growth - x.growth).slice(0, 5),
+    }));
 
   const divisions = [...cum.divisions]
     .sort((a, b) => divisionRank(a.division) - divisionRank(b.division))
