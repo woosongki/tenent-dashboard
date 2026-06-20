@@ -98,8 +98,8 @@ export default function OnlineMonthTab(p: Props) {
     <div className="space-y-5">
       {/* 요약 카드 */}
       <div className="grid grid-cols-3 gap-2 sm:gap-3">
-        <SummaryCard label={`${p.ym} ${p.periodLabel ?? "온라인 매출"}`} value={`${eok(p.total)}억`} sub={`${won(p.total)}원`} accent />
-        <SummaryCard label={`전년 (${p.prevYm})`} value={`${eok(p.prevTotal)}억`} sub={`${won(p.prevTotal)}원`} />
+        <SummaryCard label={`${p.ym} ${p.periodLabel ?? "온라인 매출"}`} value={`${eok(p.total)}억`} sub={`${won(p.total)}원`} accent subSmOnly />
+        <SummaryCard label={`전년 (${p.prevYm})`} value={`${eok(p.prevTotal)}억`} sub={`${won(p.prevTotal)}원`} subSmOnly />
         <SummaryCard label="전년대비" value={`${p.yoyPct >= 0 ? "+" : ""}${p.yoyPct}%`}
           sub={`${mil(p.total - p.prevTotal)}백만`} tone={p.yoyPct >= 0 ? "up" : "down"} />
       </div>
@@ -214,24 +214,24 @@ export default function OnlineMonthTab(p: Props) {
 
       {/* 랭킹 테이블 */}
       <ScrollHint className="border-[2px] border-[#0a0a0a] bg-white">
-        <table className="w-full min-w-[560px] text-[12px]">
+        <table className="w-full min-w-[420px] sm:min-w-[560px] text-[12px]">
           <thead className="bg-[#0a0a0a] text-white select-none">
             <tr>
-              <th className="px-3 py-2 text-left w-10">#</th>
-              <th className="px-3 py-2 text-left cursor-pointer hover:bg-white/10" onClick={() => toggleSort("key")}>
+              <th className="sticky left-0 z-[2] bg-[#0a0a0a] px-3 py-2 text-left w-10">#</th>
+              <th className="sticky left-10 z-[2] bg-[#0a0a0a] px-3 py-2 text-left whitespace-nowrap cursor-pointer hover:bg-white/10" onClick={() => toggleSort("key")}>
                 {view === "brand" ? "브랜드" : "지점"}{arrow("key")}
               </th>
-              {view === "brand" && <th className="px-3 py-2 text-left">복종</th>}
-              <th className="px-3 py-2 text-right cursor-pointer hover:bg-white/10" onClick={() => toggleSort("s")}>
+              {view === "brand" && <th className="hidden sm:table-cell px-3 py-2 text-left whitespace-nowrap">복종</th>}
+              <th className="px-3 py-2 text-right whitespace-nowrap cursor-pointer hover:bg-white/10" onClick={() => toggleSort("s")}>
                 {p.ym} 매출(백만){arrow("s")}
               </th>
-              <th className="px-3 py-2 text-right cursor-pointer hover:bg-white/10" onClick={() => toggleSort("ps")}>
+              <th className="hidden sm:table-cell px-3 py-2 text-right whitespace-nowrap cursor-pointer hover:bg-white/10" onClick={() => toggleSort("ps")}>
                 {p.prevYm}(백만){arrow("ps")}
               </th>
-              <th className="px-3 py-2 text-right cursor-pointer hover:bg-white/10" onClick={() => toggleSort("yoyPct")}>
+              <th className="px-3 py-2 text-right whitespace-nowrap cursor-pointer hover:bg-white/10" onClick={() => toggleSort("yoyPct")}>
                 전년비{arrow("yoyPct")}
               </th>
-              <th className="px-3 py-2 text-left">주력 채널</th>
+              <th className="hidden sm:table-cell px-3 py-2 text-left whitespace-nowrap">주력 채널</th>
             </tr>
           </thead>
           <tbody>
@@ -241,22 +241,22 @@ export default function OnlineMonthTab(p: Props) {
               return (
                 <FragmentRow key={r.key}>
                   <tr
-                    className={`border-t border-slate-100 ${r.closed ? "opacity-60" : "cursor-pointer hover:bg-yellow-50"} ${open ? "bg-yellow-50" : ""}`}
+                    className={`group border-t border-slate-100 ${r.closed ? "opacity-60" : "cursor-pointer hover:bg-yellow-50"} ${open ? "bg-yellow-50" : ""}`}
                     onClick={() => { if (!r.closed) toggleRow(r.key); }}
                   >
-                    <td className="px-3 py-2 font-mono text-slate-400">
+                    <td className={`sticky left-0 z-[1] px-3 py-2 font-mono text-slate-400 group-hover:bg-yellow-50 ${open ? "bg-yellow-50" : "bg-white"}`}>
                       <span className="mr-1 inline-block text-[9px] text-slate-400">{r.closed ? "" : open ? "▼" : "▶"}</span>{i + 1}
                     </td>
-                    <td className="px-3 py-2 font-bold text-[#0a0a0a]">
+                    <td className={`sticky left-10 z-[1] px-3 py-2 font-bold text-[#0a0a0a] group-hover:bg-yellow-50 ${open ? "bg-yellow-50" : "bg-white"}`}>
                       {r.key}
                       {r.closed && <span className="ml-1.5 border border-rose-500 px-1 py-0 text-[9px] font-extrabold text-rose-600 align-middle">퇴점</span>}
                       {!r.closed && isLeft(r) && <span className="ml-1.5 border border-amber-500 px-1 py-0 text-[9px] font-extrabold text-amber-600 align-middle" title="누적 매출 있으나 당월 빠짐">이탈</span>}
                     </td>
-                    {view === "brand" && <td className="px-3 py-2 text-slate-500">{displayCat(r.cat)}</td>}
-                    <td className="px-3 py-2 text-right font-mono font-bold">{r.closed ? "—" : mil(r.s)}</td>
-                    <td className="px-3 py-2 text-right font-mono text-slate-500">{mil(r.ps)}</td>
+                    {view === "brand" && <td className="hidden sm:table-cell px-3 py-2 text-slate-500 whitespace-nowrap">{displayCat(r.cat)}</td>}
+                    <td className="px-3 py-2 text-right font-mono font-bold whitespace-nowrap">{r.closed ? "—" : mil(r.s)}</td>
+                    <td className="hidden sm:table-cell px-3 py-2 text-right font-mono text-slate-500 whitespace-nowrap">{mil(r.ps)}</td>
                     <td className="px-3 py-2 text-right">{yoyBadge(r.yoyPct, r.closed)}</td>
-                    <td className="px-3 py-2 text-[11px] text-slate-600">
+                    <td className="hidden sm:table-cell px-3 py-2 text-[11px] text-slate-600">
                       {r.byChannel.slice(0, 3).map((c) => `${c.channel} ${mil(c.s)}백만`).join(" · ")}
                     </td>
                   </tr>
@@ -307,16 +307,16 @@ export default function OnlineMonthTab(p: Props) {
   );
 }
 
-function SummaryCard({ label, value, sub, accent, tone }: {
-  label: string; value: string; sub?: string; accent?: boolean; tone?: "up" | "down";
+function SummaryCard({ label, value, sub, accent, tone, subSmOnly }: {
+  label: string; value: string; sub?: string; accent?: boolean; tone?: "up" | "down"; subSmOnly?: boolean;
 }) {
   const color = tone === "up" ? "#0d9e6e" : tone === "down" ? "#e53e3e" : "#0a0a0a";
   return (
     <div className={`border-[2px] border-[#0a0a0a] p-3 ${accent ? "bg-yellow-100" : "bg-white"}`}
       style={{ boxShadow: "3px 3px 0 0 #0a0a0a" }}>
-      <div className="text-[11px] font-bold text-slate-500">{label}</div>
-      <div className="mt-1 font-mono text-[24px] font-extrabold leading-none" style={{ color }}>{value}</div>
-      {sub && <div className="mt-1 text-[10px] text-slate-400">{sub}</div>}
+      <div className="text-[11px] font-bold text-slate-500 truncate">{label}</div>
+      <div className="mt-1 font-mono text-[20px] sm:text-[24px] font-extrabold leading-none" style={{ color }}>{value}</div>
+      {sub && <div className={`mt-1 text-[10px] text-slate-400 truncate ${subSmOnly ? "hidden sm:block" : ""}`}>{sub}</div>}
     </div>
   );
 }

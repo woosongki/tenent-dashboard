@@ -88,8 +88,8 @@ export default function OfflineTab(p: Props) {
     <div className="space-y-5">
       {/* 요약 카드 */}
       <div className="grid grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-4">
-        <Card label={`${p.periodLabel} 매출`} value={`${eok(p.total)}억`} sub={`${won(p.total)}원`} accent />
-        <Card label={`전년 (${p.prevLabel})`} value={`${eok(p.prevTotal)}억`} sub={`${won(p.prevTotal)}원`} />
+        <Card label={`${p.periodLabel} 매출`} value={`${eok(p.total)}억`} sub={`${won(p.total)}원`} accent subSmOnly />
+        <Card label={`전년 (${p.prevLabel})`} value={`${eok(p.prevTotal)}억`} sub={`${won(p.prevTotal)}원`} subSmOnly />
         <Card label="전년대비" value={`${p.yoyPct >= 0 ? "+" : ""}${p.yoyPct}%`} tone={p.yoyPct >= 0 ? "up" : "down"} />
         <Card label="이익 / 이익률" value={`${eok(p.gTotal)}억`} sub={`GPM ${p.gpm}%`} />
       </div>
@@ -162,17 +162,17 @@ export default function OfflineTab(p: Props) {
 
       {/* 랭킹 */}
       <ScrollHint className="border-[2px] border-[#0a0a0a] bg-white">
-        <table className="w-full min-w-[620px] text-[12px]">
+        <table className="w-full min-w-[480px] sm:min-w-[620px] text-[12px]">
           <thead className="bg-[#0a0a0a] text-white select-none">
             <tr>
-              <th className="px-3 py-2 text-left w-10">#</th>
-              <th className="px-3 py-2 text-left cursor-pointer hover:bg-white/10" onClick={() => toggleSort("key")}>{view === "brand" ? "브랜드" : "지점"}{arrow("key")}</th>
+              <th className="sticky left-0 z-[2] bg-[#0a0a0a] px-3 py-2 text-left w-10">#</th>
+              <th className="sticky left-10 z-[2] bg-[#0a0a0a] px-3 py-2 text-left whitespace-nowrap cursor-pointer hover:bg-white/10" onClick={() => toggleSort("key")}>{view === "brand" ? "브랜드" : "지점"}{arrow("key")}</th>
               <th className="px-3 py-2 text-right whitespace-nowrap">{view === "brand" ? "매장수" : "브랜드수"}</th>
-              {view === "brand" && <th className="px-3 py-2 text-left">복종</th>}
-              <th className="px-3 py-2 text-right cursor-pointer hover:bg-white/10" onClick={() => toggleSort("s")}>매출(백만){arrow("s")}</th>
-              <th className="px-3 py-2 text-right cursor-pointer hover:bg-white/10" onClick={() => toggleSort("g")}>이익(백만){arrow("g")}</th>
-              <th className="px-3 py-2 text-right cursor-pointer hover:bg-white/10" onClick={() => toggleSort("gpm")}>이익률{arrow("gpm")}</th>
-              <th className="px-3 py-2 text-right cursor-pointer hover:bg-white/10" onClick={() => toggleSort("yoyPct")}>전년비{arrow("yoyPct")}</th>
+              {view === "brand" && <th className="px-3 py-2 text-left whitespace-nowrap">복종</th>}
+              <th className="px-3 py-2 text-right whitespace-nowrap cursor-pointer hover:bg-white/10" onClick={() => toggleSort("s")}>매출(백만){arrow("s")}</th>
+              <th className="hidden sm:table-cell px-3 py-2 text-right whitespace-nowrap cursor-pointer hover:bg-white/10" onClick={() => toggleSort("g")}>이익(백만){arrow("g")}</th>
+              <th className="hidden sm:table-cell px-3 py-2 text-right whitespace-nowrap cursor-pointer hover:bg-white/10" onClick={() => toggleSort("gpm")}>이익률{arrow("gpm")}</th>
+              <th className="px-3 py-2 text-right whitespace-nowrap cursor-pointer hover:bg-white/10" onClick={() => toggleSort("yoyPct")}>전년비{arrow("yoyPct")}</th>
             </tr>
           </thead>
           <tbody>
@@ -210,18 +210,18 @@ const RankRow = memo(function RankRow({
   const cols = showCat ? 8 : 7;
   return (
     <>
-      <tr className={`border-t border-slate-100 ${row.closed ? "opacity-60" : "cursor-pointer hover:bg-yellow-50"} ${open ? "bg-yellow-50" : ""}`} onClick={() => { if (!row.closed) onToggle(row.key); }}>
-        <td className="px-3 py-2 font-mono text-slate-400"><span className="mr-1 text-[9px]">{row.closed ? "" : open ? "▼" : "▶"}</span>{rank}</td>
-        <td className="px-3 py-2 font-bold text-[#0a0a0a]">
+      <tr className={`group border-t border-slate-100 ${row.closed ? "opacity-60" : "cursor-pointer hover:bg-yellow-50"} ${open ? "bg-yellow-50" : ""}`} onClick={() => { if (!row.closed) onToggle(row.key); }}>
+        <td className={`sticky left-0 z-[1] px-3 py-2 font-mono text-slate-400 group-hover:bg-yellow-50 ${open ? "bg-yellow-50" : "bg-white"}`}><span className="mr-1 text-[9px]">{row.closed ? "" : open ? "▼" : "▶"}</span>{rank}</td>
+        <td className={`sticky left-10 z-[1] px-3 py-2 font-bold text-[#0a0a0a] group-hover:bg-yellow-50 ${open ? "bg-yellow-50" : "bg-white"}`}>
           {row.key}
           {row.closed && <span className="ml-1.5 border border-rose-500 px-1 py-0 text-[9px] font-extrabold text-rose-600 align-middle">퇴점</span>}
           {!row.closed && left && <span className="ml-1.5 border border-amber-500 px-1 py-0 text-[9px] font-extrabold text-amber-600 align-middle" title="누적 매출 있으나 당월 빠짐">이탈</span>}
         </td>
         <td className="px-3 py-2 text-right font-mono text-slate-500">{row.subCount}</td>
-        {showCat && <td className="px-3 py-2 text-slate-500">{displayCat(row.cat)}</td>}
-        <td className="px-3 py-2 text-right font-mono font-bold">{row.closed ? "—" : mil(row.s)}</td>
-        <td className="px-3 py-2 text-right font-mono">{row.closed ? "—" : mil(row.g)}</td>
-        <td className="px-3 py-2 text-right font-mono text-slate-500">{row.closed ? "—" : `${row.gpm}%`}</td>
+        {showCat && <td className="px-3 py-2 text-slate-500 whitespace-nowrap">{displayCat(row.cat)}</td>}
+        <td className="px-3 py-2 text-right font-mono font-bold whitespace-nowrap">{row.closed ? "—" : mil(row.s)}</td>
+        <td className="hidden sm:table-cell px-3 py-2 text-right font-mono whitespace-nowrap">{row.closed ? "—" : mil(row.g)}</td>
+        <td className="hidden sm:table-cell px-3 py-2 text-right font-mono text-slate-500">{row.closed ? "—" : `${row.gpm}%`}</td>
         <td className="px-3 py-2 text-right"><YoY pct={row.yoyPct} prev={row.ps} closed={row.closed} /></td>
       </tr>
       {open && row.bySub && (
@@ -282,13 +282,13 @@ function BarSection({ title, barColor, rows, total, activeKey, onPick }: {
   );
 }
 
-function Card({ label, value, sub, accent, tone }: { label: string; value: string; sub?: string; accent?: boolean; tone?: "up" | "down" }) {
+function Card({ label, value, sub, accent, tone, subSmOnly }: { label: string; value: string; sub?: string; accent?: boolean; tone?: "up" | "down"; subSmOnly?: boolean }) {
   const color = tone === "up" ? "#0d9e6e" : tone === "down" ? "#e53e3e" : "#0a0a0a";
   return (
     <div className={`border-[2px] border-[#0a0a0a] p-3 ${accent ? "bg-yellow-100" : "bg-white"}`} style={{ boxShadow: "3px 3px 0 0 #0a0a0a" }}>
       <div className="text-[11px] font-bold text-slate-500">{label}</div>
-      <div className="mt-1 font-mono text-[22px] font-extrabold leading-none" style={{ color }}>{value}</div>
-      {sub && <div className="mt-1 text-[10px] text-slate-400">{sub}</div>}
+      <div className="mt-1 font-mono text-[20px] sm:text-[22px] font-extrabold leading-none" style={{ color }}>{value}</div>
+      {sub && <div className={`mt-1 text-[10px] text-slate-400 truncate ${subSmOnly ? "hidden sm:block" : ""}`}>{sub}</div>}
     </div>
   );
 }
