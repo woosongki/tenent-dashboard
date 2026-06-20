@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { rankStores, type BrandInput } from "./score";
+import { rankStores } from "./score";
+import type { BrandInput } from "./types";
 
 // 입력 헬퍼: 빈 BrandInput에서 일부만 덮어쓰기
 function makeInput(over: Partial<BrandInput> = {}): BrandInput {

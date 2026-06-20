@@ -1,15 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import {
-  rankStores,
   WEIGHTS,
   type BrandInput,
   type Stay,
   type OperationType,
   type AvoidStrength,
   type FitScore,
-} from "@/lib/brand-fit/score";
+} from "@/lib/brand-fit/types";
+import { analyzeBrandFit } from "../_actions";
 import type { AgeBand, Gender, FamilyRatio, PriceBand, SpaceSize } from "@/data/eland-meta";
 
 const AGES: AgeBand[]      = ["10대", "20대", "30대", "40대", "50대", "60대+"];
@@ -45,6 +45,7 @@ export default function BrandFitClient() {
   const [submittedBrand, setSubmittedBrand] = useState("");
   // 점수 로직 패널
   const [showLogic, setShowLogic] = useState(false);
+  const [pending, startTransition] = useTransition();
 
   // 브랜드명만 있으면 분석 가능 (다른 옵션은 모두 선택적)
   const canAnalyze = brandName.trim().length > 0;
@@ -73,13 +74,15 @@ export default function BrandFitClient() {
       preferred_anchors: preferredAnchors,
       avoid_strength: avoidStrength ?? "보통", // 미입력 시 기본값
     };
-    setResults(rankStores(input, 3));
-    setSubmitted(true);
-    setSubmittedBrand(brandName.trim());
-    // 결과 스크롤
-    setTimeout(() => {
-      document.getElementById("result-section")?.scrollIntoView({ behavior: "smooth" });
-    }, 50);
+    startTransition(async () => {
+      const scored = await analyzeBrandFit(input, 3);
+      setResults(scored);
+      setSubmitted(true);
+      setSubmittedBrand(brandName.trim());
+      setTimeout(() => {
+        document.getElementById("result-section")?.scrollIntoView({ behavior: "smooth" });
+      }, 50);
+    });
   }
 
   function reset() {
@@ -135,14 +138,14 @@ export default function BrandFitClient() {
           />
           <button
             onClick={analyze}
-            disabled={!canAnalyze}
+            disabled={!canAnalyze || pending}
             className={`shrink-0 border-[2px] border-[#0a0a0a] px-8 font-display text-[16px] transition ${
-              canAnalyze
+              canAnalyze && !pending
                 ? "bg-[#0a0a0a] text-white shadow-[3px_3px_0_0_#0a0a0a] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none"
                 : "bg-slate-200 text-slate-400 cursor-not-allowed"
             }`}
           >
-            분석
+            {pending ? "분석 중…" : "분석"}
           </button>
         </div>
         <p className="mt-2 text-[11px] text-[#0a0a0a]/70">

@@ -8,62 +8,15 @@
 //   - 앵커 매칭 정교화 (정확/부분 일치 + 매칭 개수 보너스)
 //   - 타이브레이커: 매장 규모(브랜드 수) + 매출 잠재력
 
+import "server-only";
 import { ELAND_STORES, type ElandStore } from "@/data/homeplus";
-import {
-  getMeta,
-  isMetaEmpty,
-  type StoreMeta,
-  type AgeBand,
-  type Gender,
-  type FamilyRatio,
-  type PriceBand,
-  type SpaceSize,
-} from "@/data/eland-meta";
+import { getMeta, isMetaEmpty, type StoreMeta, type PriceBand } from "@/data/eland-meta";
 import storeCategoriesData from "@/data/store-categories.json";
 import storeBrandsData from "@/data/store-brands.json";
 import storeSalesData from "@/data/store-sales.json";
 import storeAreasData from "@/data/store-areas.json";
 import tradeAreaData from "@/data/trade-area.json";
-
-// ── 사용자 입력 (브랜드 체크리스트) ──
-export type Stay = "목적형" | "체험형" | "체류형";
-export type OperationType = "상시매장" | "팝업(단기)" | "시즌형";
-export type AvoidStrength = "강함" | "보통" | "약함";
-
-export interface BrandInput {
-  primary_age:    AgeBand[];
-  primary_gender: Gender | null;
-  family_ratio:   FamilyRatio | null;
-  stay_type:      Stay | null;
-  category:       string | null;
-  price_band:     PriceBand | null;
-  required_space: SpaceSize | null;
-  operation_type: OperationType | null;
-  preferred_anchors: string[];
-  avoid_strength:    AvoidStrength;
-}
-
-export const WEIGHTS = {
-  trade_area: 0.50,
-  anchors:    0.20,
-  character:  0.20,
-  synergy:    0.10,
-} as const;
-
-export interface AxisScores {
-  trade_area: number;
-  anchors:    number;
-  character:  number;
-  synergy:    number;
-}
-
-export interface FitScore {
-  store: ElandStore;
-  meta:  StoreMeta;
-  total: number;
-  axes:  AxisScores;
-  hasData: boolean;
-}
+import { WEIGHTS, type BrandInput, type AxisScores, type FitScore } from "./types";
 
 // ── 데이터 인덱스 (storeId → 통계) ──
 type StoreCatRow = { storeId: number; total: number; ratios: Record<string, number> };
