@@ -5,8 +5,8 @@ import { displayDivision, displayCat, divisionRank, catRank, isHiddenCat } from 
 const OFFLINE_DIVISIONS = ["패션", "F&B", "기타"];
 
 export interface DivisionRow { division: string; s: number; yoyPct: number; }
-export interface Mover { brand: string; growth: number; s: number; }
-export interface CatMovers { category: string; brands: Mover[] }   // 성장액 desc, 최대 5
+export interface Mover { brand: string; s: number; }
+export interface CatMovers { category: string; brands: Mover[] }   // 당월 매출액 desc 정렬 전체
 
 export interface SalesOverview {
   cumLabel: string;
@@ -46,23 +46,23 @@ export async function getSalesOverview(): Promise<SalesOverview | null> {
     ? brands.filter((b) => !b.closed && b.s > 0 && !monthActive.has(b.key)).length
     : 0;
 
-  // 카테고리(복종 + F&B/라이프스타일)별 "당월" 성장액 대표 브랜드 — 당월 detailBrands 기준
+  // 카테고리(복종 + F&B/라이프스타일)별 "당월 매출액" 정렬 — 당월 detailBrands 기준
   const catMap = new Map<string, { order: number; brands: Mover[] }>();
   for (const b of monthDetail) {
-    if (b.closed || b.s <= 0 || b.ps <= 0) continue;   // 당월 올해·전년동월 모두 있어야 비교
+    if (b.s <= 0) continue;                            // 당월 매출 있는 브랜드만
     if (isHiddenCat(b.cat)) continue;                  // "패션공통" 제외
     const isFashion = b.division === "패션";
     const category = isFashion ? displayCat(b.cat) : displayDivision(b.division ?? "");
     const order = isFashion ? catRank(b.cat) : 100 + divisionRank(b.division ?? "");
     let e = catMap.get(category);
     if (!e) { e = { order, brands: [] }; catMap.set(category, e); }
-    e.brands.push({ brand: b.key, growth: b.s - b.ps, s: b.s });
+    e.brands.push({ brand: b.key, s: b.s });
   }
   const catMovers: CatMovers[] = [...catMap.entries()]
     .sort((a, b) => a[1].order - b[1].order)
     .map(([category, e]) => ({
       category,
-      brands: [...e.brands].sort((x, y) => y.growth - x.growth).slice(0, 5),
+      brands: [...e.brands].sort((x, y) => y.s - x.s),   // 매출액 내림차순 전체
     }));
 
   const divisions = [...cum.divisions]
