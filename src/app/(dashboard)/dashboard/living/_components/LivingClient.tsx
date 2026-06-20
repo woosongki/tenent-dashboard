@@ -30,11 +30,13 @@ export default function LivingClient({ popups, weeks, year, canEdit }: {
   const [editing, setEditing] = useState<Draft | null>(null);
   const [pending, startTransition] = useTransition();
 
-  // 그리드 컬럼 = 데이터에 있는 브랜드 (없으면 기본 일부)
+  // 그리드 컬럼 = 기본 16개 브랜드(요청 순서) + 데이터에만 있는 추가 브랜드
   const brands = useMemo(() => {
-    const set = new Set(popups.map((p) => p.brand));
-    if (set.size === 0) return [...LIVING_BRANDS.slice(0, 6)];
-    return [...set].sort((a, b) => a.localeCompare(b, "ko"));
+    const base = [...LIVING_BRANDS] as string[];
+    const extras = [...new Set(popups.map((p) => p.brand))]
+      .filter((b) => !base.includes(b))
+      .sort((a, b) => a.localeCompare(b, "ko"));
+    return [...base, ...extras];
   }, [popups]);
 
   // (weekIndex|brand) → popups
@@ -169,7 +171,7 @@ function CalendarGrid({ weeks, brands, byCell, canEdit, onCell, onChip }: {
                                 ? <span className="shrink-0 font-mono text-[10px]">{p.sales}</span>
                                 : <span className="shrink-0 text-[8px] opacity-70">{STATUS_LABEL[st]}</span>}
                             </div>
-                            <div className={`text-[9px] ${s.tx} opacity-70 truncate`}>{p.vendor ?? "벤더 미정"}</div>
+                            {p.vendor && <div className={`text-[9px] ${s.tx} opacity-70 truncate`}>{p.vendor}</div>}
                           </button>
                         );
                       })}
