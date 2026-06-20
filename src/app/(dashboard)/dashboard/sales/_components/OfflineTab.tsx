@@ -31,7 +31,7 @@ function YoY({ pct, prev, closed }: { pct: number; prev?: number; closed?: boole
     return <span style={{ color: "#7c3aed", fontWeight: 700 }} title="전년 동기간 실적 없음 (신규 또는 미집계)">신규</span>;
   }
   const up = pct >= 0;
-  return <span style={{ color: up ? "#0d9e6e" : "#e53e3e", fontWeight: 700 }}>{up ? "▲" : "▼"} {Math.abs(pct).toFixed(1)}%</span>;
+  return <span className="whitespace-nowrap tabular-nums" style={{ color: up ? "#0d9e6e" : "#e53e3e", fontWeight: 700 }}>{up ? "▲" : "▼"}&nbsp;{Math.abs(pct).toFixed(1)}%</span>;
 }
 type SortKey = "key" | "s" | "g" | "gpm" | "yoyPct";
 

@@ -33,8 +33,8 @@ function yoyBadge(pct: number, closed?: boolean) {
   }
   const up = pct >= 0;
   return (
-    <span style={{ color: up ? "#0d9e6e" : "#e53e3e", fontWeight: 700 }}>
-      {up ? "▲" : "▼"} {Math.abs(pct).toFixed(1)}%
+    <span className="whitespace-nowrap tabular-nums" style={{ color: up ? "#0d9e6e" : "#e53e3e", fontWeight: 700 }}>
+      {up ? "▲" : "▼"}&nbsp;{Math.abs(pct).toFixed(1)}%
     </span>
   );
 }
