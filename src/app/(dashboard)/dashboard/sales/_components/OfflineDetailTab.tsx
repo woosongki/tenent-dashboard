@@ -14,6 +14,7 @@ interface Props {
   stores: OffRank[];          // 지점별 (하위=브랜드)
   divisions: DivSummary[];
   fashionCats: CatSummary[];
+  monthActive?: { brands: string[]; stores: string[]; detail: string[] } | null;
 }
 
 const won = (n: number) => n.toLocaleString("ko-KR");
@@ -107,6 +108,15 @@ export default function OfflineDetailTab(p: Props) {
     setStExpanded(null); setStLimit(10);
   }
   const stArrow = (k: BSortKey) => stSort === k ? (stDir === "asc" ? " ▲" : " ▼") : "";
+
+  // 이탈: 누적 매출 있으나 당월에 빠진 건
+  const enableLeft = !!p.monthActive;
+  const detailSet = useMemo(() => new Set(p.monthActive?.detail ?? []), [p.monthActive]);
+  const storeSet = useMemo(() => new Set(p.monthActive?.stores ?? []), [p.monthActive]);
+  const brandLeft = useCallback((r: OffRank) =>
+    enableLeft && !r.closed && r.s > 0 && !detailSet.has(`${r.division ?? ""}|${r.cat ?? ""}|${r.key}`), [enableLeft, detailSet]);
+  const storeLeft = useCallback((r: OffRank) =>
+    enableLeft && !r.closed && r.s > 0 && !storeSet.has(r.key), [enableLeft, storeSet]);
 
   // 선택 카테고리 브랜드 (요약·칩 기준 — 검색 무관)
   const catRows = useMemo(() =>
@@ -223,7 +233,7 @@ export default function OfflineDetailTab(p: Props) {
             {visible.map((r, i) => {
               const id = `${r.division ?? ""}|${r.cat ?? ""}|${r.key}`;
               return (
-                <DetailRow key={id} id={id} row={r} rank={i + 1} firstColLabel="지점"
+                <DetailRow key={id} id={id} row={r} rank={i + 1} firstColLabel="지점" left={brandLeft(r)}
                   open={expanded === id} onToggle={onToggleBrand} sSort={sSort} sDir={sDir} toggleS={toggleS} />
               );
             })}
@@ -281,7 +291,7 @@ export default function OfflineDetailTab(p: Props) {
           </thead>
           <tbody>
             {stVisible.map((st, i) => (
-              <DetailRow key={st.key} id={st.key} row={st} rank={i + 1} firstColLabel="브랜드"
+              <DetailRow key={st.key} id={st.key} row={st} rank={i + 1} firstColLabel="브랜드" left={storeLeft(st)}
                 open={stExpanded === st.key} onToggle={onToggleStore} sSort={sSort} sDir={sDir} toggleS={toggleS} />
             ))}
             {storeRows.length === 0 && <tr><td colSpan={7} className="px-3 py-8 text-center text-slate-400">지점 데이터 없음</td></tr>}
@@ -301,9 +311,9 @@ export default function OfflineDetailTab(p: Props) {
 
 // 드릴다운 하위 표 (브랜드→지점 / 지점→브랜드 공용)
 // 브랜드/지점 공용 행 (메모 — 펼침 토글 시 해당 행만 리렌더)
-const DetailRow = memo(function DetailRow({ row, id, rank, firstColLabel, open, onToggle, sSort, sDir, toggleS }: {
+const DetailRow = memo(function DetailRow({ row, id, rank, firstColLabel, open, onToggle, sSort, sDir, toggleS, left }: {
   row: OffRank; id: string; rank: number; firstColLabel: string; open: boolean;
-  onToggle: (id: string) => void; sSort: SSortKey; sDir: Dir; toggleS: (k: SSortKey) => void;
+  onToggle: (id: string) => void; sSort: SSortKey; sDir: Dir; toggleS: (k: SSortKey) => void; left?: boolean;
 }) {
   const subTitle = firstColLabel === "지점" ? "지점별 상세" : "브랜드별 상세";
   return (
@@ -313,6 +323,7 @@ const DetailRow = memo(function DetailRow({ row, id, rank, firstColLabel, open, 
         <td className="px-3 py-2 font-bold text-[#0a0a0a]">
           {row.key}
           {row.closed && <span className="ml-1.5 border border-rose-500 px-1 py-0 text-[9px] font-extrabold text-rose-600 align-middle">퇴점</span>}
+          {!row.closed && left && <span className="ml-1.5 border border-amber-500 px-1 py-0 text-[9px] font-extrabold text-amber-600 align-middle" title="누적 매출 있으나 당월 빠짐">이탈</span>}
         </td>
         <td className="px-3 py-2 text-right font-mono text-slate-500">{row.subCount}</td>
         <td className="px-3 py-2 text-right font-mono font-bold">{row.closed ? "—" : mil(row.s)}</td>

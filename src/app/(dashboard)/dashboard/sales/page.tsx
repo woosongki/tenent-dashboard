@@ -60,6 +60,13 @@ export default async function SalesPage() {
     offMonth = { ...m, periodLabel: offMeta.monthYm, prevLabel: pym };
   }
 
+  // 당월 활성 키 — 누적엔 매출 있지만 당월에 빠진(이탈) 건 판정용
+  const monthActive = offMonth ? {
+    brands: offMonth.brands.filter((b) => b.s > 0).map((b) => b.key),
+    stores: offMonth.stores.filter((s) => s.s > 0).map((s) => s.key),
+    detail: offMonth.detailBrands.filter((d) => d.s > 0).map((d) => `${d.division ?? ""}|${d.cat ?? ""}|${d.key}`),
+  } : null;
+
   return (
     <div className="flex flex-col h-full overflow-hidden">
       <TopBar
@@ -75,7 +82,7 @@ export default async function SalesPage() {
             action={<DataFreshnessBadge monthYm={offMeta.monthYm} />}
           />
 
-        <SalesTabsShell online={online} onlineCum={onlineCum} offCum={offCum} offMonth={offMonth} />
+        <SalesTabsShell online={online} onlineCum={onlineCum} offCum={offCum} offMonth={offMonth} monthActive={monthActive} />
 
           <p className="text-[10px] font-bold uppercase tracking-wider text-[#0a0a0a]/55">
             데이터 출처 <span className="font-mono">{meta.compiledAt}</span> 변환 · 26년 1~5월 누적 실적 (구매그룹·브랜드 / 지점·브랜드) · 41개점 기준

@@ -15,6 +15,7 @@ interface Props {
   brands: OffRank[]; stores: OffRank[];
   divisions: DivSummary[];
   fashionCats: CatSummary[];
+  monthActive?: { brands: string[]; stores: string[]; detail: string[] } | null;
 }
 
 const won = (n: number) => n.toLocaleString("ko-KR");
@@ -43,18 +44,31 @@ export default function OfflineTab(p: Props) {
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
   const [limit, setLimit] = useState(10);   // 초기 표시 행 수 (점진 확장)
   const [closedOnly, setClosedOnly] = useState(false);   // 퇴점만 보기
+  const [leftOnly, setLeftOnly] = useState(false);       // 이탈만 보기
 
   const base = view === "brand" ? p.brands : p.stores;
+  // 이탈: 누적 매출 있으나 당월에 빠진 건 (완전퇴점 제외)
+  const enableLeft = !!p.monthActive;
+  const activeSet = useMemo(
+    () => new Set(p.monthActive ? (view === "brand" ? p.monthActive.brands : p.monthActive.stores) : []),
+    [p.monthActive, view],
+  );
+  const isLeft = useCallback(
+    (r: OffRank) => enableLeft && !r.closed && r.s > 0 && !activeSet.has(r.key),
+    [enableLeft, activeSet],
+  );
   const closedCount = useMemo(() => base.filter((r) => r.closed).length, [base]);
+  const leftCount = useMemo(() => base.filter(isLeft).length, [base, isLeft]);
   const filtered = useMemo(() => {
     let list = base;
     if (closedOnly) list = list.filter((r) => r.closed);
+    if (leftOnly) list = list.filter(isLeft);
     if (div && view === "brand") list = list.filter((r) => r.division === div);
     if (q) list = list.filter((r) => r.key.includes(q) || (r.cat ?? "").includes(q));
     const dir = sortDir === "asc" ? 1 : -1;
     return [...list].sort((a, b) =>
       sortKey === "key" ? a.key.localeCompare(b.key, "ko") * dir : ((a[sortKey] as number) - (b[sortKey] as number)) * dir);
-  }, [base, q, div, view, sortKey, sortDir, closedOnly]);
+  }, [base, q, div, view, sortKey, sortDir, closedOnly, leftOnly, isLeft]);
 
   // 실제 렌더할 행 (상위 limit개만 — 수백 행 동시 렌더로 인한 멈춤 방지)
   const visible = useMemo(() => filtered.slice(0, limit), [filtered, limit]);
@@ -108,10 +122,17 @@ export default function OfflineTab(p: Props) {
             </button>
           ))}
           {closedCount > 0 && (
-            <button onClick={() => { setClosedOnly((c) => !c); setExpanded(null); setLimit(closedOnly ? 10 : closedCount); }}
+            <button onClick={() => { setClosedOnly((c) => !c); setLeftOnly(false); setExpanded(null); setLimit(closedOnly ? 10 : closedCount); }}
               className={`border-[2px] border-rose-500 px-3 py-1.5 text-[12px] font-bold transition ${closedOnly ? "bg-rose-500 text-white shadow-[2px_2px_0_0_#0a0a0a]" : "bg-white text-rose-600 hover:bg-rose-50"}`}
               title="전년 실적은 있으나 올해 매출 없는 항목만 보기">
               퇴점 {closedCount}
+            </button>
+          )}
+          {leftCount > 0 && (
+            <button onClick={() => { setLeftOnly((c) => !c); setClosedOnly(false); setExpanded(null); setLimit(leftOnly ? 10 : leftCount); }}
+              className={`border-[2px] border-amber-500 px-3 py-1.5 text-[12px] font-bold transition ${leftOnly ? "bg-amber-500 text-white shadow-[2px_2px_0_0_#0a0a0a]" : "bg-white text-amber-600 hover:bg-amber-50"}`}
+              title="누적 매출은 있으나 당월에 빠진 항목(이탈)만 보기">
+              이탈 {leftCount}
             </button>
           )}
         </div>
@@ -154,7 +175,7 @@ export default function OfflineTab(p: Props) {
           </thead>
           <tbody>
             {visible.map((r, i) => (
-              <RankRow key={r.key} rank={i + 1} row={r} showCat={view === "brand"}
+              <RankRow key={r.key} rank={i + 1} row={r} showCat={view === "brand"} left={isLeft(r)}
                 open={expanded === r.key} onToggle={onToggleRow} subLabel={subLabel} />
             ))}
             {filtered.length === 0 && <tr><td colSpan={view === "brand" ? 8 : 7} className="px-3 py-8 text-center text-slate-400">결과 없음</td></tr>}
@@ -179,10 +200,10 @@ export default function OfflineTab(p: Props) {
 
 // 메모된 행 — expanded 토글 시 해당 행만 리렌더 (대용량 테이블 성능)
 const RankRow = memo(function RankRow({
-  rank, row, showCat, open, onToggle, subLabel,
+  rank, row, showCat, open, onToggle, subLabel, left,
 }: {
   rank: number; row: OffRank; showCat: boolean; open: boolean;
-  onToggle: (key: string) => void; subLabel: string;
+  onToggle: (key: string) => void; subLabel: string; left?: boolean;
 }) {
   const cols = showCat ? 8 : 7;
   return (
@@ -192,6 +213,7 @@ const RankRow = memo(function RankRow({
         <td className="px-3 py-2 font-bold text-[#0a0a0a]">
           {row.key}
           {row.closed && <span className="ml-1.5 border border-rose-500 px-1 py-0 text-[9px] font-extrabold text-rose-600 align-middle">퇴점</span>}
+          {!row.closed && left && <span className="ml-1.5 border border-amber-500 px-1 py-0 text-[9px] font-extrabold text-amber-600 align-middle" title="누적 매출 있으나 당월 빠짐">이탈</span>}
         </td>
         <td className="px-3 py-2 text-right font-mono text-slate-500">{row.subCount}</td>
         {showCat && <td className="px-3 py-2 text-slate-500">{row.cat}</td>}
