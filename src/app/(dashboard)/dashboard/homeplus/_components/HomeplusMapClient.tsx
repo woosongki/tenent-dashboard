@@ -623,7 +623,6 @@ export default function HomeplusMapClient() {
         <MapContainer
           center={[36.5, 127.8]}
           zoom={7}
-          preferCanvas
           className="h-full w-full"
           style={{ background: "#e6e2d5" }}
         >
