@@ -75,7 +75,7 @@ export default function SalesOverviewSection({ data }: { data: SalesOverview }) 
 
       {/* 카테고리별 TOP5 — 성장액 기준 */}
       <SectionCard eyebrow="MOVERS" title="카테고리별 TOP5 (성장액)"
-        description={`${data.monthLabel || "당월"} · 성장액(올해−전년동월, 백만) 기준 · 카테고리 클릭하면 5개 펼침`}
+        description={`${data.monthLabel || "당월"} · 성장액(올해−전년동월, 백만) · 전년동월 없는 신규는 제외(아래 매출액 위젯에 포함) · 클릭하면 5개`}
         action={
           <Link href="/dashboard/sales" className="inline-flex items-center gap-1 text-[11px] font-extrabold uppercase tracking-wider px-3 py-1.5 border-[2px] border-[#0a0a0a] bg-white text-[#0a0a0a] shadow-[2px_2px_0_0_#0a0a0a] hover:bg-yellow-300 transition-all">
             전체 보기 →
