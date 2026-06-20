@@ -143,12 +143,13 @@ export default function OfflineTab(p: Props) {
           <button
             onClick={() => {
               const header = view === "brand"
-                ? ["순위", "브랜드", "복종", "매장수", "매출", "이익", "이익률%", "전년매출", "전년비%"]
-                : ["순위", "지점", "브랜드수", "매출", "이익", "이익률%", "전년매출", "전년비%"];
+                ? ["순위", "브랜드", "복종", "매장수", "매출(백만)", "이익(백만)", "이익률%", "전년매출(백만)", "전년비%"]
+                : ["순위", "지점", "브랜드수", "매출(백만)", "이익(백만)", "이익률%", "전년매출(백만)", "전년비%"];
               const yoyCell = (r: OffRank) => r.closed ? "퇴점" : r.ps === 0 ? "신규" : r.yoyPct;
+              const m = (n: number) => Math.round(n / 1e6);
               const body = filtered.map((r, i) => view === "brand"
-                ? [i + 1, r.key, displayCat(r.cat), r.subCount, r.s, r.g, r.gpm, r.ps, yoyCell(r)]
-                : [i + 1, r.key, r.subCount, r.s, r.g, r.gpm, r.ps, yoyCell(r)]);
+                ? [i + 1, r.key, displayCat(r.cat), r.subCount, m(r.s), m(r.g), r.gpm, m(r.ps), yoyCell(r)]
+                : [i + 1, r.key, r.subCount, m(r.s), m(r.g), r.gpm, m(r.ps), yoyCell(r)]);
               downloadCsv(`${p.periodLabel}_${view === "brand" ? "브랜드" : "지점"}_랭킹`, [header, ...body]);
             }}
             className="shrink-0 border-[2px] border-[#0a0a0a] bg-white px-3 py-1.5 text-[12px] font-bold hover:bg-yellow-100"

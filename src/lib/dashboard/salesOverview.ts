@@ -1,5 +1,5 @@
 import "server-only";
-import { getOfflineMeta, getOfflineCum, getOfflineMonth } from "@/lib/sales/queries";
+import { getOfflineMeta, getOfflineCum, getOfflineMonth, cumDays } from "@/lib/sales/queries";
 import { displayDivision, displayCat, divisionRank, catRank, isHiddenCat } from "@/lib/sales/labels";
 
 const OFFLINE_DIVISIONS = ["패션", "F&B", "기타"];
@@ -26,7 +26,7 @@ export async function getSalesOverview(): Promise<SalesOverview | null> {
   if (!meta.cumYear) return null;
 
   const py = String(Number(meta.cumYear) - 1);
-  const cum = await getOfflineCum(meta.cumYear, py, OFFLINE_DIVISIONS);
+  const cum = await getOfflineCum(meta.cumYear, py, OFFLINE_DIVISIONS, cumDays(meta.cumYear, meta.monthYm));
 
   let monthTotal: number | null = null;
   let monthYoy: number | null = null;

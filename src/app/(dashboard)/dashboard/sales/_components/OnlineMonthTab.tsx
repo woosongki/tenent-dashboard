@@ -173,12 +173,14 @@ export default function OnlineMonthTab(p: Props) {
           <button
             onClick={() => {
               const header = view === "brand"
-                ? ["순위", "브랜드", "복종", "매출", "전년매출", "전년비%", "주력채널"]
-                : ["순위", "지점", "매출", "전년매출", "전년비%", "주력채널"];
+                ? ["순위", "브랜드", "복종", "매출(백만)", "전년매출(백만)", "전년비%", "주력채널(백만)"]
+                : ["순위", "지점", "매출(백만)", "전년매출(백만)", "전년비%", "주력채널(백만)"];
               const yoyCell = (r: OnlineRank) => r.closed ? "퇴점" : r.yoyPct;
+              const m = (n: number) => Math.round(n / 1e6);
+              const chCell = (r: OnlineRank) => r.byChannel.slice(0, 3).map((c) => `${c.channel}:${m(c.s)}`).join(" ");
               const body = filtered.map((r, i) => view === "brand"
-                ? [i + 1, r.key, displayCat(r.cat), r.s, r.ps, yoyCell(r), r.byChannel.slice(0, 3).map((c) => `${c.channel}:${c.s}`).join(" ")]
-                : [i + 1, r.key, r.s, r.ps, yoyCell(r), r.byChannel.slice(0, 3).map((c) => `${c.channel}:${c.s}`).join(" ")]);
+                ? [i + 1, r.key, displayCat(r.cat), m(r.s), m(r.ps), yoyCell(r), chCell(r)]
+                : [i + 1, r.key, m(r.s), m(r.ps), yoyCell(r), chCell(r)]);
               downloadCsv(`온라인_${p.ym}_${view === "brand" ? "브랜드" : "지점"}`, [header, ...body]);
             }}
             className="shrink-0 border-[2px] border-[#0a0a0a] bg-white px-3 py-1.5 text-[12px] font-bold hover:bg-yellow-100"

@@ -1,5 +1,6 @@
 import "server-only";
-import { createClient } from "@/lib/supabase/server";
+import { unstable_cache } from "next/cache";
+import { createServiceClient } from "@/lib/supabase/service";
 import type { SalesStoreMeta, AggRow, GroupSummary, Grade } from "./types";
 
 // ── 기간 유틸 ──
@@ -29,7 +30,7 @@ function rowKey(d: string, c: string, b: string, s: string) {
 
 /** 기간 매출/이익을 (division|cat|brand|store) 키로 합산 */
 async function sumByStore(divisions: string[] | null, yms: string[]) {
-  const supabase = await createClient();
+  const supabase = createServiceClient();
   const map = new Map<string, MonthlyAgg>();
   let q = supabase
     .from("sales_monthly")
@@ -48,7 +49,7 @@ async function sumByStore(divisions: string[] | null, yms: string[]) {
 }
 
 async function getMetaMap(): Promise<Map<string, SalesStoreMeta>> {
-  const supabase = await createClient();
+  const supabase = createServiceClient();
   const { data, error } = await supabase
     .from("sales_store_meta")
     .select("division,cat,brand,store,area,grade,bcat");
@@ -154,7 +155,7 @@ function buildSub(curSub: Map<string, number>, prevSub?: Map<string, number>): {
 interface OnlineRow { cat: string; brand: string; store: string; channel: string; ym: string; sales: number; }
 
 async function fetchOnline(yms: string[]): Promise<OnlineRow[]> {
-  const supabase = await createClient();
+  const supabase = createServiceClient();
   // 페이지네이션 (Supabase 기본 1000행 제한 회피)
   const all: OnlineRow[] = [];
   let from = 0;
@@ -177,7 +178,7 @@ async function fetchOnline(yms: string[]): Promise<OnlineRow[]> {
  * 온라인 당월 집계 — 브랜드 랭킹 + 지점 랭킹 (전년동월비 포함)
  * @param ym 당월 'YYYY-MM'  @param prevYm 전년동월 'YYYY-MM'
  */
-export async function getOnlineMonth(ym: string, prevYm: string) {
+async function getOnlineMonthImpl(ym: string, prevYm: string) {
   const rows = await fetchOnline([ym, prevYm]);
 
   function rank(
@@ -255,7 +256,7 @@ export async function getOnlineMonth(ym: string, prevYm: string) {
 
 /** 온라인 가용 월 목록 (최신순) — order로 확정 선택, 1000행 제한 영향 없음 */
 export async function getOnlineMeta() {
-  const supabase = await createClient();
+  const supabase = createServiceClient();
   // 최신 월
   const { data: latest } = await supabase
     .from("sales_online_monthly").select("ym").order("ym", { ascending: false }).limit(1);
@@ -273,7 +274,7 @@ export async function getOnlineMeta() {
 interface OnlineCumRow { cat: string; brand: string; store: string; channel: string; year: string; sales: number; }
 
 async function fetchOnlineCum(years: string[]): Promise<OnlineCumRow[]> {
-  const supabase = await createClient();
+  const supabase = createServiceClient();
   const all: OnlineCumRow[] = [];
   let from = 0;
   const PAGE = 1000;
@@ -298,7 +299,7 @@ const EXCLUDED_CUM_CHANNELS = new Set(["옥션", "G마켓"]);
  * 온라인 누적 집계 — 브랜드/지점 랭킹 (전년 누적비)
  * @param year '2026'  @param prevYear '2025'
  */
-export async function getOnlineCumulative(year: string, prevYear: string) {
+async function getOnlineCumulativeImpl(year: string, prevYear: string) {
   const rows = (await fetchOnlineCum([year, prevYear]))
     .filter((r) => !EXCLUDED_CUM_CHANNELS.has(r.channel));
 
@@ -373,7 +374,7 @@ export async function getOnlineCumulative(year: string, prevYear: string) {
 
 /** 온라인 누적 가용 연도 (최신순) — order로 확정 선택 */
 export async function getOnlineCumMeta() {
-  const supabase = await createClient();
+  const supabase = createServiceClient();
   const { data: latest } = await supabase
     .from("sales_online_cum").select("year").order("year", { ascending: false }).limit(1);
   const { data: earliest } = await supabase
@@ -415,7 +416,7 @@ export interface OffRank {
 interface OffRow { division: string; cat: string; brand: string; store: string; sales: number; gp: number; area_raw: number; store_cnt: number; }
 
 async function fetchOff(table: "sales_offline_cum" | "sales_offline_month", col: "year" | "ym", periods: string[]): Promise<(OffRow & { p: string })[]> {
-  const supabase = await createClient();
+  const supabase = createServiceClient();
   const all: (OffRow & { p: string })[] = [];
   let from = 0; const PAGE = 1000;
   for (;;) {
@@ -544,21 +545,40 @@ function buildOff(
   };
 }
 
-/** 오프라인 누적 (5번) — 평당 일수 181 (Jan~Jun) */
-export async function getOfflineCum(year: string, prevYear: string, divisions: string[] | null = null) {
+/** 누적 평당 환산 일수 — 해당 연도 1/1 ~ 최신월(ym "YYYYMM") 말일까지 경과일수 */
+export function cumDays(year: string, monthYm: string | null): number {
+  const y = Number(year);
+  if (!monthYm || Number.isNaN(y)) return 181;
+  const m = Number(monthYm.replace(/[^0-9]/g, "").slice(4, 6));
+  if (!m) return 181;
+  const end = new Date(y, m, 0);            // m월 말일 (다음달 0일)
+  const start = new Date(y, 0, 1);          // 1/1
+  return Math.round((end.getTime() - start.getTime()) / 86400000) + 1;
+}
+
+/** 오프라인 누적 (5번) — 평당 일수는 최신월 기준 자동(미지정 시 181) */
+async function getOfflineCumImpl(year: string, prevYear: string, divisions: string[] | null = null, days = 181) {
   const rows = await fetchOff("sales_offline_cum", "year", [year, prevYear]);
-  return { year, prevYear, ...buildOff(rows, year, prevYear, divisions, 181) };
+  return { year, prevYear, ...buildOff(rows, year, prevYear, divisions, days) };
 }
 
 /** 오프라인 당월 (6번) — 평당 일수 30 */
-export async function getOfflineMonth(ym: string, prevYm: string, divisions: string[] | null = null) {
+async function getOfflineMonthImpl(ym: string, prevYm: string, divisions: string[] | null = null) {
   const rows = await fetchOff("sales_offline_month", "ym", [ym, prevYm]);
   return { ym, prevYm, ...buildOff(rows, ym, prevYm, divisions, 30) };
 }
 
+// ── 캐싱 (서비스 클라이언트 기반, 인자별 60초) ──
+// 인자(연/월)가 달라지면 새 캐시키 → 새 월 데이터는 즉시 반영.
+// 같은 월 재import 정정은 최대 60초 후 반영. 즉시 무효화는 revalidateTag("sales").
+export const getOnlineMonth = unstable_cache(getOnlineMonthImpl, ["online-month"], { revalidate: 60, tags: ["sales"] });
+export const getOnlineCumulative = unstable_cache(getOnlineCumulativeImpl, ["online-cum"], { revalidate: 60, tags: ["sales"] });
+export const getOfflineCum = unstable_cache(getOfflineCumImpl, ["offline-cum"], { revalidate: 60, tags: ["sales"] });
+export const getOfflineMonth = unstable_cache(getOfflineMonthImpl, ["offline-month"], { revalidate: 60, tags: ["sales"] });
+
 /** 오프라인 가용 기간 */
 export async function getOfflineMeta() {
-  const supabase = await createClient();
+  const supabase = createServiceClient();
   const [{ data: cy }, { data: my }] = await Promise.all([
     supabase.from("sales_offline_cum").select("year").order("year", { ascending: false }).limit(1),
     supabase.from("sales_offline_month").select("ym").order("ym", { ascending: false }).limit(1),
@@ -568,7 +588,7 @@ export async function getOfflineMeta() {
 
 /** 데이터 존재 여부 + 가용 기간 + 부문 목록 (UI 초기화용) */
 export async function getSalesMeta() {
-  const supabase = await createClient();
+  const supabase = createServiceClient();
   const [{ data: first }, { data: last }, { data: divs }] = await Promise.all([
     supabase.from("sales_monthly").select("ym").order("ym", { ascending: true }).limit(1),
     supabase.from("sales_monthly").select("ym").order("ym", { ascending: false }).limit(1),

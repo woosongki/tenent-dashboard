@@ -1,11 +1,10 @@
 import { redirect } from "next/navigation";
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
-import { getSalesMeta, getStores, getBrands } from "@/lib/sales/csvData";
 import SalesTabsShell from "./_components/SalesTabsShell";
 import {
   getOnlineMeta, getOnlineMonth, getOnlineCumMeta, getOnlineCumulative,
-  getOfflineMeta, getOfflineCum, getOfflineMonth,
+  getOfflineMeta, getOfflineCum, getOfflineMonth, cumDays,
 } from "@/lib/sales/queries";
 import TopBar from "@/components/layout/TopBar";
 import PageHeader from "@/components/ui/PageHeader";
@@ -19,10 +18,6 @@ export default async function SalesPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
-
-  const meta = getSalesMeta();
-  const stores = getStores();
-  const brands = getBrands();
 
   // 온라인(당월) — 가장 최근 월 + 전년동월 자동 선택
   const onlineMeta = await getOnlineMeta();
@@ -51,7 +46,7 @@ export default async function SalesPage() {
   let offCum = null, offMonth = null;
   if (offMeta.cumYear) {
     const py = String(Number(offMeta.cumYear) - 1);
-    const c = await getOfflineCum(offMeta.cumYear, py, OFFLINE_DIVISIONS);
+    const c = await getOfflineCum(offMeta.cumYear, py, OFFLINE_DIVISIONS, cumDays(offMeta.cumYear, offMeta.monthYm));
     offCum = { ...c, periodLabel: `${offMeta.cumYear} 누적`, prevLabel: `${py} 누적` };
   }
   if (offMeta.monthYm) {
@@ -77,15 +72,15 @@ export default async function SalesPage() {
           <PageHeader
             eyebrow="SALES ANALYTICS"
             title="매출분석"
-            subtitle="26년 1~5월 누적 · 구매그룹 · 지점 · 브랜드 3축"
-            meta={`${meta.period1} vs ${meta.period2} · 지점 ${stores.length}개 · 브랜드 ${brands.length}개`}
+            subtitle="오프라인·온라인 실적을 부문·복종·지점·브랜드로 분석. 신규·퇴점·이탈 자동 표시."
+            meta={offCum ? `누적 ${offCum.year} · 지점 ${offCum.stores.length}개 · 브랜드 ${offCum.brands.length}개` : "데이터 없음"}
             action={<DataFreshnessBadge monthYm={offMeta.monthYm} />}
           />
 
         <SalesTabsShell online={online} onlineCum={onlineCum} offCum={offCum} offMonth={offMonth} monthActive={monthActive} />
 
           <p className="text-[10px] font-bold uppercase tracking-wider text-[#0a0a0a]/55">
-            데이터 출처 <span className="font-mono">{meta.compiledAt}</span> 변환 · 26년 1~5월 누적 실적 (구매그룹·브랜드 / 지점·브랜드) · 41개점 기준
+            Supabase 라이브 데이터 · 오프라인(특정) 누적{offMeta.cumYear ? ` ${offMeta.cumYear}` : ""}·당월{offMeta.monthYm ? ` ${offMeta.monthYm}` : ""} + 온라인 · 부문/복종/지점/브랜드 · 월 1회 갱신
           </p>
 
           <AppFooter />
