@@ -101,6 +101,13 @@ function IconKeyword() {
     </svg>
   );
 }
+function IconSofa() {
+  return (
+    <svg fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M5 11V7a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v4m-14 0a2 2 0 0 0-2 2v3h18v-3a2 2 0 0 0-2-2m-14 0a2 2 0 0 1 2 2v1h10v-1a2 2 0 0 1 2-2M5 18v2m14-2v2" />
+    </svg>
+  );
+}
 function IconLogout() {
   return (
     <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -164,6 +171,7 @@ const NAV: NavGroup[] = [
       { href: "/dashboard/vacancy",   label: "공실해결",       icon: <IconKey /> },
       { href: "/dashboard/goals",     label: "컨텐츠 풀",     icon: <IconArchive /> },
       { href: "/dashboard/calendar",  label: "52주 캘린더",   icon: <IconCalendar /> },
+      { href: "/dashboard/living",    label: "리빙 주제전",    icon: <IconSofa /> },
       { href: "/dashboard/floorplans",label: "전점도면",       icon: <IconBlueprint /> },
       { href: "/dashboard/branch",    label: "상권분석",       icon: <IconMap /> },
       { href: "/dashboard/verify",    label: "컨텐츠 검증",    icon: <IconVerify /> },
