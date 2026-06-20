@@ -1,11 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
-import type { DashboardSummary, OrgRow, CategoryGroup, CategoryStat } from "@/types/dashboard";
+import type { DashboardSummary, OrgRow, CategoryGroup } from "@/types/dashboard";
 import { getPopupContactCount } from "@/lib/popupContacts";
-import {
-  getGroups as getSalesGroups,
-  getTopByGrowthAmount,
-  getTopByGrowth,
-} from "@/lib/sales/csvData";
 import { getAttractionStats } from "@/lib/attraction/queries";
 import { getVacancyResolvedCount, getVacancyRows } from "@/lib/vacancy";
 
@@ -37,11 +32,6 @@ export async function getDashboardSummary(): Promise<DashboardSummary> {
     supabase.from("vendor_fnb").select("id", { count: "exact", head: true }),
   ]);
 
-  // ── 매출 데이터 (CSV 변환본) ─────────────────────────
-  const salesGroups = getSalesGroups();
-  const topByGrowthAmount = getTopByGrowthAmount(5);
-  const topByGrowth = getTopByGrowth(5);
-
   // ── 입점계획 통계 (attraction_status — 사이드바 "입점계획(26년)"과 동일 소스) ──
   const attraction = await getAttractionStats();
 
@@ -52,13 +42,6 @@ export async function getDashboardSummary(): Promise<DashboardSummary> {
   const mrr = (mrrRes.data ?? []).reduce((s, r) => s + Number(r.amount), 0);
   const prevMrr = (prevMrrRes.data ?? []).reduce((s, r) => s + Number(r.amount), 0);
   const mrrChange = prevMrr === 0 ? 0 : Math.round(((mrr - prevMrr) / prevMrr) * 100);
-
-  // 카테고리(=구매그룹) 집계 — CSV 그룹 데이터 그대로 도넛에
-  const categoryStats: CategoryStat[] = salesGroups.map((g) => ({
-    category: g.name,
-    count: g.brandCount,
-    revenue: g.revenue_current ?? 0,
-  }));
 
   const contentPoolBreakdown = {
     lifestyle: lifestyleRes.count ?? 0,
@@ -76,8 +59,6 @@ export async function getDashboardSummary(): Promise<DashboardSummary> {
     pendingInvitations: invitationsRes.count ?? 0,
     mrr,
     mrrChange,
-    topByGrowthAmount,
-    topByGrowth,
     contentPoolCount,
     contentPoolBreakdown,
     attraction: {
@@ -89,7 +70,6 @@ export async function getDashboardSummary(): Promise<DashboardSummary> {
       resolved: vacancyResolved,
       total: vacancyTotal,
     },
-    categoryStats,
   };
 }
 

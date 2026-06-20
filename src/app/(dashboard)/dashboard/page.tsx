@@ -3,13 +3,12 @@ import { redirect } from "next/navigation";
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import { getDashboardSummary } from "@/lib/dashboard/queries";
+import { getSalesOverview } from "@/lib/dashboard/salesOverview";
 import { getLastUpdatedMax } from "@/lib/dashboard/lastUpdated";
 import SummaryCards from "./_components/SummaryCards";
-import SalesRankingDual from "./_components/SalesRankingDual";
-import CategoryDonutChart from "./_components/CategoryDonutChart";
+import SalesOverviewSection from "./_components/SalesOverview";
 import TopBar from "@/components/layout/TopBar";
 import PageHeader from "@/components/ui/PageHeader";
-import SectionCard from "@/components/ui/SectionCard";
 import AppFooter from "@/components/ui/AppFooter";
 import { SPACE } from "@/lib/tokens";
 
@@ -30,37 +29,13 @@ function SummarySkeleton() {
 }
 
 async function SummarySection() {
-  const summary = await getDashboardSummary();
+  const [summary, sales] = await Promise.all([getDashboardSummary(), getSalesOverview()]);
   return (
     <>
       <SummaryCards summary={summary} />
-
-      <SectionCard
-        eyebrow="CATEGORY"
-        title="카테고리 분포"
-        description="브랜드 매출 합산 기준 — 도넛 영역 클릭 시 매출분석으로 이동"
-      >
-        <CategoryDonutChart stats={summary.categoryStats} />
-      </SectionCard>
-
-      <SectionCard
-        eyebrow="GROWTH"
-        title="매출 성장 순위"
-        description="전년 동기 대비 매출액 성장 베스트 5 / 매출성장율 베스트 5"
-        action={
-          <a
-            href="/dashboard/sales"
-            className="inline-flex items-center gap-1 text-[11px] font-extrabold uppercase tracking-wider px-3 py-1.5 border-[2px] border-[#0a0a0a] bg-white text-[#0a0a0a] shadow-[2px_2px_0_0_#0a0a0a] hover:bg-yellow-300 hover:translate-x-[-1px] hover:translate-y-[-1px] hover:shadow-[3px_3px_0_0_#0a0a0a] transition-all"
-          >
-            전체 보기
-            <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-            </svg>
-          </a>
-        }
-      >
-        <SalesRankingDual byGrowthAmount={summary.topByGrowthAmount} byGrowth={summary.topByGrowth} />
-      </SectionCard>
+      {sales
+        ? <SalesOverviewSection data={sales} />
+        : <div className="border-[2px] border-dashed border-slate-300 p-8 text-center text-[13px] text-slate-400">매출 데이터가 없습니다.</div>}
     </>
   );
 }
