@@ -11,6 +11,7 @@ import {
   Tooltip,
   Polyline,
   Popup,
+  useMapEvents,
 } from "react-leaflet";
 import FlyToTarget, { type FlyTarget } from "./FlyToTarget";
 import { nearestEland, type NearestEland } from "./nearestEland";
@@ -619,6 +620,7 @@ export default function HomeplusMapClient() {
         <MapContainer
           center={[36.5, 127.8]}
           zoom={7}
+          preferCanvas
           className="h-full w-full"
           style={{ background: "#e6e2d5" }}
         >
@@ -735,22 +737,8 @@ export default function HomeplusMapClient() {
               </Marker>
             ))}
 
-          {/* ── 체인/백화점/그외/마트 매장 (최근접 이랜드 거리 툴팁 포함) ── */}
-          {chainLayers.map((layer) =>
-            layer.items.map((it) => (
-              <ChainMarker
-                key={`${layer.cfg.k}-${it.store.id}`}
-                store={it.store}
-                icon={layer.cfg.icon}
-                color={layer.cfg.color}
-                emoji={layer.cfg.emoji}
-                offsetY={layer.cfg.off}
-                dbNote={layer.cfg.dbNote}
-                near={it.near}
-                tier={it.tier}
-              />
-            )),
-          )}
+          {/* ── 체인/백화점/그외/마트 매장 — 줌·뷰포트 컬링 (확대+화면 안만 렌더) ── */}
+          <ChainLayersRenderer layers={chainLayers} />
 
           {/* 클릭한 점포로 지도 이동 */}
           <FlyToTarget target={flyTarget} />
@@ -782,6 +770,9 @@ export default function HomeplusMapClient() {
               style={{ background: "#4cc9f0" }}
             />
             <span className="font-bold text-[#0a0a0a]">이랜드 41점</span>
+          </div>
+          <div className="mt-1.5 border-t border-slate-200 pt-1.5 text-[9px] leading-tight text-slate-400">
+            💡 체인 매장(다이소·올리브영 등)은 지도를 확대하면 표시됩니다 (성능)
           </div>
           {showArtbox && ARTBOX_STORES.length > 0 && (
             <div className="mt-1 flex items-center gap-2 text-[11px]">
@@ -974,5 +965,39 @@ function ChainMarker({
         </div>
       </Tooltip>
     </Marker>
+  );
+}
+
+// 체인 매장이 수백~수천 개라 전부 렌더하면 느림.
+// 일정 줌 이상 + 현재 화면(약간의 여유 포함) 안의 매장만 렌더한다.
+const CHAIN_MIN_ZOOM = 10;
+function ChainLayersRenderer({ layers }: { layers: { cfg: ChainLayerCfg; items: EnrichedChainItem[] }[] }) {
+  const [, bump] = useState(0);
+  const map = useMapEvents({
+    moveend: () => bump((x) => x + 1),
+    zoomend: () => bump((x) => x + 1),
+  });
+  if (map.getZoom() < CHAIN_MIN_ZOOM) return null;   // 전국 축소 뷰에선 체인 마커 숨김
+  const bounds = map.getBounds().pad(0.25);          // 화면 + 약간의 여유
+  return (
+    <>
+      {layers.map((layer) =>
+        layer.items
+          .filter((it) => bounds.contains([it.store.lat, it.store.lng]))
+          .map((it) => (
+            <ChainMarker
+              key={`${layer.cfg.k}-${it.store.id}`}
+              store={it.store}
+              icon={layer.cfg.icon}
+              color={layer.cfg.color}
+              emoji={layer.cfg.emoji}
+              offsetY={layer.cfg.off}
+              dbNote={layer.cfg.dbNote}
+              near={it.near}
+              tier={it.tier}
+            />
+          )),
+      )}
+    </>
   );
 }
