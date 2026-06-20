@@ -1,7 +1,7 @@
 "use client";
 
 import "leaflet/dist/leaflet.css";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import {
   MapContainer,
@@ -127,9 +127,12 @@ export default function HomeplusMapClient() {
   // 모바일 필터 드로어
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
 
-  // 사이드바 하위 메뉴 클릭으로 layer가 바뀌면 가시성 토글 동기화.
+  // 사이드바 하위 메뉴 클릭으로 layer가 바뀌면 가시성 토글을 그 레이어로 리셋.
+  // (effect 대신 React 권장 "prop 변경 시 렌더 중 보정" 패턴 — 동기 setState/cascading render 회피)
   // activeTiers는 사용자가 직접 조정한 상태를 보존(레이어 전환 시 리셋 안 함).
-  useEffect(() => {
+  const [prevLayer, setPrevLayer] = useState(initialLayer);
+  if (initialLayer !== prevLayer) {
+    setPrevLayer(initialLayer);
     setShowHomeplus(initialLayer === "homeplus");
     setShowArtbox(initialLayer === "artbox");
     setShowDaiso(initialLayer === "daiso");
@@ -148,7 +151,7 @@ export default function HomeplusMapClient() {
     setShowEmart(initialLayer === "emart");
     setShowLottemart(initialLayer === "lottemart");
     setShowHanaromart(initialLayer === "hanaromart");
-  }, [initialLayer]);
+  }
   // 클릭한 점포 좌표로 지도 이동 트리거. key를 매번 새로 만들어 같은 점포 재클릭도 동작.
   const [flyTarget, setFlyTarget] = useState<FlyTarget | null>(null);
   // 고유 key 생성용 단조 증가 카운터 (렌더 순수성 위해 Date.now() 대신 ref 사용)
