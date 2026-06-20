@@ -56,7 +56,7 @@ export default async function DashboardPage() {
           <PageHeader
             eyebrow="OVERVIEW"
             title="브랜드 성과"
-            subtitle="매출 · 입점 · 팝업 현황을 한눈에 파악하고, 카드를 클릭해 상세 페이지로 드릴다운하세요."
+            subtitle="당월·누적 매출과 이탈·퇴점, 부문별·카테고리별 성장·매출 TOP을 한눈에. 카드·카테고리를 눌러 매출분석으로 드릴다운하세요."
             meta={todayStr}
           />
 
