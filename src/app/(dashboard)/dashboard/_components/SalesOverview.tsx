@@ -73,15 +73,26 @@ export default function SalesOverviewSection({ data }: { data: SalesOverview }) 
         </div>
       </SectionCard>
 
-      {/* 카테고리별 TOP5 (당월 매출액 · 좌: 상위, 우: 최하위) */}
-      <SectionCard eyebrow="MOVERS" title="카테고리별 TOP5"
+      {/* 카테고리별 TOP5 — 성장액 기준 */}
+      <SectionCard eyebrow="MOVERS" title="카테고리별 TOP5 (성장액)"
+        description={`${data.monthLabel || "당월"} · 성장액(올해−전년동월, 백만) 기준 · 카테고리 클릭하면 5개 펼침`}
+        action={
+          <Link href="/dashboard/sales" className="inline-flex items-center gap-1 text-[11px] font-extrabold uppercase tracking-wider px-3 py-1.5 border-[2px] border-[#0a0a0a] bg-white text-[#0a0a0a] shadow-[2px_2px_0_0_#0a0a0a] hover:bg-yellow-300 transition-all">
+            전체 보기 →
+          </Link>
+        }>
+        <CategoryMovers catMovers={data.catMoversByGrowth} metric="growth" />
+      </SectionCard>
+
+      {/* 카테고리별 TOP5 — 매출액 기준 */}
+      <SectionCard eyebrow="MOVERS" title="카테고리별 TOP5 (매출액)"
         description={`${data.monthLabel || "당월"} · 매출액(백만) 기준 · 카테고리 클릭하면 5개 펼침`}
         action={
           <Link href="/dashboard/sales" className="inline-flex items-center gap-1 text-[11px] font-extrabold uppercase tracking-wider px-3 py-1.5 border-[2px] border-[#0a0a0a] bg-white text-[#0a0a0a] shadow-[2px_2px_0_0_#0a0a0a] hover:bg-yellow-300 transition-all">
             전체 보기 →
           </Link>
         }>
-        <CategoryMovers catMovers={data.catMovers} />
+        <CategoryMovers catMovers={data.catMoversBySales} metric="sales" />
       </SectionCard>
     </div>
   );
