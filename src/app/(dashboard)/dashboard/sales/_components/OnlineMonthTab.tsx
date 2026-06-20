@@ -3,7 +3,7 @@
 import { Fragment, useMemo, useState } from "react";
 import type { OnlineRank } from "@/lib/sales/queries";
 import { downloadCsv } from "@/lib/sales/exportCsv";
-import { isHiddenCat } from "@/lib/sales/labels";
+import { isHiddenCat, displayCat, catRank } from "@/lib/sales/labels";
 import ScrollHint from "@/components/ui/ScrollHint";
 
 const FragmentRow = Fragment;
@@ -59,7 +59,7 @@ export default function OnlineMonthTab(p: Props) {
   const closedCount = useMemo(() => rows.filter((r) => r.closed).length, [rows]);
   const filtered = useMemo(() => {
     let list = closedOnly ? rows.filter((r) => r.closed) : [...rows];
-    if (q) list = list.filter((r) => r.key.includes(q) || (r.cat ?? "").includes(q));
+    if (q) list = list.filter((r) => r.key.includes(q) || (r.cat ?? "").includes(q) || displayCat(r.cat).includes(q));
     const dir = sortDir === "asc" ? 1 : -1;
     list.sort((a, b) => {
       if (sortKey === "key") return a.key.localeCompare(b.key, "ko") * dir;
@@ -121,11 +121,11 @@ export default function OnlineMonthTab(p: Props) {
           복종별 매출 (백만 · {p.ym})
         </div>
         <div className="divide-y divide-slate-100">
-          {p.cats.filter((c) => !isHiddenCat(c.cat)).map((c) => {
+          {p.cats.filter((c) => !isHiddenCat(c.cat)).sort((a, b) => catRank(a.cat) - catRank(b.cat)).map((c) => {
             const pctOfTotal = p.total ? (c.s / p.total) * 100 : 0;
             return (
               <div key={c.cat} className="flex items-center gap-2 px-3 py-2 text-[11px] sm:gap-3 sm:text-[12px]">
-                <span className="w-20 shrink-0 truncate font-bold text-[#0a0a0a] sm:w-32">{c.cat || "(미분류)"}</span>
+                <span className="w-20 shrink-0 truncate font-bold text-[#0a0a0a] sm:w-32">{displayCat(c.cat) || "(미분류)"}</span>
                 <div className="flex-1 min-w-[40px]">
                   <div className="h-3 bg-slate-100">
                     <div className="h-full bg-cyan-400" style={{ width: `${Math.max(pctOfTotal, 0)}%` }} />
@@ -177,7 +177,7 @@ export default function OnlineMonthTab(p: Props) {
                 : ["순위", "지점", "매출", "전년매출", "전년비%", "주력채널"];
               const yoyCell = (r: OnlineRank) => r.closed ? "퇴점" : r.yoyPct;
               const body = filtered.map((r, i) => view === "brand"
-                ? [i + 1, r.key, r.cat ?? "", r.s, r.ps, yoyCell(r), r.byChannel.slice(0, 3).map((c) => `${c.channel}:${c.s}`).join(" ")]
+                ? [i + 1, r.key, displayCat(r.cat), r.s, r.ps, yoyCell(r), r.byChannel.slice(0, 3).map((c) => `${c.channel}:${c.s}`).join(" ")]
                 : [i + 1, r.key, r.s, r.ps, yoyCell(r), r.byChannel.slice(0, 3).map((c) => `${c.channel}:${c.s}`).join(" ")]);
               downloadCsv(`온라인_${p.ym}_${view === "brand" ? "브랜드" : "지점"}`, [header, ...body]);
             }}
@@ -228,7 +228,7 @@ export default function OnlineMonthTab(p: Props) {
                       {r.key}
                       {r.closed && <span className="ml-1.5 border border-rose-500 px-1 py-0 text-[9px] font-extrabold text-rose-600 align-middle">퇴점</span>}
                     </td>
-                    {view === "brand" && <td className="px-3 py-2 text-slate-500">{r.cat}</td>}
+                    {view === "brand" && <td className="px-3 py-2 text-slate-500">{displayCat(r.cat)}</td>}
                     <td className="px-3 py-2 text-right font-mono font-bold">{r.closed ? "—" : mil(r.s)}</td>
                     <td className="px-3 py-2 text-right font-mono text-slate-500">{mil(r.ps)}</td>
                     <td className="px-3 py-2 text-right">{yoyBadge(r.yoyPct, r.closed)}</td>

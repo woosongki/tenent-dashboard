@@ -2,8 +2,8 @@
 
 import { memo, useCallback, useMemo, useState } from "react";
 import ScrollHint from "@/components/ui/ScrollHint";
+import { displayDivision, isHiddenCat, displayCat, catRank, divisionRank } from "@/lib/sales/labels";
 import type { OffRank } from "@/lib/sales/queries";
-import { displayDivision, isHiddenCat } from "@/lib/sales/labels";
 
 interface DivSummary { division: string; s: number; ps: number; g: number; gpm: number; yoyPct: number }
 interface CatSummary { cat: string; s: number; ps: number; g: number; gpm: number; yoyPct: number }
@@ -43,9 +43,11 @@ export default function OfflineDetailTab(p: Props) {
   // 선택 칩 목록: 패션 복종("패션공통" 비노출) + 비패션 부문(F&B/기타/온라인, 기타→"라이프스타일" 라벨)
   const fashionChips = p.fashionCats
     .filter((c) => !isHiddenCat(c.cat))
-    .map((c) => ({ type: "cat" as const, key: c.cat, label: c.cat || "(미분류)", s: c.s }));
+    .sort((a, b) => catRank(a.cat) - catRank(b.cat))
+    .map((c) => ({ type: "cat" as const, key: c.cat, label: displayCat(c.cat) || "(미분류)", s: c.s }));
   const divChips = p.divisions
     .filter((d) => d.division !== "패션")
+    .sort((a, b) => divisionRank(a.division) - divisionRank(b.division))
     .map((d) => ({ type: "div" as const, key: d.division, label: displayDivision(d.division), s: d.s }));
   const chips = [...fashionChips, ...divChips];
 

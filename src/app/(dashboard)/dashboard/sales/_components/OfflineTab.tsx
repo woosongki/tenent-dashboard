@@ -3,7 +3,7 @@
 import { memo, useCallback, useMemo, useState } from "react";
 import type { OffRank } from "@/lib/sales/queries";
 import { downloadCsv } from "@/lib/sales/exportCsv";
-import { displayDivision, isHiddenCat } from "@/lib/sales/labels";
+import { displayDivision, isHiddenCat, displayCat, catRank, divisionRank } from "@/lib/sales/labels";
 import ScrollHint from "@/components/ui/ScrollHint";
 
 interface DivSummary { division: string; s: number; ps: number; g: number; gpm: number; yoyPct: number }
@@ -64,7 +64,7 @@ export default function OfflineTab(p: Props) {
     if (closedOnly) list = list.filter((r) => r.closed);
     if (leftOnly) list = list.filter(isLeft);
     if (div && view === "brand") list = list.filter((r) => r.division === div);
-    if (q) list = list.filter((r) => r.key.includes(q) || (r.cat ?? "").includes(q));
+    if (q) list = list.filter((r) => r.key.includes(q) || (r.cat ?? "").includes(q) || displayCat(r.cat).includes(q));
     const dir = sortDir === "asc" ? 1 : -1;
     return [...list].sort((a, b) =>
       sortKey === "key" ? a.key.localeCompare(b.key, "ko") * dir : ((a[sortKey] as number) - (b[sortKey] as number)) * dir);
@@ -94,18 +94,19 @@ export default function OfflineTab(p: Props) {
         <Card label="이익 / 이익률" value={`${eok(p.gTotal)}억`} sub={`GPM ${p.gpm}%`} />
       </div>
 
-      {/* 부문별 요약 */}
+      {/* 부문별 요약 (패션 → F&B → 라이프스타일) */}
       <BarSection title={`부문별 매출 (백만 · ${p.periodLabel})`} barColor="#a78bfa"
-        rows={p.divisions.map((d) => ({ key: d.division, label: displayDivision(d.division), s: d.s, ps: d.ps, gpm: d.gpm, yoyPct: d.yoyPct }))}
+        rows={[...p.divisions].sort((a, b) => divisionRank(a.division) - divisionRank(b.division))
+          .map((d) => ({ key: d.division, label: displayDivision(d.division), s: d.s, ps: d.ps, gpm: d.gpm, yoyPct: d.yoyPct }))}
         total={p.total} activeKey={div} onPick={(k) => setDiv(div === k ? null : k)} />
 
-      {/* 패션 복종별 요약 ("패션공통" 비노출) */}
+      {/* 패션 복종별 요약 ("패션공통" 비노출, 지정 순서) */}
       {(() => {
-        const visibleCats = p.fashionCats.filter((c) => !isHiddenCat(c.cat));
+        const visibleCats = p.fashionCats.filter((c) => !isHiddenCat(c.cat)).sort((a, b) => catRank(a.cat) - catRank(b.cat));
         if (visibleCats.length === 0) return null;
         return (
           <BarSection title={`패션 복종별 매출 (백만 · ${p.periodLabel})`} barColor="#f472b6"
-            rows={visibleCats.map((c) => ({ key: c.cat, label: c.cat, s: c.s, ps: c.ps, gpm: c.gpm, yoyPct: c.yoyPct }))}
+            rows={visibleCats.map((c) => ({ key: c.cat, label: displayCat(c.cat), s: c.s, ps: c.ps, gpm: c.gpm, yoyPct: c.yoyPct }))}
             total={visibleCats.reduce((t, c) => t + c.s, 0)} activeKey={null} onPick={() => {}} />
         );
       })()}
@@ -146,7 +147,7 @@ export default function OfflineTab(p: Props) {
                 : ["순위", "지점", "브랜드수", "매출", "이익", "이익률%", "전년매출", "전년비%"];
               const yoyCell = (r: OffRank) => r.closed ? "퇴점" : r.ps === 0 ? "신규" : r.yoyPct;
               const body = filtered.map((r, i) => view === "brand"
-                ? [i + 1, r.key, r.cat ?? "", r.subCount, r.s, r.g, r.gpm, r.ps, yoyCell(r)]
+                ? [i + 1, r.key, displayCat(r.cat), r.subCount, r.s, r.g, r.gpm, r.ps, yoyCell(r)]
                 : [i + 1, r.key, r.subCount, r.s, r.g, r.gpm, r.ps, yoyCell(r)]);
               downloadCsv(`${p.periodLabel}_${view === "brand" ? "브랜드" : "지점"}_랭킹`, [header, ...body]);
             }}
@@ -216,7 +217,7 @@ const RankRow = memo(function RankRow({
           {!row.closed && left && <span className="ml-1.5 border border-amber-500 px-1 py-0 text-[9px] font-extrabold text-amber-600 align-middle" title="누적 매출 있으나 당월 빠짐">이탈</span>}
         </td>
         <td className="px-3 py-2 text-right font-mono text-slate-500">{row.subCount}</td>
-        {showCat && <td className="px-3 py-2 text-slate-500">{row.cat}</td>}
+        {showCat && <td className="px-3 py-2 text-slate-500">{displayCat(row.cat)}</td>}
         <td className="px-3 py-2 text-right font-mono font-bold">{row.closed ? "—" : mil(row.s)}</td>
         <td className="px-3 py-2 text-right font-mono">{row.closed ? "—" : mil(row.g)}</td>
         <td className="px-3 py-2 text-right font-mono text-slate-500">{row.closed ? "—" : `${row.gpm}%`}</td>
