@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useMemo, useState } from "react";
+import { Fragment, useCallback, useMemo, useState } from "react";
 import type { OnlineRank } from "@/lib/sales/queries";
 import { downloadCsv } from "@/lib/sales/exportCsv";
 import { isHiddenCat, displayCat, catRank } from "@/lib/sales/labels";
@@ -19,6 +19,7 @@ interface Props {
   channels: { channel: string; s: number; ps: number; yoyPct: number }[];
   cats: { cat: string; s: number; ps: number; yoyPct: number }[];
   periodLabel?: string;  // "온라인 매출" 라벨 접두 (기본: 당월)
+  monthActive?: { brands: string[]; stores: string[] } | null;  // 당월 매출 있는 키 (누적 탭 이탈 판정)
 }
 
 const won = (n: number) => n.toLocaleString("ko-KR");
@@ -55,10 +56,23 @@ export default function OnlineMonthTab(p: Props) {
     setSubLimit(10);
   }
 
+  const [leftOnly, setLeftOnly] = useState(false);
+
   const rows = view === "brand" ? p.brands : p.stores;
+  // 이탈: 누적 매출 있으나 당월에 빠진 건 (완전퇴점 제외)
+  const enableLeft = !!p.monthActive;
+  const activeSet = useMemo(
+    () => new Set(p.monthActive ? (view === "brand" ? p.monthActive.brands : p.monthActive.stores) : []),
+    [p.monthActive, view],
+  );
+  const isLeft = useCallback(
+    (r: OnlineRank) => enableLeft && !r.closed && r.s > 0 && !activeSet.has(r.key),
+    [enableLeft, activeSet],
+  );
   const closedCount = useMemo(() => rows.filter((r) => r.closed).length, [rows]);
+  const leftCount = useMemo(() => rows.filter(isLeft).length, [rows, isLeft]);
   const filtered = useMemo(() => {
-    let list = closedOnly ? rows.filter((r) => r.closed) : [...rows];
+    let list = closedOnly ? rows.filter((r) => r.closed) : leftOnly ? rows.filter(isLeft) : [...rows];
     if (q) list = list.filter((r) => r.key.includes(q) || (r.cat ?? "").includes(q) || displayCat(r.cat).includes(q));
     const dir = sortDir === "asc" ? 1 : -1;
     list.sort((a, b) => {
@@ -66,7 +80,7 @@ export default function OnlineMonthTab(p: Props) {
       return ((a[sortKey] as number) - (b[sortKey] as number)) * dir;
     });
     return list;
-  }, [rows, q, sortKey, sortDir, closedOnly]);
+  }, [rows, q, sortKey, sortDir, closedOnly, leftOnly, isLeft]);
 
   // 헤더 클릭: 같은 키면 방향 토글, 다른 키면 내림차순부터
   function toggleSort(k: SortKey) {
@@ -155,10 +169,17 @@ export default function OnlineMonthTab(p: Props) {
             </button>
           ))}
           {closedCount > 0 && (
-            <button onClick={() => { setClosedOnly((c) => !c); setExpanded(null); }}
+            <button onClick={() => { setClosedOnly((c) => !c); setLeftOnly(false); setExpanded(null); }}
               className={`border-[2px] border-rose-500 px-3 py-1.5 text-[12px] font-bold transition ${closedOnly ? "bg-rose-500 text-white shadow-[2px_2px_0_0_#0a0a0a]" : "bg-white text-rose-600 hover:bg-rose-50"}`}
               title="전년 실적은 있으나 올해 매출 없는 항목만 보기">
               퇴점 {closedCount}
+            </button>
+          )}
+          {leftCount > 0 && (
+            <button onClick={() => { setLeftOnly((c) => !c); setClosedOnly(false); setExpanded(null); }}
+              className={`border-[2px] border-amber-500 px-3 py-1.5 text-[12px] font-bold transition ${leftOnly ? "bg-amber-500 text-white shadow-[2px_2px_0_0_#0a0a0a]" : "bg-white text-amber-600 hover:bg-amber-50"}`}
+              title="누적 매출은 있으나 당월에 빠진 항목(이탈)만 보기">
+              이탈 {leftCount}
             </button>
           )}
         </div>
@@ -229,6 +250,7 @@ export default function OnlineMonthTab(p: Props) {
                     <td className="px-3 py-2 font-bold text-[#0a0a0a]">
                       {r.key}
                       {r.closed && <span className="ml-1.5 border border-rose-500 px-1 py-0 text-[9px] font-extrabold text-rose-600 align-middle">퇴점</span>}
+                      {!r.closed && isLeft(r) && <span className="ml-1.5 border border-amber-500 px-1 py-0 text-[9px] font-extrabold text-amber-600 align-middle" title="누적 매출 있으나 당월 빠짐">이탈</span>}
                     </td>
                     {view === "brand" && <td className="px-3 py-2 text-slate-500">{displayCat(r.cat)}</td>}
                     <td className="px-3 py-2 text-right font-mono font-bold">{r.closed ? "—" : mil(r.s)}</td>

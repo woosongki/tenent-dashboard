@@ -61,6 +61,11 @@ export default async function SalesPage() {
     stores: offMonth.stores.filter((s) => s.s > 0).map((s) => s.key),
     detail: offMonth.detailBrands.filter((d) => d.s > 0).map((d) => `${d.division ?? ""}|${d.cat ?? ""}|${d.key}`),
   } : null;
+  // 온라인 당월 활성 키 — 온라인 누적 탭의 이탈 판정용
+  const onlineMonthActive = online ? {
+    brands: online.brands.filter((b) => b.s > 0).map((b) => b.key),
+    stores: online.stores.filter((s) => s.s > 0).map((s) => s.key),
+  } : null;
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
@@ -77,7 +82,7 @@ export default async function SalesPage() {
             action={<DataFreshnessBadge monthYm={offMeta.monthYm} />}
           />
 
-        <SalesTabsShell online={online} onlineCum={onlineCum} offCum={offCum} offMonth={offMonth} monthActive={monthActive} />
+        <SalesTabsShell online={online} onlineCum={onlineCum} offCum={offCum} offMonth={offMonth} monthActive={monthActive} onlineMonthActive={onlineMonthActive} />
 
           <p className="text-[10px] font-bold uppercase tracking-wider text-[#0a0a0a]/55">
             Supabase 라이브 데이터 · 오프라인(특정) 누적{offMeta.cumYear ? ` ${offMeta.cumYear}` : ""}·당월{offMeta.monthYm ? ` ${offMeta.monthYm}` : ""} + 온라인 · 부문/복종/지점/브랜드 · 월 1회 갱신
