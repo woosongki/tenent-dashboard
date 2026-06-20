@@ -1,6 +1,6 @@
 import "server-only";
 import { getOfflineMeta, getOfflineCum, getOfflineMonth } from "@/lib/sales/queries";
-import { displayDivision, displayCat, divisionRank, catRank } from "@/lib/sales/labels";
+import { displayDivision, displayCat, divisionRank, catRank, isHiddenCat } from "@/lib/sales/labels";
 
 const OFFLINE_DIVISIONS = ["패션", "F&B", "기타"];
 
@@ -48,6 +48,7 @@ export async function getSalesOverview(): Promise<SalesOverview | null> {
   const catMap = new Map<string, { order: number; brands: Mover[] }>();
   for (const b of cum.detailBrands) {
     if (b.closed || b.s <= 0 || b.ps <= 0) continue;   // 전년 실적 있어야 성장액 비교
+    if (isHiddenCat(b.cat)) continue;                  // "패션공통" 제외
     const isFashion = b.division === "패션";
     const category = isFashion ? displayCat(b.cat) : displayDivision(b.division ?? "");
     const order = isFashion ? catRank(b.cat) : 100 + divisionRank(b.division ?? "");
