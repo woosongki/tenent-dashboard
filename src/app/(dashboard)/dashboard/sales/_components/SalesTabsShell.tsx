@@ -32,13 +32,12 @@ interface Props {
   offMonth: OffProps | null;      // 오프라인 당월 (6번)
   online: OnlineProps | null;     // 온라인 당월 (9번)
   onlineCum: OnlineProps | null;  // 온라인 누적 (8번)
-  children: React.ReactNode;      // 기존 매출 요약(레거시 CSV)
 }
 
-type TabKey = "off-cum" | "off-cum-detail" | "off-month" | "off-month-detail" | "summary" | "online-cum" | "online-month";
+type TabKey = "off-cum" | "off-cum-detail" | "off-month" | "off-month-detail" | "online-cum" | "online-month";
 
-export default function SalesTabsShell({ offCum, offMonth, online, onlineCum, children }: Props) {
-  const [tab, setTab] = useState<TabKey>(offCum ? "off-cum" : "summary");
+export default function SalesTabsShell({ offCum, offMonth, online, onlineCum }: Props) {
+  const [tab, setTab] = useState<TabKey>("off-cum");
 
   return (
     <div className="space-y-4">
@@ -62,9 +61,6 @@ export default function SalesTabsShell({ offCum, offMonth, online, onlineCum, ch
         <TabBtn active={tab === "online-month"} onClick={() => setTab("online-month")}>
           📱 온라인(당월){online ? ` · ${online.ym}` : ""}
         </TabBtn>
-        <TabBtn active={tab === "summary"} onClick={() => setTab("summary")}>
-          📊 매출 요약(구)
-        </TabBtn>
       </div>
 
       {/* 탭 내용 */}
@@ -72,7 +68,6 @@ export default function SalesTabsShell({ offCum, offMonth, online, onlineCum, ch
       {tab === "off-cum-detail" && (offCum ? <OfflineDetailTab periodLabel={offCum.periodLabel} prevLabel={offCum.prevLabel} brands={offCum.detailBrands} stores={offCum.stores} divisions={offCum.divisions} fashionCats={offCum.fashionCats} /> : <Empty table="sales_offline_cum" />)}
       {tab === "off-month" && (offMonth ? <OfflineTab {...offMonth} /> : <Empty table="sales_offline_month" />)}
       {tab === "off-month-detail" && (offMonth ? <OfflineDetailTab periodLabel={offMonth.periodLabel} prevLabel={offMonth.prevLabel} brands={offMonth.detailBrands} stores={offMonth.stores} divisions={offMonth.divisions} fashionCats={offMonth.fashionCats} /> : <Empty table="sales_offline_month" />)}
-      {tab === "summary" && <div>{children}</div>}
       {tab === "online-cum" && (onlineCum ? <OnlineMonthTab {...onlineCum} periodLabel="온라인 누적" /> : <Empty table="sales_online_cum" />)}
       {tab === "online-month" && (online ? <OnlineMonthTab {...online} /> : <Empty table="sales_online_monthly" />)}
     </div>
