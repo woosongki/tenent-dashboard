@@ -26,7 +26,7 @@ export default async function LivingPage() {
   const role = (membership?.role as "owner" | "admin" | "member" | undefined) ?? null;
   const canEdit = role === "owner" || role === "admin";
 
-  const year = 2026;
+  const year = new Date().getFullYear();   // 현재 연도 자동 (2027 되면 자동 전환)
   const popups = orgId ? await getLivingPopups(orgId, year, canEdit) : [];
   const weeks = buildWeeks(year);
 
