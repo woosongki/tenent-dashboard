@@ -27,10 +27,12 @@ function SummarySkeleton() {
 }
 
 async function SummarySection() {
-  const sales = await getSalesOverview();
+  let sales = null;
+  try { sales = await getSalesOverview(); }
+  catch (e) { console.error("[dashboard] 매출 요약 로드 실패:", e); }
   return sales
     ? <SalesOverviewSection data={sales} />
-    : <div className="border-[2px] border-dashed border-slate-300 p-8 text-center text-[13px] text-slate-400">매출 데이터가 없습니다.</div>;
+    : <div className="border-[2px] border-dashed border-slate-300 p-8 text-center text-[13px] text-slate-400">매출 데이터를 불러오지 못했습니다.</div>;
 }
 
 export default async function DashboardPage() {

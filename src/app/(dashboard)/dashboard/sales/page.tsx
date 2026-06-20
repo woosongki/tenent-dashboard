@@ -14,46 +14,59 @@ import { SPACE } from "@/lib/tokens";
 
 export const metadata: Metadata = { title: "매출분석 — lifestyle" };
 
+/** 한 데이터셋 로드 실패가 페이지 전체를 죽이지 않도록 격리 (실패 시 null → 해당 탭만 빈 상태) */
+async function safe<T>(fn: () => Promise<T>): Promise<T | null> {
+  try { return await fn(); } catch (e) { console.error("[sales] 데이터 로드 실패:", e); return null; }
+}
+
 export default async function SalesPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  // 온라인(당월) — 가장 최근 월 + 전년동월 자동 선택
-  const onlineMeta = await getOnlineMeta();
-  let online = null;
-  if (onlineMeta.hasData) {
-    const ym = onlineMeta.yms[0];                   // 최신 월 (예: 2026-06)
-    const prevYm = `${Number(ym.slice(0, 4)) - 1}${ym.slice(4)}`;  // 전년동월
-    const o = await getOnlineMonth(ym, prevYm);
-    online = { ...o, ym: o.ym, prevYm: o.prevYm };
-  }
-
-  // 온라인(누적) — 최신 연도 + 전년 누적
-  const cumMeta = await getOnlineCumMeta();
-  let onlineCum = null;
-  if (cumMeta.hasData) {
-    const year = cumMeta.years[0];                  // 최신 연 (예: 2026)
-    const prevYear = String(Number(year) - 1);
-    const c = await getOnlineCumulative(year, prevYear);
-    // OnlineMonthTab은 ym/prevYm 라벨을 받으므로 연 누적 라벨로 매핑
-    onlineCum = { ...c, ym: `${year} 누적`, prevYm: `${prevYear} 누적` };
-  }
-
-  // 오프라인 매출 (5번 누적 / 6번 당월) — 온라인(I*) 부문 제외, 별도 온라인 탭에서 노출.
   const OFFLINE_DIVISIONS = ["패션", "F&B", "기타"];
-  const offMeta = await getOfflineMeta();
-  let offCum = null, offMonth = null;
-  if (offMeta.cumYear) {
-    const py = String(Number(offMeta.cumYear) - 1);
-    const c = await getOfflineCum(offMeta.cumYear, py, OFFLINE_DIVISIONS, cumDays(offMeta.cumYear, offMeta.monthYm));
-    offCum = { ...c, periodLabel: `${offMeta.cumYear} 누적`, prevLabel: `${py} 누적` };
-  }
-  if (offMeta.monthYm) {
-    const pym = `${Number(offMeta.monthYm.slice(0, 4)) - 1}${offMeta.monthYm.slice(4)}`;
-    const m = await getOfflineMonth(offMeta.monthYm, pym, OFFLINE_DIVISIONS);
-    offMonth = { ...m, periodLabel: offMeta.monthYm, prevLabel: pym };
-  }
+
+  // 각 데이터셋을 독립적으로 로드 — 하나가 실패해도 나머지 탭은 정상.
+  const [online, onlineCum, offData] = await Promise.all([
+    // 온라인(당월) — 최신 월 + 전년동월
+    safe(async () => {
+      const meta = await getOnlineMeta();
+      if (!meta.hasData) return null;
+      const ym = meta.yms[0];
+      const prevYm = `${Number(ym.slice(0, 4)) - 1}${ym.slice(4)}`;
+      const o = await getOnlineMonth(ym, prevYm);
+      return { ...o, ym: o.ym, prevYm: o.prevYm };
+    }),
+    // 온라인(누적) — 최신 연 + 전년 누적
+    safe(async () => {
+      const meta = await getOnlineCumMeta();
+      if (!meta.hasData) return null;
+      const year = meta.years[0];
+      const prevYear = String(Number(year) - 1);
+      const c = await getOnlineCumulative(year, prevYear);
+      return { ...c, ym: `${year} 누적`, prevYm: `${prevYear} 누적` };
+    }),
+    // 오프라인 누적·당월 (온라인 부문 제외)
+    safe(async () => {
+      const offMeta = await getOfflineMeta();
+      let offCum = null, offMonth = null;
+      if (offMeta.cumYear) {
+        const py = String(Number(offMeta.cumYear) - 1);
+        const c = await getOfflineCum(offMeta.cumYear, py, OFFLINE_DIVISIONS, cumDays(offMeta.cumYear, offMeta.monthYm));
+        offCum = { ...c, periodLabel: `${offMeta.cumYear} 누적`, prevLabel: `${py} 누적` };
+      }
+      if (offMeta.monthYm) {
+        const pym = `${Number(offMeta.monthYm.slice(0, 4)) - 1}${offMeta.monthYm.slice(4)}`;
+        const m = await getOfflineMonth(offMeta.monthYm, pym, OFFLINE_DIVISIONS);
+        offMonth = { ...m, periodLabel: offMeta.monthYm, prevLabel: pym };
+      }
+      return { offCum, offMonth, monthYm: offMeta.monthYm, cumYear: offMeta.cumYear };
+    }),
+  ]);
+
+  const offCum = offData?.offCum ?? null;
+  const offMonth = offData?.offMonth ?? null;
+  const offMeta = { monthYm: offData?.monthYm ?? null, cumYear: offData?.cumYear ?? null };
 
   // 당월 활성 키 — 누적엔 매출 있지만 당월에 빠진(이탈) 건 판정용
   const monthActive = offMonth ? {
