@@ -2,10 +2,8 @@ import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
-import { getDashboardSummary } from "@/lib/dashboard/queries";
 import { getSalesOverview } from "@/lib/dashboard/salesOverview";
 import { getLastUpdatedMax } from "@/lib/dashboard/lastUpdated";
-import SummaryCards from "./_components/SummaryCards";
 import SalesOverviewSection from "./_components/SalesOverview";
 import TopBar from "@/components/layout/TopBar";
 import PageHeader from "@/components/ui/PageHeader";
@@ -29,15 +27,10 @@ function SummarySkeleton() {
 }
 
 async function SummarySection() {
-  const [summary, sales] = await Promise.all([getDashboardSummary(), getSalesOverview()]);
-  return (
-    <>
-      <SummaryCards summary={summary} />
-      {sales
-        ? <SalesOverviewSection data={sales} />
-        : <div className="border-[2px] border-dashed border-slate-300 p-8 text-center text-[13px] text-slate-400">매출 데이터가 없습니다.</div>}
-    </>
-  );
+  const sales = await getSalesOverview();
+  return sales
+    ? <SalesOverviewSection data={sales} />
+    : <div className="border-[2px] border-dashed border-slate-300 p-8 text-center text-[13px] text-slate-400">매출 데이터가 없습니다.</div>;
 }
 
 export default async function DashboardPage() {
