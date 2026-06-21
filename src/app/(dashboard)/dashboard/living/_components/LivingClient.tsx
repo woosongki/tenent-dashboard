@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import {
   type LivingPopup, type WeekRow, type PopupStatus, type LivingSpace, type DailyMap,
-  CHANNELS, POPUP_TYPES, PROMOS, LIVING_BRANDS, LIVING_STORES,
+  LIVING_BRANDS, LIVING_STORES,
   popupStatus, STATUS_LABEL, weekIndexOf,
 } from "@/lib/livingPopup";
 import { createPopup, updatePopup, deletePopup, setDailySales, type PopupInput } from "../_actions";
@@ -61,7 +61,7 @@ export default function LivingClient({ popups, weeks, year, canEdit, spaces, dai
     setEditing({
       brand: brand ?? brands[0] ?? "", store: store ?? "",
       startDate: week?.start ?? `${year}-01-07`, endDate: week?.end ?? `${year}-01-13`,
-      channel: null, popupType: "팝업", promo: null, vendor: "", sales: null,
+      channel: null, popupType: null, promo: null, vendor: "", sales: null,
       coalition: coalition ?? "", year,
     });
   }
@@ -587,22 +587,7 @@ function Editor({ draft, setDraft, onSave, onDelete, onClose, pending, daily, on
         </Field>
         <Field label="시작일"><input type="date" value={draft.startDate} onChange={(e) => set({ startDate: e.target.value })} className={INP} /></Field>
         <Field label="종료일"><input type="date" value={draft.endDate} onChange={(e) => set({ endDate: e.target.value })} className={INP} /></Field>
-        <Field label="채널">
-          <select value={draft.channel ?? ""} onChange={(e) => set({ channel: e.target.value || null })} className={INP}>
-            <option value="">미정</option>{CHANNELS.map((c) => <option key={c}>{c}</option>)}
-          </select>
-        </Field>
-        <Field label="유형">
-          <select value={draft.popupType ?? ""} onChange={(e) => set({ popupType: e.target.value || null })} className={INP}>
-            {POPUP_TYPES.map((t) => <option key={t}>{t}</option>)}
-          </select>
-        </Field>
         <Field label="벤더(운영사)"><input value={draft.vendor ?? ""} onChange={(e) => set({ vendor: e.target.value })} placeholder="예: SCK, 명보, 락앤락" className={INP} /></Field>
-        <Field label="행사">
-          <select value={draft.promo ?? ""} onChange={(e) => set({ promo: e.target.value || null })} className={INP}>
-            <option value="">없음</option>{PROMOS.map((p) => <option key={p}>{p}</option>)}
-          </select>
-        </Field>
         <div className="col-span-2">
           <label className="block text-[11px] font-bold text-slate-600 mb-1">연합 주제전명 <span className="font-normal text-slate-400">· 같은 지점·주차에 2개 이상 브랜드를 합동으로 묶을 때 동일 이름 입력</span></label>
           <input list="lp-coalitions" value={draft.coalition ?? ""} onChange={(e) => set({ coalition: e.target.value })}
