@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useTransition } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import {
@@ -8,7 +8,7 @@ import {
   CHANNELS, POPUP_TYPES, PROMOS, LIVING_BRANDS, LIVING_STORES,
   popupStatus, STATUS_LABEL, weekIndexOf,
 } from "@/lib/livingPopup";
-import { createPopup, updatePopup, deletePopup, bulkCreatePopups, setDailySales, type PopupInput } from "../_actions";
+import { createPopup, updatePopup, deletePopup, setDailySales, type PopupInput } from "../_actions";
 
 type Tab = "calendar" | "list" | "analytics" | "availability";
 
@@ -29,7 +29,6 @@ export default function LivingClient({ popups, weeks, year, canEdit, spaces, dai
   const router = useRouter();
   const [tab, setTab] = useState<Tab>("calendar");
   const [editing, setEditing] = useState<Draft | null>(null);
-  const [bulkOpen, setBulkOpen] = useState(false);
   const [pending, startTransition] = useTransition();
 
   // 그리드 컬럼 = 기본 16개 브랜드(요청 순서) + 데이터에만 있는 추가 브랜드
@@ -85,13 +84,6 @@ export default function LivingClient({ popups, weeks, year, canEdit, spaces, dai
     });
   }
 
-  function bulkSave(rows: PopupInput[], onDone: () => void) {
-    startTransition(async () => {
-      const res = await bulkCreatePopups(rows.map((r) => ({ ...r, year })));
-      if (res.ok) { toast.success(`${res.count}건 일괄 등록됨`); setBulkOpen(false); onDone(); router.refresh(); }
-      else toast.error(res.error);
-    });
-  }
   function saveDaily(popupId: string, entries: { date: string; sales: number }[]) {
     startTransition(async () => {
       const res = await setDailySales(popupId, year, entries);
@@ -114,16 +106,10 @@ export default function LivingClient({ popups, weeks, year, canEdit, spaces, dai
           ))}
         </div>
         {canEdit && (
-          <div className="flex gap-1.5">
-            <button onClick={() => setBulkOpen(true)}
-              className="border-[2px] border-[#0a0a0a] bg-white px-3 py-1.5 text-[12px] font-bold hover:bg-yellow-100">
-              ⇪ 일괄 등록
-            </button>
-            <button onClick={() => openNew()}
-              className="border-[2px] border-[#0a0a0a] bg-[#0a0a0a] text-white px-3 py-1.5 text-[12px] font-bold hover:bg-[#222]">
-              + 팝업 추가
-            </button>
-          </div>
+          <button onClick={() => openNew()}
+            className="border-[2px] border-[#0a0a0a] bg-[#0a0a0a] text-white px-3 py-1.5 text-[12px] font-bold hover:bg-[#222]">
+            + 팝업 추가
+          </button>
         )}
       </div>
 
@@ -143,10 +129,6 @@ export default function LivingClient({ popups, weeks, year, canEdit, spaces, dai
       {tab === "availability" && (
         <AvailabilityTab popups={popups} weeks={weeks} spaces={spaces}
           onPropose={canEdit ? (store, w) => openNew(undefined, w, store) : undefined} />
-      )}
-
-      {bulkOpen && canEdit && (
-        <BulkPanel pending={pending} onClose={() => setBulkOpen(false)} onSave={bulkSave} />
       )}
 
       {editing && (
@@ -455,9 +437,11 @@ function Editor({ draft, setDraft, onSave, onDelete, onClose, pending, daily, on
   const s = STATUS_STYLE[st];
   const set = (patch: Partial<Draft>) => setDraft({ ...draft, ...patch });
   const salesLocked = st !== "done";
+  const rootRef = useRef<HTMLDivElement>(null);
+  useEffect(() => { rootRef.current?.scrollIntoView({ behavior: "smooth", block: "center" }); }, []);
 
   return (
-    <div className="border-[2px] border-[#0a0a0a] bg-white p-4" style={{ boxShadow: "4px 4px 0 0 #0a0a0a" }}>
+    <div ref={rootRef} className="border-[2px] border-[#0a0a0a] bg-white p-4" style={{ boxShadow: "4px 4px 0 0 #0a0a0a" }}>
       <div className="flex items-center justify-between mb-3">
         <div className="text-[15px] font-bold">{draft.id ? "팝업 편집" : "새 팝업"}</div>
         <span className={`border ${s.bd} ${s.bg} ${s.tx} rounded px-2 py-0.5 text-[12px] font-bold`}>{STATUS_LABEL[st]}</span>
@@ -568,53 +552,3 @@ function DailySection({ popupId, startDate, endDate, daily, pending, onSave }: {
   );
 }
 
-// ── 일괄 등록 (#3) — 붙여넣기 → 다건 등록 ─────────────────────
-function normDate(s: string, year: number): string {
-  const t = s.trim().replace(/[./]/g, "-");
-  let m = t.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
-  if (m) return `${m[1]}-${m[2].padStart(2, "0")}-${m[3].padStart(2, "0")}`;
-  m = t.match(/^(\d{1,2})-(\d{1,2})$/);
-  if (m) return `${year}-${m[1].padStart(2, "0")}-${m[2].padStart(2, "0")}`;
-  return "";
-}
-function BulkPanel({ pending, onClose, onSave }: {
-  pending: boolean; onClose: () => void; onSave: (rows: PopupInput[], onDone: () => void) => void;
-}) {
-  const [text, setText] = useState("");
-  const year = new Date().getFullYear();
-  const parsed = useMemo(() => {
-    const rows: PopupInput[] = []; const errs: string[] = [];
-    text.split(/\r?\n/).forEach((line, i) => {
-      if (!line.trim()) return;
-      const c = line.split(/\t|,/).map((x) => x.trim());
-      const [brand, store, start, end, channel, vendor] = c;
-      const sd = normDate(start ?? "", year), ed = normDate(end ?? "", year);
-      if (!brand || !store || !sd || !ed) { errs.push(`${i + 1}행: 브랜드/지점/시작/종료 확인`); return; }
-      rows.push({ brand, store, startDate: sd, endDate: ed, channel: channel || null, vendor: vendor || null, popupType: "팝업", year });
-    });
-    return { rows, errs };
-  }, [text, year]);
-
-  return (
-    <div className="border-[2px] border-[#0a0a0a] bg-white p-4" style={{ boxShadow: "4px 4px 0 0 #0a0a0a" }}>
-      <div className="flex items-center justify-between mb-2">
-        <div className="text-[15px] font-bold">분기·반기 일괄 등록</div>
-        <button onClick={onClose} className="text-[12px] text-slate-500 underline">닫기</button>
-      </div>
-      <p className="text-[11px] text-slate-500 mb-2 leading-relaxed">
-        엑셀/시트에서 복사해 붙여넣으세요. 한 줄 = 한 팝업. 열 순서(탭 또는 콤마 구분):<br />
-        <code className="text-[10px] bg-slate-100 px-1">브랜드 · 지점 · 시작일 · 종료일 · 채널(선택) · 벤더(선택)</code> · 날짜는 2026-06-24 또는 6-24
-      </p>
-      <textarea value={text} onChange={(e) => setText(e.target.value)} rows={8}
-        placeholder={"락앤락\t야탑\t2026-06-24\t2026-06-30\t리테일(MDM)\t락앤락\n테팔\t분당\t2026-06-27\t2026-06-30\t킴스(PDM)\tSCK"}
-        className="w-full border-[2px] border-[#0a0a0a] p-2 font-mono text-[11px] focus:outline-none focus:bg-yellow-50" />
-      <div className="flex items-center gap-3 mt-2">
-        <button onClick={() => onSave(parsed.rows, () => setText(""))} disabled={pending || parsed.rows.length === 0}
-          className="border-[2px] border-[#0a0a0a] bg-yellow-300 px-4 py-1.5 text-[13px] font-bold hover:bg-yellow-400 disabled:opacity-50">
-          {pending ? "등록 중…" : `${parsed.rows.length}건 등록`}
-        </button>
-        {parsed.errs.length > 0 && <span className="text-[11px] text-rose-600">{parsed.errs.length}개 행 오류: {parsed.errs[0]}</span>}
-      </div>
-    </div>
-  );
-}

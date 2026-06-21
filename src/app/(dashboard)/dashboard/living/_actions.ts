@@ -96,23 +96,6 @@ export async function updatePopup(id: string, input: PopupInput): Promise<Result
   return { ok: true };
 }
 
-/** 분기·반기 계획 일괄 등록 — 여러 행을 한 번에 insert */
-export async function bulkCreatePopups(rows: PopupInput[]): Promise<{ ok: true; count: number } | { ok: false; error: string }> {
-  if (!rows.length) return { ok: false, error: "등록할 행이 없습니다." };
-  for (let i = 0; i < rows.length; i++) {
-    const err = validate(rows[i]);
-    if (err) return { ok: false, error: `${i + 1}행: ${err}` };
-  }
-  let ctx;
-  try { ctx = await requireAdmin(); } catch (e) { return { ok: false, error: (e as Error).message }; }
-  const supabase = await createClient();
-  const payload = rows.map((r) => ({ ...toRow(r), organization_id: ctx.orgId, created_by: ctx.userId, updated_by: ctx.userId }));
-  const { error } = await supabase.from("living_popup").insert(payload);
-  if (error) return { ok: false, error: error.message };
-  revalidatePath("/dashboard/living");
-  return { ok: true, count: rows.length };
-}
-
 /** 일매출 저장 — 날짜별 매출 upsert 후 팝업 실적(sales)을 합계로 자동 갱신 */
 export async function setDailySales(
   popupId: string, year: number, entries: { date: string; sales: number }[],
