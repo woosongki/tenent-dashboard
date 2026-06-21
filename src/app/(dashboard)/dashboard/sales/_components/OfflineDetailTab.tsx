@@ -2,8 +2,8 @@
 
 import { memo, useCallback, useMemo, useState } from "react";
 import ScrollHint from "@/components/ui/ScrollHint";
-import { displayDivision, isHiddenCat, displayCat, catRank, divisionRank } from "@/lib/sales/labels";
-import type { OffRank } from "@/lib/sales/queries";
+import { displayDivision, isHiddenCat, displayCat, catRank, divisionRank, OTHERS_KEY, OTHERS_LABEL } from "@/lib/sales/labels";
+import type { OffRank, OffOthers } from "@/lib/sales/queries";
 
 interface DivSummary { division: string; s: number; ps: number; g: number; gpm: number; yoyPct: number }
 interface CatSummary { cat: string; s: number; ps: number; g: number; gpm: number; yoyPct: number }
@@ -14,6 +14,7 @@ interface Props {
   stores: OffRank[];          // 지점별 (하위=브랜드)
   divisions: DivSummary[];
   fashionCats: CatSummary[];
+  others?: OffOthers | null;
   monthActive?: { brands: string[]; stores: string[]; detail: string[] } | null;
 }
 
@@ -49,7 +50,11 @@ export default function OfflineDetailTab(p: Props) {
     .filter((d) => d.division !== "패션")
     .sort((a, b) => divisionRank(a.division) - divisionRank(b.division))
     .map((d) => ({ type: "div" as const, key: d.division, label: displayDivision(d.division), s: d.s }));
-  const chips = [...fashionChips, ...divChips];
+  // "그 외" 칩 — 항상 마지막
+  const othersChip = p.others && p.others.brands.length
+    ? [{ type: "div" as const, key: OTHERS_KEY, label: OTHERS_LABEL, s: p.others.total }]
+    : [];
+  const chips = [...fashionChips, ...divChips, ...othersChip];
 
   const [view, setView] = useState<"brand" | "store">("brand");
   const [sel, setSel] = useState<Sel>(chips[0] ? { type: chips[0].type, key: chips[0].key } : { type: "div", key: "패션" });
@@ -73,6 +78,7 @@ export default function OfflineDetailTab(p: Props) {
   // 선택 복종/부문 기준으로 지점별 데이터 구성 (detailBrands → 지점 피벗)
   const storeData = useMemo<OffRank[]>(() => {
     if (!stSel) return p.stores;   // 전체: 지점 전체 복종 합계
+    if (stSel.type === "div" && stSel.key === OTHERS_KEY) return p.others?.stores ?? [];
     const selBrands = p.brands.filter((b) => stSel.type === "cat"
       ? (b.division === "패션" && b.cat === stSel.key)
       : b.division === stSel.key);
@@ -95,7 +101,7 @@ export default function OfflineDetailTab(p: Props) {
       closed: e.s === 0 && e.ps > 0,
       bySub: e.subs,
     })).sort((a, b) => b.s - a.s);
-  }, [stSel, p.stores, p.brands]);
+  }, [stSel, p.stores, p.brands, p.others]);
 
   const storeRows = useMemo(() => {
     const base = stQ ? storeData.filter((s) => s.key.includes(stQ)) : storeData;
@@ -121,9 +127,10 @@ export default function OfflineDetailTab(p: Props) {
     enableLeft && !r.closed && r.s > 0 && !storeSet.has(r.key), [enableLeft, storeSet]);
 
   // 선택 카테고리 브랜드 (요약·칩 기준 — 검색 무관)
-  const catRows = useMemo(() =>
-    p.brands.filter((b) => sel.type === "cat" ? (b.division === "패션" && b.cat === sel.key) : b.division === sel.key),
-  [p.brands, sel]);
+  const catRows = useMemo(() => {
+    if (sel.type === "div" && sel.key === OTHERS_KEY) return p.others?.detailBrands ?? [];
+    return p.brands.filter((b) => sel.type === "cat" ? (b.division === "패션" && b.cat === sel.key) : b.division === sel.key);
+  }, [p.brands, p.others, sel]);
 
   // 표시 행: 검색어 있으면 전 부문에서 브랜드명 검색, 없으면 선택 카테고리. + 정렬
   const rows = useMemo(() => {

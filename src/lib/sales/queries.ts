@@ -1,6 +1,7 @@
 import "server-only";
 import { unstable_cache } from "next/cache";
 import { createServiceClient } from "@/lib/supabase/service";
+import { isOthersBrand } from "./labels";
 import type { SalesStoreMeta, AggRow, GroupSummary, Grade } from "./types";
 
 // ── 기간 유틸 ──
@@ -412,6 +413,11 @@ export interface OffRank {
   closed?: boolean;               // 퇴점: 전년 실적만 있고 올해 매출 없음
   bySub?: OffSub[];
 }
+/** "그 외" 분리 브랜드 묶음 — 본 수치엔 빠지고 별도 탭에서만 노출 */
+export interface OffOthers {
+  total: number; prevTotal: number; gTotal: number; gpm: number; yoyPct: number;
+  brands: OffRank[]; stores: OffRank[]; detailBrands: OffRank[];
+}
 
 interface OffRow { division: string; cat: string; brand: string; store: string; sales: number; gp: number; area_raw: number; store_cnt: number; }
 
@@ -422,7 +428,6 @@ async function fetchOff(table: "sales_offline_cum" | "sales_offline_month", col:
   for (;;) {
     const { data, error } = await supabase
       .from(table).select(`division,cat,brand,store,sales,gp,area_raw,store_cnt,${col}`).in(col, periods)
-      .neq("brand", "엠페스트")   // 엠페스트(기타·엠페스트 입점) 노출/집계 제외
       .range(from, from + PAGE - 1);
     if (error) throw new Error(`${table}: ${error.message}`);
     all.push(...(data ?? []).map((r) => ({ ...r, p: (r as Record<string, string>)[col] })) as (OffRow & { p: string })[]);
@@ -432,11 +437,8 @@ async function fetchOff(table: "sales_offline_cum" | "sales_offline_month", col:
   return all;
 }
 
-function buildOff(
-  rows: (OffRow & { p: string })[], cur: string, prev: string, divisions: string[] | null, days: number,
-) {
-  const filtered = divisions ? rows.filter((r) => divisions.includes(r.division)) : rows;
-
+/** 한 행 묶음(filtered)에 대한 전체 집계 — 본류/그외 동일 로직 재사용 */
+function aggregate(filtered: (OffRow & { p: string })[], cur: string, prev: string, days: number) {
   type SubAgg = { s: number; g: number; ps: number; pg: number; area: number; cnt: number };
   // keyOf: 그룹 키, labelOf: 표시명(없으면 키와 동일)
   function rank(keyOf: (r: OffRow) => string, withCat: boolean, subOf?: (r: OffRow) => string, labelOf?: (r: OffRow) => string): OffRank[] {
@@ -544,6 +546,26 @@ function buildOff(
         yoyPct: v.ps ? +((v.s - v.ps) / v.ps * 100).toFixed(1) : 0 }))
       .sort((a, b) => b.s - a.s),
   };
+}
+
+/**
+ * 본류 집계 + "그 외" 분리 집계.
+ * 그 외 브랜드(엠페스트·코코몽키즈랜드·이키즈랜드·문화센터·소극장 등)는
+ * 본 수치(총계·부문·복종·지점·브랜드)에서 완전히 제외하고 others로만 노출.
+ */
+function buildOff(
+  rows: (OffRow & { p: string })[], cur: string, prev: string, divisions: string[] | null, days: number,
+) {
+  const filtered = divisions ? rows.filter((r) => divisions.includes(r.division)) : rows;
+  const mainRows = filtered.filter((r) => !isOthersBrand(r.brand));
+  const otherRows = filtered.filter((r) => isOthersBrand(r.brand));
+  const main = aggregate(mainRows, cur, prev, days);
+  const oth = aggregate(otherRows, cur, prev, days);
+  const others: OffOthers = {
+    total: oth.total, prevTotal: oth.prevTotal, gTotal: oth.gTotal, gpm: oth.gpm, yoyPct: oth.yoyPct,
+    brands: oth.brands, stores: oth.stores, detailBrands: oth.detailBrands,
+  };
+  return { ...main, others };
 }
 
 /** 누적 평당 환산 일수 — 해당 연도 1/1 ~ 최신월(ym "YYYYMM") 말일까지 경과일수 */

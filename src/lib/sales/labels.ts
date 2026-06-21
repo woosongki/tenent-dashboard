@@ -46,3 +46,21 @@ export const catRank = (cat: string | null | undefined): number => {
   const i = CAT_ORDER.indexOf(cat);
   return i < 0 ? 998 : i;
 };
+
+// ── "그 외" 분리 브랜드 ────────────────────────────────────────
+// 매출 집계/노출에서 본류와 분리해 별도 "그 외" 탭에 모으는 브랜드들.
+// (모두 라이프스타일 부문이지만 운영성격이 달라 본 수치에 섞이지 않게 격리)
+export const OTHERS_KEY = "그외";
+export const OTHERS_LABEL = "그 외";
+
+const OTHERS_EXACT: ReadonlySet<string> = new Set(["엠페스트", "코코몽키즈랜드", "이키즈랜드"]);
+
+/** 그 외 분리 대상 브랜드 판별 — 괄호/영문 표기 차이에 관용적, '소극장 마니마니'(별개 브랜드)는 제외 */
+export const isOthersBrand = (brand: string | null | undefined): boolean => {
+  if (!brand) return false;
+  const b = brand.trim();
+  if (OTHERS_EXACT.has(b)) return true;
+  if (b.startsWith("문화센터")) return true;     // 문화센터(CULTURECENTER)
+  if (b.startsWith("소극장(")) return true;       // 소극장(LITTLETHEATER) — '소극장 마니마니' 제외
+  return false;
+};

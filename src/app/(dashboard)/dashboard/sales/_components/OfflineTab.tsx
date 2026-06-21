@@ -1,9 +1,9 @@
 "use client";
 
 import { memo, useCallback, useMemo, useState } from "react";
-import type { OffRank } from "@/lib/sales/queries";
+import type { OffRank, OffOthers } from "@/lib/sales/queries";
 import { downloadCsv } from "@/lib/sales/exportCsv";
-import { displayDivision, isHiddenCat, displayCat, catRank, divisionRank } from "@/lib/sales/labels";
+import { displayDivision, isHiddenCat, displayCat, catRank, divisionRank, OTHERS_KEY, OTHERS_LABEL } from "@/lib/sales/labels";
 import ScrollHint from "@/components/ui/ScrollHint";
 
 interface DivSummary { division: string; s: number; ps: number; g: number; gpm: number; yoyPct: number }
@@ -15,6 +15,7 @@ interface Props {
   brands: OffRank[]; stores: OffRank[];
   divisions: DivSummary[];
   fashionCats: CatSummary[];
+  others?: OffOthers | null;
   monthActive?: { brands: string[]; stores: string[]; detail: string[] } | null;
 }
 
@@ -46,9 +47,13 @@ export default function OfflineTab(p: Props) {
   const [closedOnly, setClosedOnly] = useState(false);   // 퇴점만 보기
   const [leftOnly, setLeftOnly] = useState(false);       // 이탈만 보기
 
-  const base = view === "brand" ? p.brands : p.stores;
+  const isOthers = div === OTHERS_KEY;
+  const base = useMemo(() => isOthers
+    ? (view === "brand" ? (p.others?.brands ?? []) : (p.others?.stores ?? []))
+    : (view === "brand" ? p.brands : p.stores),
+    [isOthers, view, p.brands, p.stores, p.others]);
   // 이탈: 누적 매출 있으나 당월에 빠진 건 (완전퇴점 제외)
-  const enableLeft = !!p.monthActive;
+  const enableLeft = !!p.monthActive && !isOthers;
   const activeSet = useMemo(
     () => new Set(p.monthActive ? (view === "brand" ? p.monthActive.brands : p.monthActive.stores) : []),
     [p.monthActive, view],
@@ -63,12 +68,12 @@ export default function OfflineTab(p: Props) {
     let list = base;
     if (closedOnly) list = list.filter((r) => r.closed);
     if (leftOnly) list = list.filter(isLeft);
-    if (div && view === "brand") list = list.filter((r) => r.division === div);
+    if (div && !isOthers && view === "brand") list = list.filter((r) => r.division === div);
     if (q) list = list.filter((r) => r.key.includes(q) || (r.cat ?? "").includes(q) || displayCat(r.cat).includes(q));
     const dir = sortDir === "asc" ? 1 : -1;
     return [...list].sort((a, b) =>
       sortKey === "key" ? a.key.localeCompare(b.key, "ko") * dir : ((a[sortKey] as number) - (b[sortKey] as number)) * dir);
-  }, [base, q, div, view, sortKey, sortDir, closedOnly, leftOnly, isLeft]);
+  }, [base, q, div, isOthers, view, sortKey, sortDir, closedOnly, leftOnly, isLeft]);
 
   // 실제 렌더할 행 (상위 limit개만 — 수백 행 동시 렌더로 인한 멈춤 방지)
   const visible = useMemo(() => filtered.slice(0, limit), [filtered, limit]);
@@ -96,9 +101,14 @@ export default function OfflineTab(p: Props) {
 
       {/* 부문별 요약 (패션 → F&B → 라이프스타일) */}
       <BarSection title={`부문별 매출 (백만 · ${p.periodLabel})`} barColor="#a78bfa"
-        rows={[...p.divisions].sort((a, b) => divisionRank(a.division) - divisionRank(b.division))
-          .map((d) => ({ key: d.division, label: displayDivision(d.division), s: d.s, ps: d.ps, gpm: d.gpm, yoyPct: d.yoyPct }))}
-        total={p.total} activeKey={div} onPick={(k) => setDiv(div === k ? null : k)} />
+        rows={[
+          ...[...p.divisions].sort((a, b) => divisionRank(a.division) - divisionRank(b.division))
+            .map((d) => ({ key: d.division, label: displayDivision(d.division), s: d.s, ps: d.ps, gpm: d.gpm, yoyPct: d.yoyPct })),
+          ...(p.others && p.others.brands.length
+            ? [{ key: OTHERS_KEY, label: OTHERS_LABEL, s: p.others.total, ps: p.others.prevTotal, gpm: p.others.gpm, yoyPct: p.others.yoyPct }]
+            : []),
+        ]}
+        total={p.total} activeKey={div} onPick={(k) => { setDiv(div === k ? null : k); setExpanded(null); setLimit(10); }} />
 
       {/* 패션 복종별 요약 ("패션공통" 비노출, 지정 순서) */}
       {(() => {
@@ -111,7 +121,7 @@ export default function OfflineTab(p: Props) {
         );
       })()}
 
-      {div && <div className="border-[2px] border-[#0a0a0a] bg-yellow-50 px-3 py-1.5 text-[11px] text-slate-600">부문 <b>{displayDivision(div)}</b> 필터 중 · <button onClick={() => setDiv(null)} className="underline">전체 보기</button></div>}
+      {div && <div className="border-[2px] border-[#0a0a0a] bg-yellow-50 px-3 py-1.5 text-[11px] text-slate-600">부문 <b>{div === OTHERS_KEY ? OTHERS_LABEL : displayDivision(div)}</b> 필터 중 · <button onClick={() => setDiv(null)} className="underline">전체 보기</button></div>}
 
       {/* 토글 + 검색 */}
       <div className="flex items-center justify-between">

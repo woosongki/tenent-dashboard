@@ -4,7 +4,7 @@ import { useState } from "react";
 import OnlineMonthTab from "./OnlineMonthTab";
 import OfflineTab from "./OfflineTab";
 import OfflineDetailTab from "./OfflineDetailTab";
-import type { OnlineRank, OffRank } from "@/lib/sales/queries";
+import type { OnlineRank, OffRank, OffOthers } from "@/lib/sales/queries";
 
 interface OnlineProps {
   ym: string;
@@ -25,6 +25,7 @@ interface OffProps {
   brands: OffRank[]; stores: OffRank[]; detailBrands: OffRank[];
   divisions: { division: string; s: number; ps: number; g: number; gpm: number; yoyPct: number }[];
   fashionCats: { cat: string; s: number; ps: number; g: number; gpm: number; yoyPct: number }[];
+  others?: OffOthers | null;
 }
 
 export interface MonthActive { brands: string[]; stores: string[]; detail: string[]; }
@@ -69,9 +70,9 @@ export default function SalesTabsShell({ offCum, offMonth, online, onlineCum, mo
 
       {/* 탭 내용 */}
       {tab === "off-cum" && (offCum ? <OfflineTab {...offCum} monthActive={monthActive} /> : <Empty table="sales_offline_cum" />)}
-      {tab === "off-cum-detail" && (offCum ? <OfflineDetailTab periodLabel={offCum.periodLabel} prevLabel={offCum.prevLabel} brands={offCum.detailBrands} stores={offCum.stores} divisions={offCum.divisions} fashionCats={offCum.fashionCats} monthActive={monthActive} /> : <Empty table="sales_offline_cum" />)}
+      {tab === "off-cum-detail" && (offCum ? <OfflineDetailTab periodLabel={offCum.periodLabel} prevLabel={offCum.prevLabel} brands={offCum.detailBrands} stores={offCum.stores} divisions={offCum.divisions} fashionCats={offCum.fashionCats} others={offCum.others} monthActive={monthActive} /> : <Empty table="sales_offline_cum" />)}
       {tab === "off-month" && (offMonth ? <OfflineTab {...offMonth} /> : <Empty table="sales_offline_month" />)}
-      {tab === "off-month-detail" && (offMonth ? <OfflineDetailTab periodLabel={offMonth.periodLabel} prevLabel={offMonth.prevLabel} brands={offMonth.detailBrands} stores={offMonth.stores} divisions={offMonth.divisions} fashionCats={offMonth.fashionCats} /> : <Empty table="sales_offline_month" />)}
+      {tab === "off-month-detail" && (offMonth ? <OfflineDetailTab periodLabel={offMonth.periodLabel} prevLabel={offMonth.prevLabel} brands={offMonth.detailBrands} stores={offMonth.stores} divisions={offMonth.divisions} fashionCats={offMonth.fashionCats} others={offMonth.others} /> : <Empty table="sales_offline_month" />)}
       {tab === "online-cum" && (onlineCum ? <OnlineMonthTab {...onlineCum} periodLabel="온라인 누적" monthActive={onlineMonthActive} /> : <Empty table="sales_online_cum" />)}
       {tab === "online-month" && (online ? <OnlineMonthTab {...online} /> : <Empty table="sales_online_monthly" />)}
     </div>
