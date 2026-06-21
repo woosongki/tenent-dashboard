@@ -14,10 +14,10 @@ function Yoy({ pct }: { pct: number }) {
   );
 }
 
-function SalesCard({ href, accentBg, accentText, label, value, unit, caption, trend, alert }: {
+function SalesCard({ href, accentBg, accentText, label, value, unit, caption, trend }: {
   href: string; accentBg: string; accentText: string; label: string;
   value: string; unit?: string; caption?: string;
-  trend?: number; alert?: boolean;
+  trend?: number;
 }) {
   return (
     <Link href={href} className="brutal brutal-hover bg-white p-4 flex flex-col">
@@ -49,10 +49,10 @@ export default function SalesOverviewSection({ data }: { data: SalesOverview }) 
           label="당월 매출" value={data.monthTotal != null ? eok(data.monthTotal) : "—"} unit={data.monthTotal != null ? "억" : undefined}
           trend={data.monthYoy ?? undefined} caption={data.monthLabel || "당월 데이터 없음"} />
         <SalesCard href="/dashboard/sales" accentBg="bg-amber-400" accentText="text-[#0a0a0a]"
-          label="이탈 (당월 빠짐)" value={data.leftCount.toLocaleString()} unit="건" alert
+          label="이탈 (당월 빠짐)" value={data.leftCount.toLocaleString()} unit="건"
           caption="누적 매출 있으나 당월 실적 없음 → 점검" />
         <SalesCard href="/dashboard/sales" accentBg="bg-rose-500" accentText="text-white"
-          label="퇴점 (올해 미영업)" value={data.closedCount.toLocaleString()} unit="건" alert
+          label="퇴점 (올해 미영업)" value={data.closedCount.toLocaleString()} unit="건"
           caption="전년 실적 있으나 올해 매출 없음" />
       </div>
 
