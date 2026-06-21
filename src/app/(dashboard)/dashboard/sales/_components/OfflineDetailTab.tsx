@@ -169,6 +169,10 @@ export default function OfflineDetailTab(p: Props) {
     };
   }, [catRows]);
 
+  // 그 외 탭은 본류 당월 활성 키에 없어 전부 '이탈'로 오인됨 → 이탈 판정 제외
+  const isOthersSel = sel.type === "div" && sel.key === OTHERS_KEY;
+  const isOthersStSel = stSel?.type === "div" && stSel?.key === OTHERS_KEY;
+
   const visible = rows.slice(0, limit);
   const selLabel = chips.find((c) => c.type === sel.type && c.key === sel.key)?.label ?? sel.key;
 
@@ -242,7 +246,7 @@ export default function OfflineDetailTab(p: Props) {
             {visible.map((r, i) => {
               const id = `${r.division ?? ""}|${r.cat ?? ""}|${r.key}`;
               return (
-                <DetailRow key={id} id={id} row={r} rank={i + 1} firstColLabel="지점" left={brandLeft(r)}
+                <DetailRow key={id} id={id} row={r} rank={i + 1} firstColLabel="지점" left={!isOthersSel && brandLeft(r)}
                   open={expanded === id} onToggle={onToggleBrand} sSort={sSort} sDir={sDir} toggleS={toggleS} />
               );
             })}
@@ -300,7 +304,7 @@ export default function OfflineDetailTab(p: Props) {
           </thead>
           <tbody>
             {stVisible.map((st, i) => (
-              <DetailRow key={st.key} id={st.key} row={st} rank={i + 1} firstColLabel="브랜드" left={storeLeft(st)}
+              <DetailRow key={st.key} id={st.key} row={st} rank={i + 1} firstColLabel="브랜드" left={!isOthersStSel && storeLeft(st)}
                 open={stExpanded === st.key} onToggle={onToggleStore} sSort={sSort} sDir={sDir} toggleS={toggleS} />
             ))}
             {storeRows.length === 0 && <tr><td colSpan={7} className="px-3 py-8 text-center text-slate-400">지점 데이터 없음</td></tr>}
