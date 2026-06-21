@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Sidebar from "./Sidebar";
 import SearchPalette from "@/components/ui/SearchPalette";
+import FeedbackButton from "@/components/feedback/FeedbackButton";
 import { useSidebarTheme } from "@/hooks/useSidebarTheme";
 import { useReportMode } from "@/hooks/useReportMode";
 
@@ -125,6 +126,9 @@ export default function AppShell({ userEmail, role = null, children }: Props) {
 
         {children}
       </div>
+
+      {/* ── 의견·개선 제안 (전원) ── */}
+      <FeedbackButton />
 
       {/* ── Cmd+K 검색 팔레트 ── */}
       <SearchPalette open={searchOpen} onClose={() => setSearchOpen(false)} />

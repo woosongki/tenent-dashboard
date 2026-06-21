@@ -6,6 +6,8 @@ import PageHeader from "@/components/ui/PageHeader";
 import AppFooter from "@/components/ui/AppFooter";
 import { SPACE, TYPO } from "@/lib/tokens";
 import UserApprovalTable from "./_components/UserApprovalTable";
+import FeedbackInbox from "./_components/FeedbackInbox";
+import type { Feedback, FeedbackStatus } from "@/lib/feedback";
 
 export const metadata: Metadata = { title: "사용자 관리 — lifestyle" };
 
@@ -49,6 +51,19 @@ export default async function AdminUsersPage() {
   const { data: memberships } = await supabase
     .from("organization_members")
     .select("user_id, role");
+
+  const { data: feedbackRows } = await supabase
+    .from("app_feedback")
+    .select("id, author_email, category, message, status, created_at")
+    .eq("organization_id", me.organization_id)
+    .order("created_at", { ascending: false });
+  const feedback: Feedback[] = ((feedbackRows ?? []) as {
+    id: string; author_email: string | null; category: string | null;
+    message: string; status: string; created_at: string;
+  }[]).map((f) => ({
+    id: f.id, authorEmail: f.author_email, category: f.category,
+    message: f.message, status: (f.status as FeedbackStatus) ?? "new", createdAt: f.created_at,
+  }));
 
   const memberRole = new Map<string, "owner" | "admin" | "member">();
   for (const m of (memberships ?? []) as MembershipRow[]) memberRole.set(m.user_id, m.role);
@@ -95,6 +110,8 @@ export default async function AdminUsersPage() {
           </div>
 
           <UserApprovalTable rows={rows} />
+
+          <FeedbackInbox items={feedback} />
 
           <AppFooter />
         </div>
