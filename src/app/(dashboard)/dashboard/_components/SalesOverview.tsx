@@ -3,7 +3,7 @@ import SectionCard from "@/components/ui/SectionCard";
 import CategoryMovers from "./CategoryMovers";
 import type { SalesOverview } from "@/lib/dashboard/salesOverview";
 
-const eok = (n: number) => (n / 1e8).toFixed(1);
+const eok = (n: number) => Math.round(n / 1e8).toLocaleString("ko-KR");   // 억, 정수+콤마 (예: 10,008)
 
 function Yoy({ pct }: { pct: number }) {
   const up = pct >= 0;
