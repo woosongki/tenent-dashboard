@@ -92,7 +92,7 @@ export default function LivingClient({ popups, weeks, year, canEdit, spaces, dai
     });
   }
 
-  const tabs: [Tab, string][] = [["calendar", "캘린더"], ["list", "목록"], ["analytics", "실적분석"], ["availability", "가용·제안"]];
+  const tabs: [Tab, string][] = [["calendar", "캘린더"], ["analytics", "실적분석"], ["availability", "가용·제안"], ["list", "목록"]];
 
   return (
     <div className="space-y-4">
@@ -121,7 +121,7 @@ export default function LivingClient({ popups, weeks, year, canEdit, spaces, dai
       </div>
 
       {tab === "calendar" && (
-        <CalendarGrid weeks={weeks} brands={brands} byCell={byCell} canEdit={canEdit}
+        <CalendarGrid weeks={weeks} brands={brands} byCell={byCell} canEdit={canEdit} year={year}
           onCell={(b, w) => canEdit && openNew(b, w)} onChip={openEdit} />
       )}
       {tab === "list" && <ListTab popups={popups} onRow={canEdit ? openEdit : undefined} />}
@@ -145,28 +145,72 @@ function Legend({ cls, label }: { cls: string; label: string }) {
 }
 
 // ── 캘린더 그리드 ────────────────────────────────────────────
-function CalendarGrid({ weeks, brands, byCell, canEdit, onCell, onChip }: {
+function reconcileOrder(saved: string[], all: string[]): string[] {
+  const inAll = saved.filter((b) => all.includes(b));
+  const extras = all.filter((b) => !inAll.includes(b));
+  return [...inAll, ...extras];
+}
+
+function CalendarGrid({ weeks, brands, byCell, canEdit, onCell, onChip, year }: {
   weeks: WeekRow[]; brands: string[]; byCell: Map<string, LivingPopup[]>; canEdit: boolean;
-  onCell: (brand: string, week: WeekRow) => void; onChip: (p: LivingPopup) => void;
+  onCell: (brand: string, week: WeekRow) => void; onChip: (p: LivingPopup) => void; year: number;
 }) {
   const todayWi = weekIndexOf({ startDate: new Date().toISOString().slice(0, 10) }, weeks);
+
+  // 브랜드 컬럼 순서 — 드래그로 변경, localStorage에 저장
+  const STORAGE = `living-brand-order-${year}`;
+  const [savedOrder, setSavedOrder] = useState<string[]>([]);
+  useEffect(() => {
+    // 마운트 후 1회 외부 스토어(localStorage) 읽기 — 하이드레이션 불일치 방지 위해 effect에서 동기화
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    try { const raw = localStorage.getItem(STORAGE); if (raw) setSavedOrder(JSON.parse(raw)); } catch {}
+  }, [STORAGE]);
+  const display = useMemo(() => reconcileOrder(savedOrder, brands), [savedOrder, brands]);
+  const dragFrom = useRef<number | null>(null);
+  const [dragOver, setDragOver] = useState<number | null>(null);
+  function applyOrder(from: number, to: number) {
+    if (from === to) return;
+    const next = [...display];
+    const [m] = next.splice(from, 1);
+    next.splice(to, 0, m);
+    setSavedOrder(next);
+    try { localStorage.setItem(STORAGE, JSON.stringify(next)); } catch {}
+  }
+
+  // 현재 주차로 스크롤 (1월1주차 아님)
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const todayRowRef = useRef<HTMLTableRowElement>(null);
+  useEffect(() => {
+    const c = scrollRef.current, r = todayRowRef.current;
+    if (c && r) c.scrollTop += r.getBoundingClientRect().top - c.getBoundingClientRect().top - 40;
+  }, []);
+
   return (
-    <div className="overflow-auto border-[2px] border-[#0a0a0a] bg-white" style={{ maxHeight: "70vh" }}>
-      <table className="border-collapse text-[11px]" style={{ minWidth: 120 + brands.length * 120 }}>
+    <div ref={scrollRef} className="overflow-auto border-[2px] border-[#0a0a0a] bg-white" style={{ maxHeight: "70vh" }}>
+      <table className="border-collapse text-[11px]" style={{ minWidth: 120 + display.length * 120 }}>
         <thead className="sticky top-0 z-10">
           <tr className="bg-[#0a0a0a] text-white">
-            <th className="sticky left-0 z-20 bg-[#0a0a0a] px-2 py-2 text-left w-[110px]">주차</th>
-            {brands.map((b) => <th key={b} className="px-2 py-2 text-center min-w-[120px] font-bold">{b}</th>)}
+            <th className="sticky left-0 z-20 bg-[#0a0a0a] px-2 py-2 text-left w-[110px]">주차{canEdit && <span className="ml-1 font-normal text-[8px] text-slate-400">⠿ 헤더 드래그로 이동</span>}</th>
+            {display.map((b, i) => (
+              <th key={b} draggable={canEdit}
+                onDragStart={() => { dragFrom.current = i; }}
+                onDragOver={(e) => { if (dragFrom.current != null) { e.preventDefault(); setDragOver(i); } }}
+                onDrop={() => { if (dragFrom.current != null) applyOrder(dragFrom.current, i); dragFrom.current = null; setDragOver(null); }}
+                onDragEnd={() => { dragFrom.current = null; setDragOver(null); }}
+                className={`px-2 py-2 text-center min-w-[120px] font-bold ${canEdit ? "cursor-grab active:cursor-grabbing" : ""} ${dragOver === i ? "bg-yellow-600" : ""}`}>
+                {canEdit && <span className="mr-0.5 opacity-50">⠿</span>}{b}
+              </th>
+            ))}
           </tr>
         </thead>
         <tbody>
           {weeks.map((w) => (
-            <tr key={w.index} className={`border-t border-slate-200 ${w.index === todayWi ? "bg-yellow-50" : ""}`}>
+            <tr key={w.index} ref={w.index === todayWi ? todayRowRef : undefined} className={`border-t border-slate-200 ${w.index === todayWi ? "bg-yellow-50" : ""}`}>
               <td className="sticky left-0 z-[5] bg-white px-2 py-1.5 border-r border-slate-200">
                 <div className="font-bold text-[#0a0a0a]">{w.label}{w.index === todayWi && <span className="ml-1 text-[9px] text-rose-600">오늘</span>}</div>
                 <div className="text-[9px] text-slate-400">{w.rangeText}</div>
               </td>
-              {brands.map((b) => {
+              {display.map((b) => {
                 const list = byCell.get(`${w.index}|${b}`) ?? [];
                 return (
                   <td key={b} className={`align-top px-1 py-1 border-r border-slate-100 ${canEdit ? "cursor-pointer hover:bg-slate-50" : ""}`}
@@ -215,7 +259,7 @@ function ListTab({ popups, onRow }: { popups: LivingPopup[]; onRow?: (p: LivingP
         <table className="w-full min-w-[680px] text-[12px]">
           <thead className="bg-[#0a0a0a] text-white">
             <tr>
-              {["기간", "브랜드", "지점", "채널", "유형", "행사", "벤더", "실적(백만)", "상태"].map((h) => (
+              {["기간", "브랜드", "지점", "벤더", "실적(백만)", "상태"].map((h) => (
                 <th key={h} className="px-3 py-2 text-left whitespace-nowrap">{h}</th>
               ))}
             </tr>
@@ -229,16 +273,13 @@ function ListTab({ popups, onRow }: { popups: LivingPopup[]; onRow?: (p: LivingP
                   <td className="px-3 py-2 font-mono text-slate-500 whitespace-nowrap">{p.startDate.slice(5)}~{p.endDate.slice(5)}</td>
                   <td className="px-3 py-2 font-bold text-[#0a0a0a]">{p.brand}</td>
                   <td className="px-3 py-2">{p.store}</td>
-                  <td className="px-3 py-2 text-slate-500">{p.channel ?? "—"}</td>
-                  <td className="px-3 py-2 text-slate-500">{p.popupType ?? "—"}</td>
-                  <td className="px-3 py-2 text-slate-500">{p.promo ?? "—"}</td>
                   <td className="px-3 py-2">{p.vendor ?? "—"}</td>
                   <td className="px-3 py-2 text-right font-mono font-bold">{p.sales != null ? p.sales.toLocaleString() : "—"}</td>
                   <td className="px-3 py-2"><span className={`inline-block border ${s.bd} ${s.bg} ${s.tx} rounded px-1.5 py-0.5 text-[10px] font-bold`}>{STATUS_LABEL[st]}</span></td>
                 </tr>
               );
             })}
-            {rows.length === 0 && <tr><td colSpan={9} className="px-3 py-8 text-center text-slate-400">데이터 없음</td></tr>}
+            {rows.length === 0 && <tr><td colSpan={6} className="px-3 py-8 text-center text-slate-400">데이터 없음</td></tr>}
           </tbody>
         </table>
       </div>
@@ -437,11 +478,16 @@ function Editor({ draft, setDraft, onSave, onDelete, onClose, pending, daily, on
   const s = STATUS_STYLE[st];
   const set = (patch: Partial<Draft>) => setDraft({ ...draft, ...patch });
   const salesLocked = st !== "done";
-  const rootRef = useRef<HTMLDivElement>(null);
-  useEffect(() => { rootRef.current?.scrollIntoView({ behavior: "smooth", block: "center" }); }, []);
+  useEffect(() => {
+    const h = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    window.addEventListener("keydown", h);
+    return () => window.removeEventListener("keydown", h);
+  }, [onClose]);
 
   return (
-    <div ref={rootRef} className="border-[2px] border-[#0a0a0a] bg-white p-4" style={{ boxShadow: "4px 4px 0 0 #0a0a0a" }}>
+    <div className="fixed inset-0 z-[2100] flex items-start justify-center overflow-y-auto bg-black/40 p-4 sm:p-8"
+      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
+    <div className="w-full max-w-[640px] my-auto border-[2px] border-[#0a0a0a] bg-white p-4" style={{ boxShadow: "4px 4px 0 0 #0a0a0a" }}>
       <div className="flex items-center justify-between mb-3">
         <div className="text-[15px] font-bold">{draft.id ? "팝업 편집" : "새 팝업"}</div>
         <span className={`border ${s.bd} ${s.bg} ${s.tx} rounded px-2 py-0.5 text-[12px] font-bold`}>{STATUS_LABEL[st]}</span>
@@ -494,6 +540,7 @@ function Editor({ draft, setDraft, onSave, onDelete, onClose, pending, daily, on
         {draft.id && <button onClick={onDelete} disabled={pending} className="border-[2px] border-rose-500 text-rose-600 px-3 py-1.5 text-[13px] font-bold hover:bg-rose-50">삭제</button>}
         <button onClick={onClose} className="ml-auto border-[2px] border-[#0a0a0a] bg-white px-3 py-1.5 text-[13px] font-bold hover:bg-slate-50">닫기</button>
       </div>
+    </div>
     </div>
   );
 }
