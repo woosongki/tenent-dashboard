@@ -63,20 +63,20 @@ export default function AppShell({ userEmail, role = null, children }: Props) {
   return (
     <div className="flex h-screen overflow-hidden bg-[#FAF7EC]">
 
-      {/* ── 모바일 오버레이 ── */}
+      {/* ── 모바일 오버레이 ── (Leaflet 지도 z~1000 위로 올림) */}
       {mobileOpen && (
         <div
-          className="fixed inset-0 z-20 bg-black/50 backdrop-blur-[2px] md:hidden"
+          className="fixed inset-0 z-[1900] bg-black/50 backdrop-blur-[2px] md:hidden"
           onClick={() => setMobileOpen(false)}
           aria-hidden="true"
         />
       )}
 
-      {/* ── 사이드바 ── */}
+      {/* ── 사이드바 ── (모바일 드로어는 지도 마커/컨트롤 위에 떠야 함) */}
       <div
         className={`
-          fixed inset-y-0 left-0 z-30 transition-transform duration-300 ease-in-out
-          md:relative md:translate-x-0
+          fixed inset-y-0 left-0 z-[2000] transition-transform duration-300 ease-in-out
+          md:relative md:z-auto md:translate-x-0
           ${mobileOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}
         `}
       >
