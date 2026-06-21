@@ -94,6 +94,7 @@ export default function TopBar({ crumbs, action, lastUpdated, onOpenSidebar }: P
           <button
             type="submit"
             title="새로고침"
+            aria-label="새로고침"
             className="flex h-8 w-8 items-center justify-center border-[2px] border-[#0a0a0a] bg-white text-[#0a0a0a] transition-colors hover:bg-yellow-300"
           >
             <IconRefresh />
@@ -103,6 +104,7 @@ export default function TopBar({ crumbs, action, lastUpdated, onOpenSidebar }: P
         <button
           type="button"
           title="알림"
+          aria-label="알림"
           className="relative flex h-8 w-8 items-center justify-center border-[2px] border-[#0a0a0a] bg-white text-[#0a0a0a] transition-colors hover:bg-yellow-300"
         >
           <IconBell />

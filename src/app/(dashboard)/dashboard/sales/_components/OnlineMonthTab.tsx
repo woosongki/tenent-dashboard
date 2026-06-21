@@ -7,6 +7,7 @@ import { isHiddenCat, displayCat, catRank } from "@/lib/sales/labels";
 import { pillBtn, inputCompact } from "@/lib/tokens";
 import ScrollHint from "@/components/ui/ScrollHint";
 import UnitChip from "@/components/ui/UnitChip";
+import StatusLegend from "@/components/ui/StatusLegend";
 
 const FragmentRow = Fragment;
 
@@ -209,9 +210,10 @@ export default function OnlineMonthTab(p: Props) {
       </div>
 
       {/* 랭킹 테이블 */}
-      <div className="flex items-center gap-2 text-[11px] text-slate-500">
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-[11px] text-slate-500">
         <UnitChip>매출 단위: 백만원</UnitChip>
         <span>요약 카드는 억 단위</span>
+        <StatusLegend items={enableLeft ? ["closed", "left"] : ["closed"]} />
       </div>
       <ScrollHint className="border-[2px] border-[#0a0a0a] bg-white">
         <table className="w-full min-w-[420px] sm:min-w-[560px] text-[12px]">

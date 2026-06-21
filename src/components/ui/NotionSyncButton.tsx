@@ -66,6 +66,7 @@ export default function NotionSyncButton({
         onClick={trigger}
         disabled={pending}
         title={pending ? "동기화 중..." : "노션에서 최신 데이터 가져오기"}
+        aria-label="노션 동기화"
         className={`flex w-full items-center px-2 py-2 border-l-[3px] border-transparent transition-colors disabled:opacity-50 ${baseColor} ${
           collapsed ? "justify-center" : "gap-2"
         }`}

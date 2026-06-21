@@ -3,6 +3,7 @@
 import { memo, useCallback, useMemo, useState } from "react";
 import ScrollHint from "@/components/ui/ScrollHint";
 import UnitChip from "@/components/ui/UnitChip";
+import StatusLegend from "@/components/ui/StatusLegend";
 import { pillBtn, inputCompact } from "@/lib/tokens";
 import { displayDivision, isHiddenCat, displayCat, catRank, divisionRank, OTHERS_KEY, OTHERS_LABEL } from "@/lib/sales/labels";
 import type { OffRank, OffOthers } from "@/lib/sales/queries";
@@ -186,6 +187,7 @@ export default function OfflineDetailTab(p: Props) {
         <button onClick={() => setView("store")} className={pillBtn(view === "store")}>지점별 ({p.stores.length})</button>
         <span className="ml-1"><UnitChip>단위: 백만원</UnitChip></span>
       </div>
+      <StatusLegend items={enableLeft ? ["closed", "left", "new"] : ["closed", "new"]} />
 
       {view === "brand" && (<>
       <p className="text-[11px] text-slate-500">복종(패션)·부문(F&B 등)을 선택해 상세 실적을 봅니다. 브랜드 클릭 시 지점별 매출이 펼쳐집니다.</p>

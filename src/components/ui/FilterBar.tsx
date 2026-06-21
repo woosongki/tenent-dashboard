@@ -118,6 +118,7 @@ function FilterInput({
           onChange={(e) => set(fromKey, e.target.value)}
           className={`${inputCls} ${values[fromKey] ? "border-indigo-300 bg-indigo-50" : ""}`}
           title="시작일"
+          aria-label="시작일"
         />
         <span className="text-xs text-gray-300">–</span>
         <input
@@ -126,6 +127,7 @@ function FilterInput({
           onChange={(e) => set(toKey, e.target.value)}
           className={`${inputCls} ${values[toKey] ? "border-indigo-300 bg-indigo-50" : ""}`}
           title="종료일"
+          aria-label="종료일"
         />
       </div>
     );

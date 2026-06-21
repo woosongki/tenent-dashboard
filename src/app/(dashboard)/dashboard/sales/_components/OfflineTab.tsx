@@ -7,6 +7,7 @@ import { displayDivision, isHiddenCat, displayCat, catRank, divisionRank, OTHERS
 import { pillBtn, inputCompact } from "@/lib/tokens";
 import ScrollHint from "@/components/ui/ScrollHint";
 import UnitChip from "@/components/ui/UnitChip";
+import StatusLegend from "@/components/ui/StatusLegend";
 
 interface DivSummary { division: string; s: number; ps: number; g: number; gpm: number; yoyPct: number }
 interface CatSummary { cat: string; s: number; ps: number; g: number; gpm: number; yoyPct: number }
@@ -172,9 +173,10 @@ export default function OfflineTab(p: Props) {
       </div>
 
       {/* 랭킹 */}
-      <div className="flex items-center gap-2 text-[11px] text-slate-500">
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-[11px] text-slate-500">
         <UnitChip>매출·이익 단위: 백만원</UnitChip>
         <span>요약 카드는 억 단위</span>
+        <StatusLegend items={enableLeft ? ["closed", "left", "new"] : ["closed", "new"]} />
       </div>
       <ScrollHint className="border-[2px] border-[#0a0a0a] bg-white">
         <table className="w-full min-w-[480px] sm:min-w-[620px] text-[12px]">

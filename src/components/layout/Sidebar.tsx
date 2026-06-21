@@ -369,6 +369,7 @@ export default function Sidebar({
                     key={item.href}
                     href={item.href}
                     title={collapsed ? item.label : undefined}
+                    aria-label={collapsed ? item.label : undefined}
                     className={`relative flex items-center transition-colors ${
                       collapsed ? "justify-center px-0 py-3" : "gap-2.5 pl-3 pr-2 py-2.5"
                     } ${active ? `${t.itemActive} ${t.textActive}` : `${t.itemBase} ${t.itemHover}`}`}

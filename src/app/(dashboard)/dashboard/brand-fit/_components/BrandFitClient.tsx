@@ -161,7 +161,7 @@ export default function BrandFitClient() {
             {preferredAnchors.map((t) => (
               <span key={t} className="inline-flex items-center gap-1 border-[2px] border-[#0a0a0a] bg-yellow-200 px-2 py-1 text-[12px] font-bold shadow-[2px_2px_0_0_#0a0a0a]">
                 {t}
-                <button onClick={() => setPreferredAnchors(preferredAnchors.filter((x) => x !== t))} className="ml-1 text-slate-600 hover:text-red-600">✕</button>
+                <button onClick={() => setPreferredAnchors(preferredAnchors.filter((x) => x !== t))} aria-label={`${t} 제거`} className="ml-1 text-slate-600 hover:text-red-600">✕</button>
               </span>
             ))}
           </div>
