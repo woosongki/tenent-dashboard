@@ -3,7 +3,7 @@
 import { memo, useCallback, useMemo, useState } from "react";
 import ScrollHint from "@/components/ui/ScrollHint";
 import UnitChip from "@/components/ui/UnitChip";
-import { pillBtn } from "@/lib/tokens";
+import { pillBtn, inputCompact } from "@/lib/tokens";
 import { displayDivision, isHiddenCat, displayCat, catRank, divisionRank, OTHERS_KEY, OTHERS_LABEL } from "@/lib/sales/labels";
 import type { OffRank, OffOthers } from "@/lib/sales/queries";
 
@@ -210,7 +210,7 @@ export default function OfflineDetailTab(p: Props) {
       <div className="flex items-center gap-2">
         <input type="text" value={q} onChange={(e) => { setQ(e.target.value); setExpanded(null); setLimit(20); }}
           placeholder="브랜드 검색 (전 부문)"
-          className="w-full max-w-[280px] border-[2px] border-[#0a0a0a] px-3 py-1.5 text-[12px] focus:outline-none focus:bg-yellow-50" />
+          className={`w-full max-w-[280px] ${inputCompact}`} />
         {q && <button onClick={() => setQ("")} className="text-[11px] text-slate-500 underline">초기화</button>}
         {q && <span className="text-[11px] text-slate-500">{rows.length}개 검색됨 (요약은 선택 카테고리 기준)</span>}
       </div>
@@ -283,7 +283,7 @@ export default function OfflineDetailTab(p: Props) {
         <p className="text-[11px] text-slate-500">지점을 클릭하면 {stSel ? "선택 복종" : "전 부문"} 입점 브랜드별 실적이 펼쳐집니다.</p>
         <input type="text" value={stQ} onChange={(e) => { setStQ(e.target.value); setStExpanded(null); setStLimit(10); }}
           placeholder="지점 검색"
-          className="w-full max-w-[200px] border-[2px] border-[#0a0a0a] px-3 py-1.5 text-[12px] focus:outline-none focus:bg-yellow-50" />
+          className={`w-full max-w-[200px] ${inputCompact}`} />
       </div>
 
       <ScrollHint className="border-[2px] border-[#0a0a0a] bg-white">

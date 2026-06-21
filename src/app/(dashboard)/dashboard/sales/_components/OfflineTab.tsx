@@ -4,7 +4,7 @@ import { memo, useCallback, useMemo, useState } from "react";
 import type { OffRank, OffOthers } from "@/lib/sales/queries";
 import { downloadCsv } from "@/lib/sales/exportCsv";
 import { displayDivision, isHiddenCat, displayCat, catRank, divisionRank, OTHERS_KEY, OTHERS_LABEL } from "@/lib/sales/labels";
-import { pillBtn } from "@/lib/tokens";
+import { pillBtn, inputCompact } from "@/lib/tokens";
 import ScrollHint from "@/components/ui/ScrollHint";
 import UnitChip from "@/components/ui/UnitChip";
 
@@ -150,7 +150,7 @@ export default function OfflineTab(p: Props) {
         </div>
         <div className="flex items-center gap-2">
           <input type="text" value={q} onChange={(e) => onSearch(e.target.value)} placeholder={view === "brand" ? "브랜드/복종 검색" : "지점 검색"}
-            className="border-[2px] border-[#0a0a0a] px-3 py-1.5 text-[12px] focus:outline-none focus:bg-yellow-50" />
+            className={inputCompact} />
           <button
             onClick={() => {
               const header = view === "brand"

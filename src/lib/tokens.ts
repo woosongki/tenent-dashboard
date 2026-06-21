@@ -61,7 +61,8 @@ export const TOKENS = {
   input: "w-full rounded-none border-[2px] border-[#0a0a0a] bg-white px-3 py-2 text-[14px] text-[#0a0a0a] placeholder-slate-400 shadow-[3px_3px_0_0_#0a0a0a] focus:outline-none focus:shadow-[4px_4px_0_0_#0a0a0a] focus:translate-x-[-1px] focus:translate-y-[-1px] transition-all",
   label: "mb-1.5 block text-[11px] font-bold uppercase tracking-[.1em] text-[#0a0a0a]",
 
-  th: "px-4 py-3 text-left text-[11px] font-extrabold uppercase tracking-[.12em] text-[#0a0a0a] bg-[#F1ECDB] whitespace-nowrap border-b-[2px] border-[#0a0a0a]",
+  // 표 헤더 — Phase 3 결정: 검정 헤더 유지(현행 32개 표와 일치).
+  th: "px-3 py-2 text-left text-[12px] font-bold text-white bg-[#0a0a0a] whitespace-nowrap",
   trHover: "group border-b border-[#0a0a0a]/12 transition-colors hover:bg-[#fffef8]",
 } as const;
 
@@ -143,3 +144,12 @@ export const pillBtn = (active: boolean): string =>
   `border-[2px] border-[#0a0a0a] px-4 py-1.5 text-[12px] font-bold transition ${
     active ? "bg-yellow-300 shadow-[2px_2px_0_0_#0a0a0a]" : "bg-white hover:bg-yellow-50"
   }`;
+
+/**
+ * 입력창 — Phase 3 결정: 기본 py-2(가독성), 밀집 폼/인라인 툴바만 compact(py-1.5) 예외.
+ * 폭(w-full/max-w-…)은 호출부에서 지정. 검정 테두리 + 노란 포커스 배경 유지.
+ */
+export const inputBase =
+  "border-[2px] border-[#0a0a0a] bg-white px-3 py-2 text-[13px] text-[#0a0a0a] placeholder-slate-400 focus:outline-none focus:bg-yellow-50 transition-colors";
+export const inputCompact =
+  "border-[2px] border-[#0a0a0a] bg-white px-3 py-1.5 text-[12px] text-[#0a0a0a] placeholder-slate-400 focus:outline-none focus:bg-yellow-50 transition-colors";
