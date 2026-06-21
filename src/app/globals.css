@@ -84,9 +84,11 @@ body {
   font-family: var(--font-mono), "SFMono-Regular", Menlo, Monaco, Consolas, monospace;
 }
 
-/* focus는 매우 강하게 보이도록 — Brutalist 핵심 */
+/* focus는 매우 강하게 보이도록 — Brutalist 핵심.
+   컴포넌트의 focus:outline-none(키보드 포커스 링 제거)을 명시도로 이기기 위해 !important.
+   :focus-visible라 마우스 클릭엔 안 뜨고 키보드 탐색 시에만 노란 링이 보임(접근성). */
 *:focus-visible {
-  outline: 3px solid var(--accent-yellow);
+  outline: 3px solid var(--accent-yellow) !important;
   outline-offset: 2px;
 }
 

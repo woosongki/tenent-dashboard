@@ -8,6 +8,7 @@ import {
   LIVING_BRANDS, LIVING_STORES,
   popupStatus, STATUS_LABEL, weekIndexOf,
 } from "@/lib/livingPopup";
+import { pillBtn } from "@/lib/tokens";
 import { createPopup, updatePopup, deletePopup, setDailySales, type PopupInput } from "../_actions";
 
 type Tab = "calendar" | "list" | "analytics" | "availability" | "export";
@@ -106,8 +107,7 @@ export default function LivingClient({ popups, weeks, year, canEdit, spaces, dai
       <div className="flex items-center justify-between flex-wrap gap-2">
         <div className="flex gap-1.5 flex-wrap">
           {tabs.map(([k, label]) => (
-            <button key={k} onClick={() => setTab(k)}
-              className={`border-[2px] border-[#0a0a0a] px-4 py-1.5 text-[12px] font-bold transition ${tab === k ? "bg-yellow-300 shadow-[2px_2px_0_0_#0a0a0a]" : "bg-white hover:bg-yellow-50"}`}>
+            <button key={k} onClick={() => setTab(k)} className={pillBtn(tab === k)}>
               {label}
             </button>
           ))}

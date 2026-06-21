@@ -2,6 +2,8 @@
 
 import { memo, useCallback, useMemo, useState } from "react";
 import ScrollHint from "@/components/ui/ScrollHint";
+import UnitChip from "@/components/ui/UnitChip";
+import { pillBtn } from "@/lib/tokens";
 import { displayDivision, isHiddenCat, displayCat, catRank, divisionRank, OTHERS_KEY, OTHERS_LABEL } from "@/lib/sales/labels";
 import type { OffRank, OffOthers } from "@/lib/sales/queries";
 
@@ -179,15 +181,10 @@ export default function OfflineDetailTab(p: Props) {
   return (
     <div className="space-y-4">
       {/* 뷰 토글: 브랜드 / 지점 */}
-      <div className="flex gap-1.5">
-        <button onClick={() => setView("brand")}
-          className={`border-[2px] border-[#0a0a0a] px-4 py-1.5 text-[12px] font-bold transition ${view === "brand" ? "bg-yellow-300 shadow-[2px_2px_0_0_#0a0a0a]" : "bg-white hover:bg-yellow-50"}`}>
-          브랜드별
-        </button>
-        <button onClick={() => setView("store")}
-          className={`border-[2px] border-[#0a0a0a] px-4 py-1.5 text-[12px] font-bold transition ${view === "store" ? "bg-yellow-300 shadow-[2px_2px_0_0_#0a0a0a]" : "bg-white hover:bg-yellow-50"}`}>
-          지점별 ({p.stores.length})
-        </button>
+      <div className="flex items-center gap-1.5">
+        <button onClick={() => setView("brand")} className={pillBtn(view === "brand")}>브랜드별</button>
+        <button onClick={() => setView("store")} className={pillBtn(view === "store")}>지점별 ({p.stores.length})</button>
+        <span className="ml-1"><UnitChip>단위: 백만원</UnitChip></span>
       </div>
 
       {view === "brand" && (<>

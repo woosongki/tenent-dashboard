@@ -4,7 +4,9 @@ import { memo, useCallback, useMemo, useState } from "react";
 import type { OffRank, OffOthers } from "@/lib/sales/queries";
 import { downloadCsv } from "@/lib/sales/exportCsv";
 import { displayDivision, isHiddenCat, displayCat, catRank, divisionRank, OTHERS_KEY, OTHERS_LABEL } from "@/lib/sales/labels";
+import { pillBtn } from "@/lib/tokens";
 import ScrollHint from "@/components/ui/ScrollHint";
+import UnitChip from "@/components/ui/UnitChip";
 
 interface DivSummary { division: string; s: number; ps: number; g: number; gpm: number; yoyPct: number }
 interface CatSummary { cat: string; s: number; ps: number; g: number; gpm: number; yoyPct: number }
@@ -127,8 +129,7 @@ export default function OfflineTab(p: Props) {
       <div className="flex items-center justify-between">
         <div className="flex gap-1.5">
           {(["brand", "store"] as const).map((v) => (
-            <button key={v} onClick={() => switchView(v)}
-              className={`border-[2px] border-[#0a0a0a] px-4 py-1.5 text-[12px] font-bold transition ${view === v ? "bg-yellow-300 shadow-[2px_2px_0_0_#0a0a0a]" : "bg-white hover:bg-yellow-50"}`}>
+            <button key={v} onClick={() => switchView(v)} className={pillBtn(view === v)}>
               {v === "brand" ? `브랜드 (${p.brands.length})` : `지점 (${p.stores.length})`}
             </button>
           ))}
@@ -171,6 +172,10 @@ export default function OfflineTab(p: Props) {
       </div>
 
       {/* 랭킹 */}
+      <div className="flex items-center gap-2 text-[11px] text-slate-500">
+        <UnitChip>매출·이익 단위: 백만원</UnitChip>
+        <span>요약 카드는 억 단위</span>
+      </div>
       <ScrollHint className="border-[2px] border-[#0a0a0a] bg-white">
         <table className="w-full min-w-[480px] sm:min-w-[620px] text-[12px]">
           <thead className="bg-[#0a0a0a] text-white select-none">

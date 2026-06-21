@@ -134,3 +134,12 @@ export const SIDEBAR_THEMES = {
 } as const;
 
 export type SidebarTheme = keyof typeof SIDEBAR_THEMES;
+
+/**
+ * 알약형 토글 버튼 — 탭/뷰 전환에 반복되는 패턴을 한 곳으로.
+ * (매출분석·리빙 등에서 동일 클래스를 손으로 반복하던 것을 토큰화)
+ */
+export const pillBtn = (active: boolean): string =>
+  `border-[2px] border-[#0a0a0a] px-4 py-1.5 text-[12px] font-bold transition ${
+    active ? "bg-yellow-300 shadow-[2px_2px_0_0_#0a0a0a]" : "bg-white hover:bg-yellow-50"
+  }`;
