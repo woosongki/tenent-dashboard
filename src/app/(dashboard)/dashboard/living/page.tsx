@@ -5,7 +5,7 @@ import TopBar from "@/components/layout/TopBar";
 import PageHeader from "@/components/ui/PageHeader";
 import AppFooter from "@/components/ui/AppFooter";
 import { SPACE } from "@/lib/tokens";
-import { getLivingPopups } from "@/lib/livingPopupData";
+import { getLivingPopups, getLivingSpaces, getLivingDaily } from "@/lib/livingPopupData";
 import { buildWeeks } from "@/lib/livingPopup";
 import LivingClient from "./_components/LivingClient";
 
@@ -27,7 +27,9 @@ export default async function LivingPage() {
   const canEdit = role === "owner" || role === "admin";
 
   const year = new Date().getFullYear();   // 현재 연도 자동 (2027 되면 자동 전환)
-  const popups = orgId ? await getLivingPopups(orgId, year, canEdit) : [];
+  const [popups, spaces, daily] = orgId
+    ? await Promise.all([getLivingPopups(orgId, year, canEdit), getLivingSpaces(orgId), getLivingDaily(orgId)])
+    : [[], [], {}];
   const weeks = buildWeeks(year);
 
   const done = popups.filter((p) => p.sales != null).length;
@@ -43,7 +45,7 @@ export default async function LivingPage() {
             subtitle="브랜드 × 지점 × 주차 팝업 운영 캘린더. 셀을 눌러 일정을 추가·수정합니다. 계획·실행은 날짜로 자동."
             meta={`${year}년 · ${popups.length}건 · 실적입력 ${done}건`}
           />
-          <LivingClient popups={popups} weeks={weeks} year={year} canEdit={canEdit} />
+          <LivingClient popups={popups} weeks={weeks} year={year} canEdit={canEdit} spaces={spaces} daily={daily} />
           <AppFooter />
         </div>
       </main>

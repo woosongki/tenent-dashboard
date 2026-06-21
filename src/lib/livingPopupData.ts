@@ -1,7 +1,7 @@
 import "server-only";
 import { createClient } from "@/lib/supabase/server";
 import { getLivingPopupSeed } from "@/lib/livingPopupSeed";
-import type { LivingPopup } from "@/lib/livingPopup";
+import type { LivingPopup, LivingSpace, DailyMap } from "@/lib/livingPopup";
 
 interface Row {
   id: string; year: number; brand: string; store: string;
@@ -42,4 +42,31 @@ export async function getLivingPopups(orgId: string, year = 2026, canSeed = fals
     }
   }
   return (data ?? []).map((r) => mapRow(r as Row));
+}
+
+/** 공간 카탈로그 (지점별 층·장소·평수) */
+export async function getLivingSpaces(orgId: string): Promise<LivingSpace[]> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("living_space")
+    .select("id,store,floor,place,area_pyeong,note")
+    .eq("organization_id", orgId)
+    .order("store", { ascending: true });
+  return (data ?? []).map((r) => ({
+    id: r.id, store: r.store, floor: r.floor, place: r.place,
+    areaPyeong: r.area_pyeong == null ? null : Number(r.area_pyeong), note: r.note,
+  }));
+}
+
+/** 팝업별 일매출(원) 맵 */
+export async function getLivingDaily(orgId: string): Promise<DailyMap> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("living_popup_daily")
+    .select("popup_id,date,sales")
+    .eq("organization_id", orgId)
+    .order("date", { ascending: true });
+  const out: DailyMap = {};
+  for (const r of data ?? []) (out[r.popup_id] ??= []).push({ date: r.date, sales: Number(r.sales) });
+  return out;
 }

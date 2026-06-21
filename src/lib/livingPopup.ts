@@ -18,6 +18,12 @@ export interface LivingPopup {
 
 export type PopupStatus = "plan" | "live" | "done";
 
+export interface LivingSpace {
+  id: string; store: string;
+  floor: string | null; place: string | null; areaPyeong: number | null; note: string | null;
+}
+export type DailyMap = Record<string, { date: string; sales: number }[]>;   // popupId → 일매출(원)
+
 export const CHANNELS = ["리테일(MDM)", "킴스(PDM)"] as const;
 export const POPUP_TYPES = ["팝업", "단기"] as const;
 export const PROMOS = ["주년감사제", "이득데이", "창립감사제", "MDM", "추석"] as const;

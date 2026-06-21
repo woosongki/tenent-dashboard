@@ -96,6 +96,54 @@ export async function updatePopup(id: string, input: PopupInput): Promise<Result
   return { ok: true };
 }
 
+/** 분기·반기 계획 일괄 등록 — 여러 행을 한 번에 insert */
+export async function bulkCreatePopups(rows: PopupInput[]): Promise<{ ok: true; count: number } | { ok: false; error: string }> {
+  if (!rows.length) return { ok: false, error: "등록할 행이 없습니다." };
+  for (let i = 0; i < rows.length; i++) {
+    const err = validate(rows[i]);
+    if (err) return { ok: false, error: `${i + 1}행: ${err}` };
+  }
+  let ctx;
+  try { ctx = await requireAdmin(); } catch (e) { return { ok: false, error: (e as Error).message }; }
+  const supabase = await createClient();
+  const payload = rows.map((r) => ({ ...toRow(r), organization_id: ctx.orgId, created_by: ctx.userId, updated_by: ctx.userId }));
+  const { error } = await supabase.from("living_popup").insert(payload);
+  if (error) return { ok: false, error: error.message };
+  revalidatePath("/dashboard/living");
+  return { ok: true, count: rows.length };
+}
+
+/** 일매출 저장 — 날짜별 매출 upsert 후 팝업 실적(sales)을 합계로 자동 갱신 */
+export async function setDailySales(
+  popupId: string, year: number, entries: { date: string; sales: number }[],
+): Promise<{ ok: true; total: number } | { ok: false; error: string }> {
+  let ctx;
+  try { ctx = await requireAdmin(); } catch (e) { return { ok: false, error: (e as Error).message }; }
+  const supabase = await createClient();
+  const clean = entries.filter((e) => e.date && !Number.isNaN(e.sales));
+  // 0 또는 빈 값은 삭제, 나머지는 upsert
+  const toDelete = clean.filter((e) => !e.sales).map((e) => e.date);
+  const toUpsert = clean.filter((e) => e.sales);
+  if (toDelete.length) {
+    await supabase.from("living_popup_daily").delete().eq("popup_id", popupId).in("date", toDelete);
+  }
+  if (toUpsert.length) {
+    const { error } = await supabase.from("living_popup_daily").upsert(
+      toUpsert.map((e) => ({ organization_id: ctx.orgId, popup_id: popupId, date: e.date, sales: e.sales })),
+      { onConflict: "popup_id,date" },
+    );
+    if (error) return { ok: false, error: error.message };
+  }
+  // 합계 재계산 → 팝업 sales(백만)로 반영
+  const { data: rows } = await supabase.from("living_popup_daily").select("sales").eq("popup_id", popupId);
+  const totalWon = (rows ?? []).reduce((t, r) => t + Number(r.sales), 0);
+  const totalMil = totalWon ? Math.round(totalWon / 1e6) : null;
+  await supabase.from("living_popup").update({ sales: totalMil, updated_by: ctx.userId })
+    .eq("id", popupId).eq("organization_id", ctx.orgId);
+  revalidatePath("/dashboard/living");
+  return { ok: true, total: totalMil ?? 0 };
+}
+
 export async function deletePopup(id: string): Promise<Result> {
   let ctx;
   try { ctx = await requireAdmin(); } catch (e) { return { ok: false, error: (e as Error).message }; }
