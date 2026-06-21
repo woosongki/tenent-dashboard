@@ -422,6 +422,7 @@ async function fetchOff(table: "sales_offline_cum" | "sales_offline_month", col:
   for (;;) {
     const { data, error } = await supabase
       .from(table).select(`division,cat,brand,store,sales,gp,area_raw,store_cnt,${col}`).in(col, periods)
+      .neq("brand", "엠페스트")   // 엠페스트(기타·엠페스트 입점) 노출/집계 제외
       .range(from, from + PAGE - 1);
     if (error) throw new Error(`${table}: ${error.message}`);
     all.push(...(data ?? []).map((r) => ({ ...r, p: (r as Record<string, string>)[col] })) as (OffRow & { p: string })[]);
