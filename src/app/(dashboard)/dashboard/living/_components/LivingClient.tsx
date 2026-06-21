@@ -40,6 +40,12 @@ export default function LivingClient({ popups, weeks, year, canEdit, spaces, dai
     return [...base, ...extras];
   }, [popups]);
 
+  // 기존 연합명 목록 (편집창 자동완성용)
+  const coalitions = useMemo(
+    () => [...new Set(popups.map((p) => p.coalition?.trim()).filter((c): c is string => !!c))].sort((a, b) => a.localeCompare(b, "ko")),
+    [popups],
+  );
+
   // (weekIndex|brand) → popups
   const byCell = useMemo(() => {
     const m = new Map<string, LivingPopup[]>();
@@ -51,18 +57,19 @@ export default function LivingClient({ popups, weeks, year, canEdit, spaces, dai
     return m;
   }, [popups, weeks]);
 
-  function openNew(brand?: string, week?: WeekRow, store?: string) {
+  function openNew(brand?: string, week?: WeekRow, store?: string, coalition?: string) {
     setEditing({
       brand: brand ?? brands[0] ?? "", store: store ?? "",
       startDate: week?.start ?? `${year}-01-07`, endDate: week?.end ?? `${year}-01-13`,
-      channel: null, popupType: "팝업", promo: null, vendor: "", sales: null, year,
+      channel: null, popupType: "팝업", promo: null, vendor: "", sales: null,
+      coalition: coalition ?? "", year,
     });
   }
   function openEdit(p: LivingPopup) {
     setEditing({
       id: p.id, brand: p.brand, store: p.store, startDate: p.startDate, endDate: p.endDate,
       channel: p.channel, popupType: p.popupType, promo: p.promo, vendor: p.vendor ?? "",
-      sales: p.sales, note: p.note, year,
+      sales: p.sales, note: p.note, coalition: p.coalition ?? "", year,
     });
   }
 
@@ -128,12 +135,13 @@ export default function LivingClient({ popups, weeks, year, canEdit, spaces, dai
       {tab === "analytics" && <AnalyticsTab popups={popups} />}
       {tab === "availability" && (
         <AvailabilityTab popups={popups} weeks={weeks} spaces={spaces}
-          onPropose={canEdit ? (store, w) => openNew(undefined, w, store) : undefined} />
+          onPropose={canEdit ? (store, w, coalition) => openNew(undefined, w, store, coalition) : undefined}
+          onEdit={canEdit ? openEdit : undefined} />
       )}
 
       {editing && (
         <Editor draft={editing} setDraft={setEditing} onSave={save} onDelete={remove}
-          onClose={() => setEditing(null)} pending={pending}
+          onClose={() => setEditing(null)} pending={pending} coalitions={coalitions}
           daily={editing.id ? (daily[editing.id] ?? []) : []} onSaveDaily={saveDaily} canEdit={canEdit} />
       )}
     </div>
@@ -236,16 +244,22 @@ function CalendarGrid({ weeks, brands, byCell, canEdit, onCell, onChip, year }: 
                     <div className="flex flex-col gap-1">
                       {list.map((p) => {
                         const st = popupStatus(p), s = STATUS_STYLE[st];
+                        const coalit = p.coalition?.trim();
                         return (
                           <button key={p.id} onClick={() => onChip(p)}
-                            className={`w-full text-left border ${s.bd} ${s.bg} rounded px-1.5 py-1`}>
-                            <div className={`font-bold ${s.tx} flex items-center justify-between gap-1`}>
+                            className={`w-full text-left rounded px-1.5 py-1 ${coalit ? "border-[1.5px] border-[#185FA5] bg-sky-50" : `border ${s.bd} ${s.bg}`}`}>
+                            {coalit && (
+                              <div className="flex items-center gap-0.5 text-[8px] font-bold text-[#185FA5] truncate mb-0.5">
+                                <span className="leading-none">⛬</span><span className="truncate">{coalit}</span>
+                              </div>
+                            )}
+                            <div className={`font-bold ${coalit ? "text-[#0C447C]" : s.tx} flex items-center justify-between gap-1`}>
                               <span className="truncate">{p.store}</span>
                               {p.sales != null
                                 ? <span className="shrink-0 font-mono text-[10px]">{p.sales}</span>
                                 : <span className="shrink-0 text-[8px] opacity-70">{STATUS_LABEL[st]}</span>}
                             </div>
-                            {p.vendor && <div className={`text-[9px] ${s.tx} opacity-70 truncate`}>{p.vendor}</div>}
+                            {p.vendor && <div className={`text-[9px] ${coalit ? "text-[#185FA5]" : s.tx} opacity-70 truncate`}>{p.vendor}</div>}
                           </button>
                         );
                       })}
@@ -391,9 +405,28 @@ function RankTable({ title, rows }: { title: string; rows: { k: string; cnt: num
 }
 
 // ── 가용·제안 탭 (지점 × 주차 히트맵) ──────────────────────────
-function AvailabilityTab({ popups, weeks, spaces, onPropose }: {
+type CellItem =
+  | { kind: "single"; p: LivingPopup }
+  | { kind: "coalition"; name: string; members: LivingPopup[] };
+
+function groupCell(list: LivingPopup[]): CellItem[] {
+  const out: CellItem[] = [];
+  const idx = new Map<string, number>();
+  for (const p of list) {
+    const c = p.coalition?.trim();
+    if (c) {
+      const at = idx.get(c);
+      if (at != null) (out[at] as { members: LivingPopup[] }).members.push(p);
+      else { idx.set(c, out.length); out.push({ kind: "coalition", name: c, members: [p] }); }
+    } else out.push({ kind: "single", p });
+  }
+  return out.map((it) => (it.kind === "coalition" && it.members.length === 1 ? { kind: "single" as const, p: it.members[0] } : it));
+}
+
+function AvailabilityTab({ popups, weeks, spaces, onPropose, onEdit }: {
   popups: LivingPopup[]; weeks: WeekRow[]; spaces: LivingSpace[];
-  onPropose?: (store: string, week: WeekRow) => void;
+  onPropose?: (store: string, week: WeekRow, coalition?: string) => void;
+  onEdit?: (p: LivingPopup) => void;
 }) {
   const todayWi = weekIndexOf({ startDate: new Date().toISOString().slice(0, 10) }, weeks);
   const future = useMemo(() => weeks.filter((w) => w.index >= todayWi), [weeks, todayWi]);
@@ -462,9 +495,41 @@ function AvailabilityTab({ popups, weeks, spaces, onPropose }: {
                     if (list.length > 0) {
                       return (
                         <td key={w.index} className="align-top px-1 py-1 border-r border-slate-100">
-                          {list.map((p) => {
-                            const s = STATUS_STYLE[popupStatus(p)];
-                            return <div key={p.id} className={`mb-0.5 rounded border ${s.bd} ${s.bg} ${s.tx} px-1 py-0.5 font-bold truncate`}>{p.brand}</div>;
+                          {groupCell(list).map((it) => {
+                            if (it.kind === "coalition") {
+                              const sum = it.members.reduce((t, m) => t + (m.sales ?? 0), 0);
+                              const hasSales = it.members.some((m) => m.sales != null);
+                              return (
+                                <div key={it.name} className="mb-0.5 rounded border-[1.5px] border-[#185FA5] bg-sky-50 px-1 py-0.5">
+                                  <div className="flex items-center justify-between gap-1 text-[9px] font-bold text-[#0C447C]">
+                                    <span className="truncate"><span className="mr-0.5">⛬</span>{it.name}</span>
+                                    <span className="shrink-0 rounded bg-[#185FA5] px-1 text-white">{it.members.length}사</span>
+                                  </div>
+                                  <div className="mt-0.5 flex flex-col gap-0.5">
+                                    {it.members.map((m) => (
+                                      <button key={m.id} onClick={() => onEdit?.(m)} disabled={!onEdit}
+                                        className="flex items-center justify-between gap-1 rounded px-1 text-[10px] text-[#0C447C] hover:bg-sky-100 disabled:cursor-default disabled:hover:bg-transparent">
+                                        <span className="truncate font-bold">{m.brand}</span>
+                                        <span className="shrink-0 font-mono">{m.sales != null ? m.sales : "·"}</span>
+                                      </button>
+                                    ))}
+                                  </div>
+                                  <div className="mt-0.5 flex items-center justify-between border-t border-sky-200 pt-0.5 text-[9px]">
+                                    <span className="text-[#185FA5]">{hasSales ? "합산" : "계획"}</span>
+                                    <span className="font-mono font-bold text-[#0C447C]">{hasSales ? sum.toLocaleString() : "—"}</span>
+                                  </div>
+                                  {onPropose && (
+                                    <button onClick={() => onPropose(store, w, it.name)}
+                                      className="mt-0.5 w-full rounded border border-dashed border-[#85B7EB] text-[9px] text-[#185FA5] hover:bg-sky-100">+ 브랜드</button>
+                                  )}
+                                </div>
+                              );
+                            }
+                            const p = it.p, s = STATUS_STYLE[popupStatus(p)];
+                            return (
+                              <button key={p.id} onClick={() => onEdit?.(p)} disabled={!onEdit}
+                                className={`mb-0.5 block w-full truncate rounded border ${s.bd} ${s.bg} ${s.tx} px-1 py-0.5 text-left font-bold disabled:cursor-default`}>{p.brand}</button>
+                            );
                           })}
                         </td>
                       );
@@ -488,9 +553,10 @@ function AvailabilityTab({ popups, weeks, spaces, onPropose }: {
 }
 
 // ── 편집 패널 ───────────────────────────────────────────────
-function Editor({ draft, setDraft, onSave, onDelete, onClose, pending, daily, onSaveDaily, canEdit }: {
+function Editor({ draft, setDraft, onSave, onDelete, onClose, pending, daily, onSaveDaily, canEdit, coalitions }: {
   draft: Draft; setDraft: (d: Draft) => void; onSave: () => void; onDelete: () => void; onClose: () => void; pending: boolean;
-  daily: { date: string; sales: number }[]; onSaveDaily: (popupId: string, entries: { date: string; sales: number }[]) => void; canEdit: boolean;
+  daily: { date: string; sales: number }[]; onSaveDaily: (popupId: string, entries: { date: string; sales: number }[]) => void;
+  canEdit: boolean; coalitions: string[];
 }) {
   const st = popupStatus({ startDate: draft.startDate, endDate: draft.endDate });
   const s = STATUS_STYLE[st];
@@ -537,6 +603,12 @@ function Editor({ draft, setDraft, onSave, onDelete, onClose, pending, daily, on
             <option value="">없음</option>{PROMOS.map((p) => <option key={p}>{p}</option>)}
           </select>
         </Field>
+        <div className="col-span-2">
+          <label className="block text-[11px] font-bold text-slate-600 mb-1">연합 주제전명 <span className="font-normal text-slate-400">· 같은 지점·주차에 2개 이상 브랜드를 합동으로 묶을 때 동일 이름 입력</span></label>
+          <input list="lp-coalitions" value={draft.coalition ?? ""} onChange={(e) => set({ coalition: e.target.value })}
+            placeholder="예: 리빙위크 연합 (단독이면 비워두기)" className={INP} />
+          <datalist id="lp-coalitions">{coalitions.map((c) => <option key={c} value={c} />)}</datalist>
+        </div>
         <Field label={`실적 매출(백만)${salesLocked ? " · 실행 후 입력" : ""}`}>
           <input type="number" value={draft.sales ?? ""} disabled={salesLocked}
             onChange={(e) => set({ sales: e.target.value === "" ? null : Number(e.target.value) })}

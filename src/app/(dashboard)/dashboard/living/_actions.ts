@@ -35,6 +35,7 @@ export interface PopupInput {
   vendor?: string | null;
   sales?: number | null;
   note?: string | null;
+  coalition?: string | null;
   year?: number;
 }
 
@@ -61,6 +62,7 @@ function toRow(p: PopupInput) {
     vendor: p.vendor?.trim() || null,
     sales: p.sales == null || Number.isNaN(p.sales) ? null : p.sales,
     note: p.note?.trim() || null,
+    coalition: p.coalition?.trim() || null,
   };
 }
 

@@ -8,6 +8,7 @@ interface Row {
   start_date: string; end_date: string;
   channel: string | null; popup_type: string | null;
   promo: string | null; vendor: string | null; sales: number | null; note: string | null;
+  coalition: string | null;
 }
 
 function mapRow(r: Row): LivingPopup {
@@ -16,6 +17,7 @@ function mapRow(r: Row): LivingPopup {
     startDate: r.start_date, endDate: r.end_date,
     channel: r.channel, popupType: r.popup_type,
     promo: r.promo, vendor: r.vendor, sales: r.sales, note: r.note,
+    coalition: r.coalition,
   };
 }
 
@@ -26,7 +28,7 @@ export async function getLivingPopups(orgId: string, year = 2026, canSeed = fals
   const supabase = await createClient();
   const sel = () => supabase
     .from("living_popup")
-    .select("id,year,brand,store,start_date,end_date,channel,popup_type,promo,vendor,sales,note")
+    .select("id,year,brand,store,start_date,end_date,channel,popup_type,promo,vendor,sales,note,coalition")
     .eq("organization_id", orgId)
     .eq("year", year)
     .order("start_date", { ascending: true });

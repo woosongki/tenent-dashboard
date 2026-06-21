@@ -14,6 +14,7 @@ export interface LivingPopup {
   vendor: string | null;
   sales: number | null;       // 백만
   note: string | null;
+  coalition: string | null;   // 연합 주제전 명칭 (같은 지점·주차·연합명 = 합동)
 }
 
 export type PopupStatus = "plan" | "live" | "done";
