@@ -10,7 +10,7 @@ import {
 } from "@/lib/livingPopup";
 import { createPopup, updatePopup, deletePopup, setDailySales, type PopupInput } from "../_actions";
 
-type Tab = "calendar" | "list" | "analytics" | "availability";
+type Tab = "calendar" | "list" | "analytics" | "availability" | "export";
 
 const INP = "w-full border-[2px] border-[#0a0a0a] px-2 py-1.5 text-[12px] outline-none focus:bg-yellow-50";
 
@@ -99,7 +99,7 @@ export default function LivingClient({ popups, weeks, year, canEdit, spaces, dai
     });
   }
 
-  const tabs: [Tab, string][] = [["calendar", "캘린더"], ["analytics", "실적분석"], ["availability", "가용·제안"], ["list", "목록"]];
+  const tabs: [Tab, string][] = [["calendar", "캘린더"], ["analytics", "실적분석"], ["availability", "가용·제안"], ["list", "목록"], ["export", "내보내기"]];
 
   return (
     <div className="space-y-4">
@@ -132,6 +132,7 @@ export default function LivingClient({ popups, weeks, year, canEdit, spaces, dai
           onCell={(b, w) => canEdit && openNew(b, w)} onChip={openEdit} />
       )}
       {tab === "list" && <ListTab popups={popups} onRow={canEdit ? openEdit : undefined} />}
+      {tab === "export" && <ExportTab popups={popups} weeks={weeks} year={year} />}
       {tab === "analytics" && <AnalyticsTab popups={popups} />}
       {tab === "availability" && (
         <AvailabilityTab popups={popups} weeks={weeks} spaces={spaces}
@@ -312,6 +313,87 @@ function ListTab({ popups, onRow }: { popups: LivingPopup[]; onRow?: (p: LivingP
               );
             })}
             {rows.length === 0 && <tr><td colSpan={6} className="px-3 py-8 text-center text-slate-400">데이터 없음</td></tr>}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+// ── 내보내기 탭 (구글시트/엑셀 동기화) ────────────────────────
+const EXPORT_HEADERS = ["주차", "브랜드", "지점", "시작일", "종료일", "벤더", "연합명", "실적(백만)", "상태", "메모"] as const;
+
+function buildExportRows(popups: LivingPopup[], weeks: WeekRow[]): string[][] {
+  const sorted = [...popups].sort((a, b) => a.startDate.localeCompare(b.startDate) || a.brand.localeCompare(b.brand, "ko"));
+  return sorted.map((p) => {
+    const wi = weekIndexOf({ startDate: p.startDate }, weeks);
+    const wk = weeks.find((w) => w.index === wi)?.label ?? "";
+    return [
+      wk, p.brand, p.store, p.startDate, p.endDate,
+      p.vendor ?? "", p.coalition ?? "",
+      p.sales != null ? String(p.sales) : "",
+      STATUS_LABEL[popupStatus(p)], p.note ?? "",
+    ];
+  });
+}
+
+function csvCell(v: string): string {
+  return /[",\n\r]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v;
+}
+
+function ExportTab({ popups, weeks, year }: { popups: LivingPopup[]; weeks: WeekRow[]; year: number }) {
+  const rows = useMemo(() => buildExportRows(popups, weeks), [popups, weeks]);
+
+  function downloadCsv() {
+    const csv = [EXPORT_HEADERS, ...rows].map((r) => r.map(csvCell).join(",")).join("\r\n");
+    const blob = new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = `리빙주제전_${year}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success("CSV 다운로드 — 엑셀에서 열거나 구글시트로 가져오기");
+  }
+
+  async function copyTsv() {
+    const tsv = [EXPORT_HEADERS, ...rows].map((r) => r.join("\t")).join("\n");
+    try {
+      await navigator.clipboard.writeText(tsv);
+      toast.success(`${rows.length}행 복사됨 — 구글시트 셀에 붙여넣기(Ctrl+V)`);
+    } catch { toast.error("복사 실패 — 브라우저 권한을 확인하세요"); }
+  }
+
+  return (
+    <div className="space-y-3">
+      <div className="border-[2px] border-[#0a0a0a] bg-white p-4" style={{ boxShadow: "3px 3px 0 0 #0a0a0a" }}>
+        <div className="text-[13px] font-bold mb-1">구글시트 · 엑셀 동기화</div>
+        <p className="text-[12px] text-slate-600 mb-3">
+          현재 {year}년 캘린더 데이터 <b>{rows.length}건</b>을 표로 내보냅니다.
+          구글시트는 <b>TSV 복사 → 셀에 붙여넣기</b>가 가장 빠르고, 엑셀은 <b>CSV 다운로드</b>를 쓰세요.
+        </p>
+        <div className="flex flex-wrap gap-2">
+          <button onClick={copyTsv}
+            className="border-[2px] border-[#0a0a0a] bg-yellow-300 px-3 py-1.5 text-[12px] font-bold hover:bg-yellow-400">
+            구글시트용 복사 (TSV)
+          </button>
+          <button onClick={downloadCsv}
+            className="border-[2px] border-[#0a0a0a] bg-white px-3 py-1.5 text-[12px] font-bold hover:bg-slate-50">
+            엑셀 다운로드 (CSV)
+          </button>
+        </div>
+      </div>
+      <div className="overflow-x-auto border-[2px] border-[#0a0a0a] bg-white">
+        <table className="w-full min-w-[820px] text-[11px]">
+          <thead className="bg-[#0a0a0a] text-white">
+            <tr>{EXPORT_HEADERS.map((h) => <th key={h} className="px-2 py-1.5 text-left whitespace-nowrap">{h}</th>)}</tr>
+          </thead>
+          <tbody>
+            {rows.map((r, i) => (
+              <tr key={i} className="border-t border-slate-100">
+                {r.map((c, j) => <td key={j} className="px-2 py-1 whitespace-nowrap">{c || <span className="text-slate-300">—</span>}</td>)}
+              </tr>
+            ))}
+            {rows.length === 0 && <tr><td colSpan={EXPORT_HEADERS.length} className="px-3 py-8 text-center text-slate-400">데이터 없음</td></tr>}
           </tbody>
         </table>
       </div>
