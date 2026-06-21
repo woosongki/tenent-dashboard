@@ -10,6 +10,7 @@ import {
   type FitScore,
 } from "@/lib/brand-fit/types";
 import { analyzeBrandFit } from "../_actions";
+import { inputBase } from "@/lib/tokens";
 import type { AgeBand, Gender, FamilyRatio, PriceBand, SpaceSize } from "@/data/eland-meta";
 
 const AGES: AgeBand[]      = ["10대", "20대", "30대", "40대", "50대", "60대+"];
@@ -171,7 +172,7 @@ export default function BrandFitClient() {
               onChange={(e) => setAnchorTag(e.target.value)}
               onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addAnchor(); } }}
               placeholder="예: 다이소, 애슐리, F&B, 올리브영"
-              className="flex-1 border-[2px] border-[#0a0a0a] px-3 py-2 text-[13px] focus:outline-none focus:bg-yellow-50"
+              className={`flex-1 ${inputBase}`}
             />
             <button onClick={addAnchor} className="border-[2px] border-[#0a0a0a] bg-white px-4 py-2 text-[12px] font-bold hover:bg-yellow-300 shadow-[2px_2px_0_0_#0a0a0a]">
               추가

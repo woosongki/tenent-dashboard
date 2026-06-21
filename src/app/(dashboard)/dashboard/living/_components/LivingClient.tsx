@@ -8,7 +8,7 @@ import {
   LIVING_BRANDS, LIVING_STORES,
   popupStatus, STATUS_LABEL, weekIndexOf,
 } from "@/lib/livingPopup";
-import { pillBtn } from "@/lib/tokens";
+import { pillBtn, inputCompact } from "@/lib/tokens";
 import { createPopup, updatePopup, deletePopup, setDailySales, type PopupInput } from "../_actions";
 
 type Tab = "calendar" | "list" | "analytics" | "availability" | "export";
@@ -287,7 +287,7 @@ function ListTab({ popups, onRow }: { popups: LivingPopup[]; onRow?: (p: LivingP
   return (
     <div className="space-y-2">
       <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="브랜드/지점/벤더 검색"
-        className="border-[2px] border-[#0a0a0a] px-3 py-1.5 text-[12px] focus:outline-none focus:bg-yellow-50 w-full max-w-[280px]" />
+        className={`${inputCompact} w-full max-w-[280px]`} />
       <div className="overflow-x-auto border-[2px] border-[#0a0a0a] bg-white">
         <table className="w-full min-w-[680px] text-[12px]">
           <thead className="bg-[#0a0a0a] text-white">
