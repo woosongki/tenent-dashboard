@@ -177,17 +177,34 @@ function CalendarGrid({ weeks, brands, byCell, canEdit, onCell, onChip, year }: 
     try { localStorage.setItem(STORAGE, JSON.stringify(next)); } catch {}
   }
 
-  // 현재 주차로 스크롤 (1월1주차 아님)
+  // 현재 주차를 화면 가운데로 스크롤 (1월1주차 아님)
   const scrollRef = useRef<HTMLDivElement>(null);
   const todayRowRef = useRef<HTMLTableRowElement>(null);
   useEffect(() => {
     const c = scrollRef.current, r = todayRowRef.current;
-    if (c && r) c.scrollTop += r.getBoundingClientRect().top - c.getBoundingClientRect().top - 40;
+    if (c && r) c.scrollTop += r.getBoundingClientRect().top - c.getBoundingClientRect().top - c.clientHeight / 2 + r.clientHeight / 2;
   }, []);
 
+  // 가로 이동바를 표 위쪽에 — 상단 더미 스크롤바와 본문 스크롤 동기화
+  const topRef = useRef<HTMLDivElement>(null);
+  const lock = useRef(false);
+  const tableW = 120 + display.length * 120;
+  function syncFrom(src: "top" | "main") {
+    if (lock.current) { lock.current = false; return; }
+    const t = topRef.current, c = scrollRef.current;
+    if (!t || !c) return;
+    lock.current = true;
+    if (src === "top") c.scrollLeft = t.scrollLeft; else t.scrollLeft = c.scrollLeft;
+  }
+
   return (
-    <div ref={scrollRef} className="overflow-auto border-[2px] border-[#0a0a0a] bg-white" style={{ maxHeight: "70vh" }}>
-      <table className="border-collapse text-[11px]" style={{ minWidth: 120 + display.length * 120 }}>
+    <div>
+    <div ref={topRef} onScroll={() => syncFrom("top")}
+      className="overflow-x-auto overflow-y-hidden border-x-[2px] border-t-[2px] border-[#0a0a0a] bg-white">
+      <div style={{ width: tableW, height: 1 }} />
+    </div>
+    <div ref={scrollRef} onScroll={() => syncFrom("main")} className="overflow-auto border-[2px] border-[#0a0a0a] bg-white" style={{ maxHeight: "70vh" }}>
+      <table className="border-collapse text-[11px]" style={{ minWidth: tableW }}>
         <thead className="sticky top-0 z-10">
           <tr className="bg-[#0a0a0a] text-white">
             <th className="sticky left-0 z-20 bg-[#0a0a0a] px-2 py-2 text-left w-[110px]">주차{canEdit && <span className="ml-1 font-normal text-[8px] text-slate-400">⠿ 헤더 드래그로 이동</span>}</th>
@@ -240,6 +257,7 @@ function CalendarGrid({ weeks, brands, byCell, canEdit, onCell, onChip, year }: 
           ))}
         </tbody>
       </table>
+    </div>
     </div>
   );
 }
