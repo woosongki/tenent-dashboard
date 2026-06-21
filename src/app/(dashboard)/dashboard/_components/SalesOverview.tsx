@@ -8,8 +8,8 @@ const eok = (n: number) => (n / 1e8).toFixed(1);
 function Yoy({ pct }: { pct: number }) {
   const up = pct >= 0;
   return (
-    <span className={`inline-flex items-center gap-0.5 text-[11px] font-extrabold tabular-nums px-1.5 py-0.5 border-[2px] border-[#0a0a0a] ${up ? "bg-emerald-400 text-emerald-950" : "bg-rose-500 text-white"}`}>
-      {up ? "▲" : "▼"} {Math.abs(pct).toFixed(1)}%
+    <span className={`inline-flex shrink-0 items-center gap-0.5 whitespace-nowrap text-[11px] font-extrabold tabular-nums px-1.5 py-0.5 border-[2px] border-[#0a0a0a] ${up ? "bg-emerald-400 text-emerald-950" : "bg-rose-500 text-white"}`}>
+      {up ? "▲" : "▼"}&nbsp;{Math.abs(pct).toFixed(1)}%
     </span>
   );
 }
@@ -25,12 +25,12 @@ function SalesCard({ href, accentBg, accentText, label, value, unit, caption, tr
         <span className="text-[10px] font-extrabold uppercase tracking-[.16em]">{label}</span>
         <span className="text-[12px] font-extrabold">→</span>
       </div>
-      <div className="mt-4 flex items-baseline gap-1.5">
-        <span className={`font-mono font-extrabold tabular-nums tracking-tight leading-none text-[#0a0a0a] ${alert ? "text-[40px]" : "text-[40px]"}`}>{value}</span>
-        {unit && <span className="text-[16px] font-extrabold text-[#0a0a0a]/55 font-mono">{unit}</span>}
+      <div className="mt-4 flex items-baseline gap-1 whitespace-nowrap overflow-hidden">
+        <span className="font-mono font-extrabold tabular-nums tracking-tight leading-none text-[#0a0a0a] text-[24px] sm:text-[36px]">{value}</span>
+        {unit && <span className="text-[13px] sm:text-[16px] font-extrabold text-[#0a0a0a]/55 font-mono">{unit}</span>}
       </div>
       <div className="mt-3 flex items-center justify-between gap-2 min-h-[22px]">
-        {caption ? <p className="text-[11px] font-medium text-[#0a0a0a]/65 leading-tight">{caption}</p> : <span />}
+        {caption ? <p className="text-[11px] font-medium text-[#0a0a0a]/65 leading-tight line-clamp-2">{caption}</p> : <span />}
         {trend !== undefined && <Yoy pct={trend} />}
       </div>
     </Link>
