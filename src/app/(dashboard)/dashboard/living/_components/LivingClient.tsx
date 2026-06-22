@@ -9,7 +9,7 @@ import {
   popupStatus, STATUS_LABEL, weekIndexOf,
 } from "@/lib/livingPopup";
 import { pillBtn, inputCompact } from "@/lib/tokens";
-import { createPopup, updatePopup, deletePopup, setDailySales, type PopupInput } from "../_actions";
+import { createPopup, updatePopup, deletePopup, movePopup, setDailySales, type PopupInput } from "../_actions";
 
 type Tab = "calendar" | "list" | "analytics" | "availability" | "export";
 
@@ -100,6 +100,28 @@ export default function LivingClient({ popups, weeks, year, canEdit, spaces, dai
     });
   }
 
+  // 드래그 이동 — 기간 길이와 주차 내 요일 오프셋 보존.
+  // 예: 7월3주차 수~일(5일)을 7월4주차로 끌면 → 7월4주차 수~일(5일)로 이동.
+  function move(p: LivingPopup, targetStore: string, targetWeek: WeekRow) {
+    const oldWi = weekIndexOf({ startDate: p.startDate }, weeks);
+    if (oldWi === targetWeek.index && p.store === targetStore) return;
+    const oldWeek = weeks.find((w) => w.index === oldWi);
+    if (!oldWeek) return;
+    const DAY = 86400000;
+    const oldStartMs = new Date(p.startDate).getTime();
+    const oldEndMs = new Date(p.endDate).getTime();
+    const offset = Math.max(0, Math.round((oldStartMs - new Date(oldWeek.start).getTime()) / DAY));
+    const duration = Math.max(0, Math.round((oldEndMs - oldStartMs) / DAY));
+    const newStart = new Date(new Date(targetWeek.start).getTime() + offset * DAY);
+    const newEnd = new Date(newStart.getTime() + duration * DAY);
+    const iso = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    startTransition(async () => {
+      const res = await movePopup(p.id, { store: targetStore, startDate: iso(newStart), endDate: iso(newEnd) });
+      if (res.ok) { toast.success(`${p.brand} → ${targetStore} ${targetWeek.label}`); router.refresh(); }
+      else toast.error(res.error);
+    });
+  }
+
   const tabs: [Tab, string][] = [["calendar", "캘린더"], ["analytics", "실적분석"], ["availability", "가용·제안"], ["list", "목록"], ["export", "내보내기"]];
 
   return (
@@ -137,7 +159,8 @@ export default function LivingClient({ popups, weeks, year, canEdit, spaces, dai
       {tab === "availability" && (
         <AvailabilityTab popups={popups} weeks={weeks} spaces={spaces}
           onPropose={canEdit ? (store, w, coalition) => openNew(undefined, w, store, coalition) : undefined}
-          onEdit={canEdit ? openEdit : undefined} />
+          onEdit={canEdit ? openEdit : undefined}
+          onMove={canEdit ? move : undefined} />
       )}
 
       {editing && (
@@ -505,11 +528,44 @@ function groupCell(list: LivingPopup[]): CellItem[] {
   return out.map((it) => (it.kind === "coalition" && it.members.length === 1 ? { kind: "single" as const, p: it.members[0] } : it));
 }
 
-function AvailabilityTab({ popups, weeks, spaces, onPropose, onEdit }: {
+function AvailabilityTab({ popups, weeks, spaces, onPropose, onEdit, onMove }: {
   popups: LivingPopup[]; weeks: WeekRow[]; spaces: LivingSpace[];
   onPropose?: (store: string, week: WeekRow, coalition?: string) => void;
   onEdit?: (p: LivingPopup) => void;
+  onMove?: (p: LivingPopup, targetStore: string, targetWeek: WeekRow) => void;
 }) {
+  // 드래그 중인 팝업 id, hover 중인 (store|wi) 셀 키
+  const [dragId, setDragId] = useState<string | null>(null);
+  const [dropKey, setDropKey] = useState<string | null>(null);
+  const popupById = useMemo(() => new Map(popups.map((p) => [p.id, p])), [popups]);
+  function handleDrop(store: string, w: WeekRow) {
+    if (!onMove || !dragId) return;
+    const p = popupById.get(dragId);
+    if (p) onMove(p, store, w);
+    setDragId(null);
+    setDropKey(null);
+  }
+  function chipDragProps(p: LivingPopup) {
+    if (!onMove) return {};
+    return {
+      draggable: true,
+      onDragStart: (e: React.DragEvent) => {
+        setDragId(p.id);
+        e.dataTransfer.effectAllowed = "move";
+        try { e.dataTransfer.setData("text/plain", p.id); } catch {}
+      },
+      onDragEnd: () => { setDragId(null); setDropKey(null); },
+    } as const;
+  }
+  function cellDropProps(store: string, w: WeekRow) {
+    if (!onMove) return {};
+    const key = `${store}|${w.index}`;
+    return {
+      onDragOver: (e: React.DragEvent) => { if (dragId) { e.preventDefault(); setDropKey(key); } },
+      onDragLeave: () => { setDropKey((k) => (k === key ? null : k)); },
+      onDrop: (e: React.DragEvent) => { e.preventDefault(); handleDrop(store, w); },
+    } as const;
+  }
   const todayWi = weekIndexOf({ startDate: new Date().toISOString().slice(0, 10) }, weeks);
   const future = useMemo(() => weeks.filter((w) => w.index >= todayWi), [weeks, todayWi]);
 
@@ -552,6 +608,7 @@ function AvailabilityTab({ popups, weeks, spaces, onPropose, onEdit }: {
     <div className="space-y-3">
       <div className="flex flex-wrap items-center gap-3 text-[11px] text-slate-600">
         <span>지점 × 주차 가용 현황 · <b className="text-sky-700">빈 칸 클릭 → 그 자리에 업체 제안/배치</b></span>
+        {onMove && <span className="text-emerald-700">· <b>브랜드 칩 드래그 → 다른 주차/지점으로 일정 이동</b> (기간 길이 유지)</span>}
         <span className="text-slate-400">앞으로 빈 슬롯 약 {Math.max(emptyCount, 0)}개</span>
         {spaces.length === 0 && <span className="text-amber-600">· 공간 DB(층/장소/평수) 미입력 — 채우면 제안 시 함께 표시됩니다</span>}
       </div>
@@ -560,7 +617,12 @@ function AvailabilityTab({ popups, weeks, spaces, onPropose, onEdit }: {
           <thead className="sticky top-0 z-10">
             <tr className="bg-[#0a0a0a] text-white">
               <th className="sticky left-0 z-20 bg-[#0a0a0a] px-2 py-2 text-left w-[160px]">지점</th>
-              {future.map((w) => <th key={w.index} className="px-1 py-2 text-center min-w-[92px] font-bold whitespace-nowrap">{w.label}</th>)}
+              {future.map((w) => (
+                <th key={w.index} className="px-1 py-2 text-center min-w-[92px] font-bold whitespace-nowrap">
+                  <div>{w.label}</div>
+                  <div className="text-[9px] font-normal text-slate-400">{w.rangeText}</div>
+                </th>
+              ))}
             </tr>
           </thead>
           <tbody>
@@ -573,10 +635,14 @@ function AvailabilityTab({ popups, weeks, spaces, onPropose, onEdit }: {
                     {sp && <div className="text-[9px] text-slate-400 leading-tight">{sp}</div>}
                   </td>
                   {future.map((w) => {
-                    const list = booked.get(`${store}|${w.index}`) ?? [];
+                    const cellKey = `${store}|${w.index}`;
+                    const isDropTarget = dropKey === cellKey;
+                    const dropCls = isDropTarget ? "bg-emerald-100 outline outline-2 outline-emerald-500" : "";
+                    const list = booked.get(cellKey) ?? [];
                     if (list.length > 0) {
                       return (
-                        <td key={w.index} className="align-top px-1 py-1 border-r border-slate-100">
+                        <td key={w.index} {...cellDropProps(store, w)}
+                          className={`align-top px-1 py-1 border-r border-slate-100 ${dropCls}`}>
                           {groupCell(list).map((it) => {
                             if (it.kind === "coalition") {
                               const sum = it.members.reduce((t, m) => t + (m.sales ?? 0), 0);
@@ -590,7 +656,8 @@ function AvailabilityTab({ popups, weeks, spaces, onPropose, onEdit }: {
                                   <div className="mt-0.5 flex flex-col gap-0.5">
                                     {it.members.map((m) => (
                                       <button key={m.id} onClick={() => onEdit?.(m)} disabled={!onEdit}
-                                        className="flex items-center justify-between gap-1 rounded px-1 text-[10px] text-[#0C447C] hover:bg-sky-100 disabled:cursor-default disabled:hover:bg-transparent">
+                                        {...chipDragProps(m)}
+                                        className={`flex items-center justify-between gap-1 rounded px-1 text-[10px] text-[#0C447C] hover:bg-sky-100 disabled:cursor-default disabled:hover:bg-transparent ${onMove ? "cursor-grab active:cursor-grabbing" : ""} ${dragId === m.id ? "opacity-40" : ""}`}>
                                         <span className="truncate font-bold">{m.brand}</span>
                                         <span className="shrink-0 font-mono">{m.sales != null ? m.sales : "·"}</span>
                                       </button>
@@ -610,14 +677,16 @@ function AvailabilityTab({ popups, weeks, spaces, onPropose, onEdit }: {
                             const p = it.p, s = STATUS_STYLE[popupStatus(p)];
                             return (
                               <button key={p.id} onClick={() => onEdit?.(p)} disabled={!onEdit}
-                                className={`mb-0.5 block w-full truncate rounded border ${s.bd} ${s.bg} ${s.tx} px-1 py-0.5 text-left font-bold disabled:cursor-default`}>{p.brand}</button>
+                                {...chipDragProps(p)}
+                                className={`mb-0.5 block w-full truncate rounded border ${s.bd} ${s.bg} ${s.tx} px-1 py-0.5 text-left font-bold disabled:cursor-default ${onMove ? "cursor-grab active:cursor-grabbing" : ""} ${dragId === p.id ? "opacity-40" : ""}`}>{p.brand}</button>
                             );
                           })}
                         </td>
                       );
                     }
                     return (
-                      <td key={w.index} className={`px-1 py-1 border-r border-slate-100 text-center ${onPropose ? "cursor-pointer hover:bg-sky-50" : ""}`}
+                      <td key={w.index} {...cellDropProps(store, w)}
+                        className={`px-1 py-1 border-r border-slate-100 text-center ${onPropose ? "cursor-pointer hover:bg-sky-50" : ""} ${dropCls}`}
                         onClick={() => onPropose?.(store, w)}>
                         <span className="text-[10px] text-slate-300">{onPropose ? "+ 제안" : "·"}</span>
                       </td>

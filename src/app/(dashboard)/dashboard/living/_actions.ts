@@ -129,6 +129,32 @@ export async function setDailySales(
   return { ok: true, total: totalMil ?? 0 };
 }
 
+/** 가용·제안 탭의 드래그 이동 — 기간/지점만 갱신 (다른 필드는 클라이언트가 안 갖고 있을 수 있어 보존). */
+export async function movePopup(
+  id: string,
+  patch: { store: string; startDate: string; endDate: string },
+): Promise<Result> {
+  if (!patch.store?.trim()) return { ok: false, error: "지점이 비어있습니다." };
+  if (!patch.startDate || !patch.endDate) return { ok: false, error: "기간이 비어있습니다." };
+  if (patch.endDate < patch.startDate) return { ok: false, error: "종료일이 시작일보다 빠릅니다." };
+  let ctx;
+  try { ctx = await requireAdmin(); } catch (e) { return { ok: false, error: (e as Error).message }; }
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("living_popup")
+    .update({
+      store: patch.store.trim(),
+      start_date: patch.startDate,
+      end_date: patch.endDate,
+      updated_by: ctx.userId,
+    })
+    .eq("id", id)
+    .eq("organization_id", ctx.orgId);
+  if (error) return { ok: false, error: error.message };
+  revalidatePath("/dashboard/living");
+  return { ok: true };
+}
+
 export async function deletePopup(id: string): Promise<Result> {
   let ctx;
   try { ctx = await requireAdmin(); } catch (e) { return { ok: false, error: (e as Error).message }; }
