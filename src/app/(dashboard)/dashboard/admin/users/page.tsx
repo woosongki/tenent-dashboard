@@ -55,7 +55,6 @@ export default async function AdminUsersPage() {
   const { data: feedbackRows } = await supabase
     .from("app_feedback")
     .select("id, author_email, category, message, status, created_at")
-    .eq("organization_id", me.organization_id)
     .order("created_at", { ascending: false });
   const feedback: Feedback[] = ((feedbackRows ?? []) as {
     id: string; author_email: string | null; category: string | null;

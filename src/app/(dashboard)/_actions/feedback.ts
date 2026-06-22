@@ -9,8 +9,9 @@ type Result = { ok: true } | { ok: false; error: string };
 type Ctx = Awaited<ReturnType<typeof createClient>>;
 type CtxResult =
   | { ok: false; error: string }
-  | { ok: true; supabase: Ctx; userId: string; email: string | null; orgId: string; role: string | null };
+  | { ok: true; supabase: Ctx; userId: string; email: string | null; orgId: string | null; role: string | null };
 
+// 로그인만 확인. 조직 멤버십이 있으면 함께 반환하되, 없어도 통과 (의견은 자유 작성).
 async function ctx(): Promise<CtxResult> {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -21,15 +22,21 @@ async function ctx(): Promise<CtxResult> {
     .eq("user_id", user.id)
     .limit(1)
     .maybeSingle();
-  if (!m?.organization_id) return { ok: false, error: "소속 조직이 없습니다." };
-  return { ok: true, supabase, userId: user.id, email: user.email ?? null, orgId: m.organization_id as string, role: (m.role as string) ?? null };
+  return {
+    ok: true,
+    supabase,
+    userId: user.id,
+    email: user.email ?? null,
+    orgId: (m?.organization_id as string | undefined) ?? null,
+    role: (m?.role as string | null) ?? null,
+  };
 }
 
 function isAdmin(role: string | null) {
   return role === "owner" || role === "admin";
 }
 
-/** 의견 작성 — 조직원 전원 가능 */
+/** 의견 작성 — 로그인 사용자 누구나 가능 (조직 미소속자도 OK) */
 export async function submitFeedback(input: { category: string; message: string }): Promise<Result> {
   const msg = input.message?.trim();
   if (!msg) return { ok: false, error: "내용을 입력하세요." };
@@ -56,8 +63,7 @@ export async function setFeedbackStatus(id: string, status: FeedbackStatus): Pro
   const { error } = await c.supabase
     .from("app_feedback")
     .update({ status })
-    .eq("id", id)
-    .eq("organization_id", c.orgId);
+    .eq("id", id);
   if (error) return { ok: false, error: error.message };
   revalidatePath("/dashboard/admin/users");
   return { ok: true };
@@ -71,8 +77,7 @@ export async function deleteFeedback(id: string): Promise<Result> {
   const { error } = await c.supabase
     .from("app_feedback")
     .delete()
-    .eq("id", id)
-    .eq("organization_id", c.orgId);
+    .eq("id", id);
   if (error) return { ok: false, error: error.message };
   revalidatePath("/dashboard/admin/users");
   return { ok: true };
