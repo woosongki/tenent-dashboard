@@ -53,6 +53,29 @@ function parseYear(sheetName) {
   return m ? `20${m[1]}` : null;
 }
 
+/** 차원 컬럼 자동 감지: "지점(Now)" / "구매그룹(Now)" / "브랜드(Now)" 헤더의 컬럼 인덱스 매핑.
+ *  Why: 25년 6월처럼 시트별로 차원 순서(store/cat/brand vs cat/brand/store)가 다른 경우가 있어,
+ *       하드코딩된 r[1]/r[3]/r[4]/r[5]가 잘못된 값을 집어 회전된 데이터가 적재됨.
+ *  How to apply: 헤더 라벨이 들어있는 행을 위쪽 15행에서 스캔해 각 차원의 코드 컬럼을 찾고,
+ *                이름 컬럼은 코드 컬럼 + 1 위치로 가정 (ERP 익스포트의 일관된 패턴). */
+function detectDimCols(rows) {
+  const labels = { store: /지점\s*\(.*\)/, group: /구매그룹\s*\(.*\)/, brand: /브랜드\s*\(.*\)/ };
+  const found = { store: -1, group: -1, brand: -1 };
+  for (let i = 0; i < Math.min(rows.length, 15); i++) {
+    const r = rows[i] || [];
+    for (let c = 0; c < r.length; c++) {
+      const v = r[c];
+      if (typeof v !== "string") continue;
+      const t = v.trim();
+      if (found.store < 0 && labels.store.test(t)) found.store = c;
+      if (found.group < 0 && labels.group.test(t)) found.group = c;
+      if (found.brand < 0 && labels.brand.test(t)) found.brand = c;
+    }
+    if (found.store >= 0 && found.group >= 0 && found.brand >= 0) break;
+  }
+  return found;
+}
+
 /** 지점 시트 1개 파싱 → leaf 행 배열 */
 function parseStoreSheet(ws) {
   const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: null });
@@ -78,10 +101,17 @@ function parseStoreSheet(ws) {
   }
   if (Object.keys(channels).length === 0) throw new Error("채널 컬럼을 추출하지 못함");
 
+  // 차원 컬럼 자동 감지 — 없으면 기존 26년 6월 레이아웃(store=1,cat=3,bCode=4,bName=5)으로 폴백.
+  const dim = detectDimCols(rows);
+  const storeCol = dim.store >= 0 ? dim.store + 1 : 1;   // 지점명(코드 옆 칸)
+  const catCol   = dim.group >= 0 ? dim.group + 1 : 3;   // 구매그룹명
+  const bCodeCol = dim.brand >= 0 ? dim.brand     : 4;   // 브랜드 코드
+  const bNameCol = dim.brand >= 0 ? dim.brand + 1 : 5;   // 브랜드명
+
   const out = [];
   for (let i = chanRowIdx + 1; i < rows.length; i++) {
     const r = rows[i]; if (!r) continue;
-    const store = r[1], cat = r[3], bCode = r[4], bName = r[5];
+    const store = r[storeCol], cat = r[catCol], bCode = r[bCodeCol], bName = r[bNameCol];
     if (!bName || !bCode || bCode === "결과") continue;       // leaf 아님(소계)
     if (!store || store === "전체 결과") continue;
     for (const [c, ch] of Object.entries(channels)) {

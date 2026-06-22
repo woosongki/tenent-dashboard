@@ -155,6 +155,30 @@ function buildSub(curSub: Map<string, number>, prevSub?: Map<string, number>): {
 
 interface OnlineRow { cat: string; brand: string; store: string; channel: string; ym: string; sales: number; }
 
+// 26년 6월 ERP 익스포트부터 등장한 세분화 분류를 누적탭 기존 프레임으로 흡수.
+// Why: 누적(8번) 파일은 아직 옛 분류를 쓰는 상태에서, 당월(9번)만 새 분류가 들어오면
+// 두 탭의 채널/복종 행 구성이 달라져 사용자 혼란. 데이터는 보존하고 표시만 통합.
+// How to apply: fetchOnline/fetchOnlineCum 응답 행에 일괄 적용.
+const ONLINE_CHANNEL_ALIAS: Record<string, string> = {
+  "패션플러스(중간정산)": "패션플러스",
+};
+const ONLINE_CAT_ALIAS: Record<string, string> = {
+  "아동특(온)": "아동의류(특정매입)",
+  "스포츠특(온)": "스포츠(특정)NC",
+  "잡화특(온)": "잡화(특정매입)",
+  "캐주얼특(온)": "캐쥬얼(특정매입)",
+  "숙녀특(온)": "여성의류(특정)NC",
+  "영캐특(온)": "영캐쥬얼(특정)2001",
+  "신사특(온)": "남성의류(특정매입)",
+};
+function normalizeOnline<R extends { cat: string; channel: string }>(r: R): R {
+  return {
+    ...r,
+    cat: ONLINE_CAT_ALIAS[r.cat] ?? r.cat,
+    channel: ONLINE_CHANNEL_ALIAS[r.channel] ?? r.channel,
+  };
+}
+
 async function fetchOnline(yms: string[]): Promise<OnlineRow[]> {
   const supabase = createServiceClient();
   // 페이지네이션 (Supabase 기본 1000행 제한 회피)
@@ -168,7 +192,7 @@ async function fetchOnline(yms: string[]): Promise<OnlineRow[]> {
       .in("ym", yms)
       .range(from, from + PAGE - 1);
     if (error) throw new Error(`sales_online_monthly: ${error.message}`);
-    all.push(...(data ?? []) as OnlineRow[]);
+    all.push(...((data ?? []) as OnlineRow[]).map(normalizeOnline));
     if (!data || data.length < PAGE) break;
     from += PAGE;
   }
@@ -286,7 +310,7 @@ async function fetchOnlineCum(years: string[]): Promise<OnlineCumRow[]> {
       .in("year", years)
       .range(from, from + PAGE - 1);
     if (error) throw new Error(`sales_online_cum: ${error.message}`);
-    all.push(...(data ?? []) as OnlineCumRow[]);
+    all.push(...((data ?? []) as OnlineCumRow[]).map(normalizeOnline));
     if (!data || data.length < PAGE) break;
     from += PAGE;
   }
@@ -294,7 +318,8 @@ async function fetchOnlineCum(years: string[]): Promise<OnlineCumRow[]> {
 }
 
 // 누적에서 제외할 채널 (운영 종료/미사용 — 데이터가 들어와도 무시)
-const EXCLUDED_CUM_CHANNELS = new Set(["옥션", "G마켓"]);
+// "지정되지 않음": 채널 미지정 잡행 — 당월 ETL은 이미 거름. 누적도 동일하게 제외해서 두 탭 표시 일치.
+const EXCLUDED_CUM_CHANNELS = new Set(["옥션", "G마켓", "지정되지 않음"]);
 
 /**
  * 온라인 누적 집계 — 브랜드/지점 랭킹 (전년 누적비)
