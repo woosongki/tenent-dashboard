@@ -569,9 +569,11 @@ function AvailabilityTab({ popups, weeks, spaces, year, onPropose, onEdit, onMov
   const todayWi = weekIndexOf({ startDate: new Date().toISOString().slice(0, 10) }, weeks);
   const future = useMemo(() => weeks.filter((w) => w.index >= todayWi), [weeks, todayWi]);
 
-  // 지점 목록 = 공간 DB 지점 ∪ 일정에 등장한 지점 (가나다 기본 정렬)
+  // 지점 목록 = 입점계획 41개 직영점(canonical) ∪ 공간 DB ∪ 일정 (가나다 기본 정렬)
+  // Why: 데이터 없는 지점도 행으로 표시해야 "여기에 제안" 클릭으로 새 팝업을 잡을 수 있음.
   const stores = useMemo(() => {
-    const set = new Set<string>(spaces.map((s) => s.store));
+    const set = new Set<string>(LIVING_STORES);
+    spaces.forEach((s) => set.add(s.store));
     popups.forEach((p) => set.add(p.store));
     return [...set].sort((a, b) => a.localeCompare(b, "ko"));
   }, [spaces, popups]);

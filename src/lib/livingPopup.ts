@@ -36,13 +36,32 @@ export const LIVING_BRANDS = [
   "지포트리", "파고", "쿤리쿤", "정인",
 ] as const;
 
-// 자주 쓰는 지점 (입력 편의용 — 자유 입력도 허용)
-export const LIVING_STORES = [
-  "광명", "분당", "괴정", "덕천", "해운대", "신구로", "동수원", "인천",
-  "송파", "야탑", "평촌", "울산", "고잔", "터미널", "유성", "수성",
-  "평택", "중계", "쇼핑", "천호", "부산대", "산본", "순천", "부천",
-  "창원", "경산", "일산", "청주", "충장", "광주역", "부평", "수터", "안양",
-] as const;
+// 지점 목록 — 입점계획(ATTRACTION_BRANCHES)과 동기화된 41개 직영점.
+// 단일 진실원천(SSOT)을 위해 `src/types/attraction.ts`에서 재내보냄.
+export { ATTRACTION_BRANCHES as LIVING_STORES } from "@/types/attraction";
+import { ATTRACTION_BRANCHES } from "@/types/attraction";
+
+/** 과거 단축형(예: "광명") → canonical("광명점") 매핑.
+ *  Why: 기존 living_popup 데이터는 단축형으로 저장되어 있어 그리드 행과 매칭되지 않음.
+ *  How to apply: DB 읽은 popup.store / space.store를 화면 그룹핑 키로 쓰기 전에 한번 통과시킴. */
+const STORE_ALIAS: Record<string, string> = {
+  "수터": "수원터미널점",
+  "터미널": "수원터미널점",
+  "유성": "대전 유성점",
+  "평촌": "평촌2점",
+  "천호": "천호2점",
+  "울산": "울산점", // 울산점/울산2점 둘 다 있지만 단축형 "울산"은 본점으로 매핑
+};
+
+export function normalizeStore(s: string | null | undefined): string {
+  if (!s) return "";
+  const t = s.trim();
+  if (STORE_ALIAS[t]) return STORE_ALIAS[t];
+  if ((ATTRACTION_BRANCHES as readonly string[]).includes(t)) return t;
+  const withSuffix = `${t}점`;
+  if ((ATTRACTION_BRANCHES as readonly string[]).includes(withSuffix)) return withSuffix;
+  return t;
+}
 
 export interface WeekRow {
   index: number;
