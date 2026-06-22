@@ -157,7 +157,7 @@ export default function LivingClient({ popups, weeks, year, canEdit, spaces, dai
       {tab === "export" && <ExportTab popups={popups} weeks={weeks} year={year} />}
       {tab === "analytics" && <AnalyticsTab popups={popups} />}
       {tab === "availability" && (
-        <AvailabilityTab popups={popups} weeks={weeks} spaces={spaces}
+        <AvailabilityTab popups={popups} weeks={weeks} spaces={spaces} year={year}
           onPropose={canEdit ? (store, w, coalition) => openNew(undefined, w, store, coalition) : undefined}
           onEdit={canEdit ? openEdit : undefined}
           onMove={canEdit ? move : undefined} />
@@ -528,8 +528,8 @@ function groupCell(list: LivingPopup[]): CellItem[] {
   return out.map((it) => (it.kind === "coalition" && it.members.length === 1 ? { kind: "single" as const, p: it.members[0] } : it));
 }
 
-function AvailabilityTab({ popups, weeks, spaces, onPropose, onEdit, onMove }: {
-  popups: LivingPopup[]; weeks: WeekRow[]; spaces: LivingSpace[];
+function AvailabilityTab({ popups, weeks, spaces, year, onPropose, onEdit, onMove }: {
+  popups: LivingPopup[]; weeks: WeekRow[]; spaces: LivingSpace[]; year: number;
   onPropose?: (store: string, week: WeekRow, coalition?: string) => void;
   onEdit?: (p: LivingPopup) => void;
   onMove?: (p: LivingPopup, targetStore: string, targetWeek: WeekRow) => void;
@@ -569,12 +569,31 @@ function AvailabilityTab({ popups, weeks, spaces, onPropose, onEdit, onMove }: {
   const todayWi = weekIndexOf({ startDate: new Date().toISOString().slice(0, 10) }, weeks);
   const future = useMemo(() => weeks.filter((w) => w.index >= todayWi), [weeks, todayWi]);
 
-  // 지점 목록 = 공간 DB 지점 ∪ 일정에 등장한 지점
+  // 지점 목록 = 공간 DB 지점 ∪ 일정에 등장한 지점 (가나다 기본 정렬)
   const stores = useMemo(() => {
     const set = new Set<string>(spaces.map((s) => s.store));
     popups.forEach((p) => set.add(p.store));
     return [...set].sort((a, b) => a.localeCompare(b, "ko"));
   }, [spaces, popups]);
+
+  // 지점 행 순서 — 드래그로 변경, localStorage 저장. 캘린더 탭의 브랜드 컬럼 드래그와 동일 패턴.
+  const STORE_ORDER_KEY = `living-store-order-${year}`;
+  const [savedStoreOrder, setSavedStoreOrder] = useState<string[]>([]);
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    try { const raw = localStorage.getItem(STORE_ORDER_KEY); if (raw) setSavedStoreOrder(JSON.parse(raw)); } catch {}
+  }, [STORE_ORDER_KEY]);
+  const displayStores = useMemo(() => reconcileOrder(savedStoreOrder, stores), [savedStoreOrder, stores]);
+  const rowDragFrom = useRef<number | null>(null);
+  const [rowDragOver, setRowDragOver] = useState<number | null>(null);
+  function applyStoreOrder(from: number, to: number) {
+    if (from === to) return;
+    const next = [...displayStores];
+    const [m] = next.splice(from, 1);
+    next.splice(to, 0, m);
+    setSavedStoreOrder(next);
+    try { localStorage.setItem(STORE_ORDER_KEY, JSON.stringify(next)); } catch {}
+  }
 
   // 지점 → 공간정보(층/장소/평수) 요약
   const spaceByStore = useMemo(() => {
@@ -609,6 +628,7 @@ function AvailabilityTab({ popups, weeks, spaces, onPropose, onEdit, onMove }: {
       <div className="flex flex-wrap items-center gap-3 text-[11px] text-slate-600">
         <span>지점 × 주차 가용 현황 · <b className="text-sky-700">빈 칸 클릭 → 그 자리에 업체 제안/배치</b></span>
         {onMove && <span className="text-emerald-700">· <b>브랜드 칩 드래그 → 다른 주차/지점으로 일정 이동</b> (기간 길이 유지)</span>}
+        {onMove && <span className="text-violet-700">· <b>지점명 ⠿ 드래그 → 행 순서 변경</b> (브라우저 저장)</span>}
         <span className="text-slate-400">앞으로 빈 슬롯 약 {Math.max(emptyCount, 0)}개</span>
         {spaces.length === 0 && <span className="text-amber-600">· 공간 DB(층/장소/평수) 미입력 — 채우면 제안 시 함께 표시됩니다</span>}
       </div>
@@ -626,12 +646,30 @@ function AvailabilityTab({ popups, weeks, spaces, onPropose, onEdit, onMove }: {
             </tr>
           </thead>
           <tbody>
-            {stores.map((store) => {
+            {displayStores.map((store, ri) => {
               const sp = spaceText(store);
+              const isRowDropTarget = rowDragOver === ri;
               return (
-                <tr key={store} className="border-t border-slate-200">
-                  <td className="sticky left-0 z-[5] bg-white px-2 py-1.5 border-r border-slate-200">
-                    <div className="font-bold text-[#0a0a0a]">{store}</div>
+                <tr key={store} className={`border-t border-slate-200 ${isRowDropTarget ? "bg-violet-50" : ""}`}>
+                  <td className={`sticky left-0 z-[5] bg-white px-2 py-1.5 border-r border-slate-200 ${onMove ? "cursor-grab active:cursor-grabbing" : ""} ${isRowDropTarget ? "outline outline-2 outline-violet-500" : ""}`}
+                    draggable={!!onMove}
+                    onDragStart={(e) => {
+                      if (!onMove) return;
+                      rowDragFrom.current = ri;
+                      e.dataTransfer.effectAllowed = "move";
+                      try { e.dataTransfer.setData("text/plain", `row:${store}`); } catch {}
+                    }}
+                    onDragOver={(e) => { if (rowDragFrom.current != null) { e.preventDefault(); setRowDragOver(ri); } }}
+                    onDragLeave={() => { setRowDragOver((v) => (v === ri ? null : v)); }}
+                    onDrop={(e) => {
+                      if (rowDragFrom.current == null) return;
+                      e.preventDefault();
+                      applyStoreOrder(rowDragFrom.current, ri);
+                      rowDragFrom.current = null;
+                      setRowDragOver(null);
+                    }}
+                    onDragEnd={() => { rowDragFrom.current = null; setRowDragOver(null); }}>
+                    <div className="font-bold text-[#0a0a0a]">{onMove && <span className="mr-0.5 opacity-40">⠿</span>}{store}</div>
                     {sp && <div className="text-[9px] text-slate-400 leading-tight">{sp}</div>}
                   </td>
                   {future.map((w) => {
