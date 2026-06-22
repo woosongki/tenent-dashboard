@@ -93,12 +93,15 @@ export function popupStatus(p: { startDate: string; endDate: string }, today = n
 
 export const STATUS_LABEL: Record<PopupStatus, string> = { plan: "계획", live: "진행 중", done: "실행" };
 
-/** 팝업이 속한 주차 index (시작일이 포함되는 주) */
+/** 팝업이 속한 주차 index (시작일이 포함되는 주).
+ *  경계 처리: [w.start, w.start+7일) 반개구간 — 다음 주 시작일(수요일)이 이전 주에 함께 매칭되는 off-by-one 방지. */
 export function weekIndexOf(p: { startDate: string }, weeks: WeekRow[]): number {
   const s = new Date(p.startDate).getTime();
+  const DAY = 86400000;
   for (const w of weeks) {
-    if (s >= new Date(w.start).getTime() && s <= new Date(w.end).getTime() + 86400000) return w.index;
+    const ws = new Date(w.start).getTime();
+    if (s >= ws && s < ws + 7 * DAY) return w.index;
   }
-  // 1월 첫 주 이전이면 0
-  return 0;
+  // 1월 첫 주 이전 → 0, 12월 마지막 주 이후 → 마지막 주
+  return s < new Date(weeks[0].start).getTime() ? 0 : weeks[weeks.length - 1].index;
 }
