@@ -67,6 +67,13 @@ export default async function SalesPage() {
   const offCum = offData?.offCum ?? null;
   const offMonth = offData?.offMonth ?? null;
   const offMeta = { monthYm: offData?.monthYm ?? null, cumYear: offData?.cumYear ?? null };
+  // 누적 개월수 — 누적 테이블은 "전월까지"의 누적이므로 (당월 - 1).
+  // 예: monthYm "2026-06" → 누적은 5월까지 → 5개월로 나눠 월평균 계산.
+  const cumMonths = (() => {
+    const digits = (offMeta.monthYm ?? "").replace(/[^0-9]/g, "");
+    const m = Number(digits.slice(4, 6));
+    return m >= 2 && m <= 12 ? m - 1 : 1;
+  })();
 
   // 당월 활성 키 — 누적엔 매출 있지만 당월에 빠진(이탈) 건 판정용
   const monthActive = offMonth ? {
@@ -95,7 +102,7 @@ export default async function SalesPage() {
             action={<DataFreshnessBadge monthYm={offMeta.monthYm} />}
           />
 
-        <SalesTabsShell online={online} onlineCum={onlineCum} offCum={offCum} offMonth={offMonth} monthActive={monthActive} onlineMonthActive={onlineMonthActive} />
+        <SalesTabsShell online={online} onlineCum={onlineCum} offCum={offCum} offMonth={offMonth} monthActive={monthActive} onlineMonthActive={onlineMonthActive} cumMonths={cumMonths} />
 
           <p className="text-[10px] font-bold uppercase tracking-wider text-[#0a0a0a]/55">
             Supabase 라이브 데이터 · 오프라인(특정) 누적{offMeta.cumYear ? ` ${offMeta.cumYear}` : ""}·당월{offMeta.monthYm ? ` ${offMeta.monthYm}` : ""} + 온라인 · 부문/복종/지점/브랜드 · 월 1회 갱신

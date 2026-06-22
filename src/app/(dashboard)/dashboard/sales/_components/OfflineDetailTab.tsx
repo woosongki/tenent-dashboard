@@ -19,6 +19,8 @@ interface Props {
   fashionCats: CatSummary[];
   others?: OffOthers | null;
   monthActive?: { brands: string[]; stores: string[]; detail: string[] } | null;
+  /** 누적 개월수. >1 이면 하위 표에 "월평균" 컬럼 추가. 당월상세=1(미표시). */
+  monthCount?: number;
 }
 
 const won = (n: number) => n.toLocaleString("ko-KR");
@@ -246,7 +248,7 @@ export default function OfflineDetailTab(p: Props) {
               const id = `${r.division ?? ""}|${r.cat ?? ""}|${r.key}`;
               return (
                 <DetailRow key={id} id={id} row={r} rank={i + 1} firstColLabel="지점" left={!isOthersSel && brandLeft(r)}
-                  open={expanded === id} onToggle={onToggleBrand} sSort={sSort} sDir={sDir} toggleS={toggleS} />
+                  open={expanded === id} onToggle={onToggleBrand} sSort={sSort} sDir={sDir} toggleS={toggleS} monthCount={p.monthCount} />
               );
             })}
             {rows.length === 0 && <tr><td colSpan={7} className="px-3 py-8 text-center text-slate-400">데이터 없음</td></tr>}
@@ -304,7 +306,7 @@ export default function OfflineDetailTab(p: Props) {
           <tbody>
             {stVisible.map((st, i) => (
               <DetailRow key={st.key} id={st.key} row={st} rank={i + 1} firstColLabel="브랜드" left={!isOthersStSel && storeLeft(st)}
-                open={stExpanded === st.key} onToggle={onToggleStore} sSort={sSort} sDir={sDir} toggleS={toggleS} />
+                open={stExpanded === st.key} onToggle={onToggleStore} sSort={sSort} sDir={sDir} toggleS={toggleS} monthCount={p.monthCount} />
             ))}
             {storeRows.length === 0 && <tr><td colSpan={7} className="px-3 py-8 text-center text-slate-400">지점 데이터 없음</td></tr>}
           </tbody>
@@ -323,9 +325,10 @@ export default function OfflineDetailTab(p: Props) {
 
 // 드릴다운 하위 표 (브랜드→지점 / 지점→브랜드 공용)
 // 브랜드/지점 공용 행 (메모 — 펼침 토글 시 해당 행만 리렌더)
-const DetailRow = memo(function DetailRow({ row, id, rank, firstColLabel, open, onToggle, sSort, sDir, toggleS, left }: {
+const DetailRow = memo(function DetailRow({ row, id, rank, firstColLabel, open, onToggle, sSort, sDir, toggleS, left, monthCount }: {
   row: OffRank; id: string; rank: number; firstColLabel: string; open: boolean;
   onToggle: (id: string) => void; sSort: SSortKey; sDir: Dir; toggleS: (k: SSortKey) => void; left?: boolean;
+  monthCount?: number;
 }) {
   const subTitle = firstColLabel === "지점" ? "지점별 상세" : "브랜드별 상세";
   return (
@@ -348,7 +351,7 @@ const DetailRow = memo(function DetailRow({ row, id, rank, firstColLabel, open, 
           <td></td>
           <td colSpan={6} className="px-3 py-2">
             <div className="mb-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400">{subTitle} ({row.bySub.length})</div>
-            <SubBreakdownTable bySub={row.bySub} firstColLabel={firstColLabel} sSort={sSort} sDir={sDir} toggleS={toggleS} />
+            <SubBreakdownTable bySub={row.bySub} firstColLabel={firstColLabel} sSort={sSort} sDir={sDir} toggleS={toggleS} monthCount={monthCount} />
           </td>
         </tr>
       )}
@@ -356,9 +359,10 @@ const DetailRow = memo(function DetailRow({ row, id, rank, firstColLabel, open, 
   );
 });
 
-const SubBreakdownTable = memo(function SubBreakdownTable({ bySub, firstColLabel, sSort, sDir, toggleS }: {
+const SubBreakdownTable = memo(function SubBreakdownTable({ bySub, firstColLabel, sSort, sDir, toggleS, monthCount }: {
   bySub: OffSubLite[]; firstColLabel: string;
   sSort: SSortKey; sDir: Dir; toggleS: (k: SSortKey) => void;
+  monthCount?: number;
 }) {
   const [limit, setLimit] = useState(10);
   const rows = useMemo(() => {
@@ -368,6 +372,9 @@ const SubBreakdownTable = memo(function SubBreakdownTable({ bySub, firstColLabel
   }, [bySub, sSort, sDir]);
   const shown = rows.slice(0, limit);
   const sArrow = (k: SSortKey) => sSort === k ? (sDir === "asc" ? " ▲" : " ▼") : "";
+  // 누적상세(monthCount>1)에서만 "월평균" 컬럼 표시. 매출/누적개월수 — DB 없이 계산.
+  const showAvg = (monthCount ?? 1) > 1;
+  const mc = monthCount ?? 1;
   return (
     <ScrollHint>
       <table className="w-full min-w-[720px] text-[11px]">
@@ -375,6 +382,9 @@ const SubBreakdownTable = memo(function SubBreakdownTable({ bySub, firstColLabel
           <tr className="border-b border-slate-200">
             <th className="sticky left-0 z-[1] bg-slate-50 px-2 py-1 text-left whitespace-nowrap cursor-pointer hover:text-[#0a0a0a]" onClick={() => toggleS("key")}>{firstColLabel}{sArrow("key")}</th>
             <th className="px-2 py-1 text-right cursor-pointer hover:text-[#0a0a0a]" onClick={() => toggleS("s")}>매출(백만){sArrow("s")}</th>
+            {showAvg && (
+              <th className="px-2 py-1 text-right cursor-pointer hover:text-[#0a0a0a]" onClick={() => toggleS("s")} title={`매출 ÷ ${mc}개월`}>월평균(백만){sArrow("s")}</th>
+            )}
             <th className="px-2 py-1 text-right cursor-pointer hover:text-[#0a0a0a]" onClick={() => toggleS("growthS")}>성장액(백만){sArrow("growthS")}</th>
             <th className="px-2 py-1 text-right cursor-pointer hover:text-[#0a0a0a]" onClick={() => toggleS("growthPct")}>성장율{sArrow("growthPct")}</th>
             <th className="px-2 py-1 text-right cursor-pointer hover:text-[#0a0a0a]" onClick={() => toggleS("g")}>매총익(백만){sArrow("g")}</th>
@@ -393,6 +403,9 @@ const SubBreakdownTable = memo(function SubBreakdownTable({ bySub, firstColLabel
                 {s.closed && <span className="ml-1.5 border border-rose-500 px-1 py-0 text-[9px] font-extrabold text-rose-600 align-middle">퇴점</span>}
               </td>
               <td className="px-2 py-1 text-right font-mono font-bold">{s.closed ? "—" : mil(s.s)}</td>
+              {showAvg && (
+                <td className="px-2 py-1 text-right font-mono text-slate-600">{s.closed ? "—" : mil(s.s / mc)}</td>
+              )}
               <td className="px-2 py-1 text-right font-mono" style={{ color: s.ps === 0 ? "#7c3aed" : s.growthS >= 0 ? "#0d9e6e" : "#e53e3e" }}>{s.ps === 0 ? "—" : milSigned(s.growthS)}</td>
               <td className="px-2 py-1 text-right"><YoY pct={s.growthPct} prev={s.ps} closed={s.closed} /></td>
               <td className="px-2 py-1 text-right font-mono">{s.closed ? "—" : mil(s.g)}</td>
