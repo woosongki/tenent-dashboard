@@ -56,18 +56,27 @@ function parseYear(sheetName) {
 /** 지점 시트 1개 파싱 → leaf 행 배열 */
 function parseStoreSheet(ws) {
   const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: null });
-  // 채널명 행 찾기: idx8에 채널명("쿠팡" 등)이 처음 등장하는 행
+  // 채널명 행 찾기: 어느 컬럼에든 알려진 채널명이 처음 등장하는 행.
+  // ERP 익스포트가 컬럼 위치를 옮겨도(예: 26년 6월부터 채널이 8→10 이동) 자동 적응.
+  const CHAN_RE = /쿠팡|네이버|11번가|G마켓|옥션|통합몰|하프클럽|E몰|패션플러스/;
   let chanRowIdx = -1;
-  for (let i = 0; i < Math.min(rows.length, 10); i++) {
-    const r = rows[i];
-    if (r && typeof r[8] === "string" && /쿠팡|네이버|11번가|G마켓|옥션|통합몰|하프클럽|E몰|패션플러스/.test(r[8])) {
-      chanRowIdx = i; break;
-    }
+  for (let i = 0; i < Math.min(rows.length, 12); i++) {
+    const r = rows[i] || [];
+    if (r.some((v) => typeof v === "string" && CHAN_RE.test(v))) { chanRowIdx = i; break; }
   }
   if (chanRowIdx < 0) throw new Error("채널명 헤더 행을 찾지 못함");
   const chanRow = rows[chanRowIdx];
+  // 실제 채널 컬럼만 — "지정되지 않음"/"결과"/"#" 같은 소계·미분류 열은 제외.
   const channels = {};
-  for (let c = 8; c < chanRow.length; c++) if (chanRow[c]) channels[c] = String(chanRow[c]).trim();
+  for (let c = 0; c < chanRow.length; c++) {
+    const v = chanRow[c];
+    if (!v || typeof v !== "string") continue;
+    const t = v.trim();
+    if (!t || t === "지정되지 않음" || t === "결과" || t === "#") continue;
+    if (!CHAN_RE.test(t)) continue;
+    channels[c] = t;
+  }
+  if (Object.keys(channels).length === 0) throw new Error("채널 컬럼을 추출하지 못함");
 
   const out = [];
   for (let i = chanRowIdx + 1; i < rows.length; i++) {
