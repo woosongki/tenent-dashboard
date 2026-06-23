@@ -86,27 +86,8 @@ const BRANDS = [
     },
     requireFurniture: false,
   },
-  {
-    key: "hanssem",
-    const: "HANSSEM_STORES",
-    file: "hanssem.ts",
-    label: "한샘",
-    keywords: ["한샘리하우스", "한샘디자인파크", "한샘이펙스", "한샘직매장", "한샘플래그샵", "한샘"],
-    matches: (name) => norm(name).startsWith("한샘"),
-    requireFurniture: true, // 한샘부동산/한샘학원 등 노이즈 차단
-  },
-  {
-    key: "livart",
-    const: "LIVART_STORES",
-    file: "livart.ts",
-    label: "현대리바트",
-    keywords: ["현대리바트", "리바트", "LIVART"],
-    matches: (name) => {
-      const h = norm(name);
-      return h.startsWith("리바트") || h.startsWith("현대리바트") || h.startsWith("LIVART");
-    },
-    requireFurniture: false,
-  },
+  // 한샘디자인파크/현대리바트는 공식 API에 좌표가 포함돼 있어 별도 스크립트로 분리.
+  // → scripts/fetch-hanssem-official.mjs, scripts/fetch-livart-official.mjs
   {
     key: "iloom",
     const: "ILOOM_STORES",
