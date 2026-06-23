@@ -92,6 +92,12 @@ export const saturIcon    = makeSmallSquareIcon("#7c3aed"); // 보라 — 세터
 export const modernhouseIcon = makeSmallSquareIcon("#6a2c70"); // 자줏빛 보라 — 모던하우스
 export const abcmartIcon       = makeSmallSquareIcon("#e63946"); // 빨강 — ABC마트
 export const eightsecondsIcon  = makeSmallSquareIcon("#fbbf24"); // 노랑 — 에잇세컨즈
+export const mujiIcon          = makeSmallSquareIcon("#6f4e37"); // 커피 브라운 — 무인양품
+export const hanssemIcon       = makeSmallSquareIcon("#1e5fa3"); // 한샘 블루
+export const livartIcon        = makeSmallSquareIcon("#ec4899"); // 리바트 마젠타
+export const iloomIcon         = makeSmallSquareIcon("#ca8a04"); // 머스타드 — 일룸
+export const nitoriIcon        = makeSmallSquareIcon("#ea580c"); // 니토리 오렌지
+export const uniqloIcon        = makeSmallSquareIcon("#be123c"); // 유니클로 레드
 
 // 마트 — 원형 (백화점보다 작게, 체인보다 약간 큼)
 function makeCircleIcon(bg: string) {

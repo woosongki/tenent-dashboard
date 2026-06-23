@@ -196,6 +196,12 @@ const NAV: NavGroup[] = [
           { href: "/dashboard/homeplus?layer=daiso",           label: "다이소 1,714점",      layer: "daiso",      dotColor: "#f9c74f", group: "브랜드" },
           { href: "/dashboard/homeplus?layer=oliveyoung",      label: "올리브영 1,363점",    layer: "oliveyoung", dotColor: "#52b788", group: "브랜드" },
           { href: "/dashboard/homeplus?layer=modernhouse",     label: "모던하우스 143점",    layer: "modernhouse", dotColor: "#6a2c70", group: "브랜드" },
+          { href: "/dashboard/homeplus?layer=muji",            label: "무인양품 46점",       layer: "muji",       dotColor: "#6f4e37", group: "브랜드" },
+          { href: "/dashboard/homeplus?layer=hanssem",         label: "한샘 1,226점",        layer: "hanssem",    dotColor: "#1e5fa3", group: "브랜드" },
+          { href: "/dashboard/homeplus?layer=livart",          label: "현대리바트 835점",    layer: "livart",     dotColor: "#ec4899", group: "브랜드" },
+          { href: "/dashboard/homeplus?layer=iloom",           label: "일룸 92점",           layer: "iloom",      dotColor: "#ca8a04", group: "브랜드" },
+          { href: "/dashboard/homeplus?layer=nitori",          label: "니토리 6점",          layer: "nitori",     dotColor: "#ea580c", group: "브랜드" },
+          { href: "/dashboard/homeplus?layer=uniqlo",          label: "유니클로 153점",      layer: "uniqlo",     dotColor: "#be123c", group: "브랜드" },
           // 기타 (체인 매장 + 그 외)
           { href: "/dashboard/homeplus?layer=entersix",        label: "엔터식스 6점",        layer: "entersix",   dotColor: "#ff6f3c", group: "기타" },
           { href: "/dashboard/homeplus?layer=moda",            label: "모다아울렛 17점",     layer: "moda",       dotColor: "#00b4a0", group: "기타" },

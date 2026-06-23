@@ -39,6 +39,12 @@ import {
   modernhouseIcon,
   abcmartIcon,
   eightsecondsIcon,
+  mujiIcon,
+  hanssemIcon,
+  livartIcon,
+  iloomIcon,
+  nitoriIcon,
+  uniqloIcon,
   emartIcon,
   lottemartIcon,
   hanaromartIcon,
@@ -68,6 +74,12 @@ import { MODERNHOUSE_STORES } from "@/data/modernhouse";
 import { SATUR_STORES } from "@/data/satur";
 import { ABCMART_STORES } from "@/data/abcmart";
 import { EIGHTSECONDS_STORES } from "@/data/eightseconds";
+import { MUJI_STORES } from "@/data/muji";
+import { HANSSEM_STORES } from "@/data/hanssem";
+import { LIVART_STORES } from "@/data/livart";
+import { ILOOM_STORES } from "@/data/iloom";
+import { NITORI_STORES } from "@/data/nitori";
+import { UNIQLO_STORES } from "@/data/uniqlo";
 // ── 마트 ──
 import { EMART_STORES } from "@/data/emart";
 import { LOTTEMART_STORES } from "@/data/lottemart";
@@ -122,6 +134,12 @@ export default function HomeplusMapClient() {
   const [showModernhouse, setShowModernhouse] = useState(initialLayer === "modernhouse");
   const [showAbcmart, setShowAbcmart] = useState(initialLayer === "abcmart");
   const [showEightseconds, setShowEightseconds] = useState(initialLayer === "8seconds");
+  const [showMuji, setShowMuji] = useState(initialLayer === "muji");
+  const [showHanssem, setShowHanssem] = useState(initialLayer === "hanssem");
+  const [showLivart, setShowLivart] = useState(initialLayer === "livart");
+  const [showIloom, setShowIloom] = useState(initialLayer === "iloom");
+  const [showNitori, setShowNitori] = useState(initialLayer === "nitori");
+  const [showUniqlo, setShowUniqlo] = useState(initialLayer === "uniqlo");
   // 마트
   const [showEmart, setShowEmart] = useState(initialLayer === "emart");
   const [showLottemart, setShowLottemart] = useState(initialLayer === "lottemart");
@@ -156,6 +174,12 @@ export default function HomeplusMapClient() {
     setShowModernhouse(initialLayer === "modernhouse");
     setShowAbcmart(initialLayer === "abcmart");
     setShowEightseconds(initialLayer === "8seconds");
+    setShowMuji(initialLayer === "muji");
+    setShowHanssem(initialLayer === "hanssem");
+    setShowLivart(initialLayer === "livart");
+    setShowIloom(initialLayer === "iloom");
+    setShowNitori(initialLayer === "nitori");
+    setShowUniqlo(initialLayer === "uniqlo");
     setShowEmart(initialLayer === "emart");
     setShowLottemart(initialLayer === "lottemart");
     setShowHanaromart(initialLayer === "hanaromart");
@@ -203,6 +227,12 @@ export default function HomeplusMapClient() {
       { show: showModernhouse, stores: MODERNHOUSE_STORES, icon: modernhouseIcon, color: "#6a2c70", emoji: "🏡", k: "mh", off: 4 },
       { show: showAbcmart,     stores: ABCMART_STORES,     icon: abcmartIcon,     color: "#c1121f", emoji: "👟", k: "abc", off: 4 },
       { show: showEightseconds,stores: EIGHTSECONDS_STORES,icon: eightsecondsIcon,color: "#b58000", emoji: "👕", k: "8s", off: 4 },
+      { show: showMuji,        stores: MUJI_STORES,        icon: mujiIcon,        color: "#6f4e37", emoji: "🛒", k: "muji", off: 4 },
+      { show: showHanssem,     stores: HANSSEM_STORES,     icon: hanssemIcon,     color: "#1e5fa3", emoji: "🛋️", k: "hs", off: 4 },
+      { show: showLivart,      stores: LIVART_STORES,      icon: livartIcon,      color: "#be185d", emoji: "🛋️", k: "lv", off: 4 },
+      { show: showIloom,       stores: ILOOM_STORES,       icon: iloomIcon,       color: "#a16207", emoji: "🛋️", k: "il", off: 4 },
+      { show: showNitori,      stores: NITORI_STORES,      icon: nitoriIcon,      color: "#c2410c", emoji: "🏡", k: "nt", off: 4 },
+      { show: showUniqlo,      stores: UNIQLO_STORES,      icon: uniqloIcon,      color: "#9f1239", emoji: "👕", k: "uq", off: 4 },
       { show: showEmart,       stores: EMART_STORES,       icon: emartIcon,       color: "#b88a00", emoji: "🛒", k: "em", off: 6 },
       { show: showLottemart,   stores: LOTTEMART_STORES,   icon: lottemartIcon,   color: "#a01a1a", emoji: "🛒", k: "lm", off: 6 },
       { show: showHanaromart,  stores: HANAROMART_STORES,  icon: hanaromartIcon,  color: "#1f4d3a", emoji: "🛒", k: "hm", off: 6 },
@@ -224,6 +254,7 @@ export default function HomeplusMapClient() {
     showLotte, showHyundai, showShinsegae, showAk, showGalleria,
     showEntersix, showModa, showSavezone, showLf, showSatur, showModernhouse,
     showAbcmart, showEightseconds,
+    showMuji, showHanssem, showLivart, showIloom, showNitori, showUniqlo,
     showEmart, showLottemart, showHanaromart,
     activeTiers, gapMode, gapRadius,
   ]);
@@ -535,6 +566,36 @@ export default function HomeplusMapClient() {
                 <input type="checkbox" checked={showEightseconds} onChange={(e) => setShowEightseconds(e.target.checked)} disabled={EIGHTSECONDS_STORES.length === 0} className="h-3.5 w-3.5 disabled:opacity-40" />
                 <span className="inline-block h-2 w-2" style={{ background: "#fbbf24" }} />
                 <span className="font-bold text-[#0a0a0a]">에잇세컨즈 ({EIGHTSECONDS_STORES.length})</span>
+              </label>
+              <label className="flex cursor-pointer items-center gap-1.5">
+                <input type="checkbox" checked={showMuji} onChange={(e) => setShowMuji(e.target.checked)} disabled={MUJI_STORES.length === 0} className="h-3.5 w-3.5 disabled:opacity-40" />
+                <span className="inline-block h-2 w-2" style={{ background: "#6f4e37" }} />
+                <span className="font-bold text-[#0a0a0a]">무인양품 ({MUJI_STORES.length})</span>
+              </label>
+              <label className="flex cursor-pointer items-center gap-1.5">
+                <input type="checkbox" checked={showHanssem} onChange={(e) => setShowHanssem(e.target.checked)} disabled={HANSSEM_STORES.length === 0} className="h-3.5 w-3.5 disabled:opacity-40" />
+                <span className="inline-block h-2 w-2" style={{ background: "#1e5fa3" }} />
+                <span className="font-bold text-[#0a0a0a]">한샘 ({HANSSEM_STORES.length})</span>
+              </label>
+              <label className="flex cursor-pointer items-center gap-1.5">
+                <input type="checkbox" checked={showLivart} onChange={(e) => setShowLivart(e.target.checked)} disabled={LIVART_STORES.length === 0} className="h-3.5 w-3.5 disabled:opacity-40" />
+                <span className="inline-block h-2 w-2" style={{ background: "#ec4899" }} />
+                <span className="font-bold text-[#0a0a0a]">현대리바트 ({LIVART_STORES.length})</span>
+              </label>
+              <label className="flex cursor-pointer items-center gap-1.5">
+                <input type="checkbox" checked={showIloom} onChange={(e) => setShowIloom(e.target.checked)} disabled={ILOOM_STORES.length === 0} className="h-3.5 w-3.5 disabled:opacity-40" />
+                <span className="inline-block h-2 w-2" style={{ background: "#ca8a04" }} />
+                <span className="font-bold text-[#0a0a0a]">일룸 ({ILOOM_STORES.length})</span>
+              </label>
+              <label className="flex cursor-pointer items-center gap-1.5">
+                <input type="checkbox" checked={showNitori} onChange={(e) => setShowNitori(e.target.checked)} disabled={NITORI_STORES.length === 0} className="h-3.5 w-3.5 disabled:opacity-40" />
+                <span className="inline-block h-2 w-2" style={{ background: "#ea580c" }} />
+                <span className="font-bold text-[#0a0a0a]">니토리 ({NITORI_STORES.length})</span>
+              </label>
+              <label className="flex cursor-pointer items-center gap-1.5">
+                <input type="checkbox" checked={showUniqlo} onChange={(e) => setShowUniqlo(e.target.checked)} disabled={UNIQLO_STORES.length === 0} className="h-3.5 w-3.5 disabled:opacity-40" />
+                <span className="inline-block h-2 w-2" style={{ background: "#be123c" }} />
+                <span className="font-bold text-[#0a0a0a]">유니클로 ({UNIQLO_STORES.length})</span>
               </label>
             </div>
             )}
