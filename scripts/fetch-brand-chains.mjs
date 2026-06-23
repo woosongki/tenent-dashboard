@@ -124,6 +124,30 @@ const BRANDS = [
     },
     requireFurniture: false,
   },
+  {
+    key: "spao",
+    const: "SPAO_STORES",
+    file: "spao.ts",
+    label: "스파오",
+    keywords: ["스파오", "SPAO"],
+    matches: (name) => {
+      const h = norm(name);
+      return h.startsWith("스파오") || h.startsWith("SPAO");
+    },
+    requireFurniture: false,
+  },
+  {
+    key: "mixxo",
+    const: "MIXXO_STORES",
+    file: "mixxo.ts",
+    label: "미쏘",
+    keywords: ["미쏘", "MIXXO"],
+    matches: (name) => {
+      const h = norm(name);
+      return h.startsWith("미쏘") || h.startsWith("MIXXO");
+    },
+    requireFurniture: false,
+  },
 ];
 
 async function searchKeyword(query, page = 1) {
