@@ -37,6 +37,8 @@ import {
   lfIcon,
   saturIcon,
   modernhouseIcon,
+  abcmartIcon,
+  eightsecondsIcon,
   emartIcon,
   lottemartIcon,
   hanaromartIcon,
@@ -64,6 +66,8 @@ import { SAVEZONE_STORES } from "@/data/savezone";
 import { LF_STORES } from "@/data/lf";
 import { MODERNHOUSE_STORES } from "@/data/modernhouse";
 import { SATUR_STORES } from "@/data/satur";
+import { ABCMART_STORES } from "@/data/abcmart";
+import { EIGHTSECONDS_STORES } from "@/data/eightseconds";
 // ── 마트 ──
 import { EMART_STORES } from "@/data/emart";
 import { LOTTEMART_STORES } from "@/data/lottemart";
@@ -116,6 +120,8 @@ export default function HomeplusMapClient() {
   const [showLf, setShowLf] = useState(initialLayer === "lf");
   const [showSatur, setShowSatur] = useState(initialLayer === "satur");
   const [showModernhouse, setShowModernhouse] = useState(initialLayer === "modernhouse");
+  const [showAbcmart, setShowAbcmart] = useState(initialLayer === "abcmart");
+  const [showEightseconds, setShowEightseconds] = useState(initialLayer === "8seconds");
   // 마트
   const [showEmart, setShowEmart] = useState(initialLayer === "emart");
   const [showLottemart, setShowLottemart] = useState(initialLayer === "lottemart");
@@ -148,6 +154,8 @@ export default function HomeplusMapClient() {
     setShowLf(initialLayer === "lf");
     setShowSatur(initialLayer === "satur");
     setShowModernhouse(initialLayer === "modernhouse");
+    setShowAbcmart(initialLayer === "abcmart");
+    setShowEightseconds(initialLayer === "8seconds");
     setShowEmart(initialLayer === "emart");
     setShowLottemart(initialLayer === "lottemart");
     setShowHanaromart(initialLayer === "hanaromart");
@@ -193,6 +201,8 @@ export default function HomeplusMapClient() {
       { show: showLf,          stores: LF_STORES,          icon: lfIcon,          color: "#6e5538", emoji: "🛍️", k: "lf", off: 4 },
       { show: showSatur,       stores: SATUR_STORES,       icon: saturIcon,       color: "#5b21b6", emoji: "👜", k: "sa", off: 4 },
       { show: showModernhouse, stores: MODERNHOUSE_STORES, icon: modernhouseIcon, color: "#6a2c70", emoji: "🏡", k: "mh", off: 4 },
+      { show: showAbcmart,     stores: ABCMART_STORES,     icon: abcmartIcon,     color: "#c1121f", emoji: "👟", k: "abc", off: 4 },
+      { show: showEightseconds,stores: EIGHTSECONDS_STORES,icon: eightsecondsIcon,color: "#b58000", emoji: "👕", k: "8s", off: 4 },
       { show: showEmart,       stores: EMART_STORES,       icon: emartIcon,       color: "#b88a00", emoji: "🛒", k: "em", off: 6 },
       { show: showLottemart,   stores: LOTTEMART_STORES,   icon: lottemartIcon,   color: "#a01a1a", emoji: "🛒", k: "lm", off: 6 },
       { show: showHanaromart,  stores: HANAROMART_STORES,  icon: hanaromartIcon,  color: "#1f4d3a", emoji: "🛒", k: "hm", off: 6 },
@@ -213,6 +223,7 @@ export default function HomeplusMapClient() {
     showArtbox, showDaiso, showOliveYoung,
     showLotte, showHyundai, showShinsegae, showAk, showGalleria,
     showEntersix, showModa, showSavezone, showLf, showSatur, showModernhouse,
+    showAbcmart, showEightseconds,
     showEmart, showLottemart, showHanaromart,
     activeTiers, gapMode, gapRadius,
   ]);
@@ -514,6 +525,16 @@ export default function HomeplusMapClient() {
                 <input type="checkbox" checked={showModernhouse} onChange={(e) => setShowModernhouse(e.target.checked)} disabled={MODERNHOUSE_STORES.length === 0} className="h-3.5 w-3.5 disabled:opacity-40" />
                 <span className="inline-block h-2 w-2" style={{ background: "#6a2c70" }} />
                 <span className="font-bold text-[#0a0a0a]">모던하우스 ({MODERNHOUSE_STORES.length})</span>
+              </label>
+              <label className="flex cursor-pointer items-center gap-1.5">
+                <input type="checkbox" checked={showAbcmart} onChange={(e) => setShowAbcmart(e.target.checked)} disabled={ABCMART_STORES.length === 0} className="h-3.5 w-3.5 disabled:opacity-40" />
+                <span className="inline-block h-2 w-2" style={{ background: "#e63946" }} />
+                <span className="font-bold text-[#0a0a0a]">ABC마트 ({ABCMART_STORES.length})</span>
+              </label>
+              <label className="flex cursor-pointer items-center gap-1.5">
+                <input type="checkbox" checked={showEightseconds} onChange={(e) => setShowEightseconds(e.target.checked)} disabled={EIGHTSECONDS_STORES.length === 0} className="h-3.5 w-3.5 disabled:opacity-40" />
+                <span className="inline-block h-2 w-2" style={{ background: "#fbbf24" }} />
+                <span className="font-bold text-[#0a0a0a]">에잇세컨즈 ({EIGHTSECONDS_STORES.length})</span>
               </label>
             </div>
             )}
