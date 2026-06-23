@@ -190,6 +190,7 @@ async function fetchOnline(yms: string[]): Promise<OnlineRow[]> {
       .from("sales_online_monthly")
       .select("cat,brand,store,channel,ym,sales")
       .in("ym", yms)
+      .order("id", { ascending: true })   // 안정 정렬 — range 페이징 누락/중복 방지
       .range(from, from + PAGE - 1);
     if (error) throw new Error(`sales_online_monthly: ${error.message}`);
     all.push(...((data ?? []) as OnlineRow[]).map(normalizeOnline));
@@ -308,6 +309,7 @@ async function fetchOnlineCum(years: string[]): Promise<OnlineCumRow[]> {
       .from("sales_online_cum")
       .select("cat,brand,store,channel,year,sales")
       .in("year", years)
+      .order("id", { ascending: true })   // 안정 정렬 — range 페이징 누락/중복 방지
       .range(from, from + PAGE - 1);
     if (error) throw new Error(`sales_online_cum: ${error.message}`);
     all.push(...((data ?? []) as OnlineCumRow[]).map(normalizeOnline));
@@ -453,6 +455,7 @@ async function fetchOff(table: "sales_offline_cum" | "sales_offline_month", col:
   for (;;) {
     const { data, error } = await supabase
       .from(table).select(`division,cat,brand,store,sales,gp,area_raw,store_cnt,${col}`).in(col, periods)
+      .order("id", { ascending: true })   // 안정 정렬 — range 페이징 누락/중복 방지
       .range(from, from + PAGE - 1);
     if (error) throw new Error(`${table}: ${error.message}`);
     all.push(...(data ?? []).map((r) => ({ ...r, p: (r as Record<string, string>)[col] })) as (OffRow & { p: string })[]);
