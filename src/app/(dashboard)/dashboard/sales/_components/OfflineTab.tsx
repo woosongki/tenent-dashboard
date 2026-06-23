@@ -111,7 +111,7 @@ export default function OfflineTab(p: Props) {
             ? [{ key: OTHERS_KEY, label: OTHERS_LABEL, s: p.others.total, ps: p.others.prevTotal, gpm: p.others.gpm, yoyPct: p.others.yoyPct }]
             : []),
         ]}
-        total={p.total} activeKey={div} onPick={(k) => { setDiv(div === k ? null : k); setExpanded(null); setLimit(10); }} />
+        total={p.total} excludedKey={OTHERS_KEY} activeKey={div} onPick={(k) => { setDiv(div === k ? null : k); setExpanded(null); setLimit(10); }} />
 
       {/* 패션 복종별 요약 ("패션공통" 비노출, 지정 순서) */}
       {(() => {
@@ -270,24 +270,30 @@ const RankRow = memo(function RankRow({
   );
 });
 
-function BarSection({ title, barColor, rows, total, activeKey, onPick }: {
+function BarSection({ title, barColor, rows, total, activeKey, onPick, excludedKey }: {
   title: string; barColor: string;
   rows: { key: string; label: string; s: number; ps: number; gpm: number; yoyPct: number }[];
   total: number; activeKey: string | null; onPick: (k: string) => void;
+  excludedKey?: string;   // 총계에 포함되지 않는 행(예: 그 외) — 구분선·"총계 외" 표기
 }) {
+  const hasExcluded = rows.some((d) => d.key === excludedKey);
   return (
     <div className="border-[2px] border-[#0a0a0a] bg-white">
       <div className="border-b-[2px] border-[#0a0a0a] bg-[#0a0a0a] px-3 py-2 text-[12px] font-bold text-white">{title}</div>
       <div className="divide-y divide-slate-100">
         {rows.map((d) => {
+          const isExcluded = d.key === excludedKey;
           const pct = total ? (d.s / total) * 100 : 0;
           const active = activeKey === d.key;
           return (
             <button key={d.key} onClick={() => onPick(d.key)}
-              className={`flex w-full items-center gap-2 px-3 py-2 text-[11px] text-left transition sm:gap-3 sm:text-[12px] ${active ? "bg-yellow-100" : "hover:bg-slate-50"}`}>
-              <span className="w-16 shrink-0 truncate font-bold text-[#0a0a0a] sm:w-24">{d.label || "(미분류)"}</span>
-              <div className="flex-1 min-w-[40px]"><div className="h-3 bg-slate-100"><div className="h-full" style={{ width: `${pct}%`, background: barColor }} /></div></div>
-              <span className="hidden w-10 text-right font-mono text-slate-500 sm:inline">{pct.toFixed(0)}%</span>
+              className={`flex w-full items-center gap-2 px-3 py-2 text-[11px] text-left transition sm:gap-3 sm:text-[12px] ${isExcluded ? "border-t-[2px] border-dashed border-[#0a0a0a]/30 bg-slate-50/60" : ""} ${active ? "bg-yellow-100" : "hover:bg-slate-50"}`}>
+              <span className="w-16 shrink-0 truncate font-bold text-[#0a0a0a] sm:w-24">
+                {d.label || "(미분류)"}
+                {isExcluded && <span className="ml-1 align-middle text-[9px] font-bold text-slate-400">총계 외</span>}
+              </span>
+              <div className="flex-1 min-w-[40px]"><div className="h-3 bg-slate-100"><div className="h-full" style={{ width: `${pct}%`, background: isExcluded ? "#cbd5e1" : barColor }} /></div></div>
+              <span className="hidden w-10 text-right font-mono text-slate-500 sm:inline">{isExcluded ? "—" : `${pct.toFixed(0)}%`}</span>
               <span className="w-20 text-right font-mono font-bold sm:w-24">{mil(d.s)}</span>
               <span className="hidden w-14 text-right font-mono text-slate-500 sm:inline">GPM{d.gpm}</span>
               <span className="w-14 text-right sm:w-16"><YoY pct={d.yoyPct} prev={d.ps} /></span>
@@ -295,6 +301,11 @@ function BarSection({ title, barColor, rows, total, activeKey, onPick }: {
           );
         })}
       </div>
+      {hasExcluded && (
+        <div className="border-t border-slate-100 px-3 py-1.5 text-[10px] text-slate-400">
+          ※ ‘그 외’(엠페스트·코코몽키즈랜드·이키즈랜드·문화센터·소극장)는 총계·부문 합계에서 제외된 별도 집계입니다.
+        </div>
+      )}
     </div>
   );
 }
