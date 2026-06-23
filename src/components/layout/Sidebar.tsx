@@ -190,7 +190,6 @@ const NAV: NavGroup[] = [
           { href: "/dashboard/homeplus?layer=galleria",        label: "갤러리아 6점",        layer: "galleria",   dotColor: "#2d5016", group: "백화점" },
           // 브랜드
           { href: "/dashboard/homeplus?layer=artbox",          label: "아트박스 203점",      layer: "artbox",     dotColor: "#f72585", group: "브랜드" },
-          { href: "/dashboard/homeplus?layer=satur",           label: "세터 47점",           layer: "satur",      dotColor: "#7c3aed", group: "브랜드" },
           { href: "/dashboard/homeplus?layer=abcmart",         label: "ABC마트 322점",       layer: "abcmart",    dotColor: "#e63946", group: "브랜드" },
           { href: "/dashboard/homeplus?layer=8seconds",        label: "에잇세컨즈 78점",     layer: "8seconds",   dotColor: "#fbbf24", group: "브랜드" },
           { href: "/dashboard/homeplus?layer=daiso",           label: "다이소 1,714점",      layer: "daiso",      dotColor: "#f9c74f", group: "브랜드" },

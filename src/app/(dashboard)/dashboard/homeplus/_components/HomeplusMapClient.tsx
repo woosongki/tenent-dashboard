@@ -35,7 +35,6 @@ import {
   modaIcon,
   savezoneIcon,
   lfIcon,
-  saturIcon,
   modernhouseIcon,
   abcmartIcon,
   eightsecondsIcon,
@@ -71,7 +70,6 @@ import { MODA_STORES } from "@/data/moda";
 import { SAVEZONE_STORES } from "@/data/savezone";
 import { LF_STORES } from "@/data/lf";
 import { MODERNHOUSE_STORES } from "@/data/modernhouse";
-import { SATUR_STORES } from "@/data/satur";
 import { ABCMART_STORES } from "@/data/abcmart";
 import { EIGHTSECONDS_STORES } from "@/data/eightseconds";
 import { MUJI_STORES } from "@/data/muji";
@@ -130,7 +128,6 @@ export default function HomeplusMapClient() {
   const [showModa, setShowModa] = useState(initialLayer === "moda");
   const [showSavezone, setShowSavezone] = useState(initialLayer === "savezone");
   const [showLf, setShowLf] = useState(initialLayer === "lf");
-  const [showSatur, setShowSatur] = useState(initialLayer === "satur");
   const [showModernhouse, setShowModernhouse] = useState(initialLayer === "modernhouse");
   const [showAbcmart, setShowAbcmart] = useState(initialLayer === "abcmart");
   const [showEightseconds, setShowEightseconds] = useState(initialLayer === "8seconds");
@@ -170,7 +167,6 @@ export default function HomeplusMapClient() {
     setShowModa(initialLayer === "moda");
     setShowSavezone(initialLayer === "savezone");
     setShowLf(initialLayer === "lf");
-    setShowSatur(initialLayer === "satur");
     setShowModernhouse(initialLayer === "modernhouse");
     setShowAbcmart(initialLayer === "abcmart");
     setShowEightseconds(initialLayer === "8seconds");
@@ -223,7 +219,6 @@ export default function HomeplusMapClient() {
       { show: showModa,        stores: MODA_STORES,        icon: modaIcon,        color: "#007a6e", emoji: "", k: "md", off: 4 },
       { show: showSavezone,    stores: SAVEZONE_STORES,    icon: savezoneIcon,    color: "#6e7a2e", emoji: "", k: "sv", off: 4 },
       { show: showLf,          stores: LF_STORES,          icon: lfIcon,          color: "#6e5538", emoji: "🛍️", k: "lf", off: 4 },
-      { show: showSatur,       stores: SATUR_STORES,       icon: saturIcon,       color: "#5b21b6", emoji: "👜", k: "sa", off: 4 },
       { show: showModernhouse, stores: MODERNHOUSE_STORES, icon: modernhouseIcon, color: "#6a2c70", emoji: "🏡", k: "mh", off: 4 },
       { show: showAbcmart,     stores: ABCMART_STORES,     icon: abcmartIcon,     color: "#c1121f", emoji: "👟", k: "abc", off: 4 },
       { show: showEightseconds,stores: EIGHTSECONDS_STORES,icon: eightsecondsIcon,color: "#b58000", emoji: "👕", k: "8s", off: 4 },
@@ -252,7 +247,7 @@ export default function HomeplusMapClient() {
   }, [
     showArtbox, showDaiso, showOliveYoung,
     showLotte, showHyundai, showShinsegae, showAk, showGalleria,
-    showEntersix, showModa, showSavezone, showLf, showSatur, showModernhouse,
+    showEntersix, showModa, showSavezone, showLf, showModernhouse,
     showAbcmart, showEightseconds,
     showMuji, showHanssem, showLivart, showIloom, showNitori, showUniqlo,
     showEmart, showLottemart, showHanaromart,
@@ -546,11 +541,6 @@ export default function HomeplusMapClient() {
                 <input type="checkbox" checked={showLf} onChange={(e) => setShowLf(e.target.checked)} disabled={LF_STORES.length === 0} className="h-3.5 w-3.5 disabled:opacity-40" />
                 <span className="inline-block h-2 w-2" style={{ background: "#a08260" }} />
                 <span className="font-bold text-[#0a0a0a]">LF스퀘어 ({LF_STORES.length})</span>
-              </label>
-              <label className="flex cursor-pointer items-center gap-1.5">
-                <input type="checkbox" checked={showSatur} onChange={(e) => setShowSatur(e.target.checked)} disabled={SATUR_STORES.length === 0} className="h-3.5 w-3.5 disabled:opacity-40" />
-                <span className="inline-block h-2 w-2" style={{ background: "#7c3aed" }} />
-                <span className="font-bold text-[#0a0a0a]">세터 ({SATUR_STORES.length})</span>
               </label>
               <label className="flex cursor-pointer items-center gap-1.5">
                 <input type="checkbox" checked={showModernhouse} onChange={(e) => setShowModernhouse(e.target.checked)} disabled={MODERNHOUSE_STORES.length === 0} className="h-3.5 w-3.5 disabled:opacity-40" />

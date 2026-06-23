@@ -88,7 +88,6 @@ export const entersixIcon = makeSmallSquareIcon("#ff6f3c");
 export const modaIcon     = makeSmallSquareIcon("#00b4a0");
 export const savezoneIcon = makeSmallSquareIcon("#95a847");
 export const lfIcon       = makeSmallSquareIcon("#a08260");
-export const saturIcon    = makeSmallSquareIcon("#7c3aed"); // 보라 — 세터
 export const modernhouseIcon = makeSmallSquareIcon("#6a2c70"); // 자줏빛 보라 — 모던하우스
 export const abcmartIcon       = makeSmallSquareIcon("#e63946"); // 빨강 — ABC마트
 export const eightsecondsIcon  = makeSmallSquareIcon("#fbbf24"); // 노랑 — 에잇세컨즈
