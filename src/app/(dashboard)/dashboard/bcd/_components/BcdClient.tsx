@@ -252,7 +252,7 @@ function BcdView({ d, canEdit, onSetGrade, pending, localGrades }: { d: BcdData;
             return (
               <div key={r.grade} className="flex items-center gap-2 px-3 py-2 text-[11px] sm:gap-3 sm:text-[12px]">
                 <span className="w-12 shrink-0"><GradeBadge g={r.grade} /></span>
-                <span className="hidden w-20 shrink-0 text-right font-mono text-slate-500 sm:inline">{r.brCnt}개 · {r.stCnt}점</span>
+                <span className="hidden w-24 shrink-0 whitespace-nowrap text-right font-mono text-[10px] tabular-nums text-slate-500 sm:inline">{r.brCnt}개 · {r.stCnt}점</span>
                 <div className="flex-1 min-w-[40px]"><div className="h-3 bg-slate-100"><div className="h-full" style={{ width: `${pct}%`, background: st.bar }} /></div></div>
                 <span className="hidden w-10 text-right font-mono text-slate-500 sm:inline">{pct.toFixed(0)}%</span>
                 <span className="w-20 text-right font-mono font-bold sm:w-24">{mil(r.s)}</span>
