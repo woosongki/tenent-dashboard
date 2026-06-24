@@ -3,7 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 
-const VALID = new Set(["S", "A", "B", "C", "F", ""]);
+// "X" = 제외(BCD 점수 분모에서 빠짐, 예: 팝업 브랜드)
+const VALID = new Set(["S", "A", "B", "C", "F", "X", ""]);
 
 /** 미분류/오분류 브랜드 등급을 앱에서 직접 지정 → brand_grade에 정확 브랜드명으로 upsert.
  *  전역 등급표라 이후 모든 BCD 화면·기간에 반영(revalidateTag("sales")). 관리자만. */

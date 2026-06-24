@@ -31,6 +31,7 @@ const GRADE_STYLE: Record<string, { bar: string; chip: string; label: string }> 
   B: { bar: "#2b6cb0", chip: "bg-sky-100 text-sky-800 border-sky-300", label: "B" },
   C: { bar: "#b7791f", chip: "bg-amber-100 text-amber-800 border-amber-300", label: "C" },
   F: { bar: "#e53e3e", chip: "bg-rose-100 text-rose-800 border-rose-300", label: "F" },
+  X: { bar: "#94a3b8", chip: "bg-slate-200 text-slate-500 border-slate-400", label: "제외" },
   "": { bar: "#94a3b8", chip: "bg-slate-100 text-slate-600 border-slate-300", label: "미분류" },
 };
 
@@ -53,6 +54,7 @@ function GradeSelect({ grade, disabled, onChange }: { grade: string; disabled: b
       className={`border px-1 py-0.5 text-[11px] font-extrabold outline-none disabled:opacity-50 ${grade ? s.chip : "border-amber-400 bg-amber-50 text-amber-700"}`}>
       <option value="">미분류</option>
       {["S", "A", "B", "C", "F"].map((g) => <option key={g} value={g}>{g}</option>)}
+      <option value="X">제외(팝업 등)</option>
     </select>
   );
 }
@@ -70,12 +72,15 @@ export default function BcdClient({ cum, month, canEdit = false }: { cum: BcdDat
   const d = period === "cum" ? cum : month;
   const router = useRouter();
   const [pending, startTransition] = useTransition();
+  // 낙관적 등급 — 저장 직후 서버 새로고침 전에도 즉시 목록에서 반영
+  const [localGrades, setLocalGrades] = useState<Record<string, string>>({});
 
   function saveGrade(brand: string, grade: string) {
+    setLocalGrades((m) => ({ ...m, [brand]: grade }));
     startTransition(async () => {
       const res = await setBrandGrade(brand, grade);
-      if (res.ok) { toast.success(`${brand} → ${grade || "미분류"} 저장`); router.refresh(); }
-      else toast.error(res.error);
+      if (res.ok) { toast.success(`${brand} → ${GRADE_STYLE[grade]?.label ?? "미분류"} 저장`); router.refresh(); }
+      else { toast.error(res.error); setLocalGrades((m) => { const n = { ...m }; delete n[brand]; return n; }); }
     });
   }
 
@@ -90,14 +95,14 @@ export default function BcdClient({ cum, month, canEdit = false }: { cum: BcdDat
         <button onClick={() => setPeriod("month")} className={pillBtn(period === "month")} disabled={!month}>당월{month ? ` · ${month.periodLabel}` : ""}</button>
         <span className="ml-1"><UnitChip>매출 단위: 백만원</UnitChip></span>
       </div>
-      {d ? <BcdView d={d} canEdit={canEdit} onSetGrade={saveGrade} pending={pending} /> : <div className="text-[13px] text-slate-400">해당 기간 데이터 없음</div>}
+      {d ? <BcdView d={d} canEdit={canEdit} onSetGrade={saveGrade} pending={pending} localGrades={localGrades} /> : <div className="text-[13px] text-slate-400">해당 기간 데이터 없음</div>}
     </div>
   );
 }
 
 type Sel = { type: "cat" | "div"; key: string } | null;
 
-function BcdView({ d, canEdit, onSetGrade, pending }: { d: BcdData; canEdit: boolean; onSetGrade: (brand: string, grade: string) => void; pending: boolean }) {
+function BcdView({ d, canEdit, onSetGrade, pending, localGrades }: { d: BcdData; canEdit: boolean; onSetGrade: (brand: string, grade: string) => void; pending: boolean; localGrades: Record<string, string> }) {
   const [sel, setSel] = useState<Sel>(null);
   const [view, setView] = useState<"brand" | "store">("brand");
   const [q, setQ] = useState("");
@@ -107,7 +112,7 @@ function BcdView({ d, canEdit, onSetGrade, pending }: { d: BcdData; canEdit: boo
   const [sSort, setSSort] = useState<SSort>("bcd");
   const [sDir, setSDir] = useState<"asc" | "desc">("desc");
   const [openStore, setOpenStore] = useState<string | null>(null);
-  const [onlyUnmatched, setOnlyUnmatched] = useState(false);
+  const [listMode, setListMode] = useState<"all" | "unmatched" | "excluded">("all");
 
   function toggleB(k: BSort) {
     if (bSort === k) setBDir((d) => d === "asc" ? "desc" : "asc");
@@ -130,15 +135,21 @@ function BcdView({ d, canEdit, onSetGrade, pending }: { d: BcdData; canEdit: boo
     return [...f, ...dv];
   }, [d]);
 
+  // 카테고리 필터 + 낙관적 등급(localGrades) 반영
   const brands = useMemo(() => {
-    if (!sel) return d.brands;
-    return d.brands.filter((b) => sel.type === "cat" ? (b.division === "패션" && b.cat === sel.key) : b.division === sel.key);
-  }, [d.brands, sel]);
+    const apply = (b: BcdBrand) => (b.key in localGrades ? { ...b, grade: localGrades[b.key] } : b);
+    const base = !sel ? d.brands : d.brands.filter((b) => sel.type === "cat" ? (b.division === "패션" && b.cat === sel.key) : b.division === sel.key);
+    return base.map(apply);
+  }, [d.brands, sel, localGrades]);
 
-  // 등급별 집계 + BCD점수 (필터된 집합 기준)
+  // 제외(X)는 점수·집계에서 빠짐 (예: 팝업 브랜드)
+  const scored = useMemo(() => brands.filter((b) => b.grade !== "X"), [brands]);
+  const excludedCount = brands.length - scored.length;
+
+  // 등급별 집계 + BCD점수 (제외 제외, 필터된 집합 기준)
   const agg = useMemo(() => {
     const m = new Map<string, { grade: string; brCnt: number; stCnt: number; prevStCnt: number; s: number; ps: number; g: number }>();
-    for (const b of brands) {
+    for (const b of scored) {
       const e = m.get(b.grade) ?? { grade: b.grade, brCnt: 0, stCnt: 0, prevStCnt: 0, s: 0, ps: 0, g: 0 };
       e.brCnt++; e.stCnt += b.subCount; e.prevStCnt += b.prevStores; e.s += b.s; e.ps += b.ps; e.g += b.g;
       m.set(b.grade, e);
@@ -152,13 +163,13 @@ function BcdView({ d, canEdit, onSetGrade, pending }: { d: BcdData; canEdit: boo
     const abPrevSt = ab.reduce((t, r) => t + r.prevStCnt, 0);
     const score = totalSt ? abSt / totalSt * 100 : 0;
     const scorePrev = prevSt ? abPrevSt / prevSt * 100 : 0;
-    return { rows, totalS, totalSt, abSt, score, scorePrev, diff: score - scorePrev, unmatched: brands.filter((b) => !b.grade).length };
-  }, [brands]);
+    return { rows, totalS, totalSt, abSt, score, scorePrev, diff: score - scorePrev, unmatched: scored.filter((b) => !b.grade).length };
+  }, [scored]);
 
-  // 지점별 — 각 지점의 등급 슬롯으로 BCD점수 + 입점 브랜드 등급 목록(드릴다운)
+  // 지점별 — 각 지점의 등급 슬롯으로 BCD점수 + 입점 브랜드 등급 목록(드릴다운). 제외 브랜드는 빠짐
   const storeRows = useMemo(() => {
     const m = new Map<string, { store: string; total: number; ab: number; s: number; items: { brand: string; grade: string; s: number }[] }>();
-    for (const b of brands) for (const sub of b.bySub ?? []) {
+    for (const b of scored) for (const sub of b.bySub ?? []) {
       if (!(sub.s > 0)) continue;
       const e = m.get(sub.key) ?? { store: sub.key, total: 0, ab: 0, s: 0, items: [] };
       e.total++; e.s += sub.s; if (b.grade === "A" || b.grade === "B") e.ab++;
@@ -169,25 +180,26 @@ function BcdView({ d, canEdit, onSetGrade, pending }: { d: BcdData; canEdit: boo
     if (q) rows = rows.filter((r) => r.store.includes(q));
     const dir = sDir === "asc" ? 1 : -1;
     return rows.sort((a, b) => sSort === "store" ? a.store.localeCompare(b.store, "ko") * dir : ((a[sSort] as number) - (b[sSort] as number)) * dir);
-  }, [brands, q, sSort, sDir]);
+  }, [scored, q, sSort, sDir]);
 
   const brandRows = useMemo(() => {
-    let rows = brands;
-    if (onlyUnmatched) rows = rows.filter((b) => !b.grade);
+    let rows = listMode === "unmatched" ? brands.filter((b) => !b.grade)
+      : listMode === "excluded" ? brands.filter((b) => b.grade === "X")
+      : brands.filter((b) => b.grade !== "X");   // 기본 보기는 제외 숨김
     if (q) rows = rows.filter((b) => b.key.includes(q) || displayCat(b.cat).includes(q));
     const dir = bDir === "asc" ? 1 : -1;
     return [...rows].sort((a, b) =>
       bSort === "key" ? a.key.localeCompare(b.key, "ko") * dir
       : bSort === "grade" ? (gradeIndex(a.grade) - gradeIndex(b.grade)) * dir
       : ((a[bSort] as number) - (b[bSort] as number)) * dir);
-  }, [brands, q, bSort, bDir, onlyUnmatched]);
+  }, [brands, q, bSort, bDir, listMode]);
 
   const visible = brandRows.slice(0, limit);
 
   return (
     <div className="space-y-4">
       {/* BCD 점수 + 요약 카드 */}
-      <div className="grid grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-5">
         <div className="border-[2px] border-[#0a0a0a] bg-yellow-100 p-3" style={{ boxShadow: "3px 3px 0 0 #0a0a0a" }}>
           <div className="text-[11px] font-bold text-slate-500">BCD점수 (A+B매장 비율)</div>
           <div className="mt-1 flex items-baseline gap-1.5">
@@ -196,14 +208,21 @@ function BcdView({ d, canEdit, onSetGrade, pending }: { d: BcdData; canEdit: boo
           </div>
           <div className="mt-1 text-[10px] text-slate-400">전년 {agg.scorePrev.toFixed(1)}점</div>
         </div>
-        <Card label="A+B 매장 / 전체" value={`${agg.abSt.toLocaleString()} / ${agg.totalSt.toLocaleString()}`} sub="개 매장" />
+        <Card label="A+B 매장 / 전체" value={`${agg.abSt.toLocaleString()} / ${agg.totalSt.toLocaleString()}`} sub="제외 제외한 분모" />
         <Card label={`${d.periodLabel} 매출`} value={`${eok(agg.totalS)}억`} sub={`${mil(agg.totalS)}백만`} />
-        <button type="button" onClick={() => { if (agg.unmatched) { setOnlyUnmatched((v) => !v); setView("brand"); setLimit(20); } }}
-          className={`border-[2px] border-[#0a0a0a] p-3 text-left ${onlyUnmatched ? "bg-amber-200" : "bg-white"} ${agg.unmatched ? "cursor-pointer hover:bg-amber-50" : "cursor-default"}`}
+        <button type="button" onClick={() => { if (agg.unmatched || listMode === "unmatched") { setListMode((m) => m === "unmatched" ? "all" : "unmatched"); setView("brand"); setLimit(20); } }}
+          className={`border-[2px] border-[#0a0a0a] p-3 text-left ${listMode === "unmatched" ? "bg-amber-200" : "bg-white"} ${agg.unmatched ? "cursor-pointer hover:bg-amber-50" : "cursor-default"}`}
           style={{ boxShadow: "3px 3px 0 0 #0a0a0a" }}>
-          <div className="text-[11px] font-bold text-slate-500 truncate">미분류 브랜드 {agg.unmatched ? "(클릭→목록)" : ""}</div>
+          <div className="text-[11px] font-bold text-slate-500 truncate">미분류 {agg.unmatched ? "(클릭→목록)" : ""}</div>
           <div className="mt-1 font-mono text-[20px] sm:text-[22px] font-extrabold leading-none">{agg.unmatched.toLocaleString()}</div>
-          <div className={`mt-1 text-[10px] truncate ${agg.unmatched ? "font-bold text-amber-600" : "text-slate-400"}`}>{onlyUnmatched ? "미분류만 표시 중 · 다시 클릭 해제" : agg.unmatched ? "등급 미매칭 — 클릭해 확인" : "전부 매칭됨"}</div>
+          <div className={`mt-1 text-[10px] truncate ${agg.unmatched ? "font-bold text-amber-600" : "text-slate-400"}`}>{listMode === "unmatched" ? "미분류만 · 다시 클릭 해제" : agg.unmatched ? "등급 미매칭 — 클릭 확인" : "전부 매칭됨"}</div>
+        </button>
+        <button type="button" onClick={() => { if (excludedCount || listMode === "excluded") { setListMode((m) => m === "excluded" ? "all" : "excluded"); setView("brand"); setLimit(20); } }}
+          className={`border-[2px] border-[#0a0a0a] p-3 text-left ${listMode === "excluded" ? "bg-slate-300" : "bg-white"} ${canEdit || excludedCount ? "cursor-pointer hover:bg-slate-50" : "cursor-default"}`}
+          style={{ boxShadow: "3px 3px 0 0 #0a0a0a" }}>
+          <div className="text-[11px] font-bold text-slate-500 truncate">제외 (분모 제외)</div>
+          <div className="mt-1 font-mono text-[20px] sm:text-[22px] font-extrabold leading-none">{excludedCount.toLocaleString()}</div>
+          <div className="mt-1 text-[10px] truncate text-slate-400">{listMode === "excluded" ? "제외만 · 다시 클릭 해제" : "팝업 등 점수 비대상 · 클릭 확인"}</div>
         </button>
       </div>
 
