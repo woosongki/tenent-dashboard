@@ -301,7 +301,9 @@ function BcdView({ d, canEdit, onSetGrade, pending, localGrades }: { d: BcdData;
                   <td className="px-3 py-2 font-bold text-[#0a0a0a]">{b.key}</td>
                   <td className="px-2 py-2 text-center">
                     {b.division !== "패션"
-                      ? <span className="inline-block border border-cyan-400 bg-cyan-50 px-1.5 py-0.5 text-[10px] font-extrabold text-cyan-700">비패션</span>
+                      ? <span className="inline-flex items-center gap-1" title="비패션 — 점수 분모에서 제외(등급은 보존)">
+                          <GradeBadge g={b.grade} /><span className="text-[9px] font-bold text-cyan-700">비패션</span>
+                        </span>
                       : canEdit
                         ? <GradeSelect grade={b.grade} disabled={pending} onChange={(g) => onSetGrade(b.key, g)} />
                         : <GradeBadge g={b.grade} />}
