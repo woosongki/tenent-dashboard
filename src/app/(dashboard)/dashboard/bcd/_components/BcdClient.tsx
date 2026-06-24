@@ -81,6 +81,7 @@ function BcdView({ d }: { d: BcdData }) {
   const [sSort, setSSort] = useState<SSort>("bcd");
   const [sDir, setSDir] = useState<"asc" | "desc">("desc");
   const [openStore, setOpenStore] = useState<string | null>(null);
+  const [onlyUnmatched, setOnlyUnmatched] = useState(false);
 
   function toggleB(k: BSort) {
     if (bSort === k) setBDir((d) => d === "asc" ? "desc" : "asc");
@@ -146,13 +147,14 @@ function BcdView({ d }: { d: BcdData }) {
 
   const brandRows = useMemo(() => {
     let rows = brands;
+    if (onlyUnmatched) rows = rows.filter((b) => !b.grade);
     if (q) rows = rows.filter((b) => b.key.includes(q) || displayCat(b.cat).includes(q));
     const dir = bDir === "asc" ? 1 : -1;
     return [...rows].sort((a, b) =>
       bSort === "key" ? a.key.localeCompare(b.key, "ko") * dir
       : bSort === "grade" ? (gradeIndex(a.grade) - gradeIndex(b.grade)) * dir
       : ((a[bSort] as number) - (b[bSort] as number)) * dir);
-  }, [brands, q, bSort, bDir]);
+  }, [brands, q, bSort, bDir, onlyUnmatched]);
 
   const visible = brandRows.slice(0, limit);
 
@@ -170,7 +172,13 @@ function BcdView({ d }: { d: BcdData }) {
         </div>
         <Card label="A+B 매장 / 전체" value={`${agg.abSt.toLocaleString()} / ${agg.totalSt.toLocaleString()}`} sub="개 매장" />
         <Card label={`${d.periodLabel} 매출`} value={`${eok(agg.totalS)}억`} sub={`${mil(agg.totalS)}백만`} />
-        <Card label="미분류 브랜드" value={`${agg.unmatched.toLocaleString()}`} sub={agg.unmatched ? "등급 미매칭 — 표기 확인" : "전부 매칭됨"} tone={agg.unmatched ? "warn" : undefined} />
+        <button type="button" onClick={() => { if (agg.unmatched) { setOnlyUnmatched((v) => !v); setView("brand"); setLimit(20); } }}
+          className={`border-[2px] border-[#0a0a0a] p-3 text-left ${onlyUnmatched ? "bg-amber-200" : "bg-white"} ${agg.unmatched ? "cursor-pointer hover:bg-amber-50" : "cursor-default"}`}
+          style={{ boxShadow: "3px 3px 0 0 #0a0a0a" }}>
+          <div className="text-[11px] font-bold text-slate-500 truncate">미분류 브랜드 {agg.unmatched ? "(클릭→목록)" : ""}</div>
+          <div className="mt-1 font-mono text-[20px] sm:text-[22px] font-extrabold leading-none">{agg.unmatched.toLocaleString()}</div>
+          <div className={`mt-1 text-[10px] truncate ${agg.unmatched ? "font-bold text-amber-600" : "text-slate-400"}`}>{onlyUnmatched ? "미분류만 표시 중 · 다시 클릭 해제" : agg.unmatched ? "등급 미매칭 — 클릭해 확인" : "전부 매칭됨"}</div>
+        </button>
       </div>
 
       {/* 카테고리 칩 */}

@@ -632,33 +632,47 @@ export interface BcdGradeRow {
 const BCD_DIVISIONS = ["패션", "F&B", "기타"];
 const GRADE_ORDER = ["S", "A", "B", "C", "F", ""];
 
-/** 브랜드명 정규화 — 영문(ASCII)만 든 괄호 + 공백 제거, 소문자. (한글 괄호는 보존) */
-function normBrandKey(b: string): string {
-  return b.replace(/\([\x20-\x7E]+\)/g, "").replace(/\s+/g, "").trim().toLowerCase();
+/** 브랜드명 정규화 — 괄호(영문만/전체) + 공백 제거, 소문자. */
+function normBrandKey(b: string, allParens: boolean): string {
+  const re = allParens ? /\([^)]*\)/g : /\([\x20-\x7E]+\)/g;
+  return b.replace(re, "").replace(/\s+/g, "").trim().toLowerCase();
 }
 
-/** 등급표 로드 → 정확맵 + 정규화맵(등급이 갈리는 모호 키는 제외) */
-async function loadBrandGrades(): Promise<{ exact: Map<string, string>; norm: Map<string, string> }> {
+interface GradeMaps { exact: Map<string, string>; n1: Map<string, string>; n2: Map<string, string>; }
+
+/** 등급표 로드 → 정확맵 + 정규화맵 2종(영문괄호만/전체괄호). 등급이 갈리는 모호 키는 제외. */
+async function loadBrandGrades(): Promise<GradeMaps> {
   const supabase = createServiceClient();
   const { data } = await supabase.from("brand_grade").select("brand,grade");
   const exact = new Map<string, string>();
-  const normSets = new Map<string, Set<string>>();
+  const s1 = new Map<string, Set<string>>();
+  const s2 = new Map<string, Set<string>>();
   for (const r of (data ?? []) as { brand: string; grade: string }[]) {
     const g = r.grade || "";
     exact.set(r.brand, g);
-    const k = normBrandKey(r.brand);
-    (normSets.get(k) ?? normSets.set(k, new Set()).get(k)!).add(g);
+    for (const [set, all] of [[s1, false], [s2, true]] as const) {
+      const k = normBrandKey(r.brand, all);
+      if (!k) continue;
+      (set.get(k) ?? set.set(k, new Set()).get(k)!).add(g);
+    }
   }
-  const norm = new Map<string, string>();
-  for (const [k, set] of normSets) if (set.size === 1) norm.set(k, [...set][0]);
-  return { exact, norm };
+  const dedupe = (sets: Map<string, Set<string>>) => {
+    const m = new Map<string, string>();
+    for (const [k, set] of sets) if (set.size === 1) m.set(k, [...set][0]);
+    return m;
+  };
+  return { exact, n1: dedupe(s1), n2: dedupe(s2) };
 }
-function gradeOf(brand: string, m: { exact: Map<string, string>; norm: Map<string, string> }): string {
-  return m.exact.get(brand) ?? m.norm.get(normBrandKey(brand)) ?? "";
+/** 정확 → 영문괄호 정규화 → 전체괄호 정규화 순으로 등급 매칭 */
+function gradeOf(brand: string, m: GradeMaps): string {
+  return m.exact.get(brand)
+    ?? m.n1.get(normBrandKey(brand, false))
+    ?? m.n2.get(normBrandKey(brand, true))
+    ?? "";
 }
 
 /** 오프라인 집계(detailBrands)에 등급을 입혀 BCD 요약·점수 산출 */
-function overlayBcd(off: Awaited<ReturnType<typeof getOfflineCumImpl>>, gm: { exact: Map<string, string>; norm: Map<string, string> }) {
+function overlayBcd(off: Awaited<ReturnType<typeof getOfflineCumImpl>>, gm: GradeMaps) {
   const brands: BcdBrand[] = off.detailBrands
     .filter((b) => !b.closed && b.s > 0)
     .map((b) => ({ ...b, grade: gradeOf(b.key, gm), prevStores: (b.bySub ?? []).filter((s) => s.ps > 0).length }));
