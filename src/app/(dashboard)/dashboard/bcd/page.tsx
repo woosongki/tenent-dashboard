@@ -20,6 +20,11 @@ export default async function BcdPage() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
+  const { data: membership } = await supabase
+    .from("organization_members").select("role").eq("user_id", user.id).limit(1).maybeSingle();
+  const role = membership?.role as "owner" | "admin" | "member" | undefined;
+  const canEdit = role === "owner" || role === "admin";
+
   const data = await safe(async () => {
     const meta = await getOfflineMeta();
     let cum = null, month = null;
@@ -49,7 +54,7 @@ export default async function BcdPage() {
             meta={cum ? `BCD점수 ${cum.bcdScore}점 · 브랜드 ${cum.brands.length}개` : "데이터 없음"}
             action={<DataFreshnessBadge monthYm={data?.monthYm ?? null} />}
           />
-          <BcdClient cum={cum} month={month} />
+          <BcdClient cum={cum} month={month} canEdit={canEdit} />
           <AppFooter />
         </div>
       </main>

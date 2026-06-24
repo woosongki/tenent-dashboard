@@ -706,16 +706,16 @@ function overlayBcd(off: Awaited<ReturnType<typeof getOfflineCumImpl>>, gm: Grad
   };
 }
 
-async function getBcdCumImpl(year: string, prevYear: string, days = 181) {
-  const [off, gm] = await Promise.all([getOfflineCumImpl(year, prevYear, BCD_DIVISIONS, days), loadBrandGrades()]);
+// BCD 집계는 캐시하지 않음(등급 편집 즉시 반영). 비싼 오프라인 조회는 캐시된 getOfflineCum/Month 재사용,
+// 등급표는 매 호출 fresh 로드 → 관리자 등급 변경이 router.refresh 한 번에 반영됨.
+export async function getBcdCum(year: string, prevYear: string, days = 181) {
+  const [off, gm] = await Promise.all([getOfflineCum(year, prevYear, BCD_DIVISIONS, days), loadBrandGrades()]);
   return { periodLabel: `${year} 누적`, prevLabel: `${prevYear} 누적`, ...overlayBcd(off, gm) };
 }
-async function getBcdMonthImpl(ym: string, prevYm: string) {
-  const [off, gm] = await Promise.all([getOfflineMonthImpl(ym, prevYm, BCD_DIVISIONS), loadBrandGrades()]);
+export async function getBcdMonth(ym: string, prevYm: string) {
+  const [off, gm] = await Promise.all([getOfflineMonth(ym, prevYm, BCD_DIVISIONS), loadBrandGrades()]);
   return { periodLabel: ym, prevLabel: prevYm, ...overlayBcd(off as unknown as Awaited<ReturnType<typeof getOfflineCumImpl>>, gm) };
 }
-export const getBcdCum = unstable_cache(getBcdCumImpl, ["bcd-cum"], { revalidate: 60, tags: ["sales"] });
-export const getBcdMonth = unstable_cache(getBcdMonthImpl, ["bcd-month"], { revalidate: 60, tags: ["sales"] });
 
 // ── 캐싱 (서비스 클라이언트 기반, 인자별 60초) ──
 // 인자(연/월)가 달라지면 새 캐시키 → 새 월 데이터는 즉시 반영.

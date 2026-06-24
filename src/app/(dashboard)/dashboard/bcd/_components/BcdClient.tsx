@@ -1,11 +1,14 @@
 "use client";
 
-import { Fragment, useMemo, useState } from "react";
+import { Fragment, useMemo, useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import type { BcdBrand } from "@/lib/sales/queries";
 import { displayDivision, isHiddenCat, displayCat, catRank, divisionRank } from "@/lib/sales/labels";
 import { pillBtn, inputCompact } from "@/lib/tokens";
 import ScrollHint from "@/components/ui/ScrollHint";
 import UnitChip from "@/components/ui/UnitChip";
+import { setBrandGrade } from "../_actions";
 
 interface DivSummary { division: string; s: number; ps: number; g: number; gpm: number; yoyPct: number }
 interface CatSummary { cat: string; s: number; ps: number; g: number; gpm: number; yoyPct: number }
@@ -41,6 +44,19 @@ function GradeBadge({ g }: { g: string }) {
   return <span className={`inline-block border px-1.5 py-0.5 text-[10px] font-extrabold ${s.chip}`}>{s.label}</span>;
 }
 
+/** 관리자용 등급 직접 지정 — 변경 즉시 brand_grade에 저장(전역 반영) */
+function GradeSelect({ grade, disabled, onChange }: { grade: string; disabled: boolean; onChange: (g: string) => void }) {
+  const s = GRADE_STYLE[grade] ?? GRADE_STYLE[""];
+  return (
+    <select value={grade} disabled={disabled} onChange={(e) => onChange(e.target.value)}
+      title="등급 변경 시 전체 BCD에 즉시 반영"
+      className={`border px-1 py-0.5 text-[11px] font-extrabold outline-none disabled:opacity-50 ${grade ? s.chip : "border-amber-400 bg-amber-50 text-amber-700"}`}>
+      <option value="">미분류</option>
+      {["S", "A", "B", "C", "F"].map((g) => <option key={g} value={g}>{g}</option>)}
+    </select>
+  );
+}
+
 type BSort = "key" | "grade" | "subCount" | "s" | "gpm" | "yoyPct";
 type SSort = "store" | "bcd" | "total" | "s";
 function Yo({ pct, prev }: { pct: number; prev?: number }) {
@@ -49,9 +65,19 @@ function Yo({ pct, prev }: { pct: number; prev?: number }) {
   return <span className="whitespace-nowrap tabular-nums font-bold" style={{ color: up ? "#0d9e6e" : "#e53e3e" }}>{up ? "▲" : "▼"} {Math.abs(pct).toFixed(1)}%</span>;
 }
 
-export default function BcdClient({ cum, month }: { cum: BcdData | null; month: BcdData | null }) {
+export default function BcdClient({ cum, month, canEdit = false }: { cum: BcdData | null; month: BcdData | null; canEdit?: boolean }) {
   const [period, setPeriod] = useState<"cum" | "month">("cum");
   const d = period === "cum" ? cum : month;
+  const router = useRouter();
+  const [pending, startTransition] = useTransition();
+
+  function saveGrade(brand: string, grade: string) {
+    startTransition(async () => {
+      const res = await setBrandGrade(brand, grade);
+      if (res.ok) { toast.success(`${brand} → ${grade || "미분류"} 저장`); router.refresh(); }
+      else toast.error(res.error);
+    });
+  }
 
   if (!cum && !month) {
     return <div className="border-[2px] border-dashed border-slate-300 p-10 text-center text-[13px] text-slate-400">BCD 데이터가 없습니다. 매출 데이터와 brand_grade 적재를 확인하세요.</div>;
@@ -64,14 +90,14 @@ export default function BcdClient({ cum, month }: { cum: BcdData | null; month: 
         <button onClick={() => setPeriod("month")} className={pillBtn(period === "month")} disabled={!month}>당월{month ? ` · ${month.periodLabel}` : ""}</button>
         <span className="ml-1"><UnitChip>매출 단위: 백만원</UnitChip></span>
       </div>
-      {d ? <BcdView d={d} /> : <div className="text-[13px] text-slate-400">해당 기간 데이터 없음</div>}
+      {d ? <BcdView d={d} canEdit={canEdit} onSetGrade={saveGrade} pending={pending} /> : <div className="text-[13px] text-slate-400">해당 기간 데이터 없음</div>}
     </div>
   );
 }
 
 type Sel = { type: "cat" | "div"; key: string } | null;
 
-function BcdView({ d }: { d: BcdData }) {
+function BcdView({ d, canEdit, onSetGrade, pending }: { d: BcdData; canEdit: boolean; onSetGrade: (brand: string, grade: string) => void; pending: boolean }) {
   const [sel, setSel] = useState<Sel>(null);
   const [view, setView] = useState<"brand" | "store">("brand");
   const [q, setQ] = useState("");
@@ -247,7 +273,11 @@ function BcdView({ d }: { d: BcdData }) {
                 <tr key={`${b.division}|${b.cat}|${b.key}`} className="border-t border-slate-100 hover:bg-yellow-50">
                   <td className="px-3 py-2 font-mono text-slate-400">{i + 1}</td>
                   <td className="px-3 py-2 font-bold text-[#0a0a0a]">{b.key}</td>
-                  <td className="px-2 py-2 text-center"><GradeBadge g={b.grade} /></td>
+                  <td className="px-2 py-2 text-center">
+                    {canEdit
+                      ? <GradeSelect grade={b.grade} disabled={pending} onChange={(g) => onSetGrade(b.key, g)} />
+                      : <GradeBadge g={b.grade} />}
+                  </td>
                   <td className="hidden sm:table-cell px-3 py-2 text-slate-500 whitespace-nowrap">{b.division === "패션" ? displayCat(b.cat) : displayDivision(b.division ?? "")}</td>
                   <td className="px-3 py-2 text-right font-mono text-slate-500">{b.subCount}</td>
                   <td className="px-3 py-2 text-right font-mono font-bold">{mil(b.s)}</td>
