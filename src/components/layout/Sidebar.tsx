@@ -167,6 +167,7 @@ const NAV: NavGroup[] = [
     section: "분석",
     items: [
       { href: "/dashboard/sales",     label: "매출분석",       icon: <IconChart /> },
+      { href: "/dashboard/bcd",       label: "BCD 분석",       icon: <IconTarget /> },
       { href: "/dashboard/drilldown", label: "입점계획(26년)", icon: <IconBuilding /> },
       { href: "/dashboard/vacancy",   label: "공실해결",       icon: <IconKey /> },
       { href: "/dashboard/goals",     label: "컨텐츠 풀",     icon: <IconArchive /> },

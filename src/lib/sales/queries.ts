@@ -619,6 +619,90 @@ async function getOfflineMonthImpl(ym: string, prevYm: string, divisions: string
   return { ym, prevYm, ...buildOff(rows, ym, prevYm, divisions, 30) };
 }
 
+// ── BCD (등급 분석) ──────────────────────────────────────────
+export interface BcdBrand extends OffRank {
+  grade: string;        // S/A/B/C/F/'' (미분류)
+  prevStores: number;   // 전년 매출 있던 지점 수
+}
+export interface BcdGradeRow {
+  grade: string; brCnt: number; stCnt: number; prevStCnt: number;
+  s: number; ps: number; g: number; pg: number; gpm: number; yoyPct: number;
+}
+
+const BCD_DIVISIONS = ["패션", "F&B", "기타"];
+const GRADE_ORDER = ["S", "A", "B", "C", "F", ""];
+
+/** 브랜드명 정규화 — 영문(ASCII)만 든 괄호 + 공백 제거, 소문자. (한글 괄호는 보존) */
+function normBrandKey(b: string): string {
+  return b.replace(/\([\x20-\x7E]+\)/g, "").replace(/\s+/g, "").trim().toLowerCase();
+}
+
+/** 등급표 로드 → 정확맵 + 정규화맵(등급이 갈리는 모호 키는 제외) */
+async function loadBrandGrades(): Promise<{ exact: Map<string, string>; norm: Map<string, string> }> {
+  const supabase = createServiceClient();
+  const { data } = await supabase.from("brand_grade").select("brand,grade");
+  const exact = new Map<string, string>();
+  const normSets = new Map<string, Set<string>>();
+  for (const r of (data ?? []) as { brand: string; grade: string }[]) {
+    const g = r.grade || "";
+    exact.set(r.brand, g);
+    const k = normBrandKey(r.brand);
+    (normSets.get(k) ?? normSets.set(k, new Set()).get(k)!).add(g);
+  }
+  const norm = new Map<string, string>();
+  for (const [k, set] of normSets) if (set.size === 1) norm.set(k, [...set][0]);
+  return { exact, norm };
+}
+function gradeOf(brand: string, m: { exact: Map<string, string>; norm: Map<string, string> }): string {
+  return m.exact.get(brand) ?? m.norm.get(normBrandKey(brand)) ?? "";
+}
+
+/** 오프라인 집계(detailBrands)에 등급을 입혀 BCD 요약·점수 산출 */
+function overlayBcd(off: Awaited<ReturnType<typeof getOfflineCumImpl>>, gm: { exact: Map<string, string>; norm: Map<string, string> }) {
+  const brands: BcdBrand[] = off.detailBrands
+    .filter((b) => !b.closed && b.s > 0)
+    .map((b) => ({ ...b, grade: gradeOf(b.key, gm), prevStores: (b.bySub ?? []).filter((s) => s.ps > 0).length }));
+
+  const map = new Map<string, BcdGradeRow>();
+  for (const b of brands) {
+    const e = map.get(b.grade) ?? { grade: b.grade, brCnt: 0, stCnt: 0, prevStCnt: 0, s: 0, ps: 0, g: 0, pg: 0, gpm: 0, yoyPct: 0 };
+    e.brCnt++; e.stCnt += b.subCount; e.prevStCnt += b.prevStores;
+    e.s += b.s; e.ps += b.ps; e.g += b.g; e.pg += b.pg;
+    map.set(b.grade, e);
+  }
+  const byGrade = [...map.values()]
+    .map((e) => ({ ...e, gpm: e.s ? +(e.g / e.s * 100).toFixed(1) : 0, yoyPct: e.ps ? +((e.s - e.ps) / e.ps * 100).toFixed(1) : 0 }))
+    .sort((a, b) => GRADE_ORDER.indexOf(a.grade) - GRADE_ORDER.indexOf(b.grade));
+
+  const totalStores = brands.reduce((t, b) => t + b.subCount, 0);
+  const prevTotalStores = brands.reduce((t, b) => t + b.prevStores, 0);
+  const isAB = (g: string) => g === "A" || g === "B";
+  const abStores = brands.filter((b) => isAB(b.grade)).reduce((t, b) => t + b.subCount, 0);
+  const abPrevStores = brands.filter((b) => isAB(b.grade)).reduce((t, b) => t + b.prevStores, 0);
+  const bcdScore = totalStores ? +(abStores / totalStores * 100).toFixed(1) : 0;
+  const bcdScorePrev = prevTotalStores ? +(abPrevStores / prevTotalStores * 100).toFixed(1) : 0;
+
+  return {
+    total: off.total, prevTotal: off.prevTotal, gTotal: off.gTotal, gpm: off.gpm, yoyPct: off.yoyPct,
+    divisions: off.divisions, fashionCats: off.fashionCats,
+    brands, byGrade,
+    bcdScore, bcdScorePrev, bcdDiff: +(bcdScore - bcdScorePrev).toFixed(1),
+    abStores, totalStores,
+    unmatched: brands.filter((b) => !b.grade).length,
+  };
+}
+
+async function getBcdCumImpl(year: string, prevYear: string, days = 181) {
+  const [off, gm] = await Promise.all([getOfflineCumImpl(year, prevYear, BCD_DIVISIONS, days), loadBrandGrades()]);
+  return { periodLabel: `${year} 누적`, prevLabel: `${prevYear} 누적`, ...overlayBcd(off, gm) };
+}
+async function getBcdMonthImpl(ym: string, prevYm: string) {
+  const [off, gm] = await Promise.all([getOfflineMonthImpl(ym, prevYm, BCD_DIVISIONS), loadBrandGrades()]);
+  return { periodLabel: ym, prevLabel: prevYm, ...overlayBcd(off as unknown as Awaited<ReturnType<typeof getOfflineCumImpl>>, gm) };
+}
+export const getBcdCum = unstable_cache(getBcdCumImpl, ["bcd-cum"], { revalidate: 60, tags: ["sales"] });
+export const getBcdMonth = unstable_cache(getBcdMonthImpl, ["bcd-month"], { revalidate: 60, tags: ["sales"] });
+
 // ── 캐싱 (서비스 클라이언트 기반, 인자별 60초) ──
 // 인자(연/월)가 달라지면 새 캐시키 → 새 월 데이터는 즉시 반영.
 // 같은 월 재import 정정은 최대 60초 후 반영. 즉시 무효화는 revalidateTag("sales").
