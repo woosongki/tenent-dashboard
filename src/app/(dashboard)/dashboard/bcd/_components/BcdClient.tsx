@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { Fragment, useMemo, useState } from "react";
 import type { BcdBrand } from "@/lib/sales/queries";
 import { displayDivision, isHiddenCat, displayCat, catRank, divisionRank } from "@/lib/sales/labels";
 import { pillBtn, inputCompact } from "@/lib/tokens";
@@ -31,10 +31,18 @@ const GRADE_STYLE: Record<string, { bar: string; chip: string; label: string }> 
   "": { bar: "#94a3b8", chip: "bg-slate-100 text-slate-600 border-slate-300", label: "미분류" },
 };
 
+const gradeIndex = (g: string): number => {
+  const i = GRADES.indexOf(g as typeof GRADES[number]);
+  return i < 0 ? 99 : i;
+};
+
 function GradeBadge({ g }: { g: string }) {
   const s = GRADE_STYLE[g] ?? GRADE_STYLE[""];
   return <span className={`inline-block border px-1.5 py-0.5 text-[10px] font-extrabold ${s.chip}`}>{s.label}</span>;
 }
+
+type BSort = "key" | "grade" | "subCount" | "s" | "gpm" | "yoyPct";
+type SSort = "store" | "bcd" | "total" | "s";
 function Yo({ pct, prev }: { pct: number; prev?: number }) {
   if (prev !== undefined && prev === 0) return <span className="font-bold text-violet-600">신규</span>;
   const up = pct >= 0;
@@ -68,6 +76,24 @@ function BcdView({ d }: { d: BcdData }) {
   const [view, setView] = useState<"brand" | "store">("brand");
   const [q, setQ] = useState("");
   const [limit, setLimit] = useState(20);
+  const [bSort, setBSort] = useState<BSort>("s");
+  const [bDir, setBDir] = useState<"asc" | "desc">("desc");
+  const [sSort, setSSort] = useState<SSort>("bcd");
+  const [sDir, setSDir] = useState<"asc" | "desc">("desc");
+  const [openStore, setOpenStore] = useState<string | null>(null);
+
+  function toggleB(k: BSort) {
+    if (bSort === k) setBDir((d) => d === "asc" ? "desc" : "asc");
+    else { setBSort(k); setBDir(k === "key" ? "asc" : "desc"); }
+    setLimit(20);
+  }
+  const bArrow = (k: BSort) => bSort === k ? (bDir === "asc" ? " ▲" : " ▼") : "";
+  function toggleS(k: SSort) {
+    if (sSort === k) setSDir((d) => d === "asc" ? "desc" : "asc");
+    else { setSSort(k); setSDir(k === "store" ? "asc" : "desc"); }
+    setLimit(20); setOpenStore(null);
+  }
+  const sArrow = (k: SSort) => sSort === k ? (sDir === "asc" ? " ▲" : " ▼") : "";
 
   const chips = useMemo(() => {
     const f = d.fashionCats.filter((c) => !isHiddenCat(c.cat)).sort((a, b) => catRank(a.cat) - catRank(b.cat))
@@ -102,25 +128,31 @@ function BcdView({ d }: { d: BcdData }) {
     return { rows, totalS, totalSt, abSt, score, scorePrev, diff: score - scorePrev, unmatched: brands.filter((b) => !b.grade).length };
   }, [brands]);
 
-  // 지점별 — 각 지점의 등급 슬롯으로 BCD점수
+  // 지점별 — 각 지점의 등급 슬롯으로 BCD점수 + 입점 브랜드 등급 목록(드릴다운)
   const storeRows = useMemo(() => {
-    const m = new Map<string, { store: string; total: number; ab: number; s: number }>();
+    const m = new Map<string, { store: string; total: number; ab: number; s: number; items: { brand: string; grade: string; s: number }[] }>();
     for (const b of brands) for (const sub of b.bySub ?? []) {
       if (!(sub.s > 0)) continue;
-      const e = m.get(sub.key) ?? { store: sub.key, total: 0, ab: 0, s: 0 };
+      const e = m.get(sub.key) ?? { store: sub.key, total: 0, ab: 0, s: 0, items: [] };
       e.total++; e.s += sub.s; if (b.grade === "A" || b.grade === "B") e.ab++;
+      e.items.push({ brand: b.key, grade: b.grade, s: sub.s });
       m.set(sub.key, e);
     }
     let rows = [...m.values()].map((e) => ({ ...e, bcd: e.total ? e.ab / e.total * 100 : 0 }));
     if (q) rows = rows.filter((r) => r.store.includes(q));
-    return rows.sort((a, b) => b.bcd - a.bcd || b.s - a.s);
-  }, [brands, q]);
+    const dir = sDir === "asc" ? 1 : -1;
+    return rows.sort((a, b) => sSort === "store" ? a.store.localeCompare(b.store, "ko") * dir : ((a[sSort] as number) - (b[sSort] as number)) * dir);
+  }, [brands, q, sSort, sDir]);
 
   const brandRows = useMemo(() => {
     let rows = brands;
     if (q) rows = rows.filter((b) => b.key.includes(q) || displayCat(b.cat).includes(q));
-    return [...rows].sort((a, b) => b.s - a.s);
-  }, [brands, q]);
+    const dir = bDir === "asc" ? 1 : -1;
+    return [...rows].sort((a, b) =>
+      bSort === "key" ? a.key.localeCompare(b.key, "ko") * dir
+      : bSort === "grade" ? (gradeIndex(a.grade) - gradeIndex(b.grade)) * dir
+      : ((a[bSort] as number) - (b[bSort] as number)) * dir);
+  }, [brands, q, bSort, bDir]);
 
   const visible = brandRows.slice(0, limit);
 
@@ -190,16 +222,16 @@ function BcdView({ d }: { d: BcdData }) {
       {view === "brand" ? (
         <ScrollHint className="border-[2px] border-[#0a0a0a] bg-white">
           <table className="w-full min-w-[520px] text-[12px]">
-            <thead className="bg-[#0a0a0a] text-white">
+            <thead className="bg-[#0a0a0a] text-white select-none">
               <tr>
                 <th className="px-3 py-2 text-left w-10">#</th>
-                <th className="px-3 py-2 text-left whitespace-nowrap">브랜드</th>
-                <th className="px-2 py-2 text-center">등급</th>
+                <th className="px-3 py-2 text-left whitespace-nowrap cursor-pointer hover:bg-white/10" onClick={() => toggleB("key")}>브랜드{bArrow("key")}</th>
+                <th className="px-2 py-2 text-center cursor-pointer hover:bg-white/10" onClick={() => toggleB("grade")}>등급{bArrow("grade")}</th>
                 <th className="hidden sm:table-cell px-3 py-2 text-left whitespace-nowrap">부문·복종</th>
-                <th className="px-3 py-2 text-right whitespace-nowrap">매장수</th>
-                <th className="px-3 py-2 text-right whitespace-nowrap">매출(백만)</th>
-                <th className="hidden sm:table-cell px-3 py-2 text-right">이익률</th>
-                <th className="px-3 py-2 text-right whitespace-nowrap">전년비</th>
+                <th className="px-3 py-2 text-right whitespace-nowrap cursor-pointer hover:bg-white/10" onClick={() => toggleB("subCount")}>매장수{bArrow("subCount")}</th>
+                <th className="px-3 py-2 text-right whitespace-nowrap cursor-pointer hover:bg-white/10" onClick={() => toggleB("s")}>매출(백만){bArrow("s")}</th>
+                <th className="hidden sm:table-cell px-3 py-2 text-right cursor-pointer hover:bg-white/10" onClick={() => toggleB("gpm")}>이익률{bArrow("gpm")}</th>
+                <th className="px-3 py-2 text-right whitespace-nowrap cursor-pointer hover:bg-white/10" onClick={() => toggleB("yoyPct")}>전년비{bArrow("yoyPct")}</th>
               </tr>
             </thead>
             <tbody>
@@ -225,25 +257,47 @@ function BcdView({ d }: { d: BcdData }) {
       ) : (
         <ScrollHint className="border-[2px] border-[#0a0a0a] bg-white">
           <table className="w-full min-w-[420px] text-[12px]">
-            <thead className="bg-[#0a0a0a] text-white">
+            <thead className="bg-[#0a0a0a] text-white select-none">
               <tr>
                 <th className="px-3 py-2 text-left w-10">#</th>
-                <th className="px-3 py-2 text-left whitespace-nowrap">지점</th>
-                <th className="px-3 py-2 text-right whitespace-nowrap">BCD점수</th>
-                <th className="px-3 py-2 text-right whitespace-nowrap">A+B / 전체</th>
-                <th className="px-3 py-2 text-right whitespace-nowrap">매출(백만)</th>
+                <th className="px-3 py-2 text-left whitespace-nowrap cursor-pointer hover:bg-white/10" onClick={() => toggleS("store")}>지점{sArrow("store")}</th>
+                <th className="px-3 py-2 text-right whitespace-nowrap cursor-pointer hover:bg-white/10" onClick={() => toggleS("bcd")}>BCD점수{sArrow("bcd")}</th>
+                <th className="px-3 py-2 text-right whitespace-nowrap cursor-pointer hover:bg-white/10" onClick={() => toggleS("total")}>A+B / 전체{sArrow("total")}</th>
+                <th className="px-3 py-2 text-right whitespace-nowrap cursor-pointer hover:bg-white/10" onClick={() => toggleS("s")}>매출(백만){sArrow("s")}</th>
               </tr>
             </thead>
             <tbody>
-              {storeRows.slice(0, limit).map((s, i) => (
-                <tr key={s.store} className="border-t border-slate-100 hover:bg-yellow-50">
-                  <td className="px-3 py-2 font-mono text-slate-400">{i + 1}</td>
-                  <td className="px-3 py-2 font-bold text-[#0a0a0a]">{s.store}</td>
-                  <td className="px-3 py-2 text-right font-mono font-bold">{s.bcd.toFixed(1)}</td>
-                  <td className="px-3 py-2 text-right font-mono text-slate-500">{s.ab} / {s.total}</td>
-                  <td className="px-3 py-2 text-right font-mono">{mil(s.s)}</td>
-                </tr>
-              ))}
+              {storeRows.slice(0, limit).map((s, i) => {
+                const open = openStore === s.store;
+                return (
+                  <Fragment key={s.store}>
+                    <tr className={`group border-t border-slate-100 cursor-pointer hover:bg-yellow-50 ${open ? "bg-yellow-50" : ""}`} onClick={() => setOpenStore(open ? null : s.store)}>
+                      <td className="px-3 py-2 font-mono text-slate-400"><span className="mr-1 text-[9px]">{open ? "▼" : "▶"}</span>{i + 1}</td>
+                      <td className="px-3 py-2 font-bold text-[#0a0a0a]">{s.store}</td>
+                      <td className="px-3 py-2 text-right font-mono font-bold">{s.bcd.toFixed(1)}</td>
+                      <td className="px-3 py-2 text-right font-mono text-slate-500">{s.ab} / {s.total}</td>
+                      <td className="px-3 py-2 text-right font-mono">{mil(s.s)}</td>
+                    </tr>
+                    {open && (
+                      <tr className="bg-slate-50">
+                        <td></td>
+                        <td colSpan={4} className="px-3 py-2">
+                          <div className="mb-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400">입점 브랜드 등급 ({s.items.length})</div>
+                          <div className="flex flex-col gap-1">
+                            {[...s.items].sort((a, b) => gradeIndex(a.grade) - gradeIndex(b.grade) || b.s - a.s).map((it) => (
+                              <div key={it.brand} className="flex items-center gap-2 text-[11px]">
+                                <span className="w-12 shrink-0"><GradeBadge g={it.grade} /></span>
+                                <span className="flex-1 font-bold text-[#0a0a0a] truncate">{it.brand}</span>
+                                <span className="w-20 text-right font-mono font-bold">{mil(it.s)}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </Fragment>
+                );
+              })}
               {storeRows.length === 0 && <tr><td colSpan={5} className="px-3 py-8 text-center text-slate-400">결과 없음</td></tr>}
             </tbody>
           </table>
