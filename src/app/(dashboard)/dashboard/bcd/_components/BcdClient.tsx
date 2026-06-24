@@ -4,7 +4,7 @@ import { Fragment, useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import type { BcdBrand } from "@/lib/sales/queries";
-import { displayDivision, isHiddenCat, displayCat, catRank, divisionRank } from "@/lib/sales/labels";
+import { displayDivision, isHiddenCat, displayCat, catRank } from "@/lib/sales/labels";
 import { pillBtn, inputCompact } from "@/lib/tokens";
 import ScrollHint from "@/components/ui/ScrollHint";
 import UnitChip from "@/components/ui/UnitChip";
@@ -112,7 +112,7 @@ function BcdView({ d, canEdit, onSetGrade, pending, localGrades }: { d: BcdData;
   const [sSort, setSSort] = useState<SSort>("bcd");
   const [sDir, setSDir] = useState<"asc" | "desc">("desc");
   const [openStore, setOpenStore] = useState<string | null>(null);
-  const [listMode, setListMode] = useState<"all" | "unmatched" | "excluded">("all");
+  const [listMode, setListMode] = useState<"all" | "unmatched" | "excluded" | "nonfashion">("all");
 
   function toggleB(k: BSort) {
     if (bSort === k) setBDir((d) => d === "asc" ? "desc" : "asc");
@@ -127,13 +127,11 @@ function BcdView({ d, canEdit, onSetGrade, pending, localGrades }: { d: BcdData;
   }
   const sArrow = (k: SSort) => sSort === k ? (sDir === "asc" ? " ▲" : " ▼") : "";
 
-  const chips = useMemo(() => {
-    const f = d.fashionCats.filter((c) => !isHiddenCat(c.cat)).sort((a, b) => catRank(a.cat) - catRank(b.cat))
-      .map((c) => ({ type: "cat" as const, key: c.cat, label: displayCat(c.cat) || "(미분류)" }));
-    const dv = d.divisions.filter((x) => x.division !== "패션").sort((a, b) => divisionRank(a.division) - divisionRank(b.division))
-      .map((x) => ({ type: "div" as const, key: x.division, label: displayDivision(x.division) }));
-    return [...f, ...dv];
-  }, [d]);
+  // BCD 점수는 패션 전용 → 카테고리 칩은 패션 복종만. (F&B·라이프스타일은 '비패션' 버킷으로 분리)
+  const chips = useMemo(() =>
+    d.fashionCats.filter((c) => !isHiddenCat(c.cat)).sort((a, b) => catRank(a.cat) - catRank(b.cat))
+      .map((c) => ({ type: "cat" as const, key: c.cat, label: displayCat(c.cat) || "(미분류)" })),
+  [d]);
 
   // 카테고리 필터 + 낙관적 등급(localGrades) 반영
   const brands = useMemo(() => {
@@ -142,9 +140,10 @@ function BcdView({ d, canEdit, onSetGrade, pending, localGrades }: { d: BcdData;
     return base.map(apply);
   }, [d.brands, sel, localGrades]);
 
-  // 제외(X)는 점수·집계에서 빠짐 (예: 팝업 브랜드)
-  const scored = useMemo(() => brands.filter((b) => b.grade !== "X"), [brands]);
-  const excludedCount = brands.length - scored.length;
+  // 점수 대상 = 패션 부문이면서 제외(X) 아님. 비패션(F&B·라이프스타일)·제외는 분모에서 빠짐.
+  const scored = useMemo(() => brands.filter((b) => b.division === "패션" && b.grade !== "X"), [brands]);
+  const nonFashionCount = useMemo(() => brands.filter((b) => b.division !== "패션").length, [brands]);
+  const excludedCount = useMemo(() => brands.filter((b) => b.division === "패션" && b.grade === "X").length, [brands]);
 
   // 등급별 집계 + BCD점수 (제외 제외, 필터된 집합 기준)
   const agg = useMemo(() => {
@@ -183,9 +182,10 @@ function BcdView({ d, canEdit, onSetGrade, pending, localGrades }: { d: BcdData;
   }, [scored, q, sSort, sDir]);
 
   const brandRows = useMemo(() => {
-    let rows = listMode === "unmatched" ? brands.filter((b) => !b.grade)
-      : listMode === "excluded" ? brands.filter((b) => b.grade === "X")
-      : brands.filter((b) => b.grade !== "X");   // 기본 보기는 제외 숨김
+    let rows = listMode === "unmatched" ? brands.filter((b) => b.division === "패션" && !b.grade)
+      : listMode === "excluded" ? brands.filter((b) => b.division === "패션" && b.grade === "X")
+      : listMode === "nonfashion" ? brands.filter((b) => b.division !== "패션")
+      : brands.filter((b) => b.division === "패션" && b.grade !== "X");   // 기본 = 패션 점수대상
     if (q) rows = rows.filter((b) => b.key.includes(q) || displayCat(b.cat).includes(q));
     const dir = bDir === "asc" ? 1 : -1;
     return [...rows].sort((a, b) =>
@@ -199,7 +199,7 @@ function BcdView({ d, canEdit, onSetGrade, pending, localGrades }: { d: BcdData;
   return (
     <div className="space-y-4">
       {/* BCD 점수 + 요약 카드 */}
-      <div className="grid grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-5">
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3 lg:grid-cols-6">
         <div className="border-[2px] border-[#0a0a0a] bg-yellow-100 p-3" style={{ boxShadow: "3px 3px 0 0 #0a0a0a" }}>
           <div className="text-[11px] font-bold text-slate-500">BCD점수 (A+B매장 비율)</div>
           <div className="mt-1 flex items-baseline gap-1.5">
@@ -223,6 +223,13 @@ function BcdView({ d, canEdit, onSetGrade, pending, localGrades }: { d: BcdData;
           <div className="text-[11px] font-bold text-slate-500 truncate">제외 (분모 제외)</div>
           <div className="mt-1 font-mono text-[20px] sm:text-[22px] font-extrabold leading-none">{excludedCount.toLocaleString()}</div>
           <div className="mt-1 text-[10px] truncate text-slate-400">{listMode === "excluded" ? "제외만 · 다시 클릭 해제" : "팝업 등 점수 비대상 · 클릭 확인"}</div>
+        </button>
+        <button type="button" onClick={() => { if (nonFashionCount || listMode === "nonfashion") { setListMode((m) => m === "nonfashion" ? "all" : "nonfashion"); setView("brand"); setLimit(20); } }}
+          className={`border-[2px] border-[#0a0a0a] p-3 text-left ${listMode === "nonfashion" ? "bg-cyan-200" : "bg-white"} ${nonFashionCount ? "cursor-pointer hover:bg-cyan-50" : "cursor-default"}`}
+          style={{ boxShadow: "3px 3px 0 0 #0a0a0a" }}>
+          <div className="text-[11px] font-bold text-slate-500 truncate">비패션 (분모 제외)</div>
+          <div className="mt-1 font-mono text-[20px] sm:text-[22px] font-extrabold leading-none">{nonFashionCount.toLocaleString()}</div>
+          <div className="mt-1 text-[10px] truncate text-slate-400">{listMode === "nonfashion" ? "비패션만 · 다시 클릭 해제" : "F&B·라이프스타일 · 클릭 확인"}</div>
         </button>
       </div>
 
@@ -293,9 +300,11 @@ function BcdView({ d, canEdit, onSetGrade, pending, localGrades }: { d: BcdData;
                   <td className="px-3 py-2 font-mono text-slate-400">{i + 1}</td>
                   <td className="px-3 py-2 font-bold text-[#0a0a0a]">{b.key}</td>
                   <td className="px-2 py-2 text-center">
-                    {canEdit
-                      ? <GradeSelect grade={b.grade} disabled={pending} onChange={(g) => onSetGrade(b.key, g)} />
-                      : <GradeBadge g={b.grade} />}
+                    {b.division !== "패션"
+                      ? <span className="inline-block border border-cyan-400 bg-cyan-50 px-1.5 py-0.5 text-[10px] font-extrabold text-cyan-700">비패션</span>
+                      : canEdit
+                        ? <GradeSelect grade={b.grade} disabled={pending} onChange={(g) => onSetGrade(b.key, g)} />
+                        : <GradeBadge g={b.grade} />}
                   </td>
                   <td className="hidden sm:table-cell px-3 py-2 text-slate-500 whitespace-nowrap">{b.division === "패션" ? displayCat(b.cat) : displayDivision(b.division ?? "")}</td>
                   <td className="px-3 py-2 text-right font-mono text-slate-500">{b.subCount}</td>
