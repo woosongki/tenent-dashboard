@@ -643,7 +643,19 @@ interface GradeMaps { exact: Map<string, string>; n1: Map<string, string>; n2: M
 /** 등급표 로드 → 정확맵 + 정규화맵 2종(영문괄호만/전체괄호). 등급이 갈리는 모호 키는 제외. */
 async function loadBrandGrades(): Promise<GradeMaps> {
   const supabase = createServiceClient();
-  const { data } = await supabase.from("brand_grade").select("brand,grade");
+  // 전체 행 로드 — 1000행 기본 제한 회피(brand_grade 1400+행). 정렬 후 range 페이징.
+  const data: { brand: string; grade: string }[] = [];
+  let from = 0; const PAGE = 1000;
+  for (;;) {
+    const { data: page, error } = await supabase
+      .from("brand_grade").select("brand,grade")
+      .order("brand", { ascending: true })
+      .range(from, from + PAGE - 1);
+    if (error) break;
+    data.push(...(page ?? []) as { brand: string; grade: string }[]);
+    if (!page || page.length < PAGE) break;
+    from += PAGE;
+  }
   const exact = new Map<string, string>();
   const s1 = new Map<string, Set<string>>();
   const s2 = new Map<string, Set<string>>();
