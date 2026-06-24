@@ -671,10 +671,13 @@ function gradeOf(brand: string, m: GradeMaps): string {
     ?? "";
 }
 
+// BCD에서 아예 제외하는 공통풀 의사 브랜드(패션공통·킴스공통 등)
+const isPoolBrand = (name: string): boolean => name.includes("패션공통") || name.includes("킴스공통");
+
 /** 오프라인 집계(detailBrands)에 등급을 입혀 BCD 요약·점수 산출 */
 function overlayBcd(off: Awaited<ReturnType<typeof getOfflineCumImpl>>, gm: GradeMaps) {
   const brands: BcdBrand[] = off.detailBrands
-    .filter((b) => !b.closed && b.s > 0)
+    .filter((b) => !b.closed && b.s > 0 && !isPoolBrand(b.key))
     .map((b) => ({ ...b, grade: gradeOf(b.key, gm), prevStores: (b.bySub ?? []).filter((s) => s.ps > 0).length }));
 
   const map = new Map<string, BcdGradeRow>();
