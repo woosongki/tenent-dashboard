@@ -10,6 +10,7 @@ import { useReportMode } from "@/hooks/useReportMode";
 interface Props {
   userEmail: string;
   role?: "owner" | "admin" | "member" | null;
+  hiddenMenus?: string[];
   children: React.ReactNode;
 }
 
@@ -29,7 +30,7 @@ function IconSearch() {
   );
 }
 
-export default function AppShell({ userEmail, role = null, children }: Props) {
+export default function AppShell({ userEmail, role = null, hiddenMenus = [], children }: Props) {
   const [mobileOpen, setMobileOpen]   = useState(false);
   const [collapsed,  setCollapsed]    = useState(false);
   const [searchOpen, setSearchOpen]   = useState(false);
@@ -84,6 +85,7 @@ export default function AppShell({ userEmail, role = null, children }: Props) {
         <Sidebar
           userEmail={userEmail}
           role={role}
+          hiddenMenus={hiddenMenus}
           onClose={() => setMobileOpen(false)}
           collapsed={collapsed}
           onToggleCollapse={() => setCollapsed((v) => !v)}

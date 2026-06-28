@@ -9,6 +9,7 @@ export interface SessionContext {
   user: User | null;
   isApproved: boolean;
   role: Role | null;
+  hiddenMenus: string[];   // 사용자별 숨김 메뉴 key (deny-list). owner/admin은 앱에서 무시.
 }
 
 /**
@@ -28,7 +29,7 @@ export const getSessionContext = cache(async (): Promise<SessionContext> => {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    return { user: null, isApproved: false, role: null };
+    return { user: null, isApproved: false, role: null, hiddenMenus: [] };
   }
 
   // 병렬 2쿼리 (JOIN은 FK 종속이라 안정성 위해 분리, cache로 중복 제거가 핵심)
@@ -40,7 +41,7 @@ export const getSessionContext = cache(async (): Promise<SessionContext> => {
       .maybeSingle(),
     supabase
       .from("organization_members")
-      .select("role")
+      .select("role, hidden_menus")
       .eq("user_id", user.id)
       .limit(1)
       .maybeSingle(),
@@ -50,6 +51,7 @@ export const getSessionContext = cache(async (): Promise<SessionContext> => {
     user,
     isApproved: Boolean(profileRes.data?.is_approved),
     role: (membershipRes.data?.role as Role | undefined) ?? null,
+    hiddenMenus: (membershipRes.data?.hidden_menus as string[] | undefined) ?? [],
   };
 });
 

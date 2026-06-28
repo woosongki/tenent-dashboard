@@ -3,6 +3,24 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { isValidMenuKey } from "@/lib/nav";
+
+/** 사용자별 숨김 메뉴(deny-list) 저장 — 관리자 전용. owner/admin 대상은 앱에서 면제되므로 무의미하나 저장은 허용. */
+export async function setUserHiddenMenus(
+  targetId: string, hidden: string[],
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  const { orgId } = await requireAdmin();
+  const supabase = await createClient();
+  const clean = [...new Set((hidden ?? []).filter(isValidMenuKey))];
+  const { error } = await supabase
+    .from("organization_members")
+    .update({ hidden_menus: clean })
+    .eq("user_id", targetId)
+    .eq("organization_id", orgId);
+  if (error) return { ok: false, error: error.message };
+  revalidatePath("/dashboard/admin/users");
+  return { ok: true };
+}
 
 async function requireAdmin(): Promise<{ adminId: string; orgId: string }> {
   const supabase = await createClient();

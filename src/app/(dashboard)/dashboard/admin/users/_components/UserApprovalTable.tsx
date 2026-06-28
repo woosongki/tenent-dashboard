@@ -1,11 +1,12 @@
 "use client";
 
-import { useMemo, useState, useTransition } from "react";
+import { Fragment, useMemo, useState, useTransition } from "react";
 import { toast } from "sonner";
 import Badge from "@/components/ui/Badge";
 import EmptyState from "@/components/ui/EmptyState";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
-import { approveUser, rejectUser, revokeApproval } from "../_actions";
+import { approveUser, rejectUser, revokeApproval, setUserHiddenMenus } from "../_actions";
+import { CONTROLLABLE_MENUS } from "@/lib/nav";
 
 export interface UserRow {
   id: string;
@@ -17,6 +18,7 @@ export interface UserRow {
   rejectionReason: string | null;
   createdAt: string;
   role: "owner" | "admin" | "member" | null;
+  hiddenMenus: string[];
   isMe: boolean;
 }
 
@@ -119,6 +121,20 @@ function TH({
 function UserRowItem({ row, zebra = false }: { row: UserRow; zebra?: boolean }) {
   const [pending, start] = useTransition();
   const [confirmRevoke, setConfirmRevoke] = useState(false);
+  const [showMenus, setShowMenus] = useState(false);
+  const [hidden, setHidden] = useState<string[]>(row.hiddenMenus);
+  const isAdminUser = row.role === "owner" || row.role === "admin";
+  // 메뉴 제어 대상 = 승인된 member (owner/admin·본인은 전체 접근, 면제)
+  const canControlMenus = row.isApproved && !isAdminUser && !row.isMe;
+
+  function toggleMenu(key: string) {
+    const next = hidden.includes(key) ? hidden.filter((k) => k !== key) : [...hidden, key];
+    setHidden(next);
+    start(async () => {
+      const res = await setUserHiddenMenus(row.id, next);
+      if (!res.ok) { toast.error(res.error); setHidden(hidden); }
+    });
+  }
 
   function onApprove() {
     start(async () => {
@@ -156,7 +172,8 @@ function UserRowItem({ row, zebra = false }: { row: UserRow; zebra?: boolean }) 
   const bgCls = zebra ? "bg-[#FAF7EC]/40" : "bg-white";
 
   return (
-    <tr className={`border-b border-[#0a0a0a]/10 last:border-0 ${bgCls} hover:bg-yellow-100 ${pending ? "opacity-50" : ""}`}>
+    <Fragment>
+    <tr className={`border-b border-[#0a0a0a]/10 last:border-0 ${bgCls} hover:bg-yellow-100 ${pending ? "opacity-50" : ""} ${showMenus ? "border-b-0" : ""}`}>
       <td className="py-3 px-3">
         <div className="font-extrabold text-[#0a0a0a] break-all">
           {row.email}
@@ -196,6 +213,12 @@ function UserRowItem({ row, zebra = false }: { row: UserRow; zebra?: boolean }) 
       </td>
       <td className="py-3 px-3 text-right">
         <div className="inline-flex items-center gap-1.5">
+          {canControlMenus && (
+            <button type="button" onClick={() => setShowMenus((v) => !v)}
+              className={`text-[11px] font-extrabold uppercase tracking-wider px-2.5 py-1 border-[2px] border-[#0a0a0a] transition-colors ${showMenus ? "bg-yellow-300" : "bg-white hover:bg-yellow-100"} ${hidden.length ? "text-rose-700" : "text-[#0a0a0a]"}`}>
+              메뉴{hidden.length ? ` (${hidden.length}개 숨김)` : ""}
+            </button>
+          )}
           {!row.isApproved && (
             <button
               type="button"
@@ -238,6 +261,30 @@ function UserRowItem({ row, zebra = false }: { row: UserRow; zebra?: boolean }) 
         onCancel={() => setConfirmRevoke(false)}
       />
     </tr>
+    {showMenus && canControlMenus && (
+      <tr className={`border-b border-[#0a0a0a]/10 ${bgCls}`}>
+        <td colSpan={5} className="px-3 pb-3">
+          <div className="border-[2px] border-[#0a0a0a] bg-[#FAF7EC]/60 p-3">
+            <div className="mb-2 text-[11px] font-bold text-[#0a0a0a]/70">
+              {row.email} — 체크 해제한 메뉴는 사이드바에서 숨겨지고 URL 직접 접근도 차단됩니다.
+            </div>
+            <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 sm:grid-cols-3 lg:grid-cols-4">
+              {CONTROLLABLE_MENUS.map((m) => {
+                const visible = !hidden.includes(m.key);
+                return (
+                  <label key={m.key} className="flex cursor-pointer items-center gap-1.5 text-[12px]">
+                    <input type="checkbox" checked={visible} disabled={pending}
+                      onChange={() => toggleMenu(m.key)} className="h-3.5 w-3.5" />
+                    <span className={visible ? "font-bold text-[#0a0a0a]" : "text-[#0a0a0a]/40 line-through"}>{m.label}</span>
+                  </label>
+                );
+              })}
+            </div>
+          </div>
+        </td>
+      </tr>
+    )}
+    </Fragment>
   );
 }
 

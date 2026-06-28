@@ -24,6 +24,7 @@ interface ProfileRow {
 interface MembershipRow {
   user_id: string;
   role: "owner" | "admin" | "member";
+  hidden_menus: string[] | null;
 }
 
 export default async function AdminUsersPage() {
@@ -50,7 +51,7 @@ export default async function AdminUsersPage() {
 
   const { data: memberships } = await supabase
     .from("organization_members")
-    .select("user_id, role");
+    .select("user_id, role, hidden_menus");
 
   const { data: feedbackRows } = await supabase
     .from("app_feedback")
@@ -65,7 +66,11 @@ export default async function AdminUsersPage() {
   }));
 
   const memberRole = new Map<string, "owner" | "admin" | "member">();
-  for (const m of (memberships ?? []) as MembershipRow[]) memberRole.set(m.user_id, m.role);
+  const memberHidden = new Map<string, string[]>();
+  for (const m of (memberships ?? []) as MembershipRow[]) {
+    memberRole.set(m.user_id, m.role);
+    memberHidden.set(m.user_id, m.hidden_menus ?? []);
+  }
 
   const rows = ((profiles ?? []) as ProfileRow[]).map((p) => ({
     id:            p.id,
@@ -77,6 +82,7 @@ export default async function AdminUsersPage() {
     rejectionReason: p.rejection_reason,
     createdAt:     p.created_at,
     role:          memberRole.get(p.id) ?? null,
+    hiddenMenus:   memberHidden.get(p.id) ?? [],
     isMe:          p.id === user.id,
   }));
 

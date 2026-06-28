@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { signOutAction } from "@/app/(auth)/login/_actions/auth";
 import { SIDEBAR_THEMES, type SidebarTheme } from "@/lib/tokens";
+import { menuKeyForPath } from "@/lib/nav";
 import NotionSyncButton from "@/components/ui/NotionSyncButton";
 
 // ── SVG 아이콘 ────────────────────────────────────────────────
@@ -250,6 +251,7 @@ function IconBriefcase() {
 interface Props {
   userEmail: string;
   role?: Role | null;
+  hiddenMenus?: string[];
   onClose?: () => void;
   collapsed?: boolean;
   onToggleCollapse?: () => void;
@@ -260,7 +262,7 @@ interface Props {
 }
 
 export default function Sidebar({
-  userEmail, role = null, onClose, collapsed = false, onToggleCollapse,
+  userEmail, role = null, hiddenMenus = [], onClose, collapsed = false, onToggleCollapse,
   theme = "dark", onToggleTheme,
   reportMode = false, onToggleReportMode,
 }: Props) {
@@ -355,10 +357,12 @@ export default function Sidebar({
       {/* ── 네비게이션 ── */}
       <nav className="flex-1 overflow-y-auto px-2 py-3">
         {NAV.map((group) => {
-          // role 제한이 있는 항목만 추리기 — 그룹이 통째로 비면 섹션 자체 숨김
-          const items = group.items.filter(
-            (it) => !it.roles || (role && it.roles.includes(role)),
-          );
+          // role 제한 + 사용자별 숨김(hidden_menus) 반영 — 그룹이 통째로 비면 섹션 자체 숨김
+          const items = group.items.filter((it) => {
+            if (it.roles && !(role && it.roles.includes(role))) return false;
+            const key = menuKeyForPath(it.href);
+            return !(key && hiddenMenus.includes(key));
+          });
           if (items.length === 0) return null;
           return (
           <div key={group.section} className="mb-3">
