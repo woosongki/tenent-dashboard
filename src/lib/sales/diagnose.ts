@@ -118,38 +118,59 @@ export function diagnoseBrand(
     ext.push({ label: "확인필요", text: "외부 신호(검색량·가격·키워드) 미연결 — '외부 신호 불러오기'로 대조." });
   }
 
-  // ── 4) 가설 (2/3으로 설명 안 되는 부분만) ───────────────────
+  // ── 4) 가설 ('왜 좋아졌나/나빠졌나'와 '왜 점포·브랜드마다 갈리나'에 답한다) ──
   const hyp: DiagLine[] = [];
+
+  // (A) 출점 vs 동일점: 표면성장 경고 → 출점주도 → (없으면 패스)
   if (b.ps > 0 && newOnes.length > 0 && totalChange > 0) {
     const share = (newSum / totalChange) * 100;
-    if (share >= 60) {
-      hyp.push({ label: "가설", text: `① 성장이 출점 주도 — 기존점만으로는 성장 동력이 제한적일 수 있음.\n   확인: 기존 ${b.subCount - newOnes.length}개점의 동일점 성장률 추이(${pct1(existPrev > 0 ? existChange / existPrev * 100 : 0)})가 지속되는가.` });
+    const existCount = Math.max(b.subCount - newOnes.length, 0);
+    const existPctTxt = existPrev > 0 ? pct1(existChange / existPrev * 100) : "전년 0";
+    if (existChange < 0) {
+      hyp.push({ label: "가설", text: `전체는 ${pct1(b.yoyPct)}지만 신규 ${newOnes.length}개점을 빼면 기존 ${existCount}개점은 ${existPctTxt} — 출점이 동일점 부진을 가린 '표면 성장'. 추가 출점을 멈추면 역성장으로 전환될 위험.\n   확인: 기존점 동일점 추세가 반등하는가, 계속 출점에 의존하는가.` });
+    } else if (share >= 60) {
+      hyp.push({ label: "가설", text: `성장의 ${share.toFixed(0)}%가 출점 주도 — 기존점만의 성장 동력은 제한적일 수 있음.\n   확인: 기존 ${existCount}개점의 동일점 성장률(${existPctTxt})이 지속되는가.` });
     }
   }
-  if (pgpm !== null && b.yoyPct >= 0 && b.gpm < pgpm) {
-    hyp.push({ label: "가설", text: `② 저마진 성장이 포지션(볼륨·집객)인가, 운영(매입원가·구성) 문제인가.\n   확인: 동일 브랜드 ${subLabel}별 이익률 편차 / 카테고리 믹스.` });
+
+  // (B) 점포 내 분산: 왜 어떤 점포는 성장/하락하는가 (bySub 전년비) — 추가 데이터 0
+  const existSub = sub.filter((s) => !s.closed && s.ps > 0);   // 기존점(전년 매출 有)
+  if (existSub.length >= 2) {
+    const withYoy = existSub.map((s) => ({ s, yoy: (s.s - s.ps) / s.ps * 100, chg: s.s - s.ps }));
+    const topGain = [...withYoy].sort((a, c) => c.chg - a.chg)[0];
+    const topDrop = [...withYoy].sort((a, c) => a.chg - c.chg)[0];
+    const gainers = withYoy.filter((w) => w.yoy > 0);
+    const decliners = withYoy.filter((w) => w.yoy < 0);
+    const lo = Math.min(...withYoy.map((w) => w.yoy));
+    const hi = Math.max(...withYoy.map((w) => w.yoy));
+    if (gainers.length > 0 && decliners.length > 0 && topGain.yoy >= 10 && topDrop.yoy <= -10) {
+      // 양극화 — 평균이 가린 점포 편차
+      hyp.push({ label: "가설", text: `같은 브랜드인데 ${topGain.s.key} ${pct1(topGain.yoy)} / ${topDrop.s.key} ${pct1(topDrop.yoy)}로 갈림 — 브랜드보다 특정 ${subLabel} 요인(입지·MD·인접 경쟁). 평균 ${pct1(b.yoyPct)}이 ${subLabel} 양극화를 가림.\n   확인: 하위 ${topDrop.s.key}의 전용면적·리뉴얼 이력·인접 경쟁 변화.` });
+    } else if (existSub.length >= 3 && decliners.length === existSub.length) {
+      // 전점 동반 하락 — 점포 아닌 공통 요인
+      hyp.push({ label: "가설", text: `기존 ${existSub.length}개점이 전부 하락(${pct1(lo)}~${pct1(hi)}) — 특정 ${subLabel}이 아니라 브랜드/카테고리 공통 요인. ${subLabel} 단위 대응으로는 돌리기 어려움.\n   확인: 동일 카테고리 타 브랜드도 동반 하락인가(시장요인 여부).` });
+    } else if (existSub.length >= 3 && gainers.length === existSub.length) {
+      // 전점 동반 성장 — 출점 확대 여지
+      hyp.push({ label: "가설", text: `기존 ${existSub.length}개점이 전부 성장(${pct1(lo)}~${pct1(hi)}) — 점포 편차가 아닌 브랜드 공통 호조. 출점 확대 여지 점검 대상.\n   확인: 신규 출점 시 자기잠식 없이 증분이 나오는 입지인가.` });
+    }
   }
+
+  // (C) 매출-마진 디커플링 (유지)
+  if (pgpm !== null && b.yoyPct >= 0 && b.gpm < pgpm) {
+    hyp.push({ label: "가설", text: `저마진 성장이 포지션(볼륨·집객)인가, 운영(매입원가·구성) 문제인가.\n   확인: 동일 브랜드 ${subLabel}별 이익률 편차 / 카테고리 믹스.` });
+  }
+
+  // (D) 면적효율 격차 (유지)
   if (withDpp.length >= 2) {
     const top = [...withDpp].sort((a, c) => c.dppSales - a.dppSales)[0];
     const bot = [...withDpp].sort((a, c) => a.dppSales - c.dppSales)[0];
     if (bot.dppSales > 0 && top.dppSales / bot.dppSales >= 2) {
-      hyp.push({ label: "가설", text: `③ ${subLabel} 간 면적효율 격차의 원인 — 입지/면적 vs 운영.\n   확인: 저효율 ${bot.key}의 전용면적·매장수·인접 경쟁 구성.` });
+      hyp.push({ label: "가설", text: `${subLabel} 간 면적효율 격차의 원인 — 입지/면적 vs 운영.\n   확인: 저효율 ${bot.key}의 전용면적·매장수·인접 경쟁 구성.` });
     }
   }
+
   if (hyp.length === 0 && b.ps > 0) {
     hyp.push({ label: "해석", text: "2)·3) 분해로 변화가 대체로 설명됨 — 추가 가설 불필요." });
-  }
-
-  // ── 5) 질문 ──────────────────────────────────────────────
-  const q: DiagLine[] = [];
-  if (b.ps > 0 && newOnes.length > 0 && totalChange > 0 && (newSum / totalChange) * 100 >= 60) {
-    q.push({ label: "질문", text: `성장의 ${((newSum / totalChange) * 100).toFixed(0)}%가 출점 효과 — 추가 출점 없이 기존점만으로 다음 분기 목표가 가능한가?` });
-  } else if (pgpm !== null && b.yoyPct >= 0 && b.gpm < pgpm) {
-    q.push({ label: "질문", text: `매출↑·이익률↓ 구조 — 볼륨 포지션으로 수용할 것인가, 마진 회복을 요구할 것인가?` });
-  } else if (b.yoyPct < 0) {
-    q.push({ label: "질문", text: `매출 ${pct1(b.yoyPct)} — 전 ${subLabel} 공통 약세인가 특정 ${subLabel} 부진인가, 지점 분산을 먼저 확인할 것인가?` });
-  } else {
-    q.push({ label: "질문", text: `현 추세 유지 시 다음 점검 시점은 언제로 둘 것인가?` });
   }
 
   return {
@@ -158,7 +179,6 @@ export function diagnoseBrand(
       { title: "2) 분해", lines: dec },
       { title: "3) 외부 대조", lines: ext },
       { title: "4) 가설", lines: hyp },
-      { title: "5) 질문", lines: q },
     ],
     asOf: opts.asOf,
   };
