@@ -28,11 +28,11 @@ interface KpiBoxProps {
 }
 function KpiBox({ label, value, accent = "default" }: KpiBoxProps) {
   return (
-    <div className={`brutal p-5 ${accent === "highlight" ? "bg-yellow-300" : "bg-white"}`}>
-      <p className="text-[10px] font-extrabold uppercase tracking-[.14em] text-[#0a0a0a]/55 mb-2">
+    <div className={`brutal overflow-hidden p-3 sm:p-5 ${accent === "highlight" ? "bg-yellow-300" : "bg-white"}`}>
+      <p className="mb-2 truncate text-[10px] font-extrabold uppercase tracking-[.14em] text-[#0a0a0a]/55">
         {label}
       </p>
-      <p className="font-mono text-[28px] sm:text-[32px] font-extrabold tabular-nums leading-none text-[#0a0a0a]">
+      <p className="font-mono text-[20px] sm:text-[28px] md:text-[32px] font-extrabold tabular-nums leading-none whitespace-nowrap text-[#0a0a0a]">
         {value}
       </p>
     </div>
@@ -151,7 +151,7 @@ export default function BrandKeywordClient() {
         {/* KPI 5칸 */}
         {data && (
           <>
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-3 sm:gap-4 mb-6">
               <KpiBox label="검색결과" value={data.total.toLocaleString()} />
               <KpiBox label="최저가" value={formatPrice(data.priceStats.min)} accent="highlight" />
               <KpiBox label="평균가" value={formatPrice(data.priceStats.avg)} />
@@ -280,7 +280,7 @@ export default function BrandKeywordClient() {
             <div className="relative">
               <span className="absolute -top-2 left-3 z-[1] border-[2px] border-[#0a0a0a] bg-yellow-300 px-2 py-0.5 text-[10px] font-extrabold">예시 · 다이소</span>
               <div className="select-none border-[2px] border-dashed border-[#0a0a0a]/40 p-4 pt-5 opacity-80">
-                <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-5">
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-3 sm:gap-4 mb-5">
                   <KpiBox label="검색결과" value="48,213" />
                   <KpiBox label="최저가" value="1.0천원" accent="highlight" />
                   <KpiBox label="평균가" value="4.1천원" />
