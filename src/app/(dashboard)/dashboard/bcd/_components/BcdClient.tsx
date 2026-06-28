@@ -213,24 +213,24 @@ function BcdView({ d, canEdit, onSetGrade, pending, localGrades }: { d: BcdData;
         <Card label="A+B / 전체 매장" value={`${agg.abSt.toLocaleString()}/${agg.totalSt.toLocaleString()}`} sub="퇴점·제외 뺀 분모" />
         <Card label={`${d.periodLabel} 매출`} value={`${eok(agg.totalS)}억`} sub={`${mil(agg.totalS)}백만`} />
         <button type="button" onClick={() => { if (agg.unmatched || listMode === "unmatched") { setListMode((m) => m === "unmatched" ? "all" : "unmatched"); setView("brand"); setLimit(20); } }}
-          className={`border-[2px] border-[#0a0a0a] p-3 text-left ${listMode === "unmatched" ? "bg-amber-200" : "bg-white"} ${agg.unmatched ? "cursor-pointer hover:bg-amber-50" : "cursor-default"}`}
+          className={`border-[2px] border-[#0a0a0a] p-3 text-left overflow-hidden ${listMode === "unmatched" ? "bg-amber-200" : "bg-white"} ${agg.unmatched ? "cursor-pointer hover:bg-amber-50" : "cursor-default"}`}
           style={{ boxShadow: "3px 3px 0 0 #0a0a0a" }}>
           <div className="text-[11px] font-bold text-slate-500 truncate">미분류 {agg.unmatched ? "(클릭→목록)" : ""}</div>
-          <div className="mt-1 font-mono text-[18px] sm:text-[22px] font-extrabold leading-none whitespace-nowrap">{agg.unmatched.toLocaleString()}</div>
+          <div className="mt-1 font-mono text-[16px] sm:text-[18px] lg:text-[22px] font-extrabold leading-none tabular-nums truncate">{agg.unmatched.toLocaleString()}</div>
           <div className={`mt-1 text-[10px] truncate ${agg.unmatched ? "font-bold text-amber-600" : "text-slate-400"}`}>{listMode === "unmatched" ? "미분류만 · 다시 클릭 해제" : agg.unmatched ? "등급 미매칭 — 클릭 확인" : "전부 매칭됨"}</div>
         </button>
         <button type="button" onClick={() => { if (excludedCount || listMode === "excluded") { setListMode((m) => m === "excluded" ? "all" : "excluded"); setView("brand"); setLimit(20); } }}
-          className={`border-[2px] border-[#0a0a0a] p-3 text-left ${listMode === "excluded" ? "bg-slate-300" : "bg-white"} ${canEdit || excludedCount ? "cursor-pointer hover:bg-slate-50" : "cursor-default"}`}
+          className={`border-[2px] border-[#0a0a0a] p-3 text-left overflow-hidden ${listMode === "excluded" ? "bg-slate-300" : "bg-white"} ${canEdit || excludedCount ? "cursor-pointer hover:bg-slate-50" : "cursor-default"}`}
           style={{ boxShadow: "3px 3px 0 0 #0a0a0a" }}>
           <div className="text-[11px] font-bold text-slate-500 truncate">제외 (분모 제외)</div>
-          <div className="mt-1 font-mono text-[18px] sm:text-[22px] font-extrabold leading-none whitespace-nowrap">{excludedCount.toLocaleString()}</div>
+          <div className="mt-1 font-mono text-[16px] sm:text-[18px] lg:text-[22px] font-extrabold leading-none tabular-nums truncate">{excludedCount.toLocaleString()}</div>
           <div className="mt-1 text-[10px] truncate text-slate-400">{listMode === "excluded" ? "제외만 · 다시 클릭 해제" : "팝업 등 점수 비대상 · 클릭 확인"}</div>
         </button>
         <button type="button" onClick={() => { if (nonFashionCount || listMode === "nonfashion") { setListMode((m) => m === "nonfashion" ? "all" : "nonfashion"); setView("brand"); setLimit(20); } }}
-          className={`border-[2px] border-[#0a0a0a] p-3 text-left ${listMode === "nonfashion" ? "bg-cyan-200" : "bg-white"} ${nonFashionCount ? "cursor-pointer hover:bg-cyan-50" : "cursor-default"}`}
+          className={`border-[2px] border-[#0a0a0a] p-3 text-left overflow-hidden ${listMode === "nonfashion" ? "bg-cyan-200" : "bg-white"} ${nonFashionCount ? "cursor-pointer hover:bg-cyan-50" : "cursor-default"}`}
           style={{ boxShadow: "3px 3px 0 0 #0a0a0a" }}>
           <div className="text-[11px] font-bold text-slate-500 truncate">비패션 (분모 제외)</div>
-          <div className="mt-1 font-mono text-[18px] sm:text-[22px] font-extrabold leading-none whitespace-nowrap">{nonFashionCount.toLocaleString()}</div>
+          <div className="mt-1 font-mono text-[16px] sm:text-[18px] lg:text-[22px] font-extrabold leading-none tabular-nums truncate">{nonFashionCount.toLocaleString()}</div>
           <div className="mt-1 text-[10px] truncate text-slate-400">{listMode === "nonfashion" ? "비패션만 · 다시 클릭 해제" : "F&B·라이프스타일 · 클릭 확인"}</div>
         </button>
       </div>
