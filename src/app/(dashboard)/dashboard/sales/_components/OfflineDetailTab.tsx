@@ -4,6 +4,7 @@ import { memo, useCallback, useMemo, useState } from "react";
 import ScrollHint from "@/components/ui/ScrollHint";
 import UnitChip from "@/components/ui/UnitChip";
 import StatusLegend from "@/components/ui/StatusLegend";
+import BrandDiagnosis from "./BrandDiagnosis";
 import { pillBtn, inputCompact } from "@/lib/tokens";
 import { displayDivision, isHiddenCat, displayCat, catRank, divisionRank, OTHERS_KEY, OTHERS_LABEL } from "@/lib/sales/labels";
 import type { OffRank, OffOthers } from "@/lib/sales/queries";
@@ -248,7 +249,7 @@ export default function OfflineDetailTab(p: Props) {
               const id = `${r.division ?? ""}|${r.cat ?? ""}|${r.key}`;
               return (
                 <DetailRow key={id} id={id} row={r} rank={i + 1} firstColLabel="지점" left={!isOthersSel && brandLeft(r)}
-                  open={expanded === id} onToggle={onToggleBrand} sSort={sSort} sDir={sDir} toggleS={toggleS} monthCount={p.monthCount} />
+                  open={expanded === id} onToggle={onToggleBrand} sSort={sSort} sDir={sDir} toggleS={toggleS} monthCount={p.monthCount} periodLabel={p.periodLabel} />
               );
             })}
             {rows.length === 0 && <tr><td colSpan={7} className="px-3 py-8 text-center text-slate-400">데이터 없음</td></tr>}
@@ -306,7 +307,7 @@ export default function OfflineDetailTab(p: Props) {
           <tbody>
             {stVisible.map((st, i) => (
               <DetailRow key={st.key} id={st.key} row={st} rank={i + 1} firstColLabel="브랜드" left={!isOthersStSel && storeLeft(st)}
-                open={stExpanded === st.key} onToggle={onToggleStore} sSort={sSort} sDir={sDir} toggleS={toggleS} monthCount={p.monthCount} />
+                open={stExpanded === st.key} onToggle={onToggleStore} sSort={sSort} sDir={sDir} toggleS={toggleS} monthCount={p.monthCount} periodLabel={p.periodLabel} />
             ))}
             {storeRows.length === 0 && <tr><td colSpan={7} className="px-3 py-8 text-center text-slate-400">지점 데이터 없음</td></tr>}
           </tbody>
@@ -325,12 +326,13 @@ export default function OfflineDetailTab(p: Props) {
 
 // 드릴다운 하위 표 (브랜드→지점 / 지점→브랜드 공용)
 // 브랜드/지점 공용 행 (메모 — 펼침 토글 시 해당 행만 리렌더)
-const DetailRow = memo(function DetailRow({ row, id, rank, firstColLabel, open, onToggle, sSort, sDir, toggleS, left, monthCount }: {
+const DetailRow = memo(function DetailRow({ row, id, rank, firstColLabel, open, onToggle, sSort, sDir, toggleS, left, monthCount, periodLabel }: {
   row: OffRank; id: string; rank: number; firstColLabel: string; open: boolean;
   onToggle: (id: string) => void; sSort: SSortKey; sDir: Dir; toggleS: (k: SSortKey) => void; left?: boolean;
-  monthCount?: number;
+  monthCount?: number; periodLabel: string;
 }) {
   const subTitle = firstColLabel === "지점" ? "지점별 상세" : "브랜드별 상세";
+  const [showDiag, setShowDiag] = useState(false);
   return (
     <>
       <tr className={`group border-t border-slate-100 ${row.closed ? "opacity-60" : "cursor-pointer hover:bg-yellow-50"} ${open ? "bg-yellow-50" : ""}`} onClick={() => { if (!row.closed) onToggle(id); }}>
@@ -350,7 +352,20 @@ const DetailRow = memo(function DetailRow({ row, id, rank, firstColLabel, open, 
         <tr className="bg-slate-50">
           <td></td>
           <td colSpan={6} className="px-3 py-2">
-            <div className="mb-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400">{subTitle} ({row.bySub.length})</div>
+            <div className="mb-1.5 flex items-center justify-between gap-2">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">{subTitle} ({row.bySub.length})</span>
+              {!row.closed && (
+                <button onClick={(e) => { e.stopPropagation(); setShowDiag((v) => !v); }}
+                  className={`border-[2px] border-[#0a0a0a] px-2.5 py-1 text-[11px] font-bold transition ${showDiag ? "bg-yellow-300" : "bg-white hover:bg-yellow-100"}`}>
+                  🔍 진단 {showDiag ? "닫기" : "보기"}
+                </button>
+              )}
+            </div>
+            {showDiag && (
+              <div className="mb-2.5">
+                <BrandDiagnosis row={row} periodLabel={periodLabel} asOf={periodLabel} subLabel={firstColLabel} />
+              </div>
+            )}
             <SubBreakdownTable bySub={row.bySub} firstColLabel={firstColLabel} sSort={sSort} sDir={sDir} toggleS={toggleS} monthCount={monthCount} />
           </td>
         </tr>
