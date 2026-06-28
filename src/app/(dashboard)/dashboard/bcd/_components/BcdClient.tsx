@@ -200,15 +200,17 @@ function BcdView({ d, canEdit, onSetGrade, pending, localGrades }: { d: BcdData;
     <div className="space-y-4">
       {/* BCD 점수 + 요약 카드 */}
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3 lg:grid-cols-6">
-        <div className="border-[2px] border-[#0a0a0a] bg-yellow-100 p-3" style={{ boxShadow: "3px 3px 0 0 #0a0a0a" }}>
-          <div className="text-[11px] font-bold text-slate-500">BCD점수 (A+B매장 비율)</div>
-          <div className="mt-1 flex items-baseline gap-1.5">
-            <span className="font-mono text-[28px] font-extrabold leading-none">{agg.score.toFixed(1)}</span><span className="text-[13px] font-bold">점</span>
-            <span className="ml-1 text-[12px] font-bold" style={{ color: agg.diff >= 0 ? "#0d9e6e" : "#e53e3e" }}>{agg.diff >= 0 ? "▲" : "▼"}{Math.abs(agg.diff).toFixed(1)}</span>
+        <div className="border-[2px] border-[#0a0a0a] bg-yellow-100 p-3 overflow-hidden" style={{ boxShadow: "3px 3px 0 0 #0a0a0a" }}>
+          <div className="text-[11px] font-bold text-slate-500 truncate">BCD점수 (A+B비율)</div>
+          <div className="mt-1 flex items-baseline gap-0.5 whitespace-nowrap">
+            <span className="font-mono text-[22px] sm:text-[26px] font-extrabold leading-none tabular-nums">{agg.score.toFixed(1)}</span><span className="text-[12px] font-bold">점</span>
           </div>
-          <div className="mt-1 text-[10px] text-slate-400">전년 {agg.scorePrev.toFixed(1)}점</div>
+          <div className="mt-1 flex items-center gap-1.5 whitespace-nowrap text-[10px]">
+            <span className="font-bold tabular-nums" style={{ color: agg.diff >= 0 ? "#0d9e6e" : "#e53e3e" }}>{agg.diff >= 0 ? "▲" : "▼"}{Math.abs(agg.diff).toFixed(1)}</span>
+            <span className="text-slate-400">전년 {agg.scorePrev.toFixed(1)}점</span>
+          </div>
         </div>
-        <Card label="A+B 매장 / 전체" value={`${agg.abSt.toLocaleString()} / ${agg.totalSt.toLocaleString()}`} sub="퇴점·제외 제외한 분모" />
+        <Card label="A+B / 전체 매장" value={`${agg.abSt.toLocaleString()}/${agg.totalSt.toLocaleString()}`} sub="퇴점·제외 뺀 분모" />
         <Card label={`${d.periodLabel} 매출`} value={`${eok(agg.totalS)}억`} sub={`${mil(agg.totalS)}백만`} />
         <button type="button" onClick={() => { if (agg.unmatched || listMode === "unmatched") { setListMode((m) => m === "unmatched" ? "all" : "unmatched"); setView("brand"); setLimit(20); } }}
           className={`border-[2px] border-[#0a0a0a] p-3 text-left ${listMode === "unmatched" ? "bg-amber-200" : "bg-white"} ${agg.unmatched ? "cursor-pointer hover:bg-amber-50" : "cursor-default"}`}
@@ -380,9 +382,9 @@ function BcdView({ d, canEdit, onSetGrade, pending, localGrades }: { d: BcdData;
 
 function Card({ label, value, sub, tone }: { label: string; value: string; sub?: string; tone?: "warn" }) {
   return (
-    <div className="border-[2px] border-[#0a0a0a] bg-white p-3" style={{ boxShadow: "3px 3px 0 0 #0a0a0a" }}>
+    <div className="border-[2px] border-[#0a0a0a] bg-white p-3 overflow-hidden" style={{ boxShadow: "3px 3px 0 0 #0a0a0a" }}>
       <div className="text-[11px] font-bold text-slate-500 truncate">{label}</div>
-      <div className="mt-1 font-mono text-[18px] sm:text-[22px] font-extrabold leading-none whitespace-nowrap">{value}</div>
+      <div className="mt-1 font-mono text-[15px] sm:text-[17px] lg:text-[22px] font-extrabold leading-none tabular-nums truncate">{value}</div>
       {sub && <div className={`mt-1 text-[10px] truncate ${tone === "warn" ? "text-amber-600 font-bold" : "text-slate-400"}`}>{sub}</div>}
     </div>
   );
