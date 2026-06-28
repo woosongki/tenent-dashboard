@@ -197,12 +197,21 @@ function CalendarGrid({ weeks, brands, byCell, canEdit, onCell, onChip, year }: 
     // eslint-disable-next-line react-hooks/set-state-in-effect
     try { const raw = localStorage.getItem(STORAGE); if (raw) setSavedOrder(JSON.parse(raw)); } catch {}
   }, [STORAGE]);
-  // 저장된 드래그 순서 + 신규 브랜드 → 그 위에, '이번 주차에 팝업이 있는 브랜드'를 맨 앞 열로 당김(가시성).
-  // (React Compiler 자동 메모이제이션 — 수동 useMemo 불필요)
+  // 저장된 드래그 순서 + 신규 브랜드 → 그 위에, 임박한 주차의 팝업 브랜드를 맨 앞 열로 당김(가시성).
+  // 순서: 이번 주차 → 다가오는 N주 → 나머지. (React Compiler 자동 메모이제이션 — 수동 useMemo 불필요)
+  const UPCOMING_WEEKS = 2;   // 이번주 + 향후 2주
   const baseOrder = reconcileOrder(savedOrder, brands);
-  const activeSet = new Set(baseOrder.filter((b) => (byCell.get(`${todayWi}|${b}`)?.length ?? 0) > 0));
-  const display = activeSet.size > 0
-    ? [...baseOrder.filter((b) => activeSet.has(b)), ...baseOrder.filter((b) => !activeSet.has(b))]
+  const hasPopupIn = (b: string, wi: number) => (byCell.get(`${wi}|${b}`)?.length ?? 0) > 0;
+  const thisWeekSet = new Set(baseOrder.filter((b) => hasPopupIn(b, todayWi)));
+  const soonSet = new Set(baseOrder.filter((b) =>
+    !thisWeekSet.has(b) &&
+    Array.from({ length: UPCOMING_WEEKS }, (_, k) => todayWi + k + 1).some((wi) => hasPopupIn(b, wi))));
+  const display = (thisWeekSet.size + soonSet.size) > 0
+    ? [
+        ...baseOrder.filter((b) => thisWeekSet.has(b)),
+        ...baseOrder.filter((b) => soonSet.has(b)),
+        ...baseOrder.filter((b) => !thisWeekSet.has(b) && !soonSet.has(b)),
+      ]
     : baseOrder;
   const dragFrom = useRef<number | null>(null);
   const [dragOver, setDragOver] = useState<number | null>(null);
@@ -252,9 +261,10 @@ function CalendarGrid({ weeks, brands, byCell, canEdit, onCell, onChip, year }: 
                 onDragOver={(e) => { if (dragFrom.current != null) { e.preventDefault(); setDragOver(i); } }}
                 onDrop={() => { if (dragFrom.current != null) applyOrder(dragFrom.current, i); dragFrom.current = null; setDragOver(null); }}
                 onDragEnd={() => { dragFrom.current = null; setDragOver(null); }}
-                className={`px-2 py-2 text-center min-w-[120px] font-bold ${canEdit ? "cursor-grab active:cursor-grabbing" : ""} ${dragOver === i ? "bg-yellow-600" : activeSet.has(b) ? "bg-emerald-700" : ""}`}>
+                className={`px-2 py-2 text-center min-w-[120px] font-bold ${canEdit ? "cursor-grab active:cursor-grabbing" : ""} ${dragOver === i ? "bg-yellow-600" : thisWeekSet.has(b) ? "bg-emerald-700" : soonSet.has(b) ? "bg-sky-800" : ""}`}>
                 {canEdit && <span className="mr-0.5 opacity-50">⠿</span>}{b}
-                {activeSet.has(b) && <span className="ml-1 align-middle text-[8px] font-extrabold text-emerald-200">●이번주</span>}
+                {thisWeekSet.has(b) && <span className="ml-1 align-middle text-[8px] font-extrabold text-emerald-200">●이번주</span>}
+                {soonSet.has(b) && <span className="ml-1 align-middle text-[8px] font-extrabold text-sky-200">○곧</span>}
               </th>
             ))}
           </tr>
