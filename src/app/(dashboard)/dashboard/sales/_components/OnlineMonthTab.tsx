@@ -314,10 +314,10 @@ function SummaryCard({ label, value, sub, accent, tone, subSmOnly }: {
 }) {
   const color = tone === "up" ? "#0d9e6e" : tone === "down" ? "#e53e3e" : "#0a0a0a";
   return (
-    <div className={`border-[2px] border-[#0a0a0a] p-3 ${accent ? "bg-yellow-100" : "bg-white"}`}
+    <div className={`border-[2px] border-[#0a0a0a] p-3 overflow-hidden ${accent ? "bg-yellow-100" : "bg-white"}`}
       style={{ boxShadow: "3px 3px 0 0 #0a0a0a" }}>
       <div className="text-[11px] font-bold text-slate-500 truncate">{label}</div>
-      <div className="mt-1 font-mono text-[18px] sm:text-[24px] font-extrabold leading-none whitespace-nowrap" style={{ color }}>{value}</div>
+      <div className="mt-1 font-mono text-[16px] sm:text-[20px] lg:text-[24px] font-extrabold leading-none tabular-nums truncate" style={{ color }}>{value}</div>
       {sub && <div className={`mt-1 text-[10px] text-slate-400 truncate ${subSmOnly ? "hidden sm:block" : ""}`}>{sub}</div>}
     </div>
   );
