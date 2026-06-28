@@ -269,11 +269,50 @@ export default function BrandKeywordClient() {
         )}
 
         {!data && !loading && !error && (
-          <div className="brutal-sm bg-[#F1ECDB]/50 p-12 text-center">
-            <p className="font-display text-[20px] text-[#0a0a0a]">브랜드명을 입력해 시작하세요</p>
-            <p className="mt-1 text-[12px] text-[#0a0a0a]/55">
-              네이버 쇼핑에서 최대 300건 상품 수집 → 자동 집계 (Claude 호출 없음, 비용 0)
-            </p>
+          <div className="space-y-4">
+            <div className="brutal-sm bg-[#F1ECDB]/50 p-6 text-center">
+              <p className="font-display text-[20px] text-[#0a0a0a]">브랜드명을 입력해 시작하세요</p>
+              <p className="mt-1 text-[12px] text-[#0a0a0a]/55">
+                네이버 쇼핑에서 최대 300건 상품 수집 → 검색결과수·가격대·연관키워드·카테고리 자동 집계 (Claude 호출 없음, 비용 0)
+              </p>
+            </div>
+            {/* 예시 미리보기 (고정 샘플 · API 호출 없음) */}
+            <div className="relative">
+              <span className="absolute -top-2 left-3 z-[1] border-[2px] border-[#0a0a0a] bg-yellow-300 px-2 py-0.5 text-[10px] font-extrabold">예시 · 다이소</span>
+              <div className="select-none border-[2px] border-dashed border-[#0a0a0a]/40 p-4 pt-5 opacity-80">
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-5">
+                  <KpiBox label="검색결과" value="48,213" />
+                  <KpiBox label="최저가" value="1.0천원" accent="highlight" />
+                  <KpiBox label="평균가" value="4.1천원" />
+                  <KpiBox label="최고가" value="3.9만원" />
+                  <KpiBox label="판매처" value="87" />
+                </div>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                  <div className="brutal bg-white p-5">
+                    <SectionHeader>연관 키워드 TOP 20</SectionHeader>
+                    <div className="flex flex-wrap gap-2">
+                      {([["수납", 120], ["정리", 95], ["생활", 80], ["선반", 64], ["욕실", 51], ["일회용", 33]] as [string, number][]).map(([kw, n], i) => (
+                        <span key={kw} className={`inline-flex items-baseline gap-1.5 border-[2px] border-[#0a0a0a] ${CHIP_STYLES[i % CHIP_STYLES.length]} px-2.5 py-1 text-[12px] font-extrabold shadow-[2px_2px_0_0_#0a0a0a]`}>
+                          <span>{kw}</span><span className="font-mono text-[10px] opacity-70 font-bold">{n}</span>
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="brutal bg-white p-5">
+                    <SectionHeader>카테고리 분포</SectionHeader>
+                    <div className="space-y-3">
+                      {([["생활/건강", 70, "bg-yellow-300"], ["가구/인테리어", 20, "bg-cyan-400"], ["주방용품", 10, "bg-violet-300"]] as [string, number, string][]).map(([name, pct, bar]) => (
+                        <div key={name}>
+                          <div className="flex items-center justify-between text-[12px] mb-1.5"><span className="font-bold text-[#0a0a0a]">{name}</span><span className="font-mono font-extrabold text-[#0a0a0a]">{pct}%</span></div>
+                          <div className="h-5 border-[2px] border-[#0a0a0a] bg-[#FAF7EC]"><div className={`h-full ${bar} border-r-[2px] border-[#0a0a0a]`} style={{ width: `${pct}%` }} /></div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+                <p className="mt-3 text-[10px] font-mono text-[#0a0a0a]/45">↑ 입력한 브랜드의 실제 데이터가 이렇게 나옵니다 (위 샘플은 예시)</p>
+              </div>
+            </div>
           </div>
         )}
       </div>

@@ -303,6 +303,37 @@ export default function BrandFitClient() {
           </div>
         </div>
       )}
+
+      {/* 예시 미리보기 (입력 전) */}
+      {!submitted && (
+        <div className="mt-10 border-t-[3px] border-[#0a0a0a] pt-6">
+          <div className="mb-3 flex items-center gap-2 flex-wrap">
+            <span className="border-[2px] border-[#0a0a0a] bg-yellow-300 px-2 py-0.5 text-[10px] font-extrabold">예시</span>
+            <span className="text-[13px] text-slate-600">브랜드명·조건을 고르고 분석하면, 맞는 지점 <b>TOP 3</b>가 점수(축별 분해)로 이렇게 나옵니다.</span>
+          </div>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3 opacity-80 select-none">
+            {([["분당점", 87, "#ef476f"], ["평촌점", 81, "#ffb547"], ["일산점", 76, "#06d6a0"]] as [string, number, string][]).map(([name, total, color], i) => (
+              <div key={name} className="border-[3px] border-[#0a0a0a] bg-white p-4" style={{ boxShadow: "5px 5px 0 0 #0a0a0a", borderTopColor: color, borderTopWidth: 8 }}>
+                <div className="font-display text-[14px] text-slate-500 mb-1">#{i + 1}</div>
+                <div className="font-bold text-[14px]">샘플브랜드</div>
+                <div className="font-display text-[18px] mb-2">{name}</div>
+                <div className="font-mono text-[36px] font-extrabold leading-none">{total}</div>
+                <div className="text-[10px] text-slate-500 mb-3">/ 100점</div>
+                <div className="space-y-1.5">
+                  {([["상권", 90 - i * 6], ["앵커", 84 - i * 8], ["성격", 78 - i * 5], ["시너지", 70 - i * 7]] as [string, number][]).map(([ax, v]) => (
+                    <div key={ax} className="flex items-center gap-2 text-[11px]">
+                      <span className="w-10 shrink-0 text-slate-500">{ax}</span>
+                      <div className="flex-1 h-2.5 border border-[#0a0a0a] bg-[#FAF7EC]"><div className="h-full bg-cyan-400" style={{ width: `${v}%` }} /></div>
+                      <span className="w-7 text-right font-mono">{v}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+          <p className="mt-3 text-[10px] font-mono text-[#0a0a0a]/45">↑ 위 카드는 예시입니다. 상권 {Math.round(WEIGHTS.trade_area * 100)}%·앵커 {Math.round(WEIGHTS.anchors * 100)}%·성격 {Math.round(WEIGHTS.character * 100)}%·시너지 {Math.round(WEIGHTS.synergy * 100)}% 가중으로 41개 지점을 채점합니다.</p>
+        </div>
+      )}
     </div>
     </div>
   );

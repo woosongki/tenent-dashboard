@@ -675,6 +675,74 @@ export default function VerifyClient({ canVerify = true }: VerifyClientProps) {
         </form>
       )}
 
+      {/* 예시 미리보기 (검색 전) */}
+      {phase === "input" && (
+        <div className="mt-6">
+          <div className="mb-2 flex items-center gap-2 flex-wrap">
+            <span className="border-[2px] border-[#0a0a0a] bg-yellow-300 px-2 py-0.5 text-[10px] font-extrabold">예시</span>
+            <span className="text-[13px] text-slate-600">법인을 검증하면 DART 재무·공시 기반으로 <b>등급·리스크·집중영역</b>이 이렇게 나옵니다(노션 저장).</span>
+          </div>
+          <div className="brutal bg-white opacity-85 select-none">
+            <div className="border-b-[3px] border-[#0a0a0a] bg-[#FAF7EC] px-6 py-4">
+              <div className="flex flex-wrap items-center gap-3">
+                <h2 className="font-display text-[22px]">샘플리테일(주)</h2>
+                <GradeChip grade="B" />
+                <span className="text-[12px] text-slate-500">외부감사 · DART 00000000</span>
+              </div>
+              <p className="mt-2 text-[13px] text-slate-700">최근 3년 매출 성장·흑자 유지, 부채비율 안정. 입점 협상 시 재고·정산 조건 확인 권장. (예시 요약)</p>
+              <p className="mt-1 text-[11px] text-slate-500">등급 근거: 매출 성장 + 영업흑자 + 부채비율 110%대 (예시)</p>
+            </div>
+            <div className="grid grid-cols-1 gap-0 md:grid-cols-3">
+              <div className="border-b-[2px] border-[#0a0a0a] p-5 md:border-r-[2px]">
+                <p className="mb-3 text-[10px] font-extrabold uppercase tracking-[.14em] text-slate-500">재무 요약</p>
+                <div className="space-y-2">
+                  {([["2023", "820억", "5.1%"], ["2024", "910억", "6.0%"], ["2025", "1,040억", "6.8%"]] as [string, string, string][]).map(([y, rev, m]) => (
+                    <div key={y} className="flex items-center justify-between text-[12px]">
+                      <span className="font-mono font-bold text-slate-400">{y}</span>
+                      <span className="font-mono font-extrabold">{rev}</span>
+                      <span className="font-mono text-[11px] text-cyan-700">{m}</span>
+                    </div>
+                  ))}
+                </div>
+                <div className="mt-3 border-t border-[#0a0a0a]/10 pt-2 space-y-1">
+                  <div className="flex justify-between text-[11px]"><span className="text-slate-500">부채비율</span><span className="font-mono font-bold">112%</span></div>
+                  <div className="flex justify-between text-[11px]"><span className="text-slate-500">유동비율</span><span className="font-mono font-bold">145%</span></div>
+                </div>
+              </div>
+              <div className="border-b-[2px] border-[#0a0a0a] p-5 md:border-r-[2px]">
+                <p className="mb-3 text-[10px] font-extrabold uppercase tracking-[.14em] text-slate-500">핵심 리스크</p>
+                <ul className="space-y-2">
+                  {([["특수관계자 거래 비중", "참고", "매출의 일부가 계열사 의존"], ["단기차입 증가", "검증됨", "운전자본 부담 점검 필요"]] as [string, string, string][]).map(([flag, src, desc]) => (
+                    <li key={flag} className="text-[12px]">
+                      <div className="flex items-start gap-1.5">
+                        <span className="mt-0.5 shrink-0 font-mono font-extrabold text-rose-500">!</span>
+                        <div><span className="font-bold">{flag}</span>
+                          <div className="mt-0.5 flex items-center gap-1"><SourceChip src={src} /><span className="text-[11px] text-slate-500">{desc}</span></div>
+                        </div>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div className="border-b-[2px] border-[#0a0a0a] p-5">
+                <p className="mb-3 text-[10px] font-extrabold uppercase tracking-[.14em] text-slate-500">집중 영역</p>
+                <ul className="space-y-2">
+                  {([["재무", "정산·결제 조건", "흑자지만 현금흐름 변동성 확인"], ["운영", "재고 회전", "시즌 재고 처리 정책 확인"]] as [string, string, string][]).map(([cat, sum, imp]) => (
+                    <li key={sum} className="text-[12px]">
+                      <div className="flex items-start gap-1.5">
+                        <span className="inline-block shrink-0 border border-violet-400 bg-violet-50 px-1 py-0.5 text-[9px] font-bold text-violet-700">{cat}</span>
+                        <div><p className="font-bold">{sum}</p><p className="text-[11px] text-slate-500">{imp}</p></div>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </div>
+          <p className="mt-2 text-[10px] font-mono text-[#0a0a0a]/45">↑ 위 카드는 예시입니다. 실제로는 검색한 법인의 DART 데이터로 채워집니다.</p>
+        </div>
+      )}
+
       {/* ───────── 2단계: 후보 선택 ───────── */}
       {phase === "candidates" && (
         <div className="brutal bg-white">
