@@ -20,6 +20,23 @@ export interface ExternalSignal {
   categories: { name: string; pct: number }[];
 }
 
+/** 또래(코호트) 통계 — 같은 카테고리/부문 형제 브랜드(또는 형제 지점) 집계. 캘러가 화면의 목록에서 계산해 전달(새 쿼리 0). */
+export interface CohortStat {
+  label: string;        // 비교 기준 라벨 (예: "캐주얼", "전 부문 지점")
+  n: number;            // 또래 수 (자기 포함, 영업 중)
+  medianYoy: number;    // 또래 전년비 중앙값(%)
+  medianGpm: number;    // 또래 이익률 중앙값(%)
+  totalS: number;       // 또래 당기 매출합
+  totalPs: number;      // 또래 전년 매출합
+}
+
+function median(xs: number[]): number {
+  if (xs.length === 0) return 0;
+  const s = [...xs].sort((a, b) => a - b);
+  const m = Math.floor(s.length / 2);
+  return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2;
+}
+
 const mil = (n: number) => Math.round(n / 1e6);
 const fM = (n: number) => mil(n).toLocaleString("ko-KR");          // 백만, 콤마
 const fMs = (n: number) => `${n >= 0 ? "+" : ""}${mil(n).toLocaleString("ko-KR")}`;
@@ -33,7 +50,7 @@ const pct1 = (n: number) => `${n >= 0 ? "+" : ""}${n.toFixed(1)}%`;
  */
 export function diagnoseBrand(
   b: OffRank,
-  opts: { periodLabel: string; asOf: string; external?: ExternalSignal | null; subLabel?: string },
+  opts: { periodLabel: string; asOf: string; external?: ExternalSignal | null; subLabel?: string; cohort?: CohortStat | null },
 ): Diagnosis {
   const sub = b.bySub ?? [];
   const subLabel = opts.subLabel ?? "지점";
@@ -118,10 +135,24 @@ export function diagnoseBrand(
     ext.push({ label: "확인필요", text: "외부 신호(검색량·가격·키워드) 미연결 — '외부 신호 불러오기'로 대조." });
   }
 
-  // ── 4) 가설 ('왜 좋아졌나/나빠졌나'와 '왜 점포·브랜드마다 갈리나'에 답한다) ──
+  // ── 4) 가설 (우선순위 순으로 후보를 쌓고 최대 6개로 정리) ──────
+  // '왜 좋아/나빠졌나'·'왜 점포마다 갈리나'·'또래 대비 어떤가'에 답한다.
   const hyp: DiagLine[] = [];
+  const co = opts.cohort;
+  const curSub = sub.filter((s) => !s.closed && s.s > 0);      // 영업 중(당기 매출 有)
+  const existSub = sub.filter((s) => !s.closed && s.ps > 0);   // 기존점(전년 매출 有)
 
-  // (A) 출점 vs 동일점: 표면성장 경고 → 출점주도 → (없으면 패스)
+  // (J-1) 또래 대비: 시장요인 vs 브랜드요인 ★
+  if (co && co.n >= 3 && b.ps > 0) {
+    const diff = b.yoyPct - co.medianYoy;
+    if (Math.abs(diff) >= 8) {
+      hyp.push({ label: "가설", text: diff < 0
+        ? `${co.label} 또래 중앙값 ${pct1(co.medianYoy)}인데 이 브랜드 ${pct1(b.yoyPct)} (${diff.toFixed(0)}%p 하회) — 시장 흐름이 아닌 브랜드 고유 약세.\n   확인: 같은 카테고리에서 무엇이 다른가(가격대·MD·매대 위치).`
+        : `${co.label} 또래 중앙값 ${pct1(co.medianYoy)} 대비 ${pct1(b.yoyPct)} (+${diff.toFixed(0)}%p 상회) — 시장 평균을 이기는 브랜드 강세.\n   확인: 우위 요인이 지속 가능한가(일시 이벤트 vs 구조적).` });
+    }
+  }
+
+  // (A) 출점 vs 동일점: 표면성장 경고 → 출점주도
   if (b.ps > 0 && newOnes.length > 0 && totalChange > 0) {
     const share = (newSum / totalChange) * 100;
     const existCount = Math.max(b.subCount - newOnes.length, 0);
@@ -133,8 +164,7 @@ export function diagnoseBrand(
     }
   }
 
-  // (B) 점포 내 분산: 왜 어떤 점포는 성장/하락하는가 (bySub 전년비) — 추가 데이터 0
-  const existSub = sub.filter((s) => !s.closed && s.ps > 0);   // 기존점(전년 매출 有)
+  // (B) 점포 내 분산: 왜 어떤 점포는 성장/하락하는가 (bySub 전년비)
   if (existSub.length >= 2) {
     const withYoy = existSub.map((s) => ({ s, yoy: (s.s - s.ps) / s.ps * 100, chg: s.s - s.ps }));
     const topGain = [...withYoy].sort((a, c) => c.chg - a.chg)[0];
@@ -144,20 +174,90 @@ export function diagnoseBrand(
     const lo = Math.min(...withYoy.map((w) => w.yoy));
     const hi = Math.max(...withYoy.map((w) => w.yoy));
     if (gainers.length > 0 && decliners.length > 0 && topGain.yoy >= 10 && topDrop.yoy <= -10) {
-      // 양극화 — 평균이 가린 점포 편차
       hyp.push({ label: "가설", text: `같은 브랜드인데 ${topGain.s.key} ${pct1(topGain.yoy)} / ${topDrop.s.key} ${pct1(topDrop.yoy)}로 갈림 — 브랜드보다 특정 ${subLabel} 요인(입지·MD·인접 경쟁). 평균 ${pct1(b.yoyPct)}이 ${subLabel} 양극화를 가림.\n   확인: 하위 ${topDrop.s.key}의 전용면적·리뉴얼 이력·인접 경쟁 변화.` });
     } else if (existSub.length >= 3 && decliners.length === existSub.length) {
-      // 전점 동반 하락 — 점포 아닌 공통 요인
       hyp.push({ label: "가설", text: `기존 ${existSub.length}개점이 전부 하락(${pct1(lo)}~${pct1(hi)}) — 특정 ${subLabel}이 아니라 브랜드/카테고리 공통 요인. ${subLabel} 단위 대응으로는 돌리기 어려움.\n   확인: 동일 카테고리 타 브랜드도 동반 하락인가(시장요인 여부).` });
     } else if (existSub.length >= 3 && gainers.length === existSub.length) {
-      // 전점 동반 성장 — 출점 확대 여지
       hyp.push({ label: "가설", text: `기존 ${existSub.length}개점이 전부 성장(${pct1(lo)}~${pct1(hi)}) — 점포 편차가 아닌 브랜드 공통 호조. 출점 확대 여지 점검 대상.\n   확인: 신규 출점 시 자기잠식 없이 증분이 나오는 입지인가.` });
+    }
+  }
+
+  // (E) 퇴점 영향 분리: 구조적 퇴점 vs 영업부진
+  if (closedOnes.length > 0 && totalChange !== 0) {
+    const closedPrevSum = closedOnes.reduce((t, s) => t + s.ps, 0);
+    const continuingChange = totalChange - newSum + closedPrevSum;   // 양년 영업점 증감
+    if (closedPrevSum >= Math.abs(totalChange) * 0.3) {
+      hyp.push({ label: "가설", text: `총 증감 ${fMs(totalChange)}백만 중 퇴점 ${closedOnes.length}개점이 ${fMs(-closedPrevSum)} — 영업 중인 점포만 보면 ${fMs(continuingChange)}. 영업부진이 아니라 '구조적 퇴점'일 수 있음.\n   확인: 퇴점이 계약만료·리뉴얼인가 실적부진 철수인가.` });
+    }
+  }
+
+  // (J-2) 또래 내 점유율 변화: 파이를 뺏는가/뺏기는가 ★
+  if (co && co.n >= 3 && b.ps > 0 && co.totalS > 0 && co.totalPs > 0) {
+    const now = b.s / co.totalS * 100;
+    const prev = b.ps / co.totalPs * 100;
+    const d = now - prev;
+    if (Math.abs(d) >= 1.5) {
+      hyp.push({ label: "가설", text: `${co.label} 내 매출비중 ${prev.toFixed(1)}%→${now.toFixed(1)}% (${d >= 0 ? "+" : ""}${d.toFixed(1)}%p) — 또래 파이를 ${d >= 0 ? "뺏는" : "뺏기는"} 중. 절대 성장률과 별개로 ${d >= 0 ? "경쟁우위 강화" : "상대 약화"} 신호.\n   확인: 비중을 ${d >= 0 ? "가져온" : "내준"} 상대 브랜드는 누구인가.` });
+    }
+  }
+
+  // (F) 매출 집중도(파레토): 특정 점포 의존
+  if (curSub.length >= 4) {
+    const sorted = [...curSub].sort((a, c) => c.s - a.s);
+    const totalCur = sorted.reduce((t, s) => t + s.s, 0);
+    const top2Share = totalCur > 0 ? (sorted[0].s + sorted[1].s) / totalCur * 100 : 0;
+    if (top2Share >= 60) {
+      hyp.push({ label: "가설", text: `상위 2개 ${subLabel}(${sorted[0].key}·${sorted[1].key})이 매출의 ${top2Share.toFixed(0)}% — 특정 ${subLabel} 의존. 그 ${subLabel}의 부진이 곧 브랜드 리스크.\n   확인: 상위 ${subLabel} 계약·리뉴얼 일정과 방어책.` });
+    }
+  }
+
+  // (G) 규모×효율 4분면: 대형 저효율
+  const dppSub = sub.filter((s) => !s.closed && s.s > 0 && s.dppSales > 0);
+  if (dppSub.length >= 4) {
+    const medS = median(dppSub.map((s) => s.s));
+    const medDpp = median(dppSub.map((s) => s.dppSales));
+    const bigLow = dppSub.filter((s) => s.s >= medS && s.dppSales <= medDpp * 0.7)
+      .sort((a, c) => a.dppSales - c.dppSales)[0];
+    if (bigLow) {
+      hyp.push({ label: "가설", text: `${bigLow.key} ${subLabel}은 매출은 상위권인데 일평당 효율은 하위권(${won(bigLow.dppSales)}원/평·일) — 면적 과다(대형 저효율) 가설. 면적 조정·리뉴얼 우선 후보.\n   확인: 해당 ${subLabel}의 전용면적 대비 적정 평효율 벤치마크.` });
+    }
+  }
+
+  // (H) 신규점 안착도
+  if (newOnes.length > 0 && existSub.length >= 2) {
+    const newDpp = newOnes.filter((s) => s.dppSales > 0);
+    const medExistDpp = median(existSub.filter((s) => s.dppSales > 0).map((s) => s.dppSales));
+    if (newDpp.length > 0 && medExistDpp > 0) {
+      const worst = [...newDpp].sort((a, c) => a.dppSales - c.dppSales)[0];
+      const ratio = worst.dppSales / medExistDpp * 100;
+      if (ratio < 60) {
+        hyp.push({ label: "가설", text: `신규 ${worst.key} 일평당이 기존점 중앙값의 ${ratio.toFixed(0)}% — 아직 미안착. 출점 기여를 곧이곧대로 보면 성장 동력을 과대평가할 수 있음.\n   확인: 신규점 통상 안착 기간 대비 현재 위치.` });
+      }
+    }
+  }
+
+  // (I) 이익률 분산: 매출 아닌 수익성 편차
+  if (curSub.length >= 3) {
+    const gpms = curSub.map((s) => ({ s, gpm: s.s > 0 ? s.g / s.s * 100 : 0 }));
+    const hiG = [...gpms].sort((a, c) => c.gpm - a.gpm)[0];
+    const loG = [...gpms].sort((a, c) => a.gpm - c.gpm)[0];
+    const spread = hiG.gpm - loG.gpm;
+    if (spread >= 15) {
+      hyp.push({ label: "가설", text: `${subLabel}별 이익률 ${loG.gpm.toFixed(0)}%~${hiG.gpm.toFixed(0)}% (${spread.toFixed(0)}%p 차) — 매출이 아닌 수익성 편차. 저마진 ${loG.s.key}의 매입원가·할인·구성 점검.\n   확인: 저마진 ${subLabel}가 의도된 집객용인가 비효율인가.` });
     }
   }
 
   // (C) 매출-마진 디커플링 (유지)
   if (pgpm !== null && b.yoyPct >= 0 && b.gpm < pgpm) {
     hyp.push({ label: "가설", text: `저마진 성장이 포지션(볼륨·집객)인가, 운영(매입원가·구성) 문제인가.\n   확인: 동일 브랜드 ${subLabel}별 이익률 편차 / 카테고리 믹스.` });
+  }
+
+  // (J-3) 마진 포지셔닝: 또래 대비 고/저마진 ★
+  if (co && co.n >= 3 && co.medianGpm > 0 && b.s > 0) {
+    const md = b.gpm - co.medianGpm;
+    if (Math.abs(md) >= 5) {
+      hyp.push({ label: "가설", text: `이익률 ${b.gpm}% vs ${co.label} 또래 중앙 ${co.medianGpm.toFixed(1)}% (${md >= 0 ? "+" : ""}${md.toFixed(1)}%p) — ${md >= 0 ? "또래보다 고마진 포지션" : "구조적 저마진 포지션"}.\n   확인: ${md >= 0 ? "고마진을 지키는 진입장벽은 무엇인가" : "저마진이 카테고리 특성인가 협상력 문제인가"}.` });
+    }
   }
 
   // (D) 면적효율 격차 (유지)
@@ -172,13 +272,15 @@ export function diagnoseBrand(
   if (hyp.length === 0 && b.ps > 0) {
     hyp.push({ label: "해석", text: "2)·3) 분해로 변화가 대체로 설명됨 — 추가 가설 불필요." });
   }
+  // 과다 노출 방지: 우선순위 상위 6개까지만 노출
+  const hypShown = hyp.length > 6 ? hyp.slice(0, 6) : hyp;
 
   return {
     sections: [
       { title: "1) 관찰", lines: obs },
       { title: "2) 분해", lines: dec },
       { title: "3) 외부 대조", lines: ext },
-      { title: "4) 가설", lines: hyp },
+      { title: "4) 가설", lines: hypShown },
     ],
     asOf: opts.asOf,
   };

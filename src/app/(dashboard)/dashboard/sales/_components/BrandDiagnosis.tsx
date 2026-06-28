@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import type { OffRank } from "@/lib/sales/queries";
-import { diagnoseBrand, type Label, type ExternalSignal } from "@/lib/sales/diagnose";
+import { diagnoseBrand, type Label, type ExternalSignal, type CohortStat } from "@/lib/sales/diagnose";
 
 const LABEL_STYLE: Record<Label, string> = {
   사실: "bg-slate-200 text-slate-700",
@@ -21,16 +21,16 @@ interface BrandKeywordResult {
   categories: { name: string; count: number; pct: number }[];
 }
 
-export default function BrandDiagnosis({ row, periodLabel, asOf, subLabel = "지점" }: {
-  row: OffRank; periodLabel: string; asOf: string; subLabel?: string;
+export default function BrandDiagnosis({ row, periodLabel, asOf, subLabel = "지점", cohort = null }: {
+  row: OffRank; periodLabel: string; asOf: string; subLabel?: string; cohort?: CohortStat | null;
 }) {
   const [external, setExternal] = useState<ExternalSignal | null>(null);
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
   const diag = useMemo(
-    () => diagnoseBrand(row, { periodLabel, asOf, external, subLabel }),
-    [row, periodLabel, asOf, external, subLabel],
+    () => diagnoseBrand(row, { periodLabel, asOf, external, subLabel, cohort }),
+    [row, periodLabel, asOf, external, subLabel, cohort],
   );
 
   async function loadExternal() {

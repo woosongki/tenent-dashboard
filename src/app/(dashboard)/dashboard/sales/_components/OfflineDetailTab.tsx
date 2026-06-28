@@ -8,6 +8,7 @@ import BrandDiagnosis from "./BrandDiagnosis";
 import { pillBtn, inputCompact } from "@/lib/tokens";
 import { displayDivision, isHiddenCat, displayCat, catRank, divisionRank, OTHERS_KEY, OTHERS_LABEL } from "@/lib/sales/labels";
 import type { OffRank, OffOthers } from "@/lib/sales/queries";
+import type { CohortStat } from "@/lib/sales/diagnose";
 
 interface DivSummary { division: string; s: number; ps: number; g: number; gpm: number; yoyPct: number }
 interface CatSummary { cat: string; s: number; ps: number; g: number; gpm: number; yoyPct: number }
@@ -25,6 +26,25 @@ interface Props {
 }
 
 const won = (n: number) => n.toLocaleString("ko-KR");
+function median(xs: number[]): number {
+  if (xs.length === 0) return 0;
+  const s = [...xs].sort((a, b) => a - b);
+  const m = Math.floor(s.length / 2);
+  return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2;
+}
+/** 화면에 이미 로드된 형제 목록에서 코호트 통계 계산 (새 쿼리 0). 영업 중 3개 이상이라야 의미. */
+function buildCohort(list: OffRank[], label: string): CohortStat | null {
+  const valid = list.filter((r) => !r.closed && r.s > 0);
+  if (valid.length < 3) return null;
+  return {
+    label,
+    n: valid.length,
+    medianYoy: median(valid.filter((r) => r.ps > 0).map((r) => r.yoyPct)),
+    medianGpm: median(valid.map((r) => r.gpm)),
+    totalS: valid.reduce((t, r) => t + r.s, 0),
+    totalPs: valid.reduce((t, r) => t + r.ps, 0),
+  };
+}
 const eok = (n: number) => (n / 1e8).toFixed(1);
 // 백만 단위 (상세 브랜드/지점 금액 통일)
 const mil = (n: number) => Math.round(n / 1e6).toLocaleString("ko-KR");
@@ -181,6 +201,12 @@ export default function OfflineDetailTab(p: Props) {
 
   const visible = rows.slice(0, limit);
   const selLabel = chips.find((c) => c.type === sel.type && c.key === sel.key)?.label ?? sel.key;
+  // 또래(코호트): 선택 복종/부문의 형제 브랜드. 검색 중이면 비교 기준이 모호하므로 생략.
+  // (React Compiler 자동 메모이제이션 — 수동 useMemo 불필요)
+  const brandCohort = q ? null : buildCohort(catRows, selLabel);
+  // 지점 코호트: 같은 스코프의 형제 지점.
+  const stSelLabel = stSel ? (chips.find((c) => c.type === stSel.type && c.key === stSel.key)?.label ?? stSel.key) : "전 부문";
+  const storeCohort = stQ ? null : buildCohort(storeData, `${stSelLabel} 지점`);
 
   return (
     <div className="space-y-4">
@@ -249,7 +275,7 @@ export default function OfflineDetailTab(p: Props) {
               const id = `${r.division ?? ""}|${r.cat ?? ""}|${r.key}`;
               return (
                 <DetailRow key={id} id={id} row={r} rank={i + 1} firstColLabel="지점" left={!isOthersSel && brandLeft(r)}
-                  open={expanded === id} onToggle={onToggleBrand} sSort={sSort} sDir={sDir} toggleS={toggleS} monthCount={p.monthCount} periodLabel={p.periodLabel} />
+                  open={expanded === id} onToggle={onToggleBrand} sSort={sSort} sDir={sDir} toggleS={toggleS} monthCount={p.monthCount} periodLabel={p.periodLabel} cohort={brandCohort} />
               );
             })}
             {rows.length === 0 && <tr><td colSpan={7} className="px-3 py-8 text-center text-slate-400">데이터 없음</td></tr>}
@@ -307,7 +333,7 @@ export default function OfflineDetailTab(p: Props) {
           <tbody>
             {stVisible.map((st, i) => (
               <DetailRow key={st.key} id={st.key} row={st} rank={i + 1} firstColLabel="브랜드" left={!isOthersStSel && storeLeft(st)}
-                open={stExpanded === st.key} onToggle={onToggleStore} sSort={sSort} sDir={sDir} toggleS={toggleS} monthCount={p.monthCount} periodLabel={p.periodLabel} />
+                open={stExpanded === st.key} onToggle={onToggleStore} sSort={sSort} sDir={sDir} toggleS={toggleS} monthCount={p.monthCount} periodLabel={p.periodLabel} cohort={storeCohort} />
             ))}
             {storeRows.length === 0 && <tr><td colSpan={7} className="px-3 py-8 text-center text-slate-400">지점 데이터 없음</td></tr>}
           </tbody>
@@ -326,10 +352,10 @@ export default function OfflineDetailTab(p: Props) {
 
 // 드릴다운 하위 표 (브랜드→지점 / 지점→브랜드 공용)
 // 브랜드/지점 공용 행 (메모 — 펼침 토글 시 해당 행만 리렌더)
-const DetailRow = memo(function DetailRow({ row, id, rank, firstColLabel, open, onToggle, sSort, sDir, toggleS, left, monthCount, periodLabel }: {
+const DetailRow = memo(function DetailRow({ row, id, rank, firstColLabel, open, onToggle, sSort, sDir, toggleS, left, monthCount, periodLabel, cohort }: {
   row: OffRank; id: string; rank: number; firstColLabel: string; open: boolean;
   onToggle: (id: string) => void; sSort: SSortKey; sDir: Dir; toggleS: (k: SSortKey) => void; left?: boolean;
-  monthCount?: number; periodLabel: string;
+  monthCount?: number; periodLabel: string; cohort?: CohortStat | null;
 }) {
   const subTitle = firstColLabel === "지점" ? "지점별 상세" : "브랜드별 상세";
   const [showDiag, setShowDiag] = useState(false);
@@ -363,7 +389,7 @@ const DetailRow = memo(function DetailRow({ row, id, rank, firstColLabel, open, 
             </div>
             {showDiag && (
               <div className="mb-2.5">
-                <BrandDiagnosis row={row} periodLabel={periodLabel} asOf={periodLabel} subLabel={firstColLabel} />
+                <BrandDiagnosis row={row} periodLabel={periodLabel} asOf={periodLabel} subLabel={firstColLabel} cohort={cohort} />
               </div>
             )}
             <SubBreakdownTable bySub={row.bySub} firstColLabel={firstColLabel} sSort={sSort} sDir={sDir} toggleS={toggleS} monthCount={monthCount} />
