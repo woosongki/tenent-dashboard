@@ -60,7 +60,7 @@ function GradeSelect({ grade, disabled, onChange }: { grade: string; disabled: b
 }
 
 type BSort = "key" | "grade" | "subCount" | "s" | "gpm" | "yoyPct";
-type SSort = "store" | "bcd" | "total" | "s";
+type SSort = "store" | "bcd" | "diff" | "total" | "s";
 function Yo({ pct, prev }: { pct: number; prev?: number }) {
   if (prev !== undefined && prev === 0) return <span className="font-bold text-violet-600">신규</span>;
   const up = pct >= 0;
@@ -166,16 +166,29 @@ function BcdView({ d, canEdit, onSetGrade, pending, localGrades }: { d: BcdData;
   }, [scored]);
 
   // 지점별 — 각 지점의 등급 슬롯으로 BCD점수 + 입점 브랜드 등급 목록(드릴다운). 제외 브랜드는 빠짐
+  // 전년 BCD: 같은 지점에서 전년에 매출 있던 브랜드(=그때 입점) 기준 A+B 비율.
+  // diff = 올해 점수 − 전년 점수 (몇 점 올랐는지 직접 표시).
   const storeRows = useMemo(() => {
-    const m = new Map<string, { store: string; total: number; ab: number; s: number; items: { brand: string; grade: string; s: number }[] }>();
+    const m = new Map<string, { store: string; total: number; ab: number; prevTotal: number; prevAb: number; s: number; items: { brand: string; grade: string; s: number }[] }>();
     for (const b of scored) for (const sub of b.bySub ?? []) {
-      if (!(sub.s > 0)) continue;
-      const e = m.get(sub.key) ?? { store: sub.key, total: 0, ab: 0, s: 0, items: [] };
-      e.total++; e.s += sub.s; if (b.grade === "A" || b.grade === "B") e.ab++;
-      e.items.push({ brand: b.key, grade: b.grade, s: sub.s });
+      const isAB = b.grade === "A" || b.grade === "B";
+      const e = m.get(sub.key) ?? { store: sub.key, total: 0, ab: 0, prevTotal: 0, prevAb: 0, s: 0, items: [] };
+      if (sub.s > 0) {
+        e.total++; e.s += sub.s; if (isAB) e.ab++;
+        e.items.push({ brand: b.key, grade: b.grade, s: sub.s });
+      }
+      if (sub.ps > 0) {
+        e.prevTotal++; if (isAB) e.prevAb++;
+      }
       m.set(sub.key, e);
     }
-    let rows = [...m.values()].map((e) => ({ ...e, bcd: e.total ? e.ab / e.total * 100 : 0 }));
+    let rows = [...m.values()]
+      .filter((e) => e.total > 0)
+      .map((e) => {
+        const bcd = e.total ? e.ab / e.total * 100 : 0;
+        const prevBcd = e.prevTotal ? e.prevAb / e.prevTotal * 100 : 0;
+        return { ...e, bcd, prevBcd, diff: bcd - prevBcd };
+      });
     if (q) rows = rows.filter((r) => r.store.includes(q));
     const dir = sDir === "asc" ? 1 : -1;
     return rows.sort((a, b) => sSort === "store" ? a.store.localeCompare(b.store, "ko") * dir : ((a[sSort] as number) - (b[sSort] as number)) * dir);
@@ -326,12 +339,13 @@ function BcdView({ d, canEdit, onSetGrade, pending, localGrades }: { d: BcdData;
         </ScrollHint>
       ) : (
         <ScrollHint className="border-[2px] border-[#0a0a0a] bg-white">
-          <table className="w-full min-w-[420px] text-[12px]">
+          <table className="w-full min-w-[520px] text-[12px]">
             <thead className="bg-[#0a0a0a] text-white select-none">
               <tr>
                 <th className="px-3 py-2 text-left w-10">#</th>
                 <th className="px-3 py-2 text-left whitespace-nowrap cursor-pointer hover:bg-white/10" onClick={() => toggleS("store")}>지점{sArrow("store")}</th>
                 <th className="px-3 py-2 text-right whitespace-nowrap cursor-pointer hover:bg-white/10" onClick={() => toggleS("bcd")}>BCD점수{sArrow("bcd")}</th>
+                <th className="px-3 py-2 text-right whitespace-nowrap cursor-pointer hover:bg-white/10" onClick={() => toggleS("diff")} title="올해 − 전년 BCD점수">증감{sArrow("diff")}</th>
                 <th className="px-3 py-2 text-right whitespace-nowrap cursor-pointer hover:bg-white/10" onClick={() => toggleS("total")}>A+B / 전체{sArrow("total")}</th>
                 <th className="px-3 py-2 text-right whitespace-nowrap cursor-pointer hover:bg-white/10" onClick={() => toggleS("s")}>매출(백만){sArrow("s")}</th>
               </tr>
@@ -345,13 +359,18 @@ function BcdView({ d, canEdit, onSetGrade, pending, localGrades }: { d: BcdData;
                       <td className="px-3 py-2 font-mono text-slate-400"><span className="mr-1 text-[9px]">{open ? "▼" : "▶"}</span>{i + 1}</td>
                       <td className="px-3 py-2 font-bold text-[#0a0a0a]">{s.store}</td>
                       <td className="px-3 py-2 text-right font-mono font-bold">{s.bcd.toFixed(1)}</td>
+                      <td className="px-3 py-2 text-right font-mono font-bold whitespace-nowrap" title={`전년 ${s.prevBcd.toFixed(1)}점`}>
+                        {s.prevTotal === 0
+                          ? <span className="text-violet-600">신규</span>
+                          : <span style={{ color: s.diff >= 0 ? "#0d9e6e" : "#e53e3e" }}>{s.diff >= 0 ? "▲" : "▼"}{Math.abs(s.diff).toFixed(1)}</span>}
+                      </td>
                       <td className="px-3 py-2 text-right font-mono text-slate-500 whitespace-nowrap">{s.ab} / {s.total}</td>
                       <td className="px-3 py-2 text-right font-mono">{mil(s.s)}</td>
                     </tr>
                     {open && (
                       <tr className="bg-slate-50">
                         <td></td>
-                        <td colSpan={4} className="px-3 py-2">
+                        <td colSpan={5} className="px-3 py-2">
                           <div className="mb-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400">입점 브랜드 등급 ({s.items.length})</div>
                           <div className="flex flex-col gap-1">
                             {[...s.items].sort((a, b) => gradeIndex(a.grade) - gradeIndex(b.grade) || b.s - a.s).map((it) => (
@@ -368,7 +387,7 @@ function BcdView({ d, canEdit, onSetGrade, pending, localGrades }: { d: BcdData;
                   </Fragment>
                 );
               })}
-              {storeRows.length === 0 && <tr><td colSpan={5} className="px-3 py-8 text-center text-slate-400">결과 없음</td></tr>}
+              {storeRows.length === 0 && <tr><td colSpan={6} className="px-3 py-8 text-center text-slate-400">결과 없음</td></tr>}
             </tbody>
           </table>
           {storeRows.length > limit && (
