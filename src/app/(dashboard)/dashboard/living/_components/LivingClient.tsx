@@ -769,7 +769,6 @@ function Editor({ draft, setDraft, onSave, onDelete, onClose, pending, daily, on
   const st = popupStatus({ startDate: draft.startDate, endDate: draft.endDate });
   const s = STATUS_STYLE[st];
   const set = (patch: Partial<Draft>) => setDraft({ ...draft, ...patch });
-  const salesLocked = st !== "done";
   useEffect(() => {
     const h = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
     window.addEventListener("keydown", h);
@@ -802,10 +801,10 @@ function Editor({ draft, setDraft, onSave, onDelete, onClose, pending, daily, on
             placeholder="예: 리빙위크 연합 (단독이면 비워두기)" className={INP} />
           <datalist id="lp-coalitions">{coalitions.map((c) => <option key={c} value={c} />)}</datalist>
         </div>
-        <Field label={`실적 매출(백만)${salesLocked ? " · 실행 후 입력" : ""}`}>
-          <input type="number" value={draft.sales ?? ""} disabled={salesLocked}
+        <Field label="실적 매출(백만)">
+          <input type="number" value={draft.sales ?? ""}
             onChange={(e) => set({ sales: e.target.value === "" ? null : Number(e.target.value) })}
-            placeholder={salesLocked ? "계획 단계" : "예: 31"} className={`${INP} ${salesLocked ? "opacity-50" : ""}`} />
+            placeholder="예: 31" className={INP} />
         </Field>
         <Field label="메모"><input value={draft.note ?? ""} onChange={(e) => set({ note: e.target.value })} className={INP} /></Field>
       </div>
