@@ -69,15 +69,15 @@ export default function MeetingsClient({ contacts, recent: initialRecent }: Prop
       .slice(0, 6);
   }, [brand, contacts]);
 
-  // DART 후보 fetch (300ms debounce, 3자 이상)
+  // DART 후보 fetch (300ms debounce, 2자 이상)
   useEffect(() => {
     if (candDebounceRef.current) clearTimeout(candDebounceRef.current);
     const q = brand.trim();
-    if (q.length < 2) {
-      setCandidates([]);
-      return;
-    }
     candDebounceRef.current = setTimeout(async () => {
+      if (q.length < 2) {
+        setCandidates([]);
+        return;
+      }
       setCandLoading(true);
       try {
         const res = await fetch(`/api/meetings/candidates?q=${encodeURIComponent(q)}`);
