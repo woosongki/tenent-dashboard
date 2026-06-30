@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import BriefCard, { type BriefRow } from "./BriefCard";
+import Stage2Section from "./Stage2Section";
 
 export interface ContactSeed {
   brand: string;
@@ -316,12 +317,15 @@ export default function MeetingsClient({ contacts, recent: initialRecent }: Prop
 
         {/* 결과 */}
         {row && (
-          <BriefCard
-            row={row}
-            cached={cached}
-            refreshing={loading}
-            onRefresh={() => runBrief(row.brand, true, row.corp_code)}
-          />
+          <>
+            <BriefCard
+              row={row}
+              cached={cached}
+              refreshing={loading}
+              onRefresh={() => runBrief(row.brand, true, row.corp_code)}
+            />
+            <Stage2Section row={row} onUpdate={(next) => setRow(next)} />
+          </>
         )}
 
         {/* 빈 상태 */}

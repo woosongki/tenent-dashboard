@@ -17,6 +17,7 @@ interface BriefRow {
   stage: string;
   brief_payload: unknown;
   brief_summary: string | null;
+  meeting_payload: unknown;
   created_by: string | null;
   created_at: string;
   updated_at: string;
@@ -68,7 +69,7 @@ export async function POST(req: NextRequest) {
     const cutoff = new Date(Date.now() - CACHE_HOURS * 60 * 60 * 1000).toISOString();
     const { data: cached } = await supabase
       .from("vendor_meetings")
-      .select("id,brand,company,corp_code,stage,brief_payload,brief_summary,created_by,created_at,updated_at")
+      .select("id,brand,company,corp_code,stage,brief_payload,brief_summary,meeting_payload,created_by,created_at,updated_at")
       .eq("organization_id", orgId)
       .eq("brand", brand)
       .gte("created_at", cutoff)
@@ -96,7 +97,7 @@ export async function POST(req: NextRequest) {
       brief_summary: summary,
       created_by: user.id,
     })
-    .select("id,brand,company,corp_code,stage,brief_payload,brief_summary,created_by,created_at,updated_at")
+    .select("id,brand,company,corp_code,stage,brief_payload,brief_summary,meeting_payload,created_by,created_at,updated_at")
     .single();
 
   if (error) {
@@ -123,7 +124,7 @@ export async function GET(req: NextRequest) {
   const supabase = await createClient();
   let query = supabase
     .from("vendor_meetings")
-    .select("id,brand,company,corp_code,stage,brief_payload,brief_summary,created_by,created_at,updated_at")
+    .select("id,brand,company,corp_code,stage,brief_payload,brief_summary,meeting_payload,created_by,created_at,updated_at")
     .eq("organization_id", orgId)
     .order("created_at", { ascending: false })
     .limit(limit);

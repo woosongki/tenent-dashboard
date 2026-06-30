@@ -23,6 +23,19 @@ export interface BriefPayload {
   fetchedAt: string;
 }
 
+export interface MeetingQA {
+  id: string;
+  category?: string;
+  q: string;
+  a: string;
+}
+
+export interface MeetingPayload {
+  questions: MeetingQA[];
+  memo: string;
+  completedAt: string | null;
+}
+
 export interface BriefRow {
   id: string;
   brand: string;
@@ -31,6 +44,7 @@ export interface BriefRow {
   stage: string;
   brief_payload: BriefPayload;
   brief_summary: string | null;
+  meeting_payload: MeetingPayload | null;
   created_by: string | null;
   created_at: string;
   updated_at: string;
