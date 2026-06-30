@@ -109,6 +109,14 @@ function IconSofa() {
     </svg>
   );
 }
+function IconHandshake() {
+  return (
+    <svg fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M3 10.5l3-3 4 3 2-2 4 2 3-3M3 14l3-3 4 3 2-2 4 2 3-3M9 17l3-3 3 3" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M5 21h14" />
+    </svg>
+  );
+}
 function IconLogout() {
   return (
     <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -216,6 +224,12 @@ const NAV: NavGroup[] = [
           { href: "/dashboard/homeplus?layer=hanaromart",      label: "하나로마트 155점",    layer: "hanaromart", dotColor: "#2d6a4f", group: "마트" },
         ],
       },
+    ],
+  },
+  {
+    section: "미팅",
+    items: [
+      { href: "/dashboard/meetings", label: "업체미팅", icon: <IconHandshake /> },
     ],
   },
   {

@@ -18,6 +18,7 @@ export const CONTROLLABLE_MENUS: MenuItem[] = [
   { key: "brand-keyword", label: "브랜드 키워드",  href: "/dashboard/brand-keyword" },
   { key: "brand-fit",     label: "브랜드 적합도",  href: "/dashboard/brand-fit" },
   { key: "homeplus",      label: "리테일 지도",    href: "/dashboard/homeplus" },
+  { key: "meetings",      label: "업체미팅",       href: "/dashboard/meetings" },
 ];
 
 const VALID_KEYS = new Set(CONTROLLABLE_MENUS.map((m) => m.key));
