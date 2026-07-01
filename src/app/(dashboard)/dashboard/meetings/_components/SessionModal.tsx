@@ -204,7 +204,7 @@ export default function SessionModal({ meetingId, nextIndex, initial, onClose, o
                     onClick={() => fileRef.current?.click()}
                     disabled={saving}
                     className="border-[2px] border-[#0a0a0a] bg-white px-2.5 py-1 text-[11px] font-extrabold hover:bg-yellow-100 disabled:opacity-50"
-                    title="TXT · CSV · XLSX 지원 (PPT·PDF·녹음은 안내)"
+                    title="TXT·CSV·XLSX·PPTX·DOCX·PDF 지원 (구형 .ppt/.doc·녹음은 안내)"
                   >
                     📎 파일 불러오기
                   </button>
@@ -216,7 +216,7 @@ export default function SessionModal({ meetingId, nextIndex, initial, onClose, o
                 onDragOver={(e) => { e.preventDefault(); if (!saving) setDragOver(true); }}
                 onDragLeave={() => setDragOver(false)}
                 onDrop={(e) => { e.preventDefault(); setDragOver(false); const f = e.dataTransfer.files?.[0]; if (f) importFile(f); }}
-                placeholder={`TXT · 메모장 · 손메모 타이핑 어떤 것이든\n\n· 파일 불러오기: TXT · CSV · XLSX (또는 여기로 드래그)\n· 문장 단위(마침표/개행)로 자동 분리\n· "필요", "어렵다", "다음에", "?" 같은 마커로 언맷니즈/질문/액션 자동 추출`}
+                placeholder={`TXT · 메모장 · 손메모 타이핑 어떤 것이든\n\n· 파일 불러오기: TXT·CSV·XLSX·PPTX·DOCX·PDF (또는 여기로 드래그)\n· 문장 단위(마침표/개행)로 자동 분리\n· "필요", "어렵다", "다음에", "?" 같은 마커로 언맷니즈/질문/액션 자동 추출`}
                 disabled={saving}
                 className={`flex-1 resize-none border-[2px] bg-white p-3 font-mono text-[12.5px] leading-relaxed text-[#0a0a0a] focus:outline-none focus:ring-2 focus:ring-yellow-300 disabled:opacity-60 ${dragOver ? "border-yellow-500 ring-2 ring-yellow-300" : "border-[#0a0a0a]"}`}
               />
