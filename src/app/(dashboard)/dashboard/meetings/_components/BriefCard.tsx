@@ -9,6 +9,7 @@ import type {
   SearchTrend,
   SourceReliability,
 } from "@/lib/verify/types";
+import type { AnalysisResult } from "@/lib/verify/analyzer";
 
 export interface BriefPayload {
   brand: string;
@@ -45,6 +46,8 @@ export interface BriefRow {
   brief_payload: BriefPayload;
   brief_summary: string | null;
   meeting_payload: MeetingPayload | null;
+  analysis?: AnalysisResult | null;      // AI 심층분석 캐시 (on-demand)
+  analyzed_at?: string | null;
   created_by: string | null;
   created_at: string;
   updated_at: string;

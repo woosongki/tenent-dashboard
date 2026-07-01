@@ -88,13 +88,6 @@ function IconTarget() {
     </svg>
   );
 }
-function IconVerify() {
-  return (
-    <svg fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
-    </svg>
-  );
-}
 function IconKeyword() {
   return (
     <svg fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
@@ -185,7 +178,7 @@ const NAV: NavGroup[] = [
       { href: "/dashboard/living",    label: "리빙 주제전",    icon: <IconSofa /> },
       { href: "/dashboard/floorplans",label: "전점도면",       icon: <IconBlueprint /> },
       { href: "/dashboard/branch",    label: "상권분석",       icon: <IconMap /> },
-      { href: "/dashboard/verify",    label: "컨텐츠 검증",    icon: <IconVerify /> },
+      // 컨텐츠 검증(/dashboard/verify)은 업체미팅 'AI 심층분석'으로 흡수 → 사이드바에서 은퇴(라우트는 유지).
       { href: "/dashboard/brand-keyword", label: "브랜드 키워드", icon: <IconKeyword /> },
       { href: "/dashboard/brand-fit", label: "브랜드 적합도",  icon: <IconTarget /> },
       {

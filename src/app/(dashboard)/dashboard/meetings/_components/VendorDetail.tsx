@@ -5,6 +5,7 @@ import { useMemo, useState } from "react";
 import type { BriefRow, MeetingPayload } from "./BriefCard";
 import BriefCard from "./BriefCard";
 import AccumulatedInsights from "./AccumulatedInsights";
+import AnalysisPanel from "./AnalysisPanel";
 import SessionHistory from "./SessionHistory";
 import SessionModal from "./SessionModal";
 import type { ExtractedSession } from "@/lib/meetings/extract";
@@ -28,9 +29,10 @@ export interface VendorSessionRow {
 interface Props {
   row: VendorRow;
   sessions: VendorSessionRow[];
+  canAnalyze?: boolean;
 }
 
-export default function VendorDetail({ row: initialRow, sessions: initial }: Props) {
+export default function VendorDetail({ row: initialRow, sessions: initial, canAnalyze = false }: Props) {
   const [row, setRow] = useState<VendorRow>(initialRow);
   const [sessions, setSessions] = useState<VendorSessionRow[]>(initial);
   const [modalOpen, setModalOpen] = useState(false);
@@ -136,7 +138,15 @@ export default function VendorDetail({ row: initialRow, sessions: initial }: Pro
           meetingId={row.id}
         />
 
-        {/* ── 3. DART 브리프 (기본 접힘, 항상 최하단) ── */}
+        {/* ── 3. AI 심층분석 (on-demand · 평소 비용 0) ── */}
+        <AnalysisPanel
+          meetingId={row.id}
+          canAnalyze={canAnalyze}
+          initial={row.analysis ?? null}
+          analyzedAt={row.analyzed_at ?? null}
+        />
+
+        {/* ── 4. DART 브리프 (기본 접힘, 항상 최하단) ── */}
         <section className="brutal bg-white">
           <button
             type="button"

@@ -1,6 +1,7 @@
 import { redirect, notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
+import { getSessionContext } from "@/lib/auth/session";
 import VendorDetail, { type VendorSessionRow, type VendorRow } from "../_components/VendorDetail";
 
 export const metadata: Metadata = { title: "업체미팅 · 상세 — lifestyle" };
@@ -13,12 +14,13 @@ export default async function MeetingDetailPage({
   const { id } = await params;
 
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const { user, role } = await getSessionContext();
   if (!user) redirect("/login");
+  const canAnalyze = role === "owner" || role === "admin";   // AI 심층분석(LLM) 실행 권한
 
   const { data: row } = await supabase
     .from("vendor_meetings")
-    .select("id,brand,company,corp_code,stage,brief_payload,brief_summary,meeting_payload,created_by,created_at,updated_at")
+    .select("id,brand,company,corp_code,stage,brief_payload,brief_summary,meeting_payload,analysis,analyzed_at,created_by,created_at,updated_at")
     .eq("id", id)
     .maybeSingle();
 
@@ -34,6 +36,7 @@ export default async function MeetingDetailPage({
     <VendorDetail
       row={row as VendorRow}
       sessions={(sessions ?? []) as VendorSessionRow[]}
+      canAnalyze={canAnalyze}
     />
   );
 }
