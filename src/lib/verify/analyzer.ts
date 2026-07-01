@@ -142,6 +142,7 @@ export async function analyzeWithClaude(params: {
   internalHistory?: { attraction: AttractionMatch[]; vendor: VendorMatch[] };
   salesBenchmark?: SalesBenchmark | null;
   searchTrend?: SearchTrend | null;
+  meetingContext?: string;   // 업체미팅 N차 대화 요약(언맷니즈·질문·액션) — 있으면 외부 데이터와 교차 분석
 }): Promise<AnalysisResult> {
   const ratios = calcRatios(params.financials);
   const ratioStr = [
@@ -197,13 +198,17 @@ ${formatSalesBenchmark(params.salesBenchmark)}
 
 [시장 신호]
 ${formatTrend(params.searchTrend)}
-
+${params.meetingContext ? `
+[미팅 대화 요약 — 실제 미팅에서 파악된 니즈·질문·액션]
+${params.meetingContext}
+` : ""}
 위 정보를 분석하여 submit_brief 도구를 호출하세요.
 - riskFlags: 최대 5개, 심각도 순
 - focusAreas: 7개 카테고리 중 유의미한 것 최대 5개
 - questions: 10~15개, 카테고리 균형 있게
 - gradeReason: 자체 매출 데이터 / 검색 트렌드 / 내부 입점 이력이 있으면 등급 근거에 인용
-- executiveSummary: 내부 데이터로 확인된 사실(이미 입점 중, 자체 매출 등)은 명확히 반영`;
+- executiveSummary: 내부 데이터로 확인된 사실(이미 입점 중, 자체 매출 등)은 명확히 반영${params.meetingContext ? `
+- 미팅에서 드러난 언맷니즈·요구·우려를 리스크·집중검토·질문·등급 근거에 반드시 교차 반영(외부 재무/뉴스와 연결). 이미 나온 질문은 중복하지 말고 심화 질문을 제안` : ""}`;
 
   const client = new Anthropic({
     apiKey: process.env.ANTHROPIC_API_KEY,

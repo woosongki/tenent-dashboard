@@ -78,8 +78,8 @@ export default function AnalysisPanel({
       {!analysis && !err && (
         <div className="border-t-[2px] border-[#0a0a0a]/15 px-5 py-6 text-[12.5px] text-[#0a0a0a]/60">
           {canAnalyze
-            ? "저장된 DART 사전 자료를 바탕으로 Claude가 등급·리스크·집중검토·미팅 질문을 정리합니다. 버튼을 눌러야만 실행됩니다(1회 호출 후 캐시)."
-            : "아직 AI 분석이 없습니다. owner/admin이 실행하면 이 자리에 등급·리스크·미팅 질문이 표시됩니다."}
+            ? "DART 재무·공시·최대주주 + 뉴스·검색트렌드 + 이랜드 내부 입점이력·자체 매출 벤치마크 + N차 미팅 대화(언맷니즈·질문)를 Claude가 교차 분석해 등급·리스크·집중검토·심화 질문을 도출합니다. 버튼을 눌러야만 실행됩니다(1회 호출 후 캐시)."
+            : "아직 AI 분석이 없습니다. owner/admin이 실행하면 이 자리에 등급·리스크·집중검토·미팅 질문이 표시됩니다."}
         </div>
       )}
 
