@@ -44,6 +44,15 @@ const UNMET_MARKERS = [
   /문제(가|는|입|였|다)/, /이슈(가|는|였|입)/, /불편/,
   /안\s*(된다|되고|되네|되어|돼|되)/, /못\s*(하|했|해)/,
   /아쉬(움|워|운|웠)/, /한계/,
+  // ── 확장(2026-07): 흔히 놓치던 언맷 표현 ──
+  /느리|느려|느린/, /비싸|비쌈/, /부담(이|을|스럽|된|되|감|스)/,
+  /복잡(하|해|한|함)/, /번거(롭|로)/, /귀찮/,
+  /걱정|우려/, /떨어(지|져|진)|줄어(들|든|서|요)|하락|감소/,
+  /막히|막혀|막힌|지연|늦어(지|진|서)?|늦는/,
+  /누락|빠지(는|고|네|어)|빠졌/, /오류|에러|버그|장애/,
+  /불만/, /(개선|보완)\s*(이|가|필요|해야|했으면|되)/,
+  /(면|으면)\s*좋(겠|을)/, /좋을\s*텐데/,
+  /쉽지\s*않|여의치\s*않|곤란/,
 ];
 const QUESTION_MARKERS = [
   /\?\s*$/, /인가요\s*[?？]?$/, /입니까\s*[?？]?$/, /할까요/, /하나요/,
@@ -78,9 +87,28 @@ export function splitSentences(raw: string): string[] {
 function categorize(sentence: string): SessionCategory {
   if (QUOTE_MARKERS.some((r) => r.test(sentence))) return "quote";
   if (ACTION_MARKERS.some((r) => r.test(sentence))) return "action";
+  // 명시적 물음표 종결은 언맷보다 우선 — "개선이 필요한가요?"를 언맷 아닌 질문으로.
+  if (/[?？]\s*$/.test(sentence)) return "question";
   if (UNMET_MARKERS.some((r) => r.test(sentence))) return "unmet";
   if (QUESTION_MARKERS.some((r) => r.test(sentence))) return "question";
   return "fact";
+}
+
+// 액션 문장에서 기한 힌트 추출 (룰 기반 — 없으면 undefined).
+const DUE_PATTERNS: RegExp[] = [
+  /(이번\s*주|다음\s*주|금주|차주|월말|월초|연말|분기\s*말|다음\s*미팅|[0-9]{1,2}\s*월(\s*[0-9]{1,2}\s*일)?|[0-9]{1,2}\/[0-9]{1,2}|[월화수목금토일]요일)\s*까지/,
+  /다음\s*미팅/,
+  /(다음|차)\s*주/, /이번\s*주/, /금주/,
+  /(다음|이번)\s*(달|분기)/,
+  /[0-9]{1,2}\s*월\s*[0-9]{1,2}\s*일/, /[0-9]{1,2}\s*월(?![0-9])/, /[0-9]{1,2}\/[0-9]{1,2}/,
+  /[월화수목금토일]요일/,
+];
+function parseDue(text: string): string | undefined {
+  for (const p of DUE_PATTERNS) {
+    const m = text.match(p);
+    if (m) return m[0].replace(/\s+/g, " ").trim();
+  }
+  return undefined;
 }
 
 // ── 명사류 키워드 뽑기 ─────────────────────────────────────
@@ -143,8 +171,8 @@ export function extractSession(rawText: string): ExtractedSession {
 // ── 여러 세션 크로스 집계 (Accumulated Insights) ───────────
 export interface AccumulatedInsights {
   recurringNeeds: { text: string; sessions: number[] }[];   // 여러 세션에서 반복된 언맷니즈
-  openQuestions: { text: string; sessionIndex: number }[];  // 최신 5개 질문
-  actionLog: { text: string; sessionIndex: number; heldAt: string }[]; // 액션 타임라인
+  openQuestions: { text: string; sessionIndex: number }[];  // 최신 질문(중복 제거)
+  actionLog: { text: string; sessionIndex: number; heldAt: string; due?: string }[]; // 액션 타임라인(기한 힌트 포함)
   topKeywords: { word: string; count: number }[];           // 전체 상위 키워드
 }
 
@@ -165,8 +193,10 @@ function norm(text: string): string {
 export function aggregateSessions(sessions: SessionForAggregate[]): AccumulatedInsights {
   const needBuckets = new Map<string, { text: string; sessions: Set<number> }>();
   const openQuestions: { text: string; sessionIndex: number }[] = [];
-  const actionLog: { text: string; sessionIndex: number; heldAt: string }[] = [];
+  const actionLog: { text: string; sessionIndex: number; heldAt: string; due?: string }[] = [];
   const kwCount = new Map<string, number>();
+  const seenQ = new Set<string>();   // 질문 중복 제거
+  const seenA = new Set<string>();   // 액션 중복 제거
 
   // 최신 세션이 먼저 오도록 정렬 (session_index desc).
   const sorted = [...sessions].sort((a, b) => b.session_index - a.session_index);
@@ -184,15 +214,21 @@ export function aggregateSessions(sessions: SessionForAggregate[]): AccumulatedI
       needBuckets.set(key, b);
     }
 
-    // 미해결 질문 — 최신 세션부터 순서대로 담기 (최대 8개).
+    // 미해결 질문 — 최신 세션부터, 중복 제거, 최대 8개.
     for (const q of ex.questions) {
       if (openQuestions.length >= 8) break;
+      const qk = norm(q.text).slice(0, 40);
+      if (qk && seenQ.has(qk)) continue;
+      if (qk) seenQ.add(qk);
       openQuestions.push({ text: q.text, sessionIndex: s.session_index });
     }
 
-    // 액션 — 전부 유지, 최신 세션 먼저.
+    // 액션 — 최신 세션 먼저, 동일 문장 중복 제거, 기한 힌트 파싱.
     for (const a of ex.actionItems) {
-      actionLog.push({ text: a.text, sessionIndex: s.session_index, heldAt: s.held_at });
+      const ak = norm(a.text).slice(0, 50);
+      if (ak && seenA.has(ak)) continue;
+      if (ak) seenA.add(ak);
+      actionLog.push({ text: a.text, sessionIndex: s.session_index, heldAt: s.held_at, due: parseDue(a.text) });
     }
 
     // 키워드 누적.

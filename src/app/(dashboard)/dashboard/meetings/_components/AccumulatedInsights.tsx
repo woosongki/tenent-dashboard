@@ -111,6 +111,11 @@ export default function AccumulatedInsights({ insights, sessionCount }: Props) {
                   <span className="font-mono text-[9.5px] text-[#0a0a0a]/55 mr-1.5">
                     {a.sessionIndex}차·{a.heldAt.slice(5)}
                   </span>
+                  {a.due && (
+                    <span className="mr-1.5 inline-block border-[1.5px] border-[#0a0a0a] bg-white px-1 py-0 text-[9.5px] font-extrabold align-middle">
+                      ⏱ {a.due}
+                    </span>
+                  )}
                   <span className="font-bold">{a.text}</span>
                 </li>
               ))}
