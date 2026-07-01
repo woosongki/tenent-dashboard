@@ -3,6 +3,8 @@ import { headers } from "next/headers";
 import { getSessionContext } from "@/lib/auth/session";
 import { menuKeyForPath } from "@/lib/nav";
 import AppShell from "@/components/layout/AppShell";
+import { createClient } from "@/lib/supabase/server";
+import { getRecentMeetings, type RecentMeetingItem } from "@/lib/meetings/recent";
 
 export default async function DashboardLayout({
   children,
@@ -28,8 +30,30 @@ export default async function DashboardLayout({
 
   const displayName = user.user_metadata?.full_name ?? user.email ?? "";
 
+  // 사이드바 · 업체미팅 항상 펼침용 — 최근 세션 기준 상위 25건
+  let recentMeetings: RecentMeetingItem[] = [];
+  const meetingsHidden = effectiveHidden.includes("meetings");
+  if (!meetingsHidden) {
+    const supabase = await createClient();
+    const { data: mm } = await supabase
+      .from("organization_members")
+      .select("organization_id")
+      .eq("user_id", user.id)
+      .limit(1)
+      .maybeSingle();
+    const orgId = (mm?.organization_id as string | undefined) ?? null;
+    if (orgId) {
+      recentMeetings = await getRecentMeetings(orgId, 25);
+    }
+  }
+
   return (
-    <AppShell userEmail={displayName} role={role} hiddenMenus={effectiveHidden}>
+    <AppShell
+      userEmail={displayName}
+      role={role}
+      hiddenMenus={effectiveHidden}
+      recentMeetings={recentMeetings}
+    >
       {children}
     </AppShell>
   );

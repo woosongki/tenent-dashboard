@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { signOutAction } from "@/app/(auth)/login/_actions/auth";
 import { SIDEBAR_THEMES, type SidebarTheme } from "@/lib/tokens";
 import { menuKeyForPath } from "@/lib/nav";
 import NotionSyncButton from "@/components/ui/NotionSyncButton";
+import type { RecentMeetingItem } from "@/lib/meetings/recent";
 
 // ── SVG 아이콘 ────────────────────────────────────────────────
 function IconHome() {
@@ -266,6 +267,7 @@ interface Props {
   userEmail: string;
   role?: Role | null;
   hiddenMenus?: string[];
+  recentMeetings?: RecentMeetingItem[];
   onClose?: () => void;
   collapsed?: boolean;
   onToggleCollapse?: () => void;
@@ -276,7 +278,7 @@ interface Props {
 }
 
 export default function Sidebar({
-  userEmail, role = null, hiddenMenus = [], onClose, collapsed = false, onToggleCollapse,
+  userEmail, role = null, hiddenMenus = [], recentMeetings = [], onClose, collapsed = false, onToggleCollapse,
   theme = "dark", onToggleTheme,
   reportMode = false, onToggleReportMode,
 }: Props) {
@@ -284,12 +286,38 @@ export default function Sidebar({
   const searchParams = useSearchParams();
   const currentLayer = searchParams?.get("layer") ?? "";
   const t = SIDEBAR_THEMES[theme];
+
+  // 정적 NAV에 "업체미팅 children (최근 미팅 리스트 + 새 업체)" 동적 주입.
+  // recentMeetings는 서버 layout에서 최근 세션 순으로 정렬됨.
+  const NAV_DYNAMIC = useMemo<NavGroup[]>(() => {
+    return NAV.map((g) => ({
+      ...g,
+      items: g.items.map((it) => {
+        if (it.href !== "/dashboard/meetings") return it;
+        // group을 지정하지 않아 접힘 헤더 없이 평평한 리스트로 렌더.
+        const meetingChildren: NavChild[] = [
+          { href: "/dashboard/meetings", label: "+ 새 업체" },
+          ...recentMeetings.map((m) => {
+            const badge = m.sessionCount > 0 ? ` · ${m.sessionCount}차` : "";
+            return {
+              href: `/dashboard/meetings/${m.id}`,
+              label: `${m.brand}${badge}`,
+            } as NavChild;
+          }),
+        ];
+        return { ...it, children: meetingChildren };
+      }),
+    }));
+  }, [recentMeetings]);
+
   // 펼쳐진 부모 메뉴 추적. 현재 경로 기준 자동 펼침 + 클릭 토글.
+  // 업체미팅은 항상 펼침(사용자 명시적으로 접을 수도 있게 초기 open만 강제).
   const [expanded, setExpanded] = useState<Set<string>>(() => {
     const initial = new Set<string>();
-    NAV.forEach((g) => g.items.forEach((it) => {
+    NAV_DYNAMIC.forEach((g) => g.items.forEach((it) => {
       if (it.children && pathname.startsWith(it.href)) initial.add(it.href);
     }));
+    initial.add("/dashboard/meetings");
     return initial;
   });
 
@@ -298,12 +326,15 @@ export default function Sidebar({
     return pathname.startsWith(href);
   }
   function isChildActive(parentHref: string, child: NavChild) {
-    // parentHref와 path가 일치해야 하며, layer 쿼리도 매칭되어야 함
-    if (!pathname.startsWith(parentHref)) return false;
-    const expectedLayer = child.layer ?? "";
-    // child가 기본(layer 없음) 인 경우엔 layer 쿼리가 비어있을 때만 active
-    if (!expectedLayer) return currentLayer === "" || currentLayer === "homeplus";
-    return currentLayer === expectedLayer;
+    // 리테일 지도: layer 쿼리 기준
+    if (parentHref === "/dashboard/homeplus") {
+      if (!pathname.startsWith(parentHref)) return false;
+      const expectedLayer = child.layer ?? "";
+      if (!expectedLayer) return currentLayer === "" || currentLayer === "homeplus";
+      return currentLayer === expectedLayer;
+    }
+    // 업체미팅 등 나머지: pathname 정확 매칭
+    return pathname === child.href;
   }
   function toggleExpanded(href: string) {
     setExpanded((prev) => {
@@ -370,7 +401,7 @@ export default function Sidebar({
 
       {/* ── 네비게이션 ── */}
       <nav className="flex-1 overflow-y-auto px-2 py-3">
-        {NAV.map((group) => {
+        {NAV_DYNAMIC.map((group) => {
           // role 제한 + 사용자별 숨김(hidden_menus) 반영 — 그룹이 통째로 비면 섹션 자체 숨김
           const items = group.items.filter((it) => {
             if (it.roles && !(role && it.roles.includes(role))) return false;
