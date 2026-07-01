@@ -168,6 +168,32 @@ export function extractSession(rawText: string): ExtractedSession {
   return { questions, unmetNeeds, actionItems, quotes, facts, keywords };
 }
 
+// ── 수동 편집된 extracted 정제 ───────────────────────────────
+// 사용자가 항목을 추가/수정/삭제한 뒤 저장할 때, 텍스트만 신뢰하고 키워드·집계는 재계산.
+export function sanitizeExtracted(input: Partial<ExtractedSession> | null | undefined): ExtractedSession {
+  const build = (arr: unknown, category: SessionCategory): ExtractedLine[] =>
+    (Array.isArray(arr) ? arr : [])
+      .map((l) => {
+        const text = String((l as { text?: unknown })?.text ?? "").trim().slice(0, 1000);
+        return text ? { text, category, keywords: tokenizeKeywords(text) } : null;
+      })
+      .filter((l): l is ExtractedLine => l !== null)
+      .slice(0, 300);
+  const questions = build(input?.questions, "question");
+  const unmetNeeds = build(input?.unmetNeeds, "unmet");
+  const actionItems = build(input?.actionItems, "action");
+  const quotes = build(input?.quotes, "quote");
+  const facts = build(input?.facts, "fact");
+  const wc = new Map<string, number>();
+  for (const l of [...questions, ...unmetNeeds, ...actionItems, ...quotes, ...facts])
+    l.keywords.forEach((k) => wc.set(k, (wc.get(k) ?? 0) + 1));
+  const keywords = [...wc.entries()]
+    .map(([word, count]) => ({ word, count }))
+    .sort((a, b) => b.count - a.count || a.word.localeCompare(b.word))
+    .slice(0, 15);
+  return { questions, unmetNeeds, actionItems, quotes, facts, keywords };
+}
+
 // ── 여러 세션 크로스 집계 (Accumulated Insights) ───────────
 export interface AccumulatedInsights {
   recurringNeeds: { text: string; sessions: number[] }[];   // 여러 세션에서 반복된 언맷니즈

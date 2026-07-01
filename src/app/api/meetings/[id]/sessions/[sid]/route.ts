@@ -1,15 +1,16 @@
 import type { NextRequest } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { getSessionContext } from "@/lib/auth/session";
-import { extractSession } from "@/lib/meetings/extract";
+import { extractSession, sanitizeExtracted, type ExtractedSession } from "@/lib/meetings/extract";
 
 export const runtime = "nodejs";
 export const maxDuration = 15;
 
 /**
  * PATCH /api/meetings/:id/sessions/:sid
- * body: { rawText?, heldAt?, title? }
- * rawText 변경 시 extracted 재계산.
+ * body: { rawText?, heldAt?, title?, extracted? }
+ * - rawText 변경 시 extracted 재계산.
+ * - extracted 만 오면(원문 미변경) 수동 편집분을 정제해 저장(항목 추가/수정/삭제).
  */
 export async function PATCH(
   req: NextRequest,
@@ -25,6 +26,7 @@ export async function PATCH(
     rawText?: string;
     heldAt?: string;
     title?: string;
+    extracted?: Partial<ExtractedSession>;
   };
 
   const patch: Record<string, unknown> = {};
@@ -34,6 +36,9 @@ export async function PATCH(
     if (rawText.length > 50_000) return Response.json({ error: "원문이 너무 깁니다" }, { status: 413 });
     patch.raw_text = rawText;
     patch.extracted = extractSession(rawText);
+  } else if (body.extracted && typeof body.extracted === "object") {
+    // 원문은 그대로 두고, 수동 편집한 추출 항목만 정제 저장.
+    patch.extracted = sanitizeExtracted(body.extracted);
   }
   if (typeof body.title === "string") patch.title = body.title.trim().slice(0, 120) || null;
   if (typeof body.heldAt === "string" && /^\d{4}-\d{2}-\d{2}$/.test(body.heldAt)) {

@@ -135,6 +135,7 @@ export default function VendorDetail({ row: initialRow, sessions: initial, canAn
           sessions={sessions}
           onEdit={(s) => setEditingSession(s)}
           onDelete={removeSession}
+          onUpdate={replaceSession}
           meetingId={row.id}
         />
 

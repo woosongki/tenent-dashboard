@@ -50,6 +50,8 @@ export async function PATCH(req: NextRequest, ctx: RouteContext<"/api/meetings/[
     stage?: Stage;
     meeting_payload?: Partial<MeetingPayload>;
     autoSeed?: boolean;
+    brand?: string;
+    company?: string;
   };
 
   const supabase = await createClient();
@@ -65,7 +67,11 @@ export async function PATCH(req: NextRequest, ctx: RouteContext<"/api/meetings/[
   if (!existing) return Response.json({ error: "찾을 수 없음" }, { status: 404 });
 
   // ── 업데이트 patch 조립 ─────────────────────────────────────
-  const patch: { stage?: Stage; meeting_payload?: MeetingPayload } = {};
+  const patch: { stage?: Stage; meeting_payload?: MeetingPayload; brand?: string; company?: string | null } = {};
+
+  // 브랜드/회사명 수정(rename)
+  if (typeof body.brand === "string" && body.brand.trim()) patch.brand = body.brand.trim().slice(0, 200);
+  if (typeof body.company === "string") patch.company = body.company.trim().slice(0, 200) || null;
 
   if (body.stage) {
     if (!ALLOWED_STAGES.includes(body.stage)) {
@@ -134,4 +140,21 @@ export async function PATCH(req: NextRequest, ctx: RouteContext<"/api/meetings/[
   if (updErr) return Response.json({ error: updErr.message }, { status: 500 });
 
   return Response.json({ row: updated });
+}
+
+/**
+ * DELETE /api/meetings/:id — 업체(브랜드) 삭제. 하위 세션은 FK on delete cascade로 함께 삭제.
+ * (RouteContext 미사용 — 로컬 typed-route 스테일 오탐 회피)
+ */
+export async function DELETE(_req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
+  const { user } = await getSessionContext();
+  if (!user) return Response.json({ error: "인증이 필요합니다." }, { status: 401 });
+
+  const { id } = await ctx.params;
+  if (!id) return Response.json({ error: "id 필요" }, { status: 400 });
+
+  const supabase = await createClient();
+  const { error } = await supabase.from("vendor_meetings").delete().eq("id", id);
+  if (error) return Response.json({ error: error.message }, { status: 500 });
+  return Response.json({ ok: true });
 }

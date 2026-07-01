@@ -53,6 +53,26 @@ export default function MeetingsClient({ contacts, recent }: Props) {
   const [candLoading, setCandLoading] = useState(false);
   const candDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // 업체 목록 — 삭제/이름수정을 위해 로컬 상태로 보유
+  const [list, setList] = useState<RecentMeetingItem[]>(recent);
+
+  async function deleteVendor(id: string, brand: string) {
+    if (!confirm(`'${brand}' 업체를 삭제할까요?\n세션·분석까지 모두 삭제되며 되돌릴 수 없습니다.`)) return;
+    const res = await fetch(`/api/meetings/${id}`, { method: "DELETE" });
+    if (res.ok) setList((prev) => prev.filter((x) => x.id !== id));
+    else { const j = await res.json().catch(() => ({})); alert(j.error ?? "삭제 실패"); }
+  }
+  async function renameVendor(id: string, current: string) {
+    const name = window.prompt("브랜드명 수정", current)?.trim();
+    if (!name || name === current) return;
+    const res = await fetch(`/api/meetings/${id}`, {
+      method: "PATCH", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ brand: name }),
+    });
+    if (res.ok) setList((prev) => prev.map((x) => (x.id === id ? { ...x, brand: name } : x)));
+    else { const j = await res.json().catch(() => ({})); alert(j.error ?? "수정 실패"); }
+  }
+
   const contactSuggests = useMemo(() => {
     const q = brand.trim().toLowerCase();
     if (!q) return [];
@@ -268,47 +288,68 @@ export default function MeetingsClient({ contacts, recent }: Props) {
         )}
 
         {/* 진행 중 업체 리스트 */}
-        {recent.length > 0 ? (
+        {list.length > 0 ? (
           <section>
             <div className="mb-3 flex items-baseline justify-between">
               <p className="text-[10px] font-extrabold uppercase tracking-[.14em] text-[#0a0a0a]/55">
-                진행 중 업체 ({recent.length})
+                진행 중 업체 ({list.length})
               </p>
               <p className="font-mono text-[10px] text-[#0a0a0a]/45">
-                최근 세션 기준 정렬
+                최근 세션 기준 정렬 · 카드 우하단에서 이름수정/삭제
               </p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {recent.map((r) => (
-                <Link
-                  key={r.id}
-                  href={`/dashboard/meetings/${r.id}`}
-                  className="brutal bg-white p-4 hover:bg-yellow-50 transition-colors block"
-                >
-                  <div className="flex items-baseline justify-between gap-2 mb-1">
-                    <h3 className="font-display text-[20px] text-[#0a0a0a] truncate">
-                      {r.brand}
-                    </h3>
-                    <span className="shrink-0 border-[2px] border-[#0a0a0a] bg-yellow-300 px-1.5 py-0 text-[10px] font-extrabold">
-                      {r.sessionCount}차
-                    </span>
-                  </div>
-                  {r.company && r.company !== r.brand && (
-                    <p className="font-mono text-[10.5px] text-[#0a0a0a]/55 truncate">
-                      · {r.company}
+              {list.map((r) => (
+                <div key={r.id} className="relative">
+                  <Link
+                    href={`/dashboard/meetings/${r.id}`}
+                    className="brutal bg-white p-4 hover:bg-yellow-50 transition-colors block"
+                  >
+                    <div className="flex items-baseline justify-between gap-2 mb-1">
+                      <h3 className="font-display text-[20px] text-[#0a0a0a] truncate">
+                        {r.brand}
+                      </h3>
+                      <span className="shrink-0 border-[2px] border-[#0a0a0a] bg-yellow-300 px-1.5 py-0 text-[10px] font-extrabold">
+                        {r.sessionCount}차
+                      </span>
+                    </div>
+                    {r.company && r.company !== r.brand && (
+                      <p className="font-mono text-[10.5px] text-[#0a0a0a]/55 truncate">
+                        · {r.company}
+                      </p>
+                    )}
+                    <p className="mt-2 font-mono text-[11px] text-[#0a0a0a]/70">
+                      {r.lastSessionAt
+                        ? `마지막 미팅 ${r.lastSessionAt}`
+                        : "세션 없음 · 사전자료만 수집됨"}
                     </p>
-                  )}
-                  <p className="mt-2 font-mono text-[11px] text-[#0a0a0a]/70">
-                    {r.lastSessionAt
-                      ? `마지막 미팅 ${r.lastSessionAt}`
-                      : "세션 없음 · 사전자료만 수집됨"}
-                  </p>
-                  {r.stage === "done" && (
-                    <span className="mt-2 inline-block border-[2px] border-[#0a0a0a] bg-emerald-300 px-1.5 py-0 text-[9.5px] font-extrabold uppercase tracking-wider">
-                      완료
-                    </span>
-                  )}
-                </Link>
+                    {r.stage === "done" && (
+                      <span className="mt-2 inline-block border-[2px] border-[#0a0a0a] bg-emerald-300 px-1.5 py-0 text-[9.5px] font-extrabold uppercase tracking-wider">
+                        완료
+                      </span>
+                    )}
+                    <span className="block pt-2" />
+                  </Link>
+                  {/* 액션 — Link 형제로 배치(중첩 anchor 방지) */}
+                  <div className="absolute bottom-2 right-2 flex gap-1">
+                    <button
+                      type="button"
+                      onClick={() => renameVendor(r.id, r.brand)}
+                      className="border-[2px] border-[#0a0a0a] bg-white px-1.5 py-0.5 text-[10px] font-extrabold hover:bg-yellow-300"
+                      title="브랜드명 수정"
+                    >
+                      ✎
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => deleteVendor(r.id, r.brand)}
+                      className="border-[2px] border-[#0a0a0a] bg-white px-1.5 py-0.5 text-[10px] font-extrabold hover:bg-rose-400"
+                      title="업체 삭제"
+                    >
+                      🗑
+                    </button>
+                  </div>
+                </div>
               ))}
             </div>
           </section>
