@@ -131,7 +131,7 @@ export default function SessionModal({ meetingId, nextIndex, initial, onClose, o
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="brutal bg-[#FAF7EC] w-full max-w-[1100px] max-h-[90vh] flex flex-col overflow-hidden"
+        className="brutal bg-[#FAF7EC] w-full max-w-[1440px] h-[92vh] max-h-[92vh] flex flex-col overflow-hidden"
       >
         {/* 헤더 */}
         <header className="flex items-center justify-between gap-3 border-b-[3px] border-[#0a0a0a] bg-white px-5 py-3">
@@ -154,7 +154,7 @@ export default function SessionModal({ meetingId, nextIndex, initial, onClose, o
         </header>
 
         {/* 본문 — 좌: 입력 · 우: 미리보기 */}
-        <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 min-h-0 overflow-hidden">
+        <div className="flex-1 grid grid-cols-1 lg:grid-cols-[1.5fr_1fr] min-h-0 overflow-hidden">
           {/* 좌측 */}
           <div className="border-b-[2px] lg:border-b-0 lg:border-r-[2px] border-[#0a0a0a]/15 p-5 flex flex-col gap-3 min-h-0">
             <div className="grid grid-cols-2 gap-3">
@@ -218,7 +218,7 @@ export default function SessionModal({ meetingId, nextIndex, initial, onClose, o
                 onDrop={(e) => { e.preventDefault(); setDragOver(false); const f = e.dataTransfer.files?.[0]; if (f) importFile(f); }}
                 placeholder={`TXT · 메모장 · 손메모 타이핑 어떤 것이든\n\n· 파일 불러오기: TXT·CSV·XLSX·PPTX·DOCX·PDF (또는 여기로 드래그)\n· 문장 단위(마침표/개행)로 자동 분리\n· "필요", "어렵다", "다음에", "?" 같은 마커로 언맷니즈/질문/액션 자동 추출`}
                 disabled={saving}
-                className={`flex-1 resize-none border-[2px] bg-white p-3 font-mono text-[12.5px] leading-relaxed text-[#0a0a0a] focus:outline-none focus:ring-2 focus:ring-yellow-300 disabled:opacity-60 ${dragOver ? "border-yellow-500 ring-2 ring-yellow-300" : "border-[#0a0a0a]"}`}
+                className={`flex-1 resize-none border-[2px] bg-white p-4 font-mono text-[14px] leading-7 text-[#0a0a0a] focus:outline-none focus:ring-2 focus:ring-yellow-300 disabled:opacity-60 ${dragOver ? "border-yellow-500 ring-2 ring-yellow-300" : "border-[#0a0a0a]"}`}
               />
               <div className="mt-1 flex items-start justify-between gap-2">
                 <p className="text-[10px] font-mono text-emerald-700 min-h-[1em]">{importInfo}</p>
