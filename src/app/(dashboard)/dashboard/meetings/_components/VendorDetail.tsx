@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import type { BriefRow, MeetingPayload } from "./BriefCard";
 import BriefCard from "./BriefCard";
@@ -33,12 +34,24 @@ interface Props {
 }
 
 export default function VendorDetail({ row: initialRow, sessions: initial, canAnalyze = false }: Props) {
+  const router = useRouter();
   const [row, setRow] = useState<VendorRow>(initialRow);
   const [sessions, setSessions] = useState<VendorSessionRow[]>(initial);
   const [modalOpen, setModalOpen] = useState(false);
   const [briefOpen, setBriefOpen] = useState(false); // 항상 접힘이 기본
   const [briefRefreshing, setBriefRefreshing] = useState(false);
   const [editingSession, setEditingSession] = useState<VendorSessionRow | null>(null);
+  const [deletingVendor, setDeletingVendor] = useState(false);
+
+  async function deleteVendor() {
+    if (!confirm(`'${row.brand}' 업체를 삭제할까요?\n${sessions.length}개 세션과 AI 분석까지 모두 삭제되며 되돌릴 수 없습니다.`)) return;
+    setDeletingVendor(true);
+    try {
+      const res = await fetch(`/api/meetings/${row.id}`, { method: "DELETE" });
+      if (res.ok) { router.push("/dashboard/meetings"); router.refresh(); }
+      else { const j = await res.json().catch(() => ({})); alert(j.error ?? "삭제 실패"); setDeletingVendor(false); }
+    } catch { alert("네트워크 오류"); setDeletingVendor(false); }
+  }
 
   async function refreshBrief() {
     setBriefRefreshing(true);
@@ -118,13 +131,24 @@ export default function VendorDetail({ row: initialRow, sessions: initial, canAn
               )}
             </div>
           </div>
-          <button
-            type="button"
-            onClick={() => setModalOpen(true)}
-            className="border-[2px] border-[#0a0a0a] bg-yellow-300 px-5 py-2.5 text-[13px] font-extrabold shadow-[3px_3px_0_0_#0a0a0a] transition-all hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none"
-          >
-            + 세션 추가 ({totalCount + 1}차)
-          </button>
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              type="button"
+              onClick={deleteVendor}
+              disabled={deletingVendor}
+              className="border-[2px] border-[#0a0a0a] bg-white px-3 py-2.5 text-[12px] font-extrabold hover:bg-rose-400 disabled:opacity-50"
+              title="이 업체와 모든 세션·분석 삭제"
+            >
+              {deletingVendor ? "삭제 중…" : "🗑 업체 삭제"}
+            </button>
+            <button
+              type="button"
+              onClick={() => setModalOpen(true)}
+              className="border-[2px] border-[#0a0a0a] bg-yellow-300 px-5 py-2.5 text-[13px] font-extrabold shadow-[3px_3px_0_0_#0a0a0a] transition-all hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none"
+            >
+              + 세션 추가 ({totalCount + 1}차)
+            </button>
+          </div>
         </div>
 
         {/* ── 1. Accumulated Insights (최상단) ── */}
