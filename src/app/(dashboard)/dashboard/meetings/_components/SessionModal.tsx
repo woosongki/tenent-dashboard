@@ -157,8 +157,8 @@ export default function SessionModal({ meetingId, nextIndex, initial, onClose, o
         <div className="flex-1 grid grid-cols-1 lg:grid-cols-[1.5fr_1fr] min-h-0 overflow-hidden">
           {/* 좌측 */}
           <div className="border-b-[2px] lg:border-b-0 lg:border-r-[2px] border-[#0a0a0a]/15 p-5 flex flex-col gap-3 min-h-0">
-            <div className="grid grid-cols-2 gap-3">
-              <div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="min-w-0">
                 <label className="mb-1 block text-[10px] font-extrabold uppercase tracking-[.14em] text-[#0a0a0a]/55">
                   미팅 날짜
                 </label>
@@ -167,10 +167,10 @@ export default function SessionModal({ meetingId, nextIndex, initial, onClose, o
                   value={heldAt}
                   onChange={(e) => setHeldAt(e.target.value)}
                   disabled={saving}
-                  className="w-full border-[2px] border-[#0a0a0a] bg-white px-2 py-1.5 font-mono text-[13px] font-bold focus:outline-none focus:ring-2 focus:ring-yellow-300"
+                  className="block w-full max-w-full min-w-0 border-[2px] border-[#0a0a0a] bg-white px-2 py-1.5 font-mono text-[13px] font-bold focus:outline-none focus:ring-2 focus:ring-yellow-300"
                 />
               </div>
-              <div>
+              <div className="min-w-0">
                 <label className="mb-1 block text-[10px] font-extrabold uppercase tracking-[.14em] text-[#0a0a0a]/55">
                   세션 제목 (선택)
                 </label>
@@ -181,7 +181,7 @@ export default function SessionModal({ meetingId, nextIndex, initial, onClose, o
                   placeholder="예: 실무진 방문"
                   maxLength={120}
                   disabled={saving}
-                  className="w-full border-[2px] border-[#0a0a0a] bg-white px-2 py-1.5 text-[13px] font-bold focus:outline-none focus:ring-2 focus:ring-yellow-300"
+                  className="block w-full max-w-full min-w-0 border-[2px] border-[#0a0a0a] bg-white px-2 py-1.5 text-[13px] font-bold focus:outline-none focus:ring-2 focus:ring-yellow-300"
                 />
               </div>
             </div>
