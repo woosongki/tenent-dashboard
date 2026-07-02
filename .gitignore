@@ -56,5 +56,8 @@ data/seoul-hotspots.xlsx
 # 매출 ERP 원본 (사내 데이터 — 절대 커밋 금지)
 /scoredata/
 
+# 계약/입점업체 마스터 원본 (사업자번호·연락처 포함 — 절대 커밋 금지)
+/contractdata/
+
 # 매출분석 HTML 내보내기 산출물(데이터 스냅샷, 커밋 제외)
 매출분석_오프라인.html

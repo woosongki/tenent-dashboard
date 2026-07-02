@@ -2,6 +2,7 @@ import { redirect, notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import { getSessionContext } from "@/lib/auth/session";
+import { findContractsByBrand } from "@/lib/tenantContracts";
 import VendorDetail, { type VendorSessionRow, type VendorRow } from "../_components/VendorDetail";
 
 export const metadata: Metadata = { title: "업체미팅 · 상세 — lifestyle" };
@@ -32,11 +33,14 @@ export default async function MeetingDetailPage({
     .eq("meeting_id", id)
     .order("session_index", { ascending: false });
 
+  const contracts = findContractsByBrand(row.brand as string);
+
   return (
     <VendorDetail
       row={row as VendorRow}
       sessions={(sessions ?? []) as VendorSessionRow[]}
       canAnalyze={canAnalyze}
+      contracts={contracts}
     />
   );
 }

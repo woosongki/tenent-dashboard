@@ -9,8 +9,10 @@ import AccumulatedInsights from "./AccumulatedInsights";
 import AnalysisPanel from "./AnalysisPanel";
 import SessionHistory from "./SessionHistory";
 import SessionModal from "./SessionModal";
+import ContractPrefill from "./ContractPrefill";
 import type { ExtractedSession } from "@/lib/meetings/extract";
 import { aggregateSessions } from "@/lib/meetings/extract";
+import type { TenantContract } from "@/lib/tenantContracts";
 
 export type VendorRow = BriefRow;
 
@@ -31,9 +33,10 @@ interface Props {
   row: VendorRow;
   sessions: VendorSessionRow[];
   canAnalyze?: boolean;
+  contracts?: TenantContract[];
 }
 
-export default function VendorDetail({ row: initialRow, sessions: initial, canAnalyze = false }: Props) {
+export default function VendorDetail({ row: initialRow, sessions: initial, canAnalyze = false, contracts = [] }: Props) {
   const router = useRouter();
   const [row, setRow] = useState<VendorRow>(initialRow);
   const [sessions, setSessions] = useState<VendorSessionRow[]>(initial);
@@ -151,7 +154,10 @@ export default function VendorDetail({ row: initialRow, sessions: initial, canAn
           </div>
         </div>
 
-        {/* ── 1. Accumulated Insights (최상단) ── */}
+        {/* ── 0. 계약 마스터 프리필 (미팅 시작 시 현재 계약조건 참고) ── */}
+        <ContractPrefill contracts={contracts} />
+
+        {/* ── 1. Accumulated Insights ── */}
         <AccumulatedInsights insights={insights} sessionCount={totalCount} />
 
         {/* ── 2. 세션 히스토리 ── */}

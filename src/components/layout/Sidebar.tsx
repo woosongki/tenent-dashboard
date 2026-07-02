@@ -224,6 +224,7 @@ const NAV: NavGroup[] = [
     section: "미팅",
     items: [
       { href: "/dashboard/meetings", label: "업체미팅", icon: <IconHandshake /> },
+      { href: "/dashboard/contracts/expiry", label: "계약만료 알람", icon: <IconArchive /> },
     ],
   },
   {
