@@ -1,13 +1,12 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { signOutAction } from "@/app/(auth)/login/_actions/auth";
 import { SIDEBAR_THEMES, type SidebarTheme } from "@/lib/tokens";
 import { menuKeyForPath } from "@/lib/nav";
 import NotionSyncButton from "@/components/ui/NotionSyncButton";
-import type { RecentMeetingItem } from "@/lib/meetings/recent";
 
 // ── SVG 아이콘 ────────────────────────────────────────────────
 function IconHome() {
@@ -261,7 +260,6 @@ interface Props {
   userEmail: string;
   role?: Role | null;
   hiddenMenus?: string[];
-  recentMeetings?: RecentMeetingItem[];
   onClose?: () => void;
   collapsed?: boolean;
   onToggleCollapse?: () => void;
@@ -272,7 +270,7 @@ interface Props {
 }
 
 export default function Sidebar({
-  userEmail, role = null, hiddenMenus = [], recentMeetings = [], onClose, collapsed = false, onToggleCollapse,
+  userEmail, role = null, hiddenMenus = [], onClose, collapsed = false, onToggleCollapse,
   theme = "dark", onToggleTheme,
   reportMode = false, onToggleReportMode,
 }: Props) {
@@ -281,29 +279,10 @@ export default function Sidebar({
   const currentLayer = searchParams?.get("layer") ?? "";
   const t = SIDEBAR_THEMES[theme];
 
-  // 정적 NAV에 "업체미팅 children (최근 미팅 리스트 + 새 업체)" 동적 주입.
-  // recentMeetings는 서버 layout에서 최근 세션 순으로 정렬됨.
-  const NAV_DYNAMIC = useMemo<NavGroup[]>(() => {
-    return NAV.map((g) => ({
-      ...g,
-      items: g.items.map((it) => {
-        if (it.href !== "/dashboard/meetings") return it;
-        // group을 지정하지 않아 접힘 헤더 없이 평평한 리스트로 렌더.
-        const meetingChildren: NavChild[] = [
-          ...recentMeetings.map((m) => {
-            const badge = m.sessionCount > 0 ? ` · ${m.sessionCount}차` : "";
-            return {
-              href: `/dashboard/meetings/${m.id}`,
-              label: `${m.brand}${badge}`,
-            } as NavChild;
-          }),
-          // 업체 마스터(전체 목록 + 새 업체 등록) — 항상 맨 아래.
-          { href: "/dashboard/meetings", label: "＋ 새 업체 · 전체" },
-        ];
-        return { ...it, children: meetingChildren };
-      }),
-    }));
-  }, [recentMeetings]);
+  // 업체미팅은 사이드바에서 단순 링크 — 하위 브랜드 리스트/새 업체를 표시하지 않음
+  // (브랜드가 쌓이면 아래 메뉴를 가려 사용이 어려움). 클릭 시 /dashboard/meetings 랜딩으로
+  // 이동 = 전체 목록 + 새 업체 등록 + 드래그 순서변경이 모두 거기서 이뤄짐.
+  const NAV_DYNAMIC = NAV;
 
   // 펼쳐진 부모 메뉴 추적. 현재 경로 기준 자동 펼침 + 클릭 토글.
   // 업체미팅은 항상 펼침(사용자 명시적으로 접을 수도 있게 초기 open만 강제).
@@ -312,7 +291,6 @@ export default function Sidebar({
     NAV_DYNAMIC.forEach((g) => g.items.forEach((it) => {
       if (it.children && pathname.startsWith(it.href)) initial.add(it.href);
     }));
-    initial.add("/dashboard/meetings");
     return initial;
   });
 

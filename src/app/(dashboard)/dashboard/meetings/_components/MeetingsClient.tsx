@@ -40,6 +40,15 @@ function fmtKoreanDate(raw: string | null | undefined): string {
  * 브리프 생성이 완료되면 상세 페이지(/dashboard/meetings/[id])로 자동 이동.
  * 세션 관리는 상세 페이지에서 이루어짐.
  */
+const ORDER_KEY = "meetings-vendor-order";
+function reconcileOrder<T extends { id: string }>(saved: string[], all: T[]): T[] {
+  const byId = new Map(all.map((x) => [x.id, x] as const));
+  const ordered: T[] = [];
+  for (const id of saved) { const it = byId.get(id); if (it) { ordered.push(it); byId.delete(id); } }
+  for (const x of all) if (byId.has(x.id)) ordered.push(x);   // 새로 생긴 업체는 뒤에
+  return ordered;
+}
+
 export default function MeetingsClient({ contacts, recent }: Props) {
   const router = useRouter();
   const [brand, setBrand] = useState("");
@@ -55,6 +64,24 @@ export default function MeetingsClient({ contacts, recent }: Props) {
 
   // 업체 목록 — 삭제/이름수정을 위해 로컬 상태로 보유
   const [list, setList] = useState<RecentMeetingItem[]>(recent);
+
+  // 드래그앤드롭 순서 — localStorage에 저장(브라우저 로컬)
+  const [savedOrder, setSavedOrder] = useState<string[]>([]);
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    try { const raw = localStorage.getItem(ORDER_KEY); if (raw) setSavedOrder(JSON.parse(raw)); } catch {}
+  }, []);
+  const dragFrom = useRef<number | null>(null);
+  const [dragOver, setDragOver] = useState<number | null>(null);
+  const ordered = reconcileOrder(savedOrder, list);
+  function applyOrder(from: number, to: number) {
+    if (from === to) return;
+    const ids = ordered.map((x) => x.id);
+    const [m] = ids.splice(from, 1);
+    ids.splice(to, 0, m);
+    setSavedOrder(ids);
+    try { localStorage.setItem(ORDER_KEY, JSON.stringify(ids)); } catch {}
+  }
 
   async function deleteVendor(id: string, brand: string) {
     if (!confirm(`'${brand}' 업체를 삭제할까요?\n세션·분석까지 모두 삭제되며 되돌릴 수 없습니다.`)) return;
@@ -295,12 +322,17 @@ export default function MeetingsClient({ contacts, recent }: Props) {
                 진행 중 업체 ({list.length})
               </p>
               <p className="font-mono text-[10px] text-[#0a0a0a]/45">
-                최근 세션 기준 정렬 · 카드 우하단에서 이름수정/삭제
+                ⠿ 드래그로 순서 변경 · 우하단 이름수정/삭제
               </p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {list.map((r) => (
-                <div key={r.id} className="relative">
+              {ordered.map((r, i) => (
+                <div
+                  key={r.id}
+                  className={`relative ${dragOver === i ? "ring-2 ring-yellow-500 ring-offset-2 ring-offset-[#FAF7EC]" : ""}`}
+                  onDragOver={(e) => { if (dragFrom.current != null) { e.preventDefault(); setDragOver(i); } }}
+                  onDrop={() => { if (dragFrom.current != null) applyOrder(dragFrom.current, i); dragFrom.current = null; setDragOver(null); }}
+                >
                   <Link
                     href={`/dashboard/meetings/${r.id}`}
                     className="brutal bg-white p-4 hover:bg-yellow-50 transition-colors block"
@@ -332,6 +364,15 @@ export default function MeetingsClient({ contacts, recent }: Props) {
                   </Link>
                   {/* 액션 — Link 형제로 배치(중첩 anchor 방지) */}
                   <div className="absolute bottom-2 right-2 flex gap-1">
+                    <span
+                      draggable
+                      onDragStart={() => { dragFrom.current = i; }}
+                      onDragEnd={() => { dragFrom.current = null; setDragOver(null); }}
+                      className="cursor-grab active:cursor-grabbing select-none border-[2px] border-[#0a0a0a] bg-white px-1.5 py-0.5 text-[10px] font-extrabold opacity-70 hover:opacity-100"
+                      title="드래그로 순서 변경"
+                    >
+                      ⠿
+                    </span>
                     <button
                       type="button"
                       onClick={() => renameVendor(r.id, r.brand)}

@@ -6,13 +6,11 @@ import SearchPalette from "@/components/ui/SearchPalette";
 import FeedbackButton from "@/components/feedback/FeedbackButton";
 import { useSidebarTheme } from "@/hooks/useSidebarTheme";
 import { useReportMode } from "@/hooks/useReportMode";
-import type { RecentMeetingItem } from "@/lib/meetings/recent";
 
 interface Props {
   userEmail: string;
   role?: "owner" | "admin" | "member" | null;
   hiddenMenus?: string[];
-  recentMeetings?: RecentMeetingItem[];
   children: React.ReactNode;
 }
 
@@ -32,7 +30,7 @@ function IconSearch() {
   );
 }
 
-export default function AppShell({ userEmail, role = null, hiddenMenus = [], recentMeetings = [], children }: Props) {
+export default function AppShell({ userEmail, role = null, hiddenMenus = [], children }: Props) {
   const [mobileOpen, setMobileOpen]   = useState(false);
   const [collapsed,  setCollapsed]    = useState(false);
   const [searchOpen, setSearchOpen]   = useState(false);
@@ -88,7 +86,6 @@ export default function AppShell({ userEmail, role = null, hiddenMenus = [], rec
           userEmail={userEmail}
           role={role}
           hiddenMenus={hiddenMenus}
-          recentMeetings={recentMeetings}
           onClose={() => setMobileOpen(false)}
           collapsed={collapsed}
           onToggleCollapse={() => setCollapsed((v) => !v)}
