@@ -84,5 +84,15 @@ export async function getRecentMeetings(
     return a.createdAt < b.createdAt ? 1 : -1;
   });
 
-  return items;
+  // 같은 브랜드가 여러 업체 행으로 중복 등록된 경우 1건으로 정리.
+  // 정렬이 '가장 활발한(최근 세션) 순'이므로 첫 등장(대표)만 남기고 제거.
+  const seen = new Set<string>();
+  const deduped = items.filter((it) => {
+    const key = it.brand.trim().toLowerCase();
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+
+  return deduped;
 }

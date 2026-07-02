@@ -290,7 +290,6 @@ export default function Sidebar({
         if (it.href !== "/dashboard/meetings") return it;
         // group을 지정하지 않아 접힘 헤더 없이 평평한 리스트로 렌더.
         const meetingChildren: NavChild[] = [
-          { href: "/dashboard/meetings", label: "+ 새 업체" },
           ...recentMeetings.map((m) => {
             const badge = m.sessionCount > 0 ? ` · ${m.sessionCount}차` : "";
             return {
@@ -298,6 +297,8 @@ export default function Sidebar({
               label: `${m.brand}${badge}`,
             } as NavChild;
           }),
+          // 업체 마스터(전체 목록 + 새 업체 등록) — 항상 맨 아래.
+          { href: "/dashboard/meetings", label: "＋ 새 업체 · 전체" },
         ];
         return { ...it, children: meetingChildren };
       }),
