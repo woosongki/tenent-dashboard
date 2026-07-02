@@ -10,6 +10,7 @@ export interface RecentMeetingItem {
   lastSessionIndex: number | null;
   stage: string;
   createdAt: string;
+  sortOrder: number | null;     // 수동 드래그 순서(팀 공유). null이면 최근 세션순.
 }
 
 /**
@@ -24,7 +25,7 @@ export async function getRecentMeetings(
 
   const { data: meetings } = await supabase
     .from("vendor_meetings")
-    .select("id,brand,company,stage,created_at")
+    .select("id,brand,company,stage,created_at,sort_order")
     .eq("organization_id", orgId)
     .order("created_at", { ascending: false })
     .limit(limit);
@@ -71,11 +72,16 @@ export async function getRecentMeetings(
       lastSessionIndex: a?.lastIdx ?? null,
       stage: r.stage as string,
       createdAt: r.created_at as string,
+      sortOrder: (r.sort_order as number | null) ?? null,
     };
   });
 
-  // 최근 세션 우선, 세션 없는 건 뒤로. 동률이면 createdAt 최신.
+  // 수동 순서(sort_order) 우선(오름차순) → 없는 건 뒤로, 최근 세션순. 동률이면 createdAt 최신.
   items.sort((a, b) => {
+    const ao = a.sortOrder, bo = b.sortOrder;
+    if (ao != null && bo != null) return ao - bo;
+    if (ao != null) return -1;
+    if (bo != null) return 1;
     if (a.lastSessionAt && b.lastSessionAt) {
       return a.lastSessionAt < b.lastSessionAt ? 1 : a.lastSessionAt > b.lastSessionAt ? -1 : 0;
     }
