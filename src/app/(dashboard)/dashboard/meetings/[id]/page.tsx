@@ -33,7 +33,7 @@ export default async function MeetingDetailPage({
     .eq("meeting_id", id)
     .order("session_index", { ascending: false });
 
-  const contracts = findContractsByBrand(row.brand as string);
+  const contracts = await findContractsByBrand(row.brand as string);
 
   return (
     <VendorDetail

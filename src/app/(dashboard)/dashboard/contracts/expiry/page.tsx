@@ -43,19 +43,25 @@ export default async function ExpiryPage({
   const store = parseString(sp.store);
   const type = parseString(sp.type);
 
-  const meta = getTenantContractsMeta();
-  const breakdown = getContractsBreakdown();
-  const rows = getExpiringContracts({ withinDays: days, storeName: store, contractType: type });
+  // load()가 요청 스코프로 memoize 돼 있어 아래 호출들은 Supabase 왕복 1회로 억제됨.
+  const [meta, breakdown, rows, d14, d30, d60, d90] = await Promise.all([
+    getTenantContractsMeta(),
+    getContractsBreakdown(),
+    getExpiringContracts({ withinDays: days, storeName: store, contractType: type }),
+    getExpiringContracts({ withinDays: 14 }),
+    getExpiringContracts({ withinDays: 30 }),
+    getExpiringContracts({ withinDays: 60 }),
+    getExpiringContracts({ withinDays: 90 }),
+  ]);
 
   const stores = Object.keys(breakdown.byStore).sort();
   const types = Object.keys(breakdown.byContractType);
 
-  // 뱃지용 카운트: 필터 무시하고 D-14/30/60/90 전체 큰 그림
   const bandCounts: Record<Horizon, number> = {
-    14: getExpiringContracts({ withinDays: 14 }).length,
-    30: getExpiringContracts({ withinDays: 30 }).length,
-    60: getExpiringContracts({ withinDays: 60 }).length,
-    90: getExpiringContracts({ withinDays: 90 }).length,
+    14: d14.length,
+    30: d30.length,
+    60: d60.length,
+    90: d90.length,
   };
 
   const metaLabel = meta.source
@@ -82,8 +88,9 @@ export default async function ExpiryPage({
           {meta.count === 0 ? (
             <div className="brutal bg-white p-8 text-center">
               <p className="font-mono text-[13px] text-[#0a0a0a]/70">
-                <code className="bg-[#F1ECDB] px-1.5 py-0.5">contractdata/tenant-contracts-master-*.tsv</code>{" "}
-                파일이 없습니다. ERP 마스터를 해당 폴더에 저장한 뒤 서버를 재시작하세요.
+                Supabase <code className="bg-[#F1ECDB] px-1.5 py-0.5">tenant_contracts</code> 테이블이 비어있습니다.<br />
+                로컬에서 <code className="bg-[#F1ECDB] px-1.5 py-0.5">contractdata/</code> 에 최신 TSV를 저장한 뒤{" "}
+                <code className="bg-[#F1ECDB] px-1.5 py-0.5">npm run upload:contracts</code> 로 업로드하세요.
               </p>
             </div>
           ) : (
