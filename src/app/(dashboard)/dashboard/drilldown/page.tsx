@@ -8,8 +8,9 @@ import TopBar from "@/components/layout/TopBar";
 import PageHeader from "@/components/ui/PageHeader";
 import AppFooter from "@/components/ui/AppFooter";
 import { SPACE } from "@/lib/tokens";
+import { ATTRACTION_PLAN_YEAR, ATTRACTION_PLAN_LABEL } from "@/lib/nav";
 
-export const metadata: Metadata = { title: "입점계획(26년) — lifestyle" };
+export const metadata: Metadata = { title: `${ATTRACTION_PLAN_LABEL} — lifestyle` };
 
 function TableSkeleton() {
   return (
@@ -120,13 +121,13 @@ export default async function DrilldownPage() {
   return (
     <div className="flex flex-col h-full overflow-hidden">
       <TopBar
-        crumbs={[{ label: "대시보드", href: "/dashboard" }, { label: "입점계획(26년)" }]}
+        crumbs={[{ label: "대시보드", href: "/dashboard" }, { label: ATTRACTION_PLAN_LABEL }]}
       />
       <main className={`flex-1 overflow-y-auto ${SPACE.pageX} ${SPACE.pageY}`}>
         <div className={`${SPACE.pageMaxW} ${SPACE.sectionGap} flex flex-col`}>
           <PageHeader
-            eyebrow="ATTRACTION 2026"
-            title="입점계획 2026"
+            eyebrow={`ATTRACTION ${ATTRACTION_PLAN_YEAR}`}
+            title={`입점계획 ${ATTRACTION_PLAN_YEAR}`}
             subtitle="34개 지점 · 브랜드별 컨텐츠 유치 현황을 관리합니다."
           />
           <Suspense fallback={<TableSkeleton />}>

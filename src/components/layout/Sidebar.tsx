@@ -5,7 +5,8 @@ import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { signOutAction } from "@/app/(auth)/login/_actions/auth";
 import { SIDEBAR_THEMES, type SidebarTheme } from "@/lib/tokens";
-import { menuKeyForPath } from "@/lib/nav";
+import { menuKeyForPath, ATTRACTION_PLAN_LABEL } from "@/lib/nav";
+import { RETAIL_LAYERS, retailLayerLabel } from "@/data/retail-layers";
 import NotionSyncButton from "@/components/ui/NotionSyncButton";
 
 // ── SVG 아이콘 ────────────────────────────────────────────────
@@ -110,6 +111,23 @@ function IconHandshake() {
     </svg>
   );
 }
+function IconStorefront() {
+  return (
+    <svg fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 9.75V19.5a1 1 0 0 0 1 1h14.5a1 1 0 0 0 1-1V9.75M9 20.5v-5.25a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v5.25" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M3 9.75 4.5 4.5a1 1 0 0 1 .96-.75h13.08a1 1 0 0 1 .96.75L21 9.75a2.25 2.25 0 0 1-4.5 0 2.25 2.25 0 0 1-4.5 0 2.25 2.25 0 0 1-4.5 0 2.25 2.25 0 0 1-4.5 0Z" />
+    </svg>
+  );
+}
+function IconGauge() {
+  return (
+    <svg fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 17a7.5 7.5 0 1 1 15 0" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M12 17l3.5-4.5" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 17h15" />
+    </svg>
+  );
+}
 function IconLogout() {
   return (
     <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -145,6 +163,8 @@ interface NavChild {
   label: string;
   layer?: string;
   dotColor?: string;
+  /** dot 모양 — 기본 사각, "circle"이면 원형 */
+  shape?: "circle" | "square";
   /** 같은 group 값을 가진 연속된 아이템들은 접기 가능한 그룹으로 묶임 */
   group?: string;
 }
@@ -158,6 +178,17 @@ interface NavItem {
 }
 interface NavGroup { section: string; items: NavItem[] }
 
+// 리테일 지도 하위 레이어 — 목록·점포수·색상·모양을 레지스트리에서 자동 생성.
+// (예전엔 27개 항목이 손으로 박혀 있어 데이터 갱신 시 "…N점" 라벨이 어긋났다.)
+const RETAIL_CHILDREN: NavChild[] = RETAIL_LAYERS.map((l) => ({
+  href: `/dashboard/homeplus?layer=${l.layer}`,
+  label: retailLayerLabel(l),
+  layer: l.layer,
+  dotColor: l.dotColor,
+  shape: l.shape,
+  group: l.group,
+}));
+
 const NAV: NavGroup[] = [
   {
     section: "개요",
@@ -166,56 +197,40 @@ const NAV: NavGroup[] = [
     ],
   },
   {
-    section: "분석",
+    section: "실적",
     items: [
       { href: "/dashboard/sales",     label: "매출분석",       icon: <IconChart /> },
       { href: "/dashboard/bcd",       label: "BCD 분석",       icon: <IconTarget /> },
-      { href: "/dashboard/drilldown", label: "입점계획(26년)", icon: <IconBuilding /> },
+    ],
+  },
+  {
+    section: "입점·공간",
+    items: [
+      { href: "/dashboard/drilldown", label: ATTRACTION_PLAN_LABEL, icon: <IconBuilding /> },
       { href: "/dashboard/vacancy",   label: "공실해결",       icon: <IconKey /> },
+      { href: "/dashboard/floorplans",label: "전점도면",       icon: <IconBlueprint /> },
+    ],
+  },
+  {
+    section: "컨텐츠",
+    items: [
       { href: "/dashboard/goals",     label: "컨텐츠 풀",     icon: <IconArchive /> },
       { href: "/dashboard/calendar",  label: "52주 캘린더",   icon: <IconCalendar /> },
       { href: "/dashboard/living",    label: "리빙 주제전",    icon: <IconSofa /> },
-      { href: "/dashboard/floorplans",label: "전점도면",       icon: <IconBlueprint /> },
+    ],
+  },
+  {
+    section: "시장·브랜드",
+    items: [
       { href: "/dashboard/branch",    label: "상권분석",       icon: <IconMap /> },
       // 컨텐츠 검증(/dashboard/verify)은 업체미팅 'AI 심층분석'으로 흡수 → 사이드바에서 은퇴(라우트는 유지).
       { href: "/dashboard/brand-keyword", label: "브랜드 키워드", icon: <IconKeyword /> },
-      { href: "/dashboard/brand-fit", label: "브랜드 적합도",  icon: <IconTarget /> },
+      { href: "/dashboard/brand-fit", label: "브랜드 적합도",  icon: <IconGauge /> },
       {
         href: "/dashboard/homeplus",
         label: "리테일 지도",
-        icon: <IconAlert />,
-        children: [
-          // 백화점
-          { href: "/dashboard/homeplus?layer=lotte",           label: "롯데백화점 30점",     layer: "lotte",      dotColor: "#a4133c", group: "백화점" },
-          { href: "/dashboard/homeplus?layer=hyundai",         label: "현대백화점 13점",     layer: "hyundai",    dotColor: "#1d3557", group: "백화점" },
-          { href: "/dashboard/homeplus?layer=shinsegae",       label: "신세계백화점 10점",   layer: "shinsegae",  dotColor: "#495057", group: "백화점" },
-          { href: "/dashboard/homeplus?layer=ak",              label: "AK백화점 3점",        layer: "ak",         dotColor: "#6f1d77", group: "백화점" },
-          { href: "/dashboard/homeplus?layer=galleria",        label: "갤러리아 6점",        layer: "galleria",   dotColor: "#2d5016", group: "백화점" },
-          // 브랜드
-          { href: "/dashboard/homeplus?layer=artbox",          label: "아트박스 203점",      layer: "artbox",     dotColor: "#f72585", group: "브랜드" },
-          { href: "/dashboard/homeplus?layer=abcmart",         label: "ABC마트 322점",       layer: "abcmart",    dotColor: "#e63946", group: "브랜드" },
-          { href: "/dashboard/homeplus?layer=8seconds",        label: "에잇세컨즈 78점",     layer: "8seconds",   dotColor: "#fbbf24", group: "브랜드" },
-          { href: "/dashboard/homeplus?layer=spao",            label: "스파오 184점",        layer: "spao",       dotColor: "#0b3d91", group: "브랜드" },
-          { href: "/dashboard/homeplus?layer=mixxo",           label: "미쏘 55점",           layer: "mixxo",      dotColor: "#e6007e", group: "브랜드" },
-          { href: "/dashboard/homeplus?layer=daiso",           label: "다이소 1,714점",      layer: "daiso",      dotColor: "#f9c74f", group: "브랜드" },
-          { href: "/dashboard/homeplus?layer=oliveyoung",      label: "올리브영 1,363점",    layer: "oliveyoung", dotColor: "#52b788", group: "브랜드" },
-          { href: "/dashboard/homeplus?layer=modernhouse",     label: "모던하우스 143점",    layer: "modernhouse", dotColor: "#6a2c70", group: "브랜드" },
-          { href: "/dashboard/homeplus?layer=muji",            label: "무인양품 46점",       layer: "muji",       dotColor: "#6f4e37", group: "브랜드" },
-          { href: "/dashboard/homeplus?layer=hanssem",         label: "한샘디자인파크 22점", layer: "hanssem",    dotColor: "#1e5fa3", group: "브랜드" },
-          { href: "/dashboard/homeplus?layer=livart",          label: "현대리바트 92점",     layer: "livart",     dotColor: "#ec4899", group: "브랜드" },
-          { href: "/dashboard/homeplus?layer=iloom",           label: "일룸 92점",           layer: "iloom",      dotColor: "#ca8a04", group: "브랜드" },
-          { href: "/dashboard/homeplus?layer=nitori",          label: "니토리 6점",          layer: "nitori",     dotColor: "#ea580c", group: "브랜드" },
-          { href: "/dashboard/homeplus?layer=uniqlo",          label: "유니클로 153점",      layer: "uniqlo",     dotColor: "#be123c", group: "브랜드" },
-          // 기타 (체인 매장 + 그 외)
-          { href: "/dashboard/homeplus?layer=entersix",        label: "엔터식스 6점",        layer: "entersix",   dotColor: "#ff6f3c", group: "기타" },
-          { href: "/dashboard/homeplus?layer=moda",            label: "모다아울렛 17점",     layer: "moda",       dotColor: "#00b4a0", group: "기타" },
-          { href: "/dashboard/homeplus?layer=savezone",        label: "세이브존 9점",        layer: "savezone",   dotColor: "#95a847", group: "기타" },
-          { href: "/dashboard/homeplus?layer=lf",              label: "LF스퀘어 3점",        layer: "lf",         dotColor: "#a08260", group: "기타" },
-          // 마트
-          { href: "/dashboard/homeplus?layer=emart",           label: "이마트 127점",        layer: "emart",      dotColor: "#ffc107", group: "마트" },
-          { href: "/dashboard/homeplus?layer=lottemart",       label: "롯데마트 110점",      layer: "lottemart",  dotColor: "#d62828", group: "마트" },
-          { href: "/dashboard/homeplus?layer=hanaromart",      label: "하나로마트 155점",    layer: "hanaromart", dotColor: "#2d6a4f", group: "마트" },
-        ],
+        icon: <IconStorefront />,
+        children: RETAIL_CHILDREN,
       },
     ],
   },
@@ -223,7 +238,7 @@ const NAV: NavGroup[] = [
     section: "미팅",
     items: [
       { href: "/dashboard/meetings", label: "업체미팅", icon: <IconHandshake /> },
-      { href: "/dashboard/contracts/expiry", label: "계약만료 알람", icon: <IconArchive /> },
+      { href: "/dashboard/contracts/expiry", label: "계약만료 알람", icon: <IconAlert /> },
     ],
   },
   {
@@ -466,7 +481,7 @@ export default function Sidebar({
                                   {child.dotColor && (
                                     <span
                                       className="inline-block h-2 w-2 shrink-0 border border-[#0a0a0a]/30"
-                                      style={{ background: child.dotColor, borderRadius: child.dotColor === "#52b788" ? "50%" : 0 }}
+                                      style={{ background: child.dotColor, borderRadius: child.shape === "circle" ? "50%" : 0 }}
                                     />
                                   )}
                                   <span className="truncate">{child.label}</span>
