@@ -302,11 +302,12 @@ export async function syncVendorLease(): Promise<SyncResult> {
 }
 
 // ── 통합 실행 ───────────────────────────────────────────────
+// 입점계획(attraction_status)은 앱 내에서만 편집 — 노션과 분리됨.
+// syncAttraction()은 함수로는 남아 있으나 어디서도 호출되지 않는다.
 export async function syncAll(): Promise<SyncResult[]> {
-  const [a, v, l] = await Promise.all([
-    syncAttraction(),
+  const [v, l] = await Promise.all([
     syncVendorFnb(),
     syncVendorLease(),
   ]);
-  return [a, v, l];
+  return [v, l];
 }
