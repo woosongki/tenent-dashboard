@@ -7,6 +7,7 @@ import AppFooter from "@/components/ui/AppFooter";
 import { SPACE } from "@/lib/tokens";
 import {
   getExpiringContracts,
+  getAllContracts,
   getTenantContractsMeta,
   getContractsBreakdown,
 } from "@/lib/tenantContracts";
@@ -17,9 +18,13 @@ export const metadata: Metadata = { title: "계약만료 알람 — lifestyle" }
 
 const HORIZONS = [14, 30, 60, 90] as const;
 type Horizon = (typeof HORIZONS)[number];
+type Band = Horizon | "all";
+const ALL_LIMIT = 1000;
 
-function parseHorizon(v: string | string[] | undefined): Horizon {
-  const n = Array.isArray(v) ? Number(v[0]) : Number(v);
+function parseBand(v: string | string[] | undefined): Band {
+  const s = Array.isArray(v) ? v[0] : v;
+  if (s === "all") return "all";
+  const n = Number(s);
   return (HORIZONS as readonly number[]).includes(n) ? (n as Horizon) : 60;
 }
 function parseString(v: string | string[] | undefined): string | undefined {
@@ -39,20 +44,24 @@ export default async function ExpiryPage({
   if (!user) redirect("/login");
 
   const sp = await searchParams;
-  const days = parseHorizon(sp.days);
+  const days = parseBand(sp.days);
   const store = parseString(sp.store);
   const type = parseString(sp.type);
 
   // load()가 요청 스코프로 memoize 돼 있어 아래 호출들은 Supabase 왕복 1회로 억제됨.
-  const [meta, breakdown, rows, d14, d30, d60, d90] = await Promise.all([
+  const [meta, breakdown, d14, d30, d60, d90] = await Promise.all([
     getTenantContractsMeta(),
     getContractsBreakdown(),
-    getExpiringContracts({ withinDays: days, storeName: store, contractType: type }),
     getExpiringContracts({ withinDays: 14 }),
     getExpiringContracts({ withinDays: 30 }),
     getExpiringContracts({ withinDays: 60 }),
     getExpiringContracts({ withinDays: 90 }),
   ]);
+
+  // 선택 밴드: '전체'면 전체 계약(과거·무기한 포함), 아니면 만료 임박.
+  const rows = days === "all"
+    ? await getAllContracts({ storeName: store, contractType: type, limit: ALL_LIMIT })
+    : await getExpiringContracts({ withinDays: days, storeName: store, contractType: type });
 
   const stores = Object.keys(breakdown.byStore).sort();
   const types = Object.keys(breakdown.byContractType);
@@ -98,10 +107,16 @@ export default async function ExpiryPage({
               <ExpiryFilters
                 horizons={HORIZONS as unknown as number[]}
                 bandCounts={bandCounts}
+                allCount={meta.count}
                 stores={stores}
                 types={types}
                 current={{ days, store, type }}
               />
+              {days === "all" && meta.count > ALL_LIMIT && (
+                <p className="font-mono text-[11px] text-[#0a0a0a]/55">
+                  전체 {meta.count.toLocaleString()}건 중 {ALL_LIMIT.toLocaleString()}건만 표시 — 지점·계약형태로 좁혀 보세요.
+                </p>
+              )}
               <ExpiryTable rows={rows} />
             </>
           )}

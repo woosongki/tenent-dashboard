@@ -24,18 +24,30 @@ function urgencyBadge(days: number): string | null {
 export default function ContractPrefill({ contracts }: { contracts: TenantContract[] }) {
   const today = new Date().toISOString().slice(0, 10);
 
+  // 같은 지점(지점명+층)이 여러 건 중복이면 1건만 — 입력이 만료일 내림차순 정렬이라 최신 계약을 유지.
+  const seen = new Set<string>();
+  const uniqueContracts = contracts.filter((c) => {
+    const key = `${c.storeName}|${c.floor ?? ""}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+  const dupRemoved = contracts.length - uniqueContracts.length;
+
   return (
     <section className="brutal bg-white">
       <div className="border-b-[2px] border-[#0a0a0a]/15 px-5 py-3 flex items-baseline gap-3">
         <span className="text-[10px] font-extrabold uppercase tracking-[.14em] text-[#0a0a0a]/55">
           계약 마스터 · 현재/최근 계약 조건
         </span>
-        {contracts.length > 0 && (
-          <span className="font-mono text-[11px] text-[#0a0a0a]/55">{contracts.length}건 매칭</span>
+        {uniqueContracts.length > 0 && (
+          <span className="font-mono text-[11px] text-[#0a0a0a]/55">
+            {uniqueContracts.length}개 지점{dupRemoved > 0 ? ` · 중복 ${dupRemoved}건 정리` : ""}
+          </span>
         )}
       </div>
 
-      {contracts.length === 0 ? (
+      {uniqueContracts.length === 0 ? (
         <div className="p-5">
           <p className="font-mono text-[12px] text-[#0a0a0a]/55">
             브랜드명·구매처명으로 계약 마스터에서 매칭되는 항목을 찾지 못했습니다.
@@ -43,7 +55,7 @@ export default function ContractPrefill({ contracts }: { contracts: TenantContra
         </div>
       ) : (
         <div className="divide-y-[2px] divide-[#0a0a0a]/10">
-          {contracts.map((c, i) => {
+          {uniqueContracts.map((c, i) => {
             const days = c.contractEndDate ? daysBetween(today, c.contractEndDate) : null;
             const urgency = days != null ? urgencyBadge(days) : null;
             return (

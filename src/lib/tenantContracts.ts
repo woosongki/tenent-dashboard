@@ -226,6 +226,28 @@ export async function getExpiringContracts(
   return rows;
 }
 
+/** 전체 계약(과거·무기한·종료 포함). '전체' 탭용. daysUntilExpiry=null 은 만료일 없음. */
+export async function getAllContracts(
+  opts: { storeName?: string; contractType?: string; limit?: number } = {},
+): Promise<(TenantContract & { daysUntilExpiry: number | null })[]> {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const out: (TenantContract & { daysUntilExpiry: number | null })[] = [];
+  for (const c of await getTenantContracts()) {
+    if (opts.storeName && c.storeName !== opts.storeName) continue;
+    if (opts.contractType && c.contractType !== opts.contractType) continue;
+    let days: number | null = null;
+    if (c.contractEndDate) {
+      const end = new Date(c.contractEndDate + "T00:00:00");
+      if (Number.isFinite(end.getTime())) days = Math.ceil((end.getTime() - today.getTime()) / 86_400_000);
+    }
+    out.push({ ...c, daysUntilExpiry: days });
+  }
+  // 만료일 오름차순(무기한은 뒤로).
+  out.sort((a, b) => (a.contractEndDate ?? "9999-99-99").localeCompare(b.contractEndDate ?? "9999-99-99"));
+  return typeof opts.limit === "number" ? out.slice(0, opts.limit) : out;
+}
+
 /** 계약형태 × 지점 요약. */
 export async function getContractsBreakdown(): Promise<{
   byContractType: Record<string, number>;

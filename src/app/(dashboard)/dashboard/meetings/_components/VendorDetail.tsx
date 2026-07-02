@@ -154,9 +154,6 @@ export default function VendorDetail({ row: initialRow, sessions: initial, canAn
           </div>
         </div>
 
-        {/* ── 0. 계약 마스터 프리필 (미팅 시작 시 현재 계약조건 참고) ── */}
-        <ContractPrefill contracts={contracts} />
-
         {/* ── 1. Accumulated Insights ── */}
         <AccumulatedInsights insights={insights} sessionCount={totalCount} />
 
@@ -209,6 +206,9 @@ export default function VendorDetail({ row: initialRow, sessions: initial, canAn
             </div>
           )}
         </section>
+
+        {/* ── 5. 계약 마스터 (맨 아래 · 현재 계약조건 참고) ── */}
+        <ContractPrefill contracts={contracts} />
 
         {/* 레거시 meeting_payload (Q&A) — 데이터 있으면 참고용으로만 노출 */}
         {payload && payload.questions.length > 0 && (

@@ -1,12 +1,20 @@
 import type { TenantContract } from "@/lib/tenantContracts";
 
-type Row = TenantContract & { daysUntilExpiry: number };
+type Row = TenantContract & { daysUntilExpiry: number | null };
 
-function urgencyBadge(days: number): string {
+function urgencyBadge(days: number | null): string {
+  if (days == null) return "bg-slate-100 text-slate-500 border-slate-300";  // 무기한
+  if (days < 0) return "bg-slate-200 text-slate-600 border-slate-400";        // 만료 지남
   if (days <= 14) return "bg-rose-300 text-[#0a0a0a] border-[#0a0a0a]";
   if (days <= 30) return "bg-orange-300 text-[#0a0a0a] border-[#0a0a0a]";
   if (days <= 60) return "bg-yellow-300 text-[#0a0a0a] border-[#0a0a0a]";
   return "bg-white text-[#0a0a0a] border-[#0a0a0a]";
+}
+
+function dLabel(days: number | null): string {
+  if (days == null) return "무기한";
+  if (days < 0) return `만료 ${-days}일`;
+  return `D-${days}`;
 }
 
 function typeBadge(t: string): string {
@@ -21,7 +29,7 @@ export default function ExpiryTable({ rows }: { rows: Row[] }) {
     return (
       <div className="brutal bg-white p-8 text-center">
         <p className="font-mono text-[12px] text-[#0a0a0a]/60">
-          해당 조건에 만료 임박 계약이 없습니다.
+          해당 조건에 계약이 없습니다.
         </p>
       </div>
     );
@@ -51,12 +59,12 @@ export default function ExpiryTable({ rows }: { rows: Row[] }) {
             >
               <td className="px-3 py-2 tabular-nums">
                 <span
-                  className={`inline-block border-[2px] px-2 py-0.5 text-[11px] font-extrabold ${urgencyBadge(r.daysUntilExpiry)}`}
+                  className={`inline-block border-[2px] px-2 py-0.5 text-[11px] font-extrabold whitespace-nowrap ${urgencyBadge(r.daysUntilExpiry)}`}
                 >
-                  D-{r.daysUntilExpiry}
+                  {dLabel(r.daysUntilExpiry)}
                 </span>
               </td>
-              <td className="px-3 py-2 font-mono tabular-nums text-[#0a0a0a]/80">{r.contractEndDate}</td>
+              <td className="px-3 py-2 font-mono tabular-nums text-[#0a0a0a]/80">{r.contractEndDate ?? "—"}</td>
               <td className="px-3 py-2 font-bold">{r.storeName}</td>
               <td className="px-3 py-2 font-mono text-[#0a0a0a]/70">{r.floor ?? "—"}</td>
               <td className="px-3 py-2">
