@@ -244,6 +244,7 @@ const NAV: NavGroup[] = [
   {
     section: "관리",
     items: [
+      { href: "/dashboard/admin/sales", label: "매출 데이터 갱신", icon: <IconChart />, roles: ["owner","admin"] },
       { href: "/dashboard/admin/users", label: "사용자 관리", icon: <IconUsers />, roles: ["owner","admin"] },
     ],
   },
