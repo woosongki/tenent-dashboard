@@ -211,7 +211,7 @@ const NAV: NavGroup[] = [
     section: "시장·브랜드",
     items: [
       { href: "/dashboard/branch",    label: "상권분석",       icon: <IconMap /> },
-      // 컨텐츠 검증(/dashboard/verify)은 업체미팅 'AI 심층분석'으로 흡수 → 사이드바에서 은퇴(라우트는 유지).
+      // 컨텐츠 검증은 업체미팅 'AI 심층분석'으로 흡수됨 (page·api 라우트 제거, lib/verify는 미팅이 사용).
       { href: "/dashboard/brand-keyword", label: "브랜드 키워드", icon: <IconKeyword /> },
       { href: "/dashboard/brand-fit", label: "브랜드 적합도",  icon: <IconGauge /> },
       // 클릭하면 바로 지도로 — 레이어 선택은 지도 화면 자체 패널에서. (하위 메뉴 없음)
