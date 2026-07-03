@@ -306,6 +306,9 @@ export default function HomeplusMapClient() {
             className="md:hidden border-[2px] border-[#0a0a0a] bg-white px-2 py-1 text-[12px] font-bold" aria-label="닫기">✕</button>
         </div>
 
+        {/* 헤더 제외 본문 전체를 하나의 스크롤 영역으로 — 레이어 섹션이 길어져도 끝까지 스크롤 */}
+        <div className="flex-1 min-h-0 overflow-y-auto">
+
         {/* tier 필터 */}
         <div className="border-b-[2px] border-[#0a0a0a] p-3">
           <div className="mb-2 text-[10px] font-extrabold uppercase tracking-[.14em] text-slate-500">
@@ -654,7 +657,7 @@ export default function HomeplusMapClient() {
         </div>
 
         {/* 점포 카드 리스트 — 홈플 영업중단 33점이 활성화된 경우에만 노출 */}
-        <div className="flex-1 overflow-y-auto p-2">
+        <div className="p-2">
           {showHomeplus && (
             <div className="mb-2 border-[2px] border-[#0a0a0a] bg-yellow-50 px-2 py-1 text-[10px] font-extrabold uppercase tracking-[.12em] text-slate-600">
               홈플 영업중단 33점 · 총 {TOTAL_BRANDS}개 브랜드
@@ -700,6 +703,8 @@ export default function HomeplusMapClient() {
                 </button>
               );
             })}
+        </div>
+
         </div>
       </aside>
 

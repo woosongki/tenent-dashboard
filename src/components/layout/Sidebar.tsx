@@ -6,7 +6,6 @@ import { usePathname, useSearchParams } from "next/navigation";
 import { signOutAction } from "@/app/(auth)/login/_actions/auth";
 import { SIDEBAR_THEMES, type SidebarTheme } from "@/lib/tokens";
 import { menuKeyForPath, ATTRACTION_PLAN_LABEL } from "@/lib/nav";
-import { RETAIL_LAYERS, retailLayerLabel } from "@/data/retail-layers";
 import NotionSyncButton from "@/components/ui/NotionSyncButton";
 
 // ── SVG 아이콘 ────────────────────────────────────────────────
@@ -178,17 +177,6 @@ interface NavItem {
 }
 interface NavGroup { section: string; items: NavItem[] }
 
-// 리테일 지도 하위 레이어 — 목록·점포수·색상·모양을 레지스트리에서 자동 생성.
-// (예전엔 27개 항목이 손으로 박혀 있어 데이터 갱신 시 "…N점" 라벨이 어긋났다.)
-const RETAIL_CHILDREN: NavChild[] = RETAIL_LAYERS.map((l) => ({
-  href: `/dashboard/homeplus?layer=${l.layer}`,
-  label: retailLayerLabel(l),
-  layer: l.layer,
-  dotColor: l.dotColor,
-  shape: l.shape,
-  group: l.group,
-}));
-
 const NAV: NavGroup[] = [
   {
     section: "개요",
@@ -226,12 +214,8 @@ const NAV: NavGroup[] = [
       // 컨텐츠 검증(/dashboard/verify)은 업체미팅 'AI 심층분석'으로 흡수 → 사이드바에서 은퇴(라우트는 유지).
       { href: "/dashboard/brand-keyword", label: "브랜드 키워드", icon: <IconKeyword /> },
       { href: "/dashboard/brand-fit", label: "브랜드 적합도",  icon: <IconGauge /> },
-      {
-        href: "/dashboard/homeplus",
-        label: "리테일 지도",
-        icon: <IconStorefront />,
-        children: RETAIL_CHILDREN,
-      },
+      // 클릭하면 바로 지도로 — 레이어 선택은 지도 화면 자체 패널에서. (하위 메뉴 없음)
+      { href: "/dashboard/homeplus", label: "리테일 지도", icon: <IconStorefront /> },
     ],
   },
   {
