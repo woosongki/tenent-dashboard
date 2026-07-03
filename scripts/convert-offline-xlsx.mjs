@@ -72,7 +72,8 @@ function parsePyeong(ws) {
     if (!store || !bname || !bcode || bcode === "결과") continue;
     // ERP 잡행 차단: "지정되지 않음"·"#"(소계/미분류) — build-sales.mjs와 동일 규칙
     if (bname === "지정되지 않음" || bcode === "#") continue;
-    map.set(`${store}|${cat}|${bname}`, { areaRaw: Number(r[7] || 0), cnt: Number(r[10] || 0) });
+    // area_raw/store_cnt은 DB bigint 컬럼이므로 CSV 직접 import에서도 실패하지 않도록 반올림.
+    map.set(`${store}|${cat}|${bname}`, { areaRaw: Math.round(Number(r[7] || 0)), cnt: Math.round(Number(r[10] || 0)) });
   }
   return map;
 }
