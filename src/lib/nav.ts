@@ -4,10 +4,16 @@
 
 export interface MenuItem { key: string; label: string; href: string; }
 
+// 입점계획 대상 연도 — 라벨 단일 소스. 27년 전환 시 이 값만 바꾸면 사이드바·nav·페이지
+// 라벨이 함께 갱신된다. (연도별 데이터를 실제로 분리해야 하면 attraction_status 에
+// plan_year 컬럼을 추가하고 연도로 필터링 — 지금은 라벨 수준의 준비만.)
+export const ATTRACTION_PLAN_YEAR = 2026;
+export const ATTRACTION_PLAN_LABEL = `입점계획(${String(ATTRACTION_PLAN_YEAR).slice(2)}년)`;
+
 export const CONTROLLABLE_MENUS: MenuItem[] = [
   { key: "sales",         label: "매출분석",       href: "/dashboard/sales" },
   { key: "bcd",           label: "BCD 분석",       href: "/dashboard/bcd" },
-  { key: "drilldown",     label: "입점계획(26년)", href: "/dashboard/drilldown" },
+  { key: "drilldown",     label: ATTRACTION_PLAN_LABEL, href: "/dashboard/drilldown" },
   { key: "vacancy",       label: "공실해결",       href: "/dashboard/vacancy" },
   { key: "goals",         label: "컨텐츠 풀",      href: "/dashboard/goals" },
   { key: "calendar",      label: "52주 캘린더",    href: "/dashboard/calendar" },

@@ -15,7 +15,7 @@ export default async function HomeplusPage() {
     <div className="flex h-full flex-1 flex-col overflow-hidden">
       <TopBar
         crumbs={[
-          { label: "분석" },
+          { label: "시장·브랜드" },
           { label: "리테일 지도" },
         ]}
       />
