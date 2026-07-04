@@ -279,6 +279,19 @@ export default function HomeplusMapClient() {
     setActiveTiers(next);
   }
 
+  // 레이어 일괄 on/off — 26개 체크박스를 하나씩 켜고 끄지 않도록 섹션 단위 토글 + 전체 끄기.
+  // 섹션 구성은 패널의 체인/백화점/그외/마트 섹션과 동일.
+  type SetBool = React.Dispatch<React.SetStateAction<boolean>>;
+  const LAYER_SECTIONS: { name: string; setters: SetBool[]; values: boolean[] }[] = [
+    { name: "체인",   setters: [setShowArtbox, setShowDaiso, setShowOliveYoung], values: [showArtbox, showDaiso, showOliveYoung] },
+    { name: "백화점", setters: [setShowLotte, setShowHyundai, setShowShinsegae, setShowAk, setShowGalleria], values: [showLotte, showHyundai, showShinsegae, showAk, showGalleria] },
+    { name: "그 외",  setters: [setShowAbcmart, setShowEightseconds, setShowEntersix, setShowHanssem, setShowIloom, setShowLf, setShowLivart, setShowMixxo, setShowModa, setShowModernhouse, setShowMuji, setShowNitori, setShowSavezone, setShowSpao, setShowUniqlo], values: [showAbcmart, showEightseconds, showEntersix, showHanssem, showIloom, showLf, showLivart, showMixxo, showModa, showModernhouse, showMuji, showNitori, showSavezone, showSpao, showUniqlo] },
+    { name: "마트",   setters: [setShowEmart, setShowLottemart, setShowHanaromart, setShowHomeplus], values: [showEmart, showLottemart, showHanaromart, showHomeplus] },
+  ];
+  const anyLayerOn = LAYER_SECTIONS.some((s) => s.values.some(Boolean));
+  function setLayerGroup(setters: SetBool[], val: boolean) { setters.forEach((s) => s(val)); }
+  function clearAllLayers() { LAYER_SECTIONS.forEach((s) => setLayerGroup(s.setters, false)); }
+
   return (
     <div className="relative flex h-full w-full bg-[#FAF7EC]">
       {/* 모바일 필터 오버레이 배경 */}
@@ -358,6 +371,42 @@ export default function HomeplusMapClient() {
               />
               <span className="font-bold text-[#0a0a0a]">매칭선</span>
             </label>
+          </div>
+        </div>
+
+        {/* 레이어 일괄 컨트롤 — 섹션별 토글 + 모두 끄기 */}
+        <div className="border-b-[2px] border-[#0a0a0a] p-3">
+          <div className="mb-2 flex items-center justify-between">
+            <span className="text-[10px] font-extrabold uppercase tracking-[.14em] text-slate-500">레이어 일괄</span>
+            <button
+              type="button"
+              onClick={clearAllLayers}
+              disabled={!anyLayerOn}
+              className="border-[2px] border-[#0a0a0a] bg-white px-2 py-0.5 text-[10px] font-extrabold transition hover:bg-rose-100 disabled:opacity-35 disabled:hover:bg-white"
+            >
+              모두 끄기
+            </button>
+          </div>
+          <div className="flex flex-wrap gap-1.5">
+            {LAYER_SECTIONS.map((s) => {
+              const on = s.values.filter(Boolean).length;
+              const allOn = on === s.values.length;
+              return (
+                <button
+                  key={s.name}
+                  type="button"
+                  onClick={() => setLayerGroup(s.setters, !allOn)}
+                  title={`${s.name} 레이어 ${allOn ? "모두 끄기" : "모두 켜기"}`}
+                  className={`flex items-center gap-1 border-[2px] border-[#0a0a0a] px-2 py-1 text-[10.5px] font-bold transition ${
+                    on > 0 ? "bg-yellow-300 text-[#0a0a0a]" : "bg-white text-slate-400"
+                  }`}
+                  style={{ boxShadow: on > 0 ? "2px 2px 0 0 #0a0a0a" : "none" }}
+                >
+                  {s.name}
+                  <span className="font-mono text-[9.5px] opacity-60">{on}/{s.values.length}</span>
+                </button>
+              );
+            })}
           </div>
         </div>
 
