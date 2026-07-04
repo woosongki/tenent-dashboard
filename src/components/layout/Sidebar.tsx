@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { usePathname, useSearchParams } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { signOutAction } from "@/app/(auth)/login/_actions/auth";
 import { SIDEBAR_THEMES, type SidebarTheme } from "@/lib/tokens";
 import { menuKeyForPath, ATTRACTION_PLAN_LABEL } from "@/lib/nav";
@@ -157,23 +157,11 @@ function IconChevronDown() {
 }
 
 type Role = "owner" | "admin" | "member";
-interface NavChild {
-  href: string;
-  label: string;
-  layer?: string;
-  dotColor?: string;
-  /** dot 모양 — 기본 사각, "circle"이면 원형 */
-  shape?: "circle" | "square";
-  /** 같은 group 값을 가진 연속된 아이템들은 접기 가능한 그룹으로 묶임 */
-  group?: string;
-}
 interface NavItem {
   href: string;
   label: string;
   icon: React.ReactElement;
   roles?: Role[];
-  /** 하위 메뉴 — 있으면 펼침 버튼으로 렌더 */
-  children?: NavChild[];
 }
 interface NavGroup { section: string; items: NavItem[] }
 
@@ -275,67 +263,34 @@ export default function Sidebar({
   reportMode = false, onToggleReportMode,
 }: Props) {
   const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const currentLayer = searchParams?.get("layer") ?? "";
   const t = SIDEBAR_THEMES[theme];
-
-  // 업체미팅은 사이드바에서 단순 링크 — 하위 브랜드 리스트/새 업체를 표시하지 않음
-  // (브랜드가 쌓이면 아래 메뉴를 가려 사용이 어려움). 클릭 시 /dashboard/meetings 랜딩으로
-  // 이동 = 전체 목록 + 새 업체 등록 + 드래그 순서변경이 모두 거기서 이뤄짐.
-  const NAV_DYNAMIC = NAV;
-
-  // 펼쳐진 부모 메뉴 추적. 현재 경로 기준 자동 펼침 + 클릭 토글.
-  // 업체미팅은 항상 펼침(사용자 명시적으로 접을 수도 있게 초기 open만 강제).
-  const [expanded, setExpanded] = useState<Set<string>>(() => {
-    const initial = new Set<string>();
-    NAV_DYNAMIC.forEach((g) => g.items.forEach((it) => {
-      if (it.children && pathname.startsWith(it.href)) initial.add(it.href);
-    }));
-    return initial;
-  });
 
   function isActive(href: string) {
     if (href === "/dashboard") return pathname === "/dashboard";
     return pathname.startsWith(href);
   }
-  function isChildActive(parentHref: string, child: NavChild) {
-    // 리테일 지도: layer 쿼리 기준
-    if (parentHref === "/dashboard/homeplus") {
-      if (!pathname.startsWith(parentHref)) return false;
-      const expectedLayer = child.layer ?? "";
-      if (!expectedLayer) return currentLayer === "" || currentLayer === "homeplus";
-      return currentLayer === expectedLayer;
-    }
-    // 업체미팅 등 나머지: pathname 정확 매칭
-    return pathname === child.href;
-  }
-  function toggleExpanded(href: string) {
-    setExpanded((prev) => {
+
+  // 섹션 접힘 상태 — 사용자가 헤더를 눌러 자주 안 쓰는 그룹을 접어둘 수 있음.
+  // localStorage에 저장해 페이지 이동·재방문에도 유지. (SSR 불일치 방지 위해 초기값은
+  // 빈 Set → 마운트 후 useEffect에서 복원.)
+  const STORAGE_KEY = "sidebar:collapsedSections";
+  const [collapsedSections, setCollapsedSections] = useState<Set<string>>(new Set());
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      // 마운트 후 1회 복원 (SSR엔 localStorage 없음) — 의도된 초기 동기화.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      if (raw) setCollapsedSections(new Set(JSON.parse(raw) as string[]));
+    } catch { /* localStorage 접근 불가 시 전부 펼침 유지 */ }
+  }, []);
+  function toggleSection(section: string) {
+    setCollapsedSections((prev) => {
       const next = new Set(prev);
-      if (next.has(href)) next.delete(href);
-      else next.add(href);
+      if (next.has(section)) next.delete(section);
+      else next.add(section);
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify([...next])); } catch { /* 저장 실패 무시 */ }
       return next;
     });
-  }
-  // 하위 그룹(백화점/기타/마트) 접힘 상태 — 기본 모두 펼쳐짐
-  const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
-  function toggleGroup(key: string) {
-    setCollapsedGroups((prev) => {
-      const next = new Set(prev);
-      if (next.has(key)) next.delete(key);
-      else next.add(key);
-      return next;
-    });
-  }
-  // children을 연속된 group 단위로 묶음 (group이 없으면 단독 블록)
-  function chunkChildren(children: NavChild[]) {
-    const chunks: { group?: string; items: NavChild[] }[] = [];
-    for (const c of children) {
-      const last = chunks[chunks.length - 1];
-      if (last && last.group === c.group) last.items.push(c);
-      else chunks.push({ group: c.group, items: [c] });
-    }
-    return chunks;
   }
 
   const initial = (userEmail[0] ?? "U").toUpperCase();
@@ -374,7 +329,7 @@ export default function Sidebar({
 
       {/* ── 네비게이션 ── */}
       <nav className="flex-1 overflow-y-auto px-2 py-3">
-        {NAV_DYNAMIC.map((group) => {
+        {NAV.map((group) => {
           // role 제한 + 사용자별 숨김(hidden_menus) 반영 — 그룹이 통째로 비면 섹션 자체 숨김
           const items = group.items.filter((it) => {
             if (it.roles && !(role && it.roles.includes(role))) return false;
@@ -382,103 +337,41 @@ export default function Sidebar({
             return !(key && hiddenMenus.includes(key));
           });
           if (items.length === 0) return null;
+          // 접힘은 사이드바 펼침(non-collapsed) 상태에서만 적용. 아이콘 모드에선 항상 노출.
+          const sectionCollapsed = !collapsed && collapsedSections.has(group.section);
           return (
           <div key={group.section} className="mb-3">
             {!collapsed && (
-              <p className={`mb-2 px-3 pt-3 text-[10px] font-extrabold tracking-[.16em] uppercase ${t.textMuted}`}>
-                {group.section}
-              </p>
+              <button
+                type="button"
+                onClick={() => toggleSection(group.section)}
+                aria-expanded={!sectionCollapsed}
+                className={`mb-2 flex w-full items-center gap-1 px-3 pt-3 text-[10px] font-extrabold tracking-[.16em] uppercase ${t.textMuted} hover:${t.text}`}
+              >
+                <span className={`shrink-0 transition-transform ${sectionCollapsed ? "-rotate-90" : "rotate-0"}`}>
+                  <IconChevronDown />
+                </span>
+                <span className="flex-1 text-left">{group.section}</span>
+              </button>
             )}
             {collapsed && <div className="pt-3" />}
-            {items.map((item) => {
+            {!sectionCollapsed && items.map((item) => {
               const active = isActive(item.href);
-              const hasChildren = !!item.children?.length;
-              const isExpanded = expanded.has(item.href);
-
-              // 하위 메뉴가 없거나 collapsed 모드면 기존 Link 렌더
-              if (!hasChildren || collapsed) {
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    title={collapsed ? item.label : undefined}
-                    aria-label={collapsed ? item.label : undefined}
-                    className={`relative flex items-center transition-colors ${
-                      collapsed ? "justify-center px-0 py-3" : "gap-2.5 pl-3 pr-2 py-2.5"
-                    } ${active ? `${t.itemActive} ${t.textActive}` : `${t.itemBase} ${t.itemHover}`}`}
-                  >
-                    <span className="h-[16px] w-[16px] shrink-0 [&>svg]:h-full [&>svg]:w-full [&>svg]:stroke-current">
-                      {item.icon}
-                    </span>
-                    {!collapsed && <span className="text-[13px] font-bold">{item.label}</span>}
-                  </Link>
-                );
-              }
-
-              // 펼침 가능한 부모 메뉴
               return (
-                <div key={item.href}>
-                  <button
-                    type="button"
-                    onClick={() => toggleExpanded(item.href)}
-                    className={`relative flex w-full items-center gap-2.5 pl-3 pr-2 py-2.5 transition-colors ${
-                      active ? `${t.itemActive} ${t.textActive}` : `${t.itemBase} ${t.itemHover}`
-                    }`}
-                  >
-                    <span className="h-[16px] w-[16px] shrink-0 [&>svg]:h-full [&>svg]:w-full [&>svg]:stroke-current">
-                      {item.icon}
-                    </span>
-                    <span className="flex-1 text-left text-[13px] font-bold">{item.label}</span>
-                    <span className={`shrink-0 transition-transform ${isExpanded ? "rotate-0" : "-rotate-90"}`}>
-                      <IconChevronDown />
-                    </span>
-                  </button>
-                  {isExpanded && (
-                    <div className="mt-0.5 mb-1 ml-3 border-l-[2px] border-[#0a0a0a]/15 pl-1">
-                      {chunkChildren(item.children!).map((chunk, ci) => {
-                        const groupKey = `${item.href}::${chunk.group ?? "__"}`;
-                        const groupCollapsed = chunk.group ? collapsedGroups.has(groupKey) : false;
-                        return (
-                          <div key={ci}>
-                            {chunk.group && (
-                              <button
-                                type="button"
-                                onClick={() => toggleGroup(groupKey)}
-                                className={`mt-1.5 flex w-full items-center gap-1.5 pl-2 pr-1 py-1 text-[10px] font-extrabold uppercase tracking-[.12em] ${t.textMuted} hover:${t.text}`}
-                              >
-                                <span className={`shrink-0 transition-transform ${groupCollapsed ? "-rotate-90" : "rotate-0"}`}>
-                                  <IconChevronDown />
-                                </span>
-                                <span className="flex-1 text-left">{chunk.group}</span>
-                                <span className="font-mono text-[9.5px] opacity-60">{chunk.items.length}</span>
-                              </button>
-                            )}
-                            {!groupCollapsed && chunk.items.map((child) => {
-                              const childActive = isChildActive(item.href, child);
-                              return (
-                                <Link
-                                  key={child.href + (child.layer ?? "")}
-                                  href={child.href}
-                                  className={`flex items-center gap-2 pr-2 py-2 text-[12px] font-bold transition-colors ${
-                                    chunk.group ? "pl-6" : "pl-3"
-                                  } ${childActive ? `${t.itemActive} ${t.textActive}` : `${t.itemBase} ${t.itemHover}`}`}
-                                >
-                                  {child.dotColor && (
-                                    <span
-                                      className="inline-block h-2 w-2 shrink-0 border border-[#0a0a0a]/30"
-                                      style={{ background: child.dotColor, borderRadius: child.shape === "circle" ? "50%" : 0 }}
-                                    />
-                                  )}
-                                  <span className="truncate">{child.label}</span>
-                                </Link>
-                              );
-                            })}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  title={collapsed ? item.label : undefined}
+                  aria-label={collapsed ? item.label : undefined}
+                  className={`relative flex items-center transition-colors ${
+                    collapsed ? "justify-center px-0 py-3" : "gap-2.5 pl-3 pr-2 py-2.5"
+                  } ${active ? `${t.itemActive} ${t.textActive}` : `${t.itemBase} ${t.itemHover}`}`}
+                >
+                  <span className="h-[16px] w-[16px] shrink-0 [&>svg]:h-full [&>svg]:w-full [&>svg]:stroke-current">
+                    {item.icon}
+                  </span>
+                  {!collapsed && <span className="text-[13px] font-bold">{item.label}</span>}
+                </Link>
               );
             })}
           </div>
