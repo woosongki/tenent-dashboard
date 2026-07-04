@@ -29,7 +29,16 @@ import {
   AGE_GROUP_LABELS,
   pctOf,
 } from "@/lib/population/residents";
+import { getCategoryGap, type RetailCategory } from "@/lib/branch/categoryGap";
+import { getAttractionRows } from "@/lib/attraction/queries";
 import KakaoStoreMap from "@/components/maps/KakaoStoreMap";
+
+// 컨텐츠 유치 카테고리(attraction) → 리테일 매출 카테고리 매핑.
+// 두 분류 체계가 달라 겹치는 것만(스포츠·리빙) 연결 → 나머지 빈 카테고리는 피어 갭으로 커버.
+const ATTRACTION_TO_RETAIL: Record<string, RetailCategory> = {
+  "스포츠": "스포츠",
+  "리빙": "라이프스타일",
+};
 
 // 첫 방문 시 동적 렌더 (3개 월 외부 API 호출이라 빌드 시 prerender 비효율)
 export const dynamic = "force-dynamic";
@@ -73,6 +82,22 @@ export default async function StoreDetailPage({
 
   // 행정동 거주인구 (행안부 주민등록, 시군구 합산 + 점포 행정동)
   const residents = getResidents(storeId);
+
+  // 카테고리 갭(상권유형 대비) + 제안 브랜드(피어 갭). 빈 카테고리에 맞는 유치검토 브랜드도 매핑.
+  const categoryGap = getCategoryGap(storeId, store.name);
+  const attractionByWeakCat = new Map<RetailCategory, string[]>();
+  if (categoryGap && categoryGap.weak.length > 0) {
+    const weakCats = new Set(categoryGap.weak.map((w) => w.cat));
+    const rows = await getAttractionRows();
+    for (const r of rows) {
+      if (r.is_completed || !r.category) continue;
+      const mapped = ATTRACTION_TO_RETAIL[r.category.trim()];
+      if (!mapped || !weakCats.has(mapped)) continue;
+      const list = attractionByWeakCat.get(mapped) ?? [];
+      if (!list.includes(r.brand_name)) list.push(r.brand_name);
+      attractionByWeakCat.set(mapped, list);
+    }
+  }
 
   // 서울 핫스팟 매칭 + 실시간 혼잡도
   const hotspotMatch = findNearestHotspot({ lat: store.lat, lng: store.lng }, 5000);
@@ -355,6 +380,92 @@ export default async function StoreDetailPage({
               <p className="mt-4 text-[10px] font-medium text-[#0a0a0a]/55">
                 행정안전부 주민등록 인구 · {RESIDENTS_BASE_YM} 기준 · {residents.sigungu.name} {residents.sigungu.dongCount}개 행정동 합산
                 {residents.dong ? "" : " · 점포 행정동은 법정동↔행정동 명 상이로 미매칭(시군구 기준)"}
+              </p>
+            </Section>
+          )}
+
+          {/* 카테고리 갭 & 제안 브랜드 — 상권유형(cohort) 대비 */}
+          {categoryGap && (categoryGap.weak.length > 0 || categoryGap.peerGap.length > 0) && (
+            <Section
+              title={`카테고리 갭 & 제안 (${categoryGap.tradeAreaType} ${categoryGap.cohortSize}곳)`}
+              className="lg:col-span-3"
+            >
+              {/* 빈 카테고리 */}
+              {categoryGap.weak.length > 0 ? (
+                <div className="mb-5">
+                  <p className="text-[10px] font-extrabold uppercase tracking-[.14em] text-[#0a0a0a]/65 mb-2">
+                    빈 카테고리 · 상권유형 평균 대비
+                  </p>
+                  <div className="space-y-2.5">
+                    {categoryGap.weak.map((w) => {
+                      const cands = attractionByWeakCat.get(w.cat) ?? [];
+                      return (
+                        <div key={w.cat} className="border-[2px] border-[#0a0a0a] bg-white px-3 py-2.5 shadow-[2px_2px_0_0_#0a0a0a]">
+                          <div className="flex items-baseline justify-between gap-2">
+                            <span className="text-[13px] font-extrabold text-[#0a0a0a]">{w.cat}</span>
+                            <span className="font-mono text-[11px] font-bold text-[#0a0a0a]/70">
+                              우리 {w.myPct}% <span className="text-[#0a0a0a]/40">vs</span> 유형평균 {w.cohortAvg}%
+                              <span className="ml-1.5 text-rose-700 font-extrabold">▼{w.gap}%p</span>
+                            </span>
+                          </div>
+                          {/* 우리 vs 평균 막대 */}
+                          <div className="mt-2 space-y-1">
+                            <div className="flex items-center gap-2">
+                              <span className="w-9 shrink-0 text-[9px] font-bold text-[#0a0a0a]/50">우리</span>
+                              <div className="h-2 flex-1 border-[1px] border-[#0a0a0a] bg-white overflow-hidden">
+                                <div className="h-full bg-rose-400" style={{ width: `${Math.min(w.myPct * 5, 100)}%` }} />
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className="w-9 shrink-0 text-[9px] font-bold text-[#0a0a0a]/50">평균</span>
+                              <div className="h-2 flex-1 border-[1px] border-[#0a0a0a] bg-white overflow-hidden">
+                                <div className="h-full bg-violet-500" style={{ width: `${Math.min(w.cohortAvg * 5, 100)}%` }} />
+                              </div>
+                            </div>
+                          </div>
+                          {cands.length > 0 && (
+                            <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                              <span className="border-[1.5px] border-[#0a0a0a] bg-yellow-300 px-1.5 py-0.5 text-[9px] font-extrabold uppercase tracking-wider">유치검토</span>
+                              {cands.slice(0, 6).map((b) => (
+                                <span key={b} className="text-[11px] font-bold text-[#0a0a0a]">{b}</span>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              ) : (
+                <p className="mb-5 text-[12px] font-bold text-[#0a0a0a]/55">
+                  상권유형 평균 대비 유의하게 빈 카테고리 없음 (균형).
+                </p>
+              )}
+
+              {/* 제안 브랜드 — 피어 갭 */}
+              {categoryGap.peerGap.length > 0 && (
+                <div>
+                  <p className="text-[10px] font-extrabold uppercase tracking-[.14em] text-[#0a0a0a]/65 mb-2">
+                    제안 브랜드 · 같은 유형엔 있는데 우리엔 없는
+                  </p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    {categoryGap.peerGap.map((b) => (
+                      <div key={b.brand} className="flex items-center justify-between gap-2 border-[2px] border-[#0a0a0a] bg-white px-3 py-2 shadow-[2px_2px_0_0_#0a0a0a]">
+                        <div className="min-w-0 flex items-center gap-1.5">
+                          <span className="border-[1.5px] border-[#0a0a0a] bg-cyan-300 px-1.5 py-0.5 text-[9px] font-extrabold uppercase tracking-wider shrink-0">피어갭</span>
+                          <span className="truncate text-[12.5px] font-bold text-[#0a0a0a]">{b.brand}</span>
+                        </div>
+                        <span className="shrink-0 font-mono text-[10.5px] font-bold text-[#0a0a0a]/65">
+                          {b.peerCount}곳 · 평균 {(b.avgSales / 1e8).toFixed(1)}억
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <p className="mt-4 text-[10px] font-medium text-[#0a0a0a]/55">
+                ERP 점포×카테고리·브랜드 매출(2026-04) 기준 · 빈 카테고리 = 상권유형 평균의 70% 미만 또는 gap 3%p↑ · 피어 갭 = 같은 유형 2곳 이상 입점·고매출 중 미입점
               </p>
             </Section>
           )}
