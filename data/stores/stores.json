@@ -243,7 +243,7 @@
       "brand": "뉴코아아울렛",
       "type": "아울렛",
       "name": "평촌2점",
-      "address": "경기 안양시 동안구 호계동",
+      "address": "경기 안양시 동안구 동안로 119",
       "phone": null,
       "hasKimsclub": false,
       "lat": 37.375092351174,
@@ -253,8 +253,8 @@
       "region1": "경기",
       "region2": "안양시 동안구",
       "region3": "호계동",
-      "roadAddress": null,
-      "jibunAddress": "경기 안양시 동안구 호계동",
+      "roadAddress": "경기 안양시 동안구 동안로 119",
+      "jibunAddress": "경기 안양시 동안구 호계동 1039-3",
       "geocoded": true
     },
     {
@@ -319,7 +319,7 @@
       "brand": "뉴코아아울렛",
       "type": "아울렛",
       "name": "산본점",
-      "address": "경기 군포시 산본동",
+      "address": "경기 군포시 산본동 1231",
       "phone": null,
       "hasKimsclub": false,
       "lat": 37.3733541681044,
@@ -330,7 +330,7 @@
       "region2": "군포시",
       "region3": "산본동",
       "roadAddress": null,
-      "jibunAddress": "경기 군포시 산본동",
+      "jibunAddress": "경기 군포시 산본동 1231",
       "geocoded": true
     },
     {
@@ -376,7 +376,7 @@
       "brand": "뉴코아아울렛",
       "type": "아울렛",
       "name": "괴정점",
-      "address": "부산 사하구 괴정동",
+      "address": "부산 사하구 사하로 190",
       "phone": null,
       "hasKimsclub": false,
       "lat": 35.1037002076572,
@@ -386,7 +386,7 @@
       "region1": "부산",
       "region2": "사하구",
       "region3": "괴정동",
-      "roadAddress": null,
+      "roadAddress": "부산 사하구 사하로 190",
       "jibunAddress": "부산 사하구 괴정동",
       "geocoded": true
     },
@@ -395,7 +395,7 @@
       "brand": "뉴코아아울렛",
       "type": "아울렛",
       "name": "울산2점",
-      "address": "울산 중구 성남동",
+      "address": "울산 중구 시계탑거리 20",
       "phone": null,
       "hasKimsclub": false,
       "lat": 35.5533424659806,
@@ -405,7 +405,7 @@
       "region1": "울산",
       "region2": "중구",
       "region3": "성남동",
-      "roadAddress": null,
+      "roadAddress": "울산 중구 시계탑거리 20",
       "jibunAddress": "울산 중구 성남동",
       "geocoded": true
     },
@@ -452,7 +452,7 @@
       "brand": "뉴코아아울렛",
       "type": "아울렛",
       "name": "덕천점",
-      "address": "부산 북구 덕천동",
+      "address": "부산 북구 만덕대로 23",
       "phone": null,
       "hasKimsclub": false,
       "lat": 35.2131838661424,
@@ -462,8 +462,8 @@
       "region1": "부산",
       "region2": "북구",
       "region3": "덕천동",
-      "roadAddress": null,
-      "jibunAddress": "부산 북구 덕천동",
+      "roadAddress": "부산 북구 만덕대로 23",
+      "jibunAddress": "부산 북구 덕천동 389-2",
       "geocoded": true
     },
     {
