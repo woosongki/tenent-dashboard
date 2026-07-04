@@ -1,7 +1,7 @@
 "use client";
 
 import "leaflet/dist/leaflet.css";
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import {
   MapContainer,
@@ -58,34 +58,12 @@ import {
   type HomeplusStore,
   type Tier,
 } from "@/data/homeplus";
-import { ARTBOX_STORES } from "@/data/artbox";
-import { DAISO_STORES } from "@/data/daiso";
-import { OLIVEYOUNG_STORES } from "@/data/oliveyoung";
-import { LOTTE_STORES } from "@/data/lotte";
-import { HYUNDAI_STORES } from "@/data/hyundai";
-import { SHINSEGAE_STORES } from "@/data/shinsegae";
-import { AK_STORES } from "@/data/ak";
-import { GALLERIA_STORES } from "@/data/galleria";
-// ── 그 외 ──
-import { ENTERSIX_STORES } from "@/data/entersix";
-import { MODA_STORES } from "@/data/moda";
-import { SAVEZONE_STORES } from "@/data/savezone";
-import { LF_STORES } from "@/data/lf";
-import { MODERNHOUSE_STORES } from "@/data/modernhouse";
-import { SPAO_STORES } from "@/data/spao";
-import { MIXXO_STORES } from "@/data/mixxo";
-import { ABCMART_STORES } from "@/data/abcmart";
-import { EIGHTSECONDS_STORES } from "@/data/eightseconds";
-import { MUJI_STORES } from "@/data/muji";
-import { HANSSEM_STORES } from "@/data/hanssem";
-import { LIVART_STORES } from "@/data/livart";
-import { ILOOM_STORES } from "@/data/iloom";
-import { NITORI_STORES } from "@/data/nitori";
-import { UNIQLO_STORES } from "@/data/uniqlo";
-// ── 마트 ──
-import { EMART_STORES } from "@/data/emart";
-import { LOTTEMART_STORES } from "@/data/lottemart";
-import { HANAROMART_STORES } from "@/data/hanaromart";
+// 체인 좌표(약 1.1MB)는 정적 import하지 않고 마운트 후 dynamic import로 분리 →
+// 지도 초기 번들에서 제외. 아래 컴포넌트 내부에서 별칭(ARTBOX_STORES 등)으로 접근.
+import type { Chains } from "@/data/chains";
+
+// 로드 전 빈 배열 — 안정적 참조(매 렌더 새 배열 생성 방지).
+const NO_STORES: ChainStore[] = [];
 
 // 거리(km) → 상권 tier. 홈플 데이터(tier 사전계산)와 같은 임계값 사용.
 function tierFromDistance(km: number): Tier {
@@ -147,6 +125,42 @@ export default function HomeplusMapClient() {
   const [showEmart, setShowEmart] = useState(initialLayer === "emart");
   const [showLottemart, setShowLottemart] = useState(initialLayer === "lottemart");
   const [showHanaromart, setShowHanaromart] = useState(initialLayer === "hanaromart");
+
+  // 체인 좌표 데이터 lazy 로딩 — 초기 번들에서 분리, 마운트 직후 별도 청크로 fetch.
+  // 로드 전엔 각 배열이 빈 상태(체크박스 카운트 0 → 로드되면 자동 채워짐).
+  const [chains, setChains] = useState<Partial<Chains>>({});
+  useEffect(() => {
+    let alive = true;
+    import("@/data/chains").then((m) => { if (alive) setChains(m.CHAINS); });
+    return () => { alive = false; };
+  }, []);
+  // 별칭 — 아래 렌더/계산의 기존 참조를 그대로 유지 (로드 전 NO_STORES).
+  const ARTBOX_STORES = chains.artbox ?? NO_STORES;
+  const DAISO_STORES = chains.daiso ?? NO_STORES;
+  const OLIVEYOUNG_STORES = chains.oliveyoung ?? NO_STORES;
+  const LOTTE_STORES = chains.lotte ?? NO_STORES;
+  const HYUNDAI_STORES = chains.hyundai ?? NO_STORES;
+  const SHINSEGAE_STORES = chains.shinsegae ?? NO_STORES;
+  const AK_STORES = chains.ak ?? NO_STORES;
+  const GALLERIA_STORES = chains.galleria ?? NO_STORES;
+  const ENTERSIX_STORES = chains.entersix ?? NO_STORES;
+  const MODA_STORES = chains.moda ?? NO_STORES;
+  const SAVEZONE_STORES = chains.savezone ?? NO_STORES;
+  const LF_STORES = chains.lf ?? NO_STORES;
+  const MODERNHOUSE_STORES = chains.modernhouse ?? NO_STORES;
+  const SPAO_STORES = chains.spao ?? NO_STORES;
+  const MIXXO_STORES = chains.mixxo ?? NO_STORES;
+  const ABCMART_STORES = chains.abcmart ?? NO_STORES;
+  const EIGHTSECONDS_STORES = chains.eightseconds ?? NO_STORES;
+  const MUJI_STORES = chains.muji ?? NO_STORES;
+  const HANSSEM_STORES = chains.hanssem ?? NO_STORES;
+  const LIVART_STORES = chains.livart ?? NO_STORES;
+  const ILOOM_STORES = chains.iloom ?? NO_STORES;
+  const NITORI_STORES = chains.nitori ?? NO_STORES;
+  const UNIQLO_STORES = chains.uniqlo ?? NO_STORES;
+  const EMART_STORES = chains.emart ?? NO_STORES;
+  const LOTTEMART_STORES = chains.lottemart ?? NO_STORES;
+  const HANAROMART_STORES = chains.hanaromart ?? NO_STORES;
 
   // 출점 공백지 발굴: 반경 N km 이내 이랜드 점포가 없는 체인 매장만 표시
   const [gapMode, setGapMode] = useState(false);
@@ -254,7 +268,10 @@ export default function HomeplusMapClient() {
       }
       return { cfg: c, items };
     });
+    // 개별 *_STORES 별칭은 모두 chains에서 파생 → chains 하나로 로드 완료 시 재계산 커버.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
+    chains,
     showArtbox, showDaiso, showOliveYoung,
     showLotte, showHyundai, showShinsegae, showAk, showGalleria,
     showEntersix, showModa, showSavezone, showLf, showSpao, showMixxo, showModernhouse,
