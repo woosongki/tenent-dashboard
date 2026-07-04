@@ -55,7 +55,8 @@ function parsePyeong(ws: XLSX.WorkSheet | undefined): Map<string, { areaRaw: num
     if (!store || !bname || !bcode || bcode === "결과") continue;
     // ERP 잡행 차단: "지정되지 않음"·"#"(소계/미분류)
     if (bname === "지정되지 않음" || bcode === "#") continue;
-    map.set(`${store}|${cat}|${bname}`, { areaRaw: Number(r[7] || 0), cnt: Number(r[10] || 0) });
+    // area_raw/store_cnt은 DB bigint 컬럼이므로 소수값이 들어가지 않도록 반올림.
+    map.set(`${store}|${cat}|${bname}`, { areaRaw: Math.round(Number(r[7] || 0)), cnt: Math.round(Number(r[10] || 0)) });
   }
   return map;
 }
