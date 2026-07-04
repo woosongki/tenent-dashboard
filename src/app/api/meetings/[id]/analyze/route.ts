@@ -90,7 +90,7 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
       .select("session_index,held_at,extracted")
       .eq("meeting_id", id).order("session_index", { ascending: false }),
   ]);
-  const salesBenchmark = buildSalesBenchmark(companyName, brand);
+  const salesBenchmark = await buildSalesBenchmark(companyName, brand);
   const meetingContext = buildMeetingContext(
     (sessRes.data ?? []) as { session_index: number; held_at: string; extracted: ExtractedSession | null }[],
   );
