@@ -1,3 +1,5 @@
+import SearchTrigger from "./SearchTrigger";
+
 interface Crumb {
   label: string;
   href?: string;
@@ -78,6 +80,8 @@ export default function TopBar({ crumbs, action, lastUpdated, onOpenSidebar }: P
       </div>
 
       <div className="flex shrink-0 items-center gap-2 ml-4">
+        <SearchTrigger />
+
         {lastUpdated && (
           <span
             className="hidden sm:inline-flex items-center gap-1.5 border-[2px] border-[#0a0a0a] bg-white px-2 py-0.5 text-[10px] font-extrabold tabular-nums uppercase tracking-wider"
