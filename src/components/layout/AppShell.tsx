@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Sidebar from "./Sidebar";
 import SearchPalette from "@/components/ui/SearchPalette";
+import { OPEN_SEARCH_EVENT } from "./SearchTrigger";
 import FeedbackButton from "@/components/feedback/FeedbackButton";
 import { useSidebarTheme } from "@/hooks/useSidebarTheme";
 import { useReportMode } from "@/hooks/useReportMode";
@@ -60,6 +61,13 @@ export default function AppShell({ userEmail, role = null, hiddenMenus = [], chi
     }
     document.addEventListener("keydown", handler);
     return () => document.removeEventListener("keydown", handler);
+  }, []);
+
+  // TopBar 검색 버튼(SearchTrigger)이 쏘는 글로벌 이벤트로도 열림
+  useEffect(() => {
+    const open = () => setSearchOpen(true);
+    window.addEventListener(OPEN_SEARCH_EVENT, open);
+    return () => window.removeEventListener(OPEN_SEARCH_EVENT, open);
   }, []);
 
   return (
