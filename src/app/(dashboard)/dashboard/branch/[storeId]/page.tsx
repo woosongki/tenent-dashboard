@@ -406,20 +406,20 @@ export default async function StoreDetailPage({
                           <div className="flex items-baseline justify-between gap-2">
                             <span className="text-[13px] font-extrabold text-[#0a0a0a]">{w.cat}</span>
                             <span className="font-mono text-[11px] font-bold text-[#0a0a0a]/70">
-                              우리 {w.myPct}% <span className="text-[#0a0a0a]/40">vs</span> 유형평균 {w.cohortAvg}%
+                              {store.name} {w.myPct}% <span className="text-[#0a0a0a]/40">vs</span> 유형평균 {w.cohortAvg}%
                               <span className="ml-1.5 text-rose-700 font-extrabold">▼{w.gap}%p</span>
                             </span>
                           </div>
-                          {/* 우리 vs 평균 막대 */}
+                          {/* 이 점포 vs 유형평균 막대 */}
                           <div className="mt-2 space-y-1">
                             <div className="flex items-center gap-2">
-                              <span className="w-9 shrink-0 text-[9px] font-bold text-[#0a0a0a]/50">우리</span>
+                              <span className="w-12 shrink-0 text-[9px] font-bold text-[#0a0a0a]/50">이 점포</span>
                               <div className="h-2 flex-1 border-[1px] border-[#0a0a0a] bg-white overflow-hidden">
                                 <div className="h-full bg-rose-400" style={{ width: `${Math.min(w.myPct * 5, 100)}%` }} />
                               </div>
                             </div>
                             <div className="flex items-center gap-2">
-                              <span className="w-9 shrink-0 text-[9px] font-bold text-[#0a0a0a]/50">평균</span>
+                              <span className="w-12 shrink-0 text-[9px] font-bold text-[#0a0a0a]/50">유형평균</span>
                               <div className="h-2 flex-1 border-[1px] border-[#0a0a0a] bg-white overflow-hidden">
                                 <div className="h-full bg-violet-500" style={{ width: `${Math.min(w.cohortAvg * 5, 100)}%` }} />
                               </div>
@@ -448,7 +448,7 @@ export default async function StoreDetailPage({
               {categoryGap.peerGap.length > 0 && (
                 <div>
                   <p className="text-[10px] font-extrabold uppercase tracking-[.14em] text-[#0a0a0a]/65 mb-2">
-                    제안 브랜드 · 같은 유형엔 있는데 우리엔 없는
+                    제안 브랜드 · 같은 유형엔 있는데 {store.name}엔 없는
                   </p>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     {categoryGap.peerGap.map((b) => (
