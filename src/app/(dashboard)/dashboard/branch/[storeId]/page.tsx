@@ -30,11 +30,14 @@ import {
   pctOf,
 } from "@/lib/population/residents";
 import { getCategoryGap, type RetailCategory } from "@/lib/branch/categoryGap";
+import { getNearbyExternalChains, type NearbyChain } from "@/lib/branch/externalBrands";
 import { getAttractionRows } from "@/lib/attraction/queries";
+import { getSessionContext } from "@/lib/auth/session";
 import KakaoStoreMap from "@/components/maps/KakaoStoreMap";
+import AiBrandSuggest from "./_components/AiBrandSuggest";
 
 // 컨텐츠 유치 카테고리(attraction) → 리테일 매출 카테고리 매핑.
-// 두 분류 체계가 달라 대응되는 것만 연결 → 나머지 빈 카테고리는 피어 갭으로 커버.
+// 두 분류 체계가 달라 대응되는 것만 연결 → 나머지 빈 카테고리는 인근 외부 체인으로 커버.
 const ATTRACTION_TO_RETAIL: Record<string, RetailCategory> = {
   "스포츠": "스포츠",
   "리빙": "라이프스타일",
@@ -65,6 +68,8 @@ export default async function StoreDetailPage({
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
+  const { role } = await getSessionContext();
+  const canUseAi = role === "owner" || role === "admin";
 
   const { storeId } = await params;
   const store = getStoreById(storeId);
@@ -85,9 +90,19 @@ export default async function StoreDetailPage({
   // 행정동 거주인구 (행안부 주민등록, 시군구 합산 + 점포 행정동)
   const residents = getResidents(storeId);
 
-  // 카테고리 갭(상권유형 대비) + 제안 브랜드(피어 갭). 빈 카테고리에 맞는 유치검토 브랜드도 매핑.
+  // 카테고리 갭(상권유형 대비). 제안 브랜드는 외부 시장에서 → 리테일 지도 인근 외부 체인.
   const categoryGap = getCategoryGap(storeId, store.name);
   const attractionByWeakCat = new Map<RetailCategory, string[]>();
+  const nearbyChains: NearbyChain[] = categoryGap
+    ? await getNearbyExternalChains(store.lat, store.lng, 3)
+    : [];
+  // 외부 체인을 카테고리별로 묶어 빈 카테고리 매칭에 사용
+  const nearbyByCat = new Map<RetailCategory, NearbyChain[]>();
+  for (const c of nearbyChains) {
+    const list = nearbyByCat.get(c.cat) ?? [];
+    list.push(c);
+    nearbyByCat.set(c.cat, list);
+  }
   if (categoryGap && categoryGap.weak.length > 0) {
     const weakCats = new Set(categoryGap.weak.map((w) => w.cat));
     const rows = await getAttractionRows();
@@ -386,8 +401,8 @@ export default async function StoreDetailPage({
             </Section>
           )}
 
-          {/* 카테고리 갭 & 제안 브랜드 — 상권유형(cohort) 대비 */}
-          {categoryGap && (categoryGap.weak.length > 0 || categoryGap.peerGap.length > 0) && (
+          {/* 카테고리 갭 & 제안 브랜드 — 상권유형(cohort) 대비 + 인근 외부 체인 */}
+          {categoryGap && (categoryGap.weak.length > 0 || nearbyChains.length > 0) && (
             <Section
               title={`카테고리 갭 & 제안 (${categoryGap.tradeAreaType} ${categoryGap.cohortSize}곳)`}
               className="lg:col-span-3"
@@ -401,6 +416,7 @@ export default async function StoreDetailPage({
                   <div className="space-y-2.5">
                     {categoryGap.weak.map((w) => {
                       const cands = attractionByWeakCat.get(w.cat) ?? [];
+                      const extern = nearbyByCat.get(w.cat) ?? [];
                       return (
                         <div key={w.cat} className="border-[2px] border-[#0a0a0a] bg-white px-3 py-2.5 shadow-[2px_2px_0_0_#0a0a0a]">
                           <div className="flex items-baseline justify-between gap-2">
@@ -425,9 +441,22 @@ export default async function StoreDetailPage({
                               </div>
                             </div>
                           </div>
+                          {extern.length > 0 && (
+                            <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                              <span className="border-[1.5px] border-[#0a0a0a] bg-cyan-300 px-1.5 py-0.5 text-[9px] font-extrabold uppercase tracking-wider shrink-0">인근 외부</span>
+                              {extern.map((c) => (
+                                <span key={c.key} className="text-[11px] font-bold text-[#0a0a0a]">
+                                  {c.label}
+                                  <span className="ml-0.5 font-mono text-[9.5px] text-[#0a0a0a]/55">
+                                    ({c.count}·{c.nearestKm}km)
+                                  </span>
+                                </span>
+                              ))}
+                            </div>
+                          )}
                           {cands.length > 0 && (
                             <div className="mt-2 flex flex-wrap items-center gap-1.5">
-                              <span className="border-[1.5px] border-[#0a0a0a] bg-yellow-300 px-1.5 py-0.5 text-[9px] font-extrabold uppercase tracking-wider">유치검토</span>
+                              <span className="border-[1.5px] border-[#0a0a0a] bg-yellow-300 px-1.5 py-0.5 text-[9px] font-extrabold uppercase tracking-wider shrink-0">유치검토</span>
                               {cands.slice(0, 6).map((b) => (
                                 <span key={b} className="text-[11px] font-bold text-[#0a0a0a]">{b}</span>
                               ))}
@@ -444,30 +473,39 @@ export default async function StoreDetailPage({
                 </p>
               )}
 
-              {/* 제안 브랜드 — 피어 갭 */}
-              {categoryGap.peerGap.length > 0 && (
+              {/* 제안 브랜드 — 리테일 지도 인근 외부 체인(유치 후보) */}
+              {nearbyChains.length > 0 && (
                 <div>
                   <p className="text-[10px] font-extrabold uppercase tracking-[.14em] text-[#0a0a0a]/65 mb-2">
-                    제안 브랜드 · 같은 유형엔 있는데 {store.name}엔 없는
+                    제안 브랜드 · 반경 3km 내 외부 체인 (유치 후보)
                   </p>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                    {categoryGap.peerGap.map((b) => (
-                      <div key={b.brand} className="flex items-center justify-between gap-2 border-[2px] border-[#0a0a0a] bg-white px-3 py-2 shadow-[2px_2px_0_0_#0a0a0a]">
-                        <div className="min-w-0 flex items-center gap-1.5">
-                          <span className="border-[1.5px] border-[#0a0a0a] bg-cyan-300 px-1.5 py-0.5 text-[9px] font-extrabold uppercase tracking-wider shrink-0">피어갭</span>
-                          <span className="truncate text-[12.5px] font-bold text-[#0a0a0a]">{b.brand}</span>
+                    {nearbyChains.map((c) => {
+                      const isWeakCat = categoryGap.weak.some((w) => w.cat === c.cat);
+                      return (
+                        <div key={c.key} className={`flex items-center justify-between gap-2 border-[2px] border-[#0a0a0a] px-3 py-2 shadow-[2px_2px_0_0_#0a0a0a] ${isWeakCat ? "bg-yellow-50" : "bg-white"}`}>
+                          <div className="min-w-0 flex items-center gap-1.5">
+                            <span className={`border-[1.5px] border-[#0a0a0a] px-1.5 py-0.5 text-[9px] font-extrabold uppercase tracking-wider shrink-0 ${isWeakCat ? "bg-yellow-300" : "bg-cyan-300"}`}>{c.cat}</span>
+                            <span className="truncate text-[12.5px] font-bold text-[#0a0a0a]">{c.label}</span>
+                            {isWeakCat && <span className="shrink-0 text-[9px] font-extrabold text-rose-700">갭</span>}
+                          </div>
+                          <span className="shrink-0 font-mono text-[10.5px] font-bold text-[#0a0a0a]/65">
+                            {c.count}개 · 최근접 {c.nearestKm}km
+                          </span>
                         </div>
-                        <span className="shrink-0 font-mono text-[10.5px] font-bold text-[#0a0a0a]/65">
-                          {b.peerCount}곳 · 평균 {(b.avgSales / 1e8).toFixed(1)}억
-                        </span>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
               )}
 
+              {/* AI 제안 — 지도에 없는 카테고리/브랜드까지 외부 시장에서 온디맨드 제안 */}
+              {categoryGap.weak.length > 0 && canUseAi && (
+                <AiBrandSuggest storeId={storeId} />
+              )}
+
               <p className="mt-4 text-[10px] font-medium text-[#0a0a0a]/55">
-                ERP 점포×카테고리·브랜드 매출(2026-04) 기준 · 빈 카테고리 = 상권유형 평균의 70% 미만 또는 gap 3%p↑ · 피어 갭 = 같은 유형 2곳 이상 입점·고매출 중 미입점
+                ERP 점포×카테고리 매출(2026-04) 기준 · 빈 카테고리 = 상권유형 평균의 70% 미만 또는 gap 3%p↑ · 제안 브랜드 = 리테일 지도 외부 체인 중 반경 3km 내 매장 보유(상권 수요 검증). ‘갭’ 표시 = 빈 카테고리에 해당
               </p>
             </Section>
           )}
