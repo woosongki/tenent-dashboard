@@ -34,10 +34,12 @@ import { getAttractionRows } from "@/lib/attraction/queries";
 import KakaoStoreMap from "@/components/maps/KakaoStoreMap";
 
 // 컨텐츠 유치 카테고리(attraction) → 리테일 매출 카테고리 매핑.
-// 두 분류 체계가 달라 겹치는 것만(스포츠·리빙) 연결 → 나머지 빈 카테고리는 피어 갭으로 커버.
+// 두 분류 체계가 달라 대응되는 것만 연결 → 나머지 빈 카테고리는 피어 갭으로 커버.
 const ATTRACTION_TO_RETAIL: Record<string, RetailCategory> = {
   "스포츠": "스포츠",
   "리빙": "라이프스타일",
+  "팬시/굿즈": "잡화",
+  "키즈카페": "아동의류",
 };
 
 // 첫 방문 시 동적 렌더 (3개 월 외부 API 호출이라 빌드 시 prerender 비효율)
