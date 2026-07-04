@@ -1,7 +1,6 @@
 import "server-only";
-import { readFileSync } from "fs";
-import { join } from "path";
 import { createClient } from "@/lib/supabase/server";
+import { getOfflineMeta, getOfflineCum, cumDays } from "@/lib/sales/queries";
 import type { AttractionMatch, VendorMatch, SalesBenchmark } from "./types";
 
 // ─────────────────────────────────────────────────────────────
@@ -111,103 +110,62 @@ export async function findExistingTenancy(
 }
 
 // ─────────────────────────────────────────────────────────────
-// C2. 매출 벤치마크 (자체 brand-sales.json)
+// C2. 매출 벤치마크 (Supabase 오프라인 누적 = 매출분석과 동일 소스)
+//   예전엔 정적 data/sales/brand-sales.json(월 1회 커밋)을 읽었으나, 매출이
+//   Supabase로 이관되어 낡은 스냅샷을 참조하는 문제 → getOfflineCum 재사용으로 전환.
+//   피어 그룹은 구 '구매그룹' 대신 Supabase의 복종(cat) 기준.
 // ─────────────────────────────────────────────────────────────
-interface BrandSalesData {
-  overallTotal: {
-    revenue_current: number;
-    revenue_prev: number;
-    revenue_growth: number;
-    profit_current: number;
-    profit_prev: number;
-    profit_growth: number;
-  };
-  groups: Array<{
-    code: string;
-    name: string;
-    revenue_current: number;
-    revenue_prev: number;
-    revenue_growth: number;
-    profit_current: number;
-    profit_prev: number;
-    profit_growth: number;
-    brandCount: number;
-  }>;
-  brands: Array<{
-    groupCode: string;
-    groupName: string;
-    name: string;
-    summary: {
-      revenue_current: number;
-      revenue_prev: number;
-      revenue_growth: number;
-      profit_current: number;
-      profit_prev: number;
-      profit_growth: number;
-    };
-  }>;
-}
-
-let brandSalesCache: BrandSalesData | null = null;
-
-function loadBrandSales(): BrandSalesData | null {
-  if (brandSalesCache) return brandSalesCache;
+export async function buildSalesBenchmark(
+  companyName: string,
+  brandAlias?: string | null
+): Promise<SalesBenchmark | null> {
   try {
-    const filePath = join(process.cwd(), "data", "sales", "brand-sales.json");
-    brandSalesCache = JSON.parse(readFileSync(filePath, "utf-8")) as BrandSalesData;
-    return brandSalesCache;
+    const meta = await getOfflineMeta();
+    if (!meta.cumYear) return null;
+    const prevYear = String(Number(meta.cumYear) - 1);
+    const cum = await getOfflineCum(meta.cumYear, prevYear, null, cumDays(meta.cumYear, meta.monthYm));
+
+    // 전체 브랜드(본류 + '그 외') — OffRank: key=브랜드명, cat=복종, s/ps=매출 당기/전기, g=이익 당기, yoyPct=매출 전년비
+    const allBrands = [...cum.brands, ...cum.others.brands];
+    const targets = [companyName, brandAlias].filter(Boolean) as string[];
+
+    // 1) 동일 브랜드가 자체 매출 데이터에 있는지 (이미 입점 중이라는 강한 신호)
+    const ourBrand = allBrands.find((b) => targets.some((t) => nameMatches(t, b.key)));
+
+    // 2) 피어 그룹 = 복종(cat). 이미 입점 중이면 그 복종의 브랜드들과 비교.
+    const cat = ourBrand?.cat ?? null;
+    const peerBrands = cat ? allBrands.filter((b) => b.cat === cat) : [];
+    const peerAvg = peerBrands.length > 0
+      ? {
+          revenue: peerBrands.reduce((s, b) => s + b.s, 0) / peerBrands.length,
+          margin: peerBrands.reduce((s, b) => s + (b.s > 0 ? (b.g / b.s) * 100 : 0), 0) / peerBrands.length,
+          growth: peerBrands.reduce((s, b) => s + b.yoyPct, 0) / peerBrands.length,
+        }
+      : null;
+
+    return {
+      ourBrandFound: !!ourBrand,
+      ourBrandStats: ourBrand
+        ? {
+            name: ourBrand.key,
+            revenueWon: ourBrand.s,
+            marginPct: ourBrand.s > 0 ? (ourBrand.g / ourBrand.s) * 100 : 0,
+            revenueGrowth: ourBrand.yoyPct,
+          }
+        : null,
+      groupName: cat,
+      groupCode: cat,
+      peerCount: peerBrands.length,
+      peerAvgRevenueWon: peerAvg?.revenue ?? null,
+      peerAvgMarginPct: peerAvg?.margin ?? null,
+      peerAvgGrowthPct: peerAvg?.growth ?? null,
+      overall: {
+        totalRevenueWon: cum.total,
+        avgMarginPct: cum.total > 0 ? (cum.gTotal / cum.total) * 100 : 0,
+        revenueGrowthPct: cum.yoyPct,
+      },
+    };
   } catch {
     return null;
   }
-}
-
-export function buildSalesBenchmark(
-  companyName: string,
-  brandAlias?: string | null
-): SalesBenchmark | null {
-  const data = loadBrandSales();
-  if (!data) return null;
-  const targets = [companyName, brandAlias].filter(Boolean) as string[];
-
-  // 1) 동일 브랜드가 자체 매출 데이터에 있는지 (이미 입점 중이라는 강한 신호)
-  const ourBrand = data.brands.find((b) => targets.some((t) => nameMatches(t, b.name)));
-
-  // 2) 카테고리(group) 추정 — 이미 입점 중이면 해당 group, 아니면 전체 평균과만 비교
-  let group: BrandSalesData["groups"][number] | null = null;
-  if (ourBrand) {
-    group = data.groups.find((g) => g.code === ourBrand.groupCode) ?? null;
-  }
-
-  // 그룹 내 평균 (입점 브랜드들의 평균)
-  const peerBrands = group ? data.brands.filter((b) => b.groupCode === group!.code) : [];
-  const peerAvg = peerBrands.length > 0
-    ? {
-        revenue: peerBrands.reduce((s, b) => s + b.summary.revenue_current, 0) / peerBrands.length,
-        margin: peerBrands.reduce((s, b) => s + (b.summary.revenue_current > 0 ? (b.summary.profit_current / b.summary.revenue_current) * 100 : 0), 0) / peerBrands.length,
-        growth: peerBrands.reduce((s, b) => s + b.summary.revenue_growth, 0) / peerBrands.length,
-      }
-    : null;
-
-  return {
-    ourBrandFound: !!ourBrand,
-    ourBrandStats: ourBrand
-      ? {
-          name: ourBrand.name,
-          revenueWon: ourBrand.summary.revenue_current,
-          marginPct: ourBrand.summary.revenue_current > 0 ? (ourBrand.summary.profit_current / ourBrand.summary.revenue_current) * 100 : 0,
-          revenueGrowth: ourBrand.summary.revenue_growth,
-        }
-      : null,
-    groupName: group?.name ?? null,
-    groupCode: group?.code ?? null,
-    peerCount: peerBrands.length,
-    peerAvgRevenueWon: peerAvg?.revenue ?? null,
-    peerAvgMarginPct: peerAvg?.margin ?? null,
-    peerAvgGrowthPct: peerAvg?.growth ?? null,
-    overall: {
-      totalRevenueWon: data.overallTotal.revenue_current,
-      avgMarginPct: data.overallTotal.revenue_current > 0 ? (data.overallTotal.profit_current / data.overallTotal.revenue_current) * 100 : 0,
-      revenueGrowthPct: data.overallTotal.revenue_growth,
-    },
-  };
 }
