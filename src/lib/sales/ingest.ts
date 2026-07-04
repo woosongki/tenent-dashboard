@@ -1,8 +1,8 @@
 // 매출 ERP 익스포트(xlsx) → Supabase 적재용 행 변환 (서버 전용).
 //
-// scripts/convert-offline-xlsx.mjs · convert-online-xlsx.mjs 의 파싱 로직을 그대로 이식.
-// 예전엔 로컬에서 스크립트로 CSV를 만들어 import 했지만, 이제 앱 업로드 화면
-// (/dashboard/admin/sales)이 이 함수로 직접 파싱해 DB에 반영한다.
+// 구 로컬 파이프라인(convert-offline/online-xlsx + import-sales, 현재 제거됨)의
+// 파싱 로직을 이관. 이제 앱 업로드 화면(/dashboard/admin/sales)이 이 함수로
+// 직접 파싱해 Supabase에 반영한다.
 //
 // 파일 ↔ 테이블 대응:
 //   5.특정(누적)   → buildOfflineRows → sales_offline_cum   (period=year)
@@ -30,7 +30,7 @@ function toGrid(ws: XLSX.WorkSheet): Grid {
   return XLSX.utils.sheet_to_json<Cell[]>(ws, { header: 1, defval: null });
 }
 
-// ── 오프라인 (convert-offline-xlsx.mjs) ─────────────────────────────
+// ── 오프라인 ─────────────────────────────────────────────────────
 function divisionOf(code: string): string {
   if (!code) return "기타";
   if (code[0] === "I") return "온라인";
@@ -114,7 +114,7 @@ export function buildOfflineRows(buf: ArrayBuffer, periodCur: string, periodPrev
   return rows;
 }
 
-// ── 온라인 (convert-online-xlsx.mjs) ────────────────────────────────
+// ── 온라인 ───────────────────────────────────────────────────────
 function parseMonthYm(sheetName: string): string | null {
   const m = sheetName.match(/(\d{2})년\s*(\d{1,2})월/);
   if (!m) return null;
@@ -211,7 +211,7 @@ export function buildOnlineRows(buf: ArrayBuffer, mode: "month" | "cum"): Online
   return out;
 }
 
-// ── 키 충돌 시 합산 (import-sales.mjs 의 dedupe) ─────────────────────
+// ── 키 충돌 시 합산 (dedupe) ─────────────────────────────────────
 export function dedupe<T extends Record<string, unknown>>(rows: T[], keys: (keyof T)[], sumCols: (keyof T)[]): T[] {
   const m = new Map<string, T>();
   for (const r of rows) {
