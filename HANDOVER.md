@@ -66,7 +66,7 @@
 | 사이드바 | 경로 | 핵심 lib / 데이터 |
 |---|---|---|
 | 대시보드 | `/dashboard` | `lib/dashboard/queries.ts` (Supabase aggregate) |
-| 매출분석 | `/dashboard/sales` | `data/sales/brand-sales.json` (CSV 변환 정적) |
+| 매출분석 | `/dashboard/sales` | Supabase `sales_offline_*`·`sales_online_*` (관리→매출 데이터 갱신에서 xlsx 업로드) |
 | 입점계획(26년) | `/dashboard/drilldown` | `attraction_status` 테이블 + 노션 sync |
 | 공실해결 | `/dashboard/vacancy` | `data/vacancy.json` (CSV 변환 정적) |
 | 컨텐츠 풀 | `/dashboard/goals` | `goals` + `vendor_fnb` + `vendor_lease` + `popup-contacts.json` |
@@ -160,7 +160,6 @@ scripts/
 ├─ import-calendar52.mjs          # HTML → 캘린더 JSON
 ├─ import-popup-contacts.mjs      # CSV → 팝업 컨텍판 JSON
 ├─ import-vacancy.mjs             # CSV → 공실 데이터 JSON
-├─ parse-sales-csv.mjs            # CSV → 매출 데이터 JSON
 ├─ seed-calendar52.mjs            # 캘린더 DB 시드
 └─ debug-sgis.mjs                 # SGIS API 진단 (사용 X)
 ```
@@ -188,7 +187,8 @@ scripts/
 | 월 1회 | `node scripts/fetch-population.mjs` (행안부 인구 갱신) |
 | 주 1회 | `node scripts/fetch-trade-area.mjs` (상권 데이터 갱신) |
 | 필요 시 | `POST /api/sync/notion` (`CRON_SECRET` Bearer) — 노션 데이터 sync |
-| CSV 업로드 시 | `import-vacancy.mjs` / `parse-sales-csv.mjs` / `import-popup-contacts.mjs` |
+| 매출 갱신 시 | 앱 내 **관리 → 매출 데이터 갱신**(`/dashboard/admin/sales`)에서 ERP xlsx 4개(5·6·8·9) 업로드 → 파싱 로직은 `src/lib/sales/ingest.ts` |
+| CSV 업로드 시 | `import-vacancy.mjs` / `import-popup-contacts.mjs` |
 
 ---
 
