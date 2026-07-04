@@ -1,4 +1,5 @@
 import Link from "next/link";
+import BrandSearch from "./BrandSearch";
 
 type Band = number | "all";
 
@@ -8,7 +9,7 @@ interface Props {
   allCount: number;
   stores: string[];
   types: string[];
-  current: { days: Band; store?: string; type?: string };
+  current: { days: Band; store?: string; type?: string; brand?: string };
 }
 
 function buildQuery(over: { days?: Band; store?: string | null; type?: string | null }, current: Props["current"]): string {
@@ -20,6 +21,7 @@ function buildQuery(over: { days?: Band; store?: string | null; type?: string | 
   else if (days !== 60) p.set("days", String(days));
   if (store) p.set("store", store);
   if (type) p.set("type", type);
+  if (current.brand) p.set("brand", current.brand); // 밴드/지점/형태 전환 시 브랜드 검색 유지
   const qs = p.toString();
   return qs ? `?${qs}` : "";
 }
@@ -27,6 +29,17 @@ function buildQuery(over: { days?: Band; store?: string | null; type?: string | 
 export default function ExpiryFilters({ horizons, bandCounts, allCount, stores, types, current }: Props) {
   return (
     <div className="flex flex-col gap-4">
+      {/* 브랜드 검색 */}
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="font-mono text-[10.5px] uppercase tracking-wider font-bold text-[#0a0a0a]/55">브랜드</span>
+        <BrandSearch current={current} />
+        {current.brand && (
+          <span className="font-mono text-[11px] font-bold text-[#0a0a0a]/60">
+            “{current.brand}” 검색 결과
+          </span>
+        )}
+      </div>
+
       {/* Horizon 밴드 */}
       <div className="flex flex-wrap items-center gap-2">
         <span className="font-mono text-[10.5px] uppercase tracking-wider font-bold text-[#0a0a0a]/55">기간</span>
