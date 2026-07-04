@@ -23,6 +23,12 @@ import {
   fetchCongestionByAreaName,
   CONGEST_BG,
 } from "@/lib/congestion/seoul";
+import {
+  getResidents,
+  RESIDENTS_BASE_YM,
+  AGE_GROUP_LABELS,
+  pctOf,
+} from "@/lib/population/residents";
 import KakaoStoreMap from "@/components/maps/KakaoStoreMap";
 
 // 첫 방문 시 동적 렌더 (3개 월 외부 API 호출이라 빌드 시 prerender 비효율)
@@ -64,6 +70,9 @@ export default async function StoreDetailPage({
     storeRegion3: store.region3,
     storeRegion2: store.region2,
   });
+
+  // 행정동 거주인구 (행안부 주민등록, 시군구 합산 + 점포 행정동)
+  const residents = getResidents(storeId);
 
   // 서울 핫스팟 매칭 + 실시간 혼잡도
   const hotspotMatch = findNearestHotspot({ lat: store.lat, lng: store.lng }, 5000);
@@ -280,6 +289,72 @@ export default async function StoreDetailPage({
               <p className="mt-4 text-[10px] font-bold uppercase tracking-wider text-[#0a0a0a]/55 leading-relaxed">
                 ※ 출처: 서울 열린데이터광장 · 실시간 도시데이터 · 5분 갱신 ·
                 현재 점포에서 가장 가까운 핫스팟 권역 데이터입니다.
+              </p>
+            </Section>
+          )}
+
+          {/* 행정동 거주인구 · 연령/성별 (행안부 주민등록) */}
+          {residents && (
+            <Section
+              title={`거주인구 · 연령/성별 (${RESIDENTS_BASE_YM.slice(0, 7)})`}
+              className="lg:col-span-3"
+            >
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <Stat
+                  label={`${residents.sigungu.name} 총인구`}
+                  value={`${residents.sigungu.total.toLocaleString()}명`}
+                />
+                <Stat
+                  label="남 / 여"
+                  value={`${Math.round(pctOf(residents.sigungu.male, residents.sigungu.total))}% / ${Math.round(pctOf(residents.sigungu.female, residents.sigungu.total))}%`}
+                />
+                <Stat
+                  label="핵심 30~50대"
+                  value={`${Math.round(
+                    pctOf(
+                      residents.sigungu.ageGroups["30_39"] +
+                        residents.sigungu.ageGroups["40_49"] +
+                        residents.sigungu.ageGroups["50_59"],
+                      residents.sigungu.total,
+                    ),
+                  )}%`}
+                />
+                {residents.dong ? (
+                  <Stat
+                    label={`${residents.dong.name} (행정동)`}
+                    value={`${residents.dong.total.toLocaleString()}명`}
+                  />
+                ) : (
+                  <Stat label="점포 행정동" value="매칭 없음" />
+                )}
+              </div>
+
+              {/* 연령 분포 (시군구 합산, 비중 %) */}
+              <div className="mt-5">
+                <p className="text-[10px] font-extrabold uppercase tracking-[.14em] text-[#0a0a0a]/65 mb-2">
+                  연령 분포 · {residents.sigungu.name}
+                </p>
+                <div className="grid grid-cols-4 sm:grid-cols-8 gap-2">
+                  {AGE_GROUP_LABELS.map(([key, label]) => {
+                    const rate = pctOf(residents.sigungu.ageGroups[key], residents.sigungu.total);
+                    return (
+                      <div key={key} className="border-[2px] border-[#0a0a0a] bg-white px-2 py-2 shadow-[2px_2px_0_0_#0a0a0a]">
+                        <p className="text-[9px] font-bold uppercase tracking-wider text-[#0a0a0a]/55">{label}</p>
+                        <p className="mt-0.5 font-mono text-[15px] font-extrabold tabular-nums text-[#0a0a0a]">
+                          {rate.toFixed(0)}<span className="text-[10px] font-sans text-[#0a0a0a]/50">%</span>
+                        </p>
+                        <div className="mt-1 h-1.5 border-[1px] border-[#0a0a0a] bg-white overflow-hidden">
+                          <div className="h-full bg-violet-500" style={{ width: `${Math.min(rate * 5, 100)}%` }} />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <p className="mt-4 text-[10px] font-medium text-[#0a0a0a]/55">
+                행정안전부 주민등록 인구 · {RESIDENTS_BASE_YM} 기준 · {residents.sigungu.name} {residents.sigungu.dongCount}개 행정동 합산
+                {residents.dong ? "" : " · 점포 행정동은 법정동↔행정동 명 상이로 미매칭(시군구 기준)"}
               </p>
             </Section>
           )}
