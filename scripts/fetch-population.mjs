@@ -55,7 +55,9 @@ async function fetchAllPopulation() {
   const perPage = 10000;
   for (;;) {
     // serviceKey는 URLSearchParams가 이중인코딩할 수 있어 URL에 직접 붙임
-    const qs = `page=${page}&perPage=${perPage}&returnType=JSON`;
+    // ⚠ returnType=JSON 을 붙이면 odcloud가 빈 상태봉투({code:0,msg:"정상"})만 반환함.
+    //   생략하면 기본 JSON으로 정상 데이터가 옴 (2026-07 확인).
+    const qs = `page=${page}&perPage=${perPage}`;
     const url = `${ENDPOINT}?${qs}&serviceKey=${KEY}`;
 
     const res = await fetch(url);
@@ -131,23 +133,24 @@ console.log(`✓ ${stores.length}개 점포 (지오코딩 완료)`);
 console.log(`✓ 데이터셋: uddi:${DATA_UUID}\n`);
 
 // ── 인구 데이터 행 타입 ────────────────────────────────────
-// 응답 필드: 행정기관코드, 시도명, 시군구명, 읍면동명, 기준연월,
-//          계, 남자, 여자, 만0세남자, ..., 만109세여자, 만110세이상남자/여자
+// 응답 필드(2026-07 확인): 행정기관코드, 시도명, 시군구명, 읍면동명, 기준연월,
+//          계, 남자, 여자, "0세남자", ..., "109세여자", "110세이상 남자"/"110세이상 여자"
+//   ※ "만" 접두어 없음. 110세는 "110세이상"+공백+"남자/여자".
 
 // 연령 10단위 합산 헬퍼
 function sumAgeRange(row, from, to, gender /* "남자"|"여자"|null=둘다 */) {
   let sum = 0;
   for (let age = from; age <= to; age++) {
-    if (gender === "남자" || gender === null) sum += Number(row[`만${age}세남자`]) || 0;
-    if (gender === "여자" || gender === null) sum += Number(row[`만${age}세여자`]) || 0;
+    if (gender === "남자" || gender === null) sum += Number(row[`${age}세남자`]) || 0;
+    if (gender === "여자" || gender === null) sum += Number(row[`${age}세여자`]) || 0;
   }
   return sum;
 }
 
 function sumAge110Over(row, gender) {
   let sum = 0;
-  if (gender === "남자" || gender === null) sum += Number(row["만110세이상남자"]) || 0;
-  if (gender === "여자" || gender === null) sum += Number(row["만110세이상여자"]) || 0;
+  if (gender === "남자" || gender === null) sum += Number(row["110세이상 남자"]) || 0;
+  if (gender === "여자" || gender === null) sum += Number(row["110세이상 여자"]) || 0;
   return sum;
 }
 
