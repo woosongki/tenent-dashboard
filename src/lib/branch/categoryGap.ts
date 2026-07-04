@@ -9,6 +9,7 @@
 import { getTradeAreaIndex } from "@/lib/tradeArea";
 import storeCategoriesRaw from "@/data/store-categories.json";
 import storeBrandsRaw from "@/data/store-brands.json";
+import { isOthersBrand } from "@/lib/sales/labels";
 
 export const RETAIL_CATEGORIES = [
   "캐주얼", "잡화", "영캐주얼", "남성의류", "아동의류",
@@ -84,6 +85,9 @@ export function getCategoryGap(storeId: string, storeName: string): CategoryGap 
     for (const b of brandsByName.get(pn) ?? []) {
       const key = normalizeBrand(b.brand);
       if (!key || myBrandKeys.has(key)) continue;
+      // 매출분석 '그외' 분리 브랜드(엠페스트·코코몽키즈랜드 등)는 제안 대상에서 제외 —
+      // 매출이 커도 입점 제안할 컨텐츠가 아님.
+      if (isOthersBrand(b.brand)) continue;
       const e = agg.get(key) ?? { brand: b.brand, peerCount: 0, salesSum: 0 };
       e.peerCount++;
       e.salesSum += b.sales;
