@@ -36,12 +36,15 @@ if (!KEY) {
   process.exit(1);
 }
 
-// ── 데이터 UUID — OAS의 최신 (2026년 1월) ──────────────────
-// 다른 월: --uuid 인자로 override
+// ── 데이터 UUID (uddi) ─────────────────────────────────────
+// ⚠ odcloud 파일데이터는 월마다 uddi가 바뀐다. 0건이 나오면 uddi가 낡은 것 →
+//   포털(15097972) Swagger에서 'Try it out → Execute' 후 Request URL의
+//   uddi:XXXX 값을 확인해 아래 기본값을 교체하거나 --uuid 로 넘길 것.
+// 최신 확인: 2026-07 (포털 Swagger 기준)
 const uuidArgIdx = process.argv.indexOf("--uuid");
 const DATA_UUID = uuidArgIdx > 0
   ? process.argv[uuidArgIdx + 1]
-  : "b1817ce4-c4a0-4b49-a23c-9ec2d58f3db4";
+  : "59bf4bd0-a476-4acf-a416-d007b32860a1";
 
 const ENDPOINT = `https://api.odcloud.kr/api/15097972/v1/uddi:${DATA_UUID}`;
 
