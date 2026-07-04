@@ -93,7 +93,8 @@ export function getCategoryGap(storeId: string, storeName: string): CategoryGap 
   const peerGap: PeerGapBrand[] = [...agg.values()]
     .filter((e) => e.peerCount >= 2)
     .map((e) => ({ brand: e.brand, peerCount: e.peerCount, avgSales: Math.round(e.salesSum / e.peerCount) }))
-    .sort((a, b) => b.peerCount - a.peerCount || b.avgSales - a.avgSales)
+    // 고매출 앵커 우선: peer 평균매출 내림차순, 동률이면 입점 빈도.
+    .sort((a, b) => b.avgSales - a.avgSales || b.peerCount - a.peerCount)
     .slice(0, 8);
 
   return { tradeAreaType: me.tradeAreaType, cohortSize: cohort.length, weak: weak.slice(0, 3), peerGap };
