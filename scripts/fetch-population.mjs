@@ -52,13 +52,15 @@ const ENDPOINT = `https://api.odcloud.kr/api/15097972/v1/uddi:${DATA_UUID}`;
 async function fetchAllPopulation() {
   const all = [];
   let page = 1;
-  const perPage = 10000;
+  // ⚠ perPage가 너무 크면(예: 10000) odcloud가 빈 상태봉투({code:0,msg:"정상"})를
+  //   반환하는 경우가 있어 1000으로 페이징. returnType은 붙이지 않는다(붙이면 빈 응답).
+  const perPage = 1000;
   for (;;) {
     // serviceKey는 URLSearchParams가 이중인코딩할 수 있어 URL에 직접 붙임
-    // ⚠ returnType=JSON 을 붙이면 odcloud가 빈 상태봉투({code:0,msg:"정상"})만 반환함.
-    //   생략하면 기본 JSON으로 정상 데이터가 옴 (2026-07 확인).
     const qs = `page=${page}&perPage=${perPage}`;
     const url = `${ENDPOINT}?${qs}&serviceKey=${KEY}`;
+
+    if (page === 1) console.log(`  요청: ${ENDPOINT}?${qs}&serviceKey=***`);
 
     const res = await fetch(url);
     const txt = await res.text();
