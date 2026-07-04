@@ -35,7 +35,7 @@ function parseString(v: string | string[] | undefined): string | undefined {
 export default async function ExpiryPage({
   searchParams,
 }: {
-  searchParams: Promise<{ days?: string; store?: string; type?: string }>;
+  searchParams: Promise<{ days?: string; store?: string; type?: string; brand?: string }>;
 }) {
   const supabase = await createClient();
   const {
@@ -47,6 +47,7 @@ export default async function ExpiryPage({
   const days = parseBand(sp.days);
   const store = parseString(sp.store);
   const type = parseString(sp.type);
+  const brand = parseString(sp.brand);
 
   // load()가 요청 스코프로 memoize 돼 있어 아래 호출들은 Supabase 왕복 1회로 억제됨.
   const [meta, breakdown, d14, d30, d60, d90] = await Promise.all([
@@ -58,10 +59,10 @@ export default async function ExpiryPage({
     getExpiringContracts({ withinDays: 90 }),
   ]);
 
-  // 선택 밴드: '전체'면 전체 계약(과거·무기한 포함), 아니면 만료 임박.
+  // 선택 밴드: '전체'면 전체 계약(과거·무기한 포함), 아니면 만료 임박. 브랜드 검색은 공통 적용.
   const rows = days === "all"
-    ? await getAllContracts({ storeName: store, contractType: type, limit: ALL_LIMIT })
-    : await getExpiringContracts({ withinDays: days, storeName: store, contractType: type });
+    ? await getAllContracts({ storeName: store, contractType: type, brand, limit: ALL_LIMIT })
+    : await getExpiringContracts({ withinDays: days, storeName: store, contractType: type, brand });
 
   const stores = Object.keys(breakdown.byStore).sort();
   const types = Object.keys(breakdown.byContractType);
@@ -110,7 +111,7 @@ export default async function ExpiryPage({
                 allCount={meta.count}
                 stores={stores}
                 types={types}
-                current={{ days, store, type }}
+                current={{ days, store, type, brand }}
               />
               {days === "all" && meta.count > ALL_LIMIT && (
                 <p className="font-mono text-[11px] text-[#0a0a0a]/55">

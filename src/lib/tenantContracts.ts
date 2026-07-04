@@ -191,6 +191,16 @@ export interface ExpiringOpts {
   storeName?: string;
   /** 계약형태 필터 */
   contractType?: string;
+  /** 브랜드·구매처 부분검색 (정규화 후 substring) */
+  brand?: string;
+}
+
+/** 계약 행이 브랜드 검색어(정규화 substring)에 매칭되나. 빈 검색어면 항상 true. */
+function matchesBrand(c: TenantContract, brandQ: string): boolean {
+  if (!brandQ) return true;
+  const b = normalizeBrand(c.brand);
+  const p = c.purchaseName ? normalizeBrand(c.purchaseName) : "";
+  return b.includes(brandQ) || p.includes(brandQ);
 }
 
 const SETTLED_MARKERS = ["종료", "퇴점", "중도퇴점", "자동연장", "재계약"];
@@ -206,6 +216,7 @@ export async function getExpiringContracts(
   const horizon = new Date(today);
   horizon.setDate(horizon.getDate() + withinDays);
 
+  const brandQ = opts.brand ? normalizeBrand(opts.brand) : "";
   const rows: (TenantContract & { daysUntilExpiry: number })[] = [];
   for (const c of await getTenantContracts()) {
     if (!c.contractEndDate) continue;
@@ -218,6 +229,7 @@ export async function getExpiringContracts(
     }
     if (opts.storeName && c.storeName !== opts.storeName) continue;
     if (opts.contractType && c.contractType !== opts.contractType) continue;
+    if (!matchesBrand(c, brandQ)) continue;
 
     const days = Math.ceil((end.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
     rows.push({ ...c, daysUntilExpiry: days });
@@ -228,14 +240,16 @@ export async function getExpiringContracts(
 
 /** 전체 계약(과거·무기한·종료 포함). '전체' 탭용. daysUntilExpiry=null 은 만료일 없음. */
 export async function getAllContracts(
-  opts: { storeName?: string; contractType?: string; limit?: number } = {},
+  opts: { storeName?: string; contractType?: string; brand?: string; limit?: number } = {},
 ): Promise<(TenantContract & { daysUntilExpiry: number | null })[]> {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
+  const brandQ = opts.brand ? normalizeBrand(opts.brand) : "";
   const out: (TenantContract & { daysUntilExpiry: number | null })[] = [];
   for (const c of await getTenantContracts()) {
     if (opts.storeName && c.storeName !== opts.storeName) continue;
     if (opts.contractType && c.contractType !== opts.contractType) continue;
+    if (!matchesBrand(c, brandQ)) continue;
     let days: number | null = null;
     if (c.contractEndDate) {
       const end = new Date(c.contractEndDate + "T00:00:00");
