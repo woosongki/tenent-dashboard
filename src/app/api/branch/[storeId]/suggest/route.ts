@@ -1,5 +1,5 @@
 import type { NextRequest } from "next/server";
-import { getSessionContext } from "@/lib/auth/session";
+import { requireRole } from "@/lib/auth/guards";
 import { rateLimit } from "@/lib/rate-limit";
 import { getStoreById } from "@/lib/stores";
 import { getCategoryGap } from "@/lib/branch/categoryGap";
@@ -19,14 +19,9 @@ export const maxDuration = 60;
  * - 입력(빈 카테고리·인근 체인)은 서버에서 재계산 → 클라이언트 신뢰 안 함.
  */
 export async function POST(_req: NextRequest, ctx: { params: Promise<{ storeId: string }> }) {
-  const { user, role } = await getSessionContext();
-  if (!user) return Response.json({ error: "인증이 필요합니다." }, { status: 401 });
-  if (role !== "owner" && role !== "admin") {
-    return Response.json(
-      { error: "AI 제안은 owner/admin만 실행할 수 있습니다 (API 비용 보호)." },
-      { status: 403 },
-    );
-  }
+  const g = await requireRole("owner", "admin");
+  if (!g.ok) return g.response;
+  const { user } = g;
 
   const limited = rateLimit(`branch-suggest:${user.id}`, { limit: 10, windowMs: 60_000 });
   if (limited) {

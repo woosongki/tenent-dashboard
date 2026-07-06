@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { getSessionContext } from "@/lib/auth/session";
+import { requireApproved } from "@/lib/auth/guards";
 import { rateLimit } from "@/lib/rate-limit";
 import { listCorpCandidates } from "@/lib/meetings/brief";
 
@@ -12,8 +12,9 @@ export const maxDuration = 15;
  * brand-keyword와 달리 모든 로그인 멤버 허용 (조회만).
  */
 export async function GET(req: NextRequest) {
-  const { user } = await getSessionContext();
-  if (!user) return Response.json({ error: "인증이 필요합니다." }, { status: 401 });
+  const g = await requireApproved();
+  if (!g.ok) return g.response;
+  const { user } = g;
 
   // DART enrichCandidates는 후보별 1 API 호출 → 분당 30회로 제한
   const limited = rateLimit(`meetings-candidates:${user.id}`, { limit: 30, windowMs: 60_000 });

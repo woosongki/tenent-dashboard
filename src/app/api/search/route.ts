@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { requireApproved } from "@/lib/auth/guards";
 
 export interface SearchResult {
   type: "goal" | "vendor" | "store" | "attraction";
@@ -14,10 +15,10 @@ export async function GET(req: Request) {
   const q = url.searchParams.get("q")?.trim() ?? "";
   if (!q) return NextResponse.json({ results: [] });
 
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ results: [] }, { status: 401 });
+  const g = await requireApproved();
+  if (!g.ok) return NextResponse.json({ results: [] }, { status: g.response.status });
 
+  const supabase = await createClient();
   const pat = `%${q}%`;
   const results: SearchResult[] = [];
 

@@ -1,13 +1,14 @@
 import type { NextRequest } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { getSessionContext } from "@/lib/auth/session";
+import { requireApproved } from "@/lib/auth/guards";
 import { getRecentMeetings } from "@/lib/meetings/recent";
 
 export const runtime = "nodejs";
 
 export async function GET(req: NextRequest) {
-  const { user } = await getSessionContext();
-  if (!user) return Response.json({ error: "인증이 필요합니다." }, { status: 401 });
+  const g = await requireApproved();
+  if (!g.ok) return g.response;
+  const { user } = g;
 
   const supabase = await createClient();
   const { data: membership } = await supabase

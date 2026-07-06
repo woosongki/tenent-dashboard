@@ -1,6 +1,6 @@
 import type { NextRequest } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { getSessionContext } from "@/lib/auth/session";
+import { requireApproved } from "@/lib/auth/guards";
 import { rateLimit } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
@@ -12,8 +12,9 @@ export const maxDuration = 15;
  * 조직 스코프로만 갱신(다른 조직 행 미변경).
  */
 export async function POST(req: NextRequest) {
-  const { user } = await getSessionContext();
-  if (!user) return Response.json({ error: "인증이 필요합니다." }, { status: 401 });
+  const g = await requireApproved();
+  if (!g.ok) return g.response;
+  const { user } = g;
 
   const limited = rateLimit(`meetings-reorder:${user.id}`, { limit: 60, windowMs: 60_000 });
   if (limited) {
