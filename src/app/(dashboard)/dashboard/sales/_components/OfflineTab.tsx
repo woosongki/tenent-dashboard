@@ -37,7 +37,7 @@ function YoY({ pct, prev, closed }: { pct: number; prev?: number; closed?: boole
   const up = pct >= 0;
   return <span className="whitespace-nowrap tabular-nums" style={{ color: up ? "#0d9e6e" : "#e53e3e", fontWeight: 700 }}>{up ? "▲" : "▼"}&nbsp;{Math.abs(pct).toFixed(1)}%</span>;
 }
-type SortKey = "key" | "s" | "g" | "gpm" | "yoyPct";
+type SortKey = "key" | "s" | "g" | "gpm" | "yoyPct" | "dppSales";
 
 export default function OfflineTab(p: Props) {
   const [view, setView] = useState<"brand" | "store">("brand");
@@ -155,13 +155,14 @@ export default function OfflineTab(p: Props) {
           <button
             onClick={() => {
               const header = view === "brand"
-                ? ["순위", "브랜드", "복종", "매장수", "매출(백만)", "이익(백만)", "이익률%", "전년매출(백만)", "전년비%"]
-                : ["순위", "지점", "브랜드수", "매출(백만)", "이익(백만)", "이익률%", "전년매출(백만)", "전년비%"];
+                ? ["순위", "브랜드", "복종", "매장수", "매출(백만)", "이익(백만)", "이익률%", "일평당매출(원/평·일)", "전년매출(백만)", "전년비%"]
+                : ["순위", "지점", "브랜드수", "매출(백만)", "이익(백만)", "이익률%", "일평당매출(원/평·일)", "전년매출(백만)", "전년비%"];
               const yoyCell = (r: OffRank) => r.closed ? "퇴점" : r.ps === 0 ? "신규" : r.yoyPct;
               const m = (n: number) => Math.round(n / 1e6);
+              const dpp = (r: OffRank) => r.closed ? "—" : r.dppSales;
               const body = filtered.map((r, i) => view === "brand"
-                ? [i + 1, r.key, displayCat(r.cat), r.subCount, m(r.s), m(r.g), r.gpm, m(r.ps), yoyCell(r)]
-                : [i + 1, r.key, r.subCount, m(r.s), m(r.g), r.gpm, m(r.ps), yoyCell(r)]);
+                ? [i + 1, r.key, displayCat(r.cat), r.subCount, m(r.s), m(r.g), r.gpm, dpp(r), m(r.ps), yoyCell(r)]
+                : [i + 1, r.key, r.subCount, m(r.s), m(r.g), r.gpm, dpp(r), m(r.ps), yoyCell(r)]);
               downloadCsv(`${p.periodLabel}_${view === "brand" ? "브랜드" : "지점"}_랭킹`, [header, ...body]);
             }}
             className="shrink-0 border-[2px] border-[#0a0a0a] bg-white px-3 py-1.5 text-[12px] font-bold hover:bg-yellow-100"
@@ -175,11 +176,12 @@ export default function OfflineTab(p: Props) {
       {/* 랭킹 */}
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-[11px] text-slate-500">
         <UnitChip>매출·이익 단위: 백만원</UnitChip>
+        <UnitChip>일평당매출 단위: 원/평·일</UnitChip>
         <span>요약 카드는 억 단위</span>
         <StatusLegend items={enableLeft ? ["closed", "left", "new"] : ["closed", "new"]} />
       </div>
       <ScrollHint className="border-[2px] border-[#0a0a0a] bg-white">
-        <table className="w-full min-w-[480px] sm:min-w-[620px] text-[12px]">
+        <table className="w-full min-w-[560px] sm:min-w-[720px] text-[12px]">
           <thead className="bg-[#0a0a0a] text-white select-none">
             <tr>
               <th className="sticky left-0 z-[2] bg-[#0a0a0a] px-3 py-2 text-left w-10">#</th>
@@ -189,6 +191,12 @@ export default function OfflineTab(p: Props) {
               <th className="px-3 py-2 text-right whitespace-nowrap cursor-pointer hover:bg-white/10" onClick={() => toggleSort("s")}>매출(백만){arrow("s")}</th>
               <th className="hidden sm:table-cell px-3 py-2 text-right whitespace-nowrap cursor-pointer hover:bg-white/10" onClick={() => toggleSort("g")}>이익(백만){arrow("g")}</th>
               <th className="hidden sm:table-cell px-3 py-2 text-right whitespace-nowrap cursor-pointer hover:bg-white/10" onClick={() => toggleSort("gpm")}>이익률{arrow("gpm")}</th>
+              <th className="px-3 py-2 text-right whitespace-nowrap cursor-pointer hover:bg-white/10" onClick={() => toggleSort("dppSales")}
+                title={view === "brand"
+                  ? "브랜드 총매출 ÷ (해당 브랜드 전용면적 합 × 일수)"
+                  : "지점 총매출 ÷ (지점 내 전 브랜드 전용면적 합 × 일수) — 지점 통합 평균"}>
+                일평당매출{arrow("dppSales")}
+              </th>
               <th className="px-3 py-2 text-right whitespace-nowrap cursor-pointer hover:bg-white/10" onClick={() => toggleSort("yoyPct")}>전년비{arrow("yoyPct")}</th>
             </tr>
           </thead>
@@ -197,7 +205,7 @@ export default function OfflineTab(p: Props) {
               <RankRow key={r.key} rank={i + 1} row={r} showCat={view === "brand"} left={isLeft(r)}
                 open={expanded === r.key} onToggle={onToggleRow} subLabel={subLabel} />
             ))}
-            {filtered.length === 0 && <tr><td colSpan={view === "brand" ? 8 : 7} className="px-3 py-8 text-center text-slate-400">결과 없음</td></tr>}
+            {filtered.length === 0 && <tr><td colSpan={view === "brand" ? 9 : 8} className="px-3 py-8 text-center text-slate-400">결과 없음</td></tr>}
           </tbody>
         </table>
         {filtered.length > visible.length && (
@@ -224,7 +232,7 @@ const RankRow = memo(function RankRow({
   rank: number; row: OffRank; showCat: boolean; open: boolean;
   onToggle: (key: string) => void; subLabel: string; left?: boolean;
 }) {
-  const cols = showCat ? 8 : 7;
+  const cols = showCat ? 9 : 8;
   return (
     <>
       <tr className={`group border-t border-slate-100 ${row.closed ? "opacity-60" : "cursor-pointer hover:bg-yellow-50"} ${open ? "bg-yellow-50" : ""}`} onClick={() => { if (!row.closed) onToggle(row.key); }}>
@@ -239,6 +247,7 @@ const RankRow = memo(function RankRow({
         <td className="px-3 py-2 text-right font-mono font-bold whitespace-nowrap">{row.closed ? "—" : mil(row.s)}</td>
         <td className="hidden sm:table-cell px-3 py-2 text-right font-mono whitespace-nowrap">{row.closed ? "—" : mil(row.g)}</td>
         <td className="hidden sm:table-cell px-3 py-2 text-right font-mono text-slate-500">{row.closed ? "—" : `${row.gpm}%`}</td>
+        <td className="px-3 py-2 text-right font-mono text-slate-500 whitespace-nowrap">{row.closed || !row.dppSales ? "—" : won(row.dppSales)}</td>
         <td className="px-3 py-2 text-right"><YoY pct={row.yoyPct} prev={row.ps} closed={row.closed} /></td>
       </tr>
       {open && row.bySub && (
