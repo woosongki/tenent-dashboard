@@ -67,12 +67,12 @@ export default async function SalesPage() {
   const offCum = offData?.offCum ?? null;
   const offMonth = offData?.offMonth ?? null;
   const offMeta = { monthYm: offData?.monthYm ?? null, cumYear: offData?.cumYear ?? null };
-  // 누적 개월수 — 누적 테이블은 "전월까지"의 누적이므로 (당월 - 1).
-  // 예: monthYm "2026-06" → 누적은 5월까지 → 5개월로 나눠 월평균 계산.
+  // 누적 개월수 — 누적 테이블은 당월까지 포함한 누적.
+  // 예: monthYm "2026-06" → 누적은 6월까지 → 6개월로 나눠 월평균 계산. (cumDays 181일과 정합)
   const cumMonths = (() => {
     const digits = (offMeta.monthYm ?? "").replace(/[^0-9]/g, "");
     const m = Number(digits.slice(4, 6));
-    return m >= 2 && m <= 12 ? m - 1 : 1;
+    return m >= 1 && m <= 12 ? m : 1;
   })();
 
   // 당월 활성 키 — 누적엔 매출 있지만 당월에 빠진(이탈) 건 판정용
