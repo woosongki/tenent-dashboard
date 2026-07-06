@@ -62,8 +62,8 @@ function YoY({ pct, prev, closed }: { pct: number; prev?: number; closed?: boole
 
 type Sel = { type: "cat" | "div"; key: string };
 type Dir = "asc" | "desc";
-type BSortKey = "key" | "subCount" | "s" | "g" | "gpm" | "yoyPct" | "dppSales";
-type SSortKey = "key" | "s" | "growthS" | "growthPct" | "g" | "growthG" | "growthGPct" | "area" | "dppSales" | "dppGp";
+type BSortKey = "key" | "subCount" | "s" | "g" | "gpm" | "yoyPct" | "dppSales" | "dppSalesGrowthPct";
+type SSortKey = "key" | "s" | "growthS" | "growthPct" | "g" | "growthG" | "growthGPct" | "area" | "dppSales" | "dppSalesGrowthPct";
 type OffSubLite = import("@/lib/sales/queries").OffSub;
 
 export default function OfflineDetailTab(p: Props) {
@@ -109,27 +109,34 @@ export default function OfflineDetailTab(p: Props) {
       ? (b.division === "패션" && b.cat === stSel.key)
       : b.division === stSel.key);
     // 지점별로 해당 복종 브랜드들을 모음.
-    // areaDays: sub.s / sub.dppSales 로 (평·일) 역산 → 지점 스코프 dppSales 재계산.
-    const m = new Map<string, { s: number; ps: number; g: number; pg: number; areaDays: number; subs: OffSubLite[] }>();
+    // areaDays/prevAreaDays: sub.s / sub.dppSales, sub.ps / sub.prevDppSales 로 (평·일) 역산
+    // → 지점 스코프 dppSales / prevDppSales 재계산 (일평당매출 성장율 지원).
+    const m = new Map<string, { s: number; ps: number; g: number; pg: number; areaDays: number; prevAreaDays: number; subs: OffSubLite[] }>();
     for (const b of selBrands) {
       for (const sub of b.bySub ?? []) {
         let e = m.get(sub.key);
-        if (!e) { e = { s: 0, ps: 0, g: 0, pg: 0, areaDays: 0, subs: [] }; m.set(sub.key, e); }
+        if (!e) { e = { s: 0, ps: 0, g: 0, pg: 0, areaDays: 0, prevAreaDays: 0, subs: [] }; m.set(sub.key, e); }
         e.s += sub.s; e.ps += sub.ps; e.g += sub.g; e.pg += sub.pg;
         if (sub.dppSales) e.areaDays += sub.s / sub.dppSales;
+        if (sub.prevDppSales) e.prevAreaDays += sub.ps / sub.prevDppSales;
         e.subs.push({ ...sub, key: b.key });   // 하위 = 브랜드 (지점 내)
       }
     }
-    return [...m.entries()].map(([store, e]) => ({
-      key: store, s: e.s, ps: e.ps, g: e.g, pg: e.pg,
-      gpm: e.s ? +(e.g / e.s * 100).toFixed(1) : 0,
-      yoyPct: e.ps ? +((e.s - e.ps) / e.ps * 100).toFixed(1) : 0,
-      subCount: e.subs.filter((x) => x.s > 0).length,
-      dppSales: e.areaDays ? Math.round(e.s / e.areaDays) : 0,
-      dppGp: e.areaDays ? Math.round(e.g / e.areaDays) : 0,
-      closed: e.s === 0 && e.ps > 0,
-      bySub: e.subs,
-    })).sort((a, b) => b.s - a.s);
+    return [...m.entries()].map(([store, e]) => {
+      const dppSales = e.areaDays ? Math.round(e.s / e.areaDays) : 0;
+      const prevDppSales = e.prevAreaDays ? Math.round(e.ps / e.prevAreaDays) : 0;
+      return {
+        key: store, s: e.s, ps: e.ps, g: e.g, pg: e.pg,
+        gpm: e.s ? +(e.g / e.s * 100).toFixed(1) : 0,
+        yoyPct: e.ps ? +((e.s - e.ps) / e.ps * 100).toFixed(1) : 0,
+        subCount: e.subs.filter((x) => x.s > 0).length,
+        dppSales,
+        prevDppSales,
+        dppSalesGrowthPct: prevDppSales ? +((dppSales - prevDppSales) / prevDppSales * 100).toFixed(1) : 0,
+        closed: e.s === 0 && e.ps > 0,
+        bySub: e.subs,
+      };
+    }).sort((a, b) => b.s - a.s);
   }, [stSel, p.stores, p.brands, p.others]);
 
   const storeRows = useMemo(() => {
@@ -185,16 +192,24 @@ export default function OfflineDetailTab(p: Props) {
     const s = catRows.reduce((t, r) => t + r.s, 0);
     const ps = catRows.reduce((t, r) => t + r.ps, 0);
     const g = catRows.reduce((t, r) => t + r.g, 0);
-    // 일평당 = Σ매출 / Σ(평·일). dppSales=매출/평일 이므로 평일=매출/dpp → 역산 합산
+    // 일평당 = Σ매출 / Σ(평·일). dppSales=매출/평일 이므로 평일=매출/dpp → 역산 합산.
+    // prevAreaDays 는 전기 dppSales/매출로 별도 역산 (면적 변동 반영).
     let areaDays = 0;
-    for (const r of catRows) if (r.dppSales) areaDays += r.s / r.dppSales;
+    let prevAreaDays = 0;
+    for (const r of catRows) {
+      if (r.dppSales) areaDays += r.s / r.dppSales;
+      if (r.prevDppSales) prevAreaDays += r.ps / r.prevDppSales;
+    }
+    const dppSales = areaDays ? Math.round(s / areaDays) : 0;
+    const prevDppSales = prevAreaDays ? Math.round(ps / prevAreaDays) : 0;
     return {
       s, ps, g, gpm: s ? +(g / s * 100).toFixed(1) : 0,
       yoyPct: ps ? +((s - ps) / ps * 100).toFixed(1) : 0,
       brands: catRows.filter((r) => !r.closed).length,
       closedCount: catRows.filter((r) => r.closed).length,
-      dppSales: areaDays ? Math.round(s / areaDays) : 0,
-      dppGp: areaDays ? Math.round(g / areaDays) : 0,
+      dppSales,
+      prevDppSales,
+      dppSalesGrowthPct: prevDppSales ? +((dppSales - prevDppSales) / prevDppSales * 100).toFixed(1) : 0,
     };
   }, [catRows]);
 
@@ -256,12 +271,15 @@ export default function OfflineDetailTab(p: Props) {
         <Card label="전년대비" value={`${summary.yoyPct >= 0 ? "+" : ""}${summary.yoyPct}%`} tone={summary.yoyPct >= 0 ? "up" : "down"} />
         <Card label="이익률 / 브랜드수" value={`${summary.gpm}%`} sub={`${summary.brands}개 브랜드${summary.closedCount ? ` · 퇴점 ${summary.closedCount}` : ""}`} />
         <Card label="일평당매출" value={won(summary.dppSales)} sub="원/평·일" />
-        <Card label="일평당이익" value={won(summary.dppGp)} sub="원/평·일" />
+        <Card label="일평당매출 성장율"
+          value={summary.prevDppSales === 0 ? "신규" : `${summary.dppSalesGrowthPct >= 0 ? "+" : ""}${summary.dppSalesGrowthPct}%`}
+          sub={summary.prevDppSales === 0 ? "전기 없음" : `전기 ${won(summary.prevDppSales)}원/평·일`}
+          tone={summary.prevDppSales === 0 ? undefined : summary.dppSalesGrowthPct >= 0 ? "up" : "down"} />
       </div>
 
       {/* 브랜드 랭킹 (지점 드릴다운) */}
       <ScrollHint className="border-[2px] border-[#0a0a0a] bg-white">
-        <table className="w-full min-w-[560px] sm:min-w-[660px] text-[12px]">
+        <table className="w-full min-w-[640px] sm:min-w-[760px] text-[12px]">
           <thead className="bg-[#0a0a0a] text-white select-none">
             <tr>
               <th className="sticky left-0 z-[2] bg-[#0a0a0a] px-3 py-2 text-left w-10">#</th>
@@ -274,6 +292,10 @@ export default function OfflineDetailTab(p: Props) {
                 title="브랜드 총매출 ÷ (해당 브랜드 전용면적 합 × 일수)">
                 일평당매출{bArrow("dppSales")}
               </th>
+              <th className="px-3 py-2 text-right whitespace-nowrap cursor-pointer hover:bg-white/10" onClick={() => toggleB("dppSalesGrowthPct")}
+                title="(당기 일평당매출 − 전기 일평당매출) ÷ 전기 일평당매출. 면적 변화가 제거된 좌판효율 변화">
+                일평당매출 성장율{bArrow("dppSalesGrowthPct")}
+              </th>
               <th className="px-3 py-2 text-right whitespace-nowrap cursor-pointer hover:bg-white/10" onClick={() => toggleB("yoyPct")}>전년비{bArrow("yoyPct")}</th>
             </tr>
           </thead>
@@ -285,7 +307,7 @@ export default function OfflineDetailTab(p: Props) {
                   open={expanded === id} onToggle={onToggleBrand} sSort={sSort} sDir={sDir} toggleS={toggleS} monthCount={p.monthCount} periodLabel={p.periodLabel} cohort={brandCohort} />
               );
             })}
-            {rows.length === 0 && <tr><td colSpan={8} className="px-3 py-8 text-center text-slate-400">데이터 없음</td></tr>}
+            {rows.length === 0 && <tr><td colSpan={9} className="px-3 py-8 text-center text-slate-400">데이터 없음</td></tr>}
           </tbody>
         </table>
         {rows.length > visible.length && (
@@ -325,7 +347,7 @@ export default function OfflineDetailTab(p: Props) {
       </div>
 
       <ScrollHint className="border-[2px] border-[#0a0a0a] bg-white">
-        <table className="w-full min-w-[560px] sm:min-w-[660px] text-[12px]">
+        <table className="w-full min-w-[640px] sm:min-w-[760px] text-[12px]">
           <thead className="bg-[#0a0a0a] text-white select-none">
             <tr>
               <th className="sticky left-0 z-[2] bg-[#0a0a0a] px-3 py-2 text-left w-10">#</th>
@@ -338,6 +360,10 @@ export default function OfflineDetailTab(p: Props) {
                 title={stSel ? "선택 스코프 매출 ÷ (해당 브랜드×지점 전용면적 합 × 일수) — 스코프 통합 평균" : "지점 총매출 ÷ (지점 내 전 브랜드 전용면적 합 × 일수) — 지점 통합 평균"}>
                 일평당매출{stArrow("dppSales")}
               </th>
+              <th className="px-3 py-2 text-right whitespace-nowrap cursor-pointer hover:bg-white/10" onClick={() => toggleSt("dppSalesGrowthPct")}
+                title="(당기 일평당매출 − 전기 일평당매출) ÷ 전기 일평당매출. 면적 변화가 제거된 좌판효율 변화">
+                일평당매출 성장율{stArrow("dppSalesGrowthPct")}
+              </th>
               <th className="px-3 py-2 text-right whitespace-nowrap cursor-pointer hover:bg-white/10" onClick={() => toggleSt("yoyPct")}>전년비{stArrow("yoyPct")}</th>
             </tr>
           </thead>
@@ -346,7 +372,7 @@ export default function OfflineDetailTab(p: Props) {
               <DetailRow key={st.key} id={st.key} row={st} rank={i + 1} firstColLabel="브랜드" left={!isOthersStSel && storeLeft(st)}
                 open={stExpanded === st.key} onToggle={onToggleStore} sSort={sSort} sDir={sDir} toggleS={toggleS} monthCount={p.monthCount} periodLabel={p.periodLabel} cohort={storeCohort} />
             ))}
-            {storeRows.length === 0 && <tr><td colSpan={8} className="px-3 py-8 text-center text-slate-400">지점 데이터 없음</td></tr>}
+            {storeRows.length === 0 && <tr><td colSpan={9} className="px-3 py-8 text-center text-slate-400">지점 데이터 없음</td></tr>}
           </tbody>
         </table>
         {storeRows.length > stVisible.length && (
@@ -384,12 +410,13 @@ const DetailRow = memo(function DetailRow({ row, id, rank, firstColLabel, open, 
         <td className="hidden sm:table-cell px-3 py-2 text-right font-mono whitespace-nowrap">{row.closed ? "—" : mil(row.g)}</td>
         <td className="hidden sm:table-cell px-3 py-2 text-right font-mono text-slate-500">{row.closed ? "—" : `${row.gpm}%`}</td>
         <td className="px-3 py-2 text-right font-mono text-slate-500 whitespace-nowrap">{row.closed || !row.dppSales ? "—" : won(row.dppSales)}</td>
+        <td className="px-3 py-2 text-right"><YoY pct={row.dppSalesGrowthPct} prev={row.prevDppSales} closed={row.closed} /></td>
         <td className="px-3 py-2 text-right"><YoY pct={row.yoyPct} prev={row.ps} closed={row.closed} /></td>
       </tr>
       {open && row.bySub && row.bySub.length > 0 && (
         <tr className="bg-slate-50">
           <td></td>
-          <td colSpan={7} className="px-3 py-2">
+          <td colSpan={8} className="px-3 py-2">
             <div className="mb-1.5 flex items-center justify-between gap-2">
               <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">{subTitle} ({row.bySub.length})</span>
               {!row.closed && (
@@ -445,7 +472,7 @@ const SubBreakdownTable = memo(function SubBreakdownTable({ bySub, firstColLabel
             <th className="px-2 py-1 text-right cursor-pointer hover:text-[#0a0a0a]" onClick={() => toggleS("growthGPct")}>매총익성장율{sArrow("growthGPct")}</th>
             <th className="px-2 py-1 text-right cursor-pointer hover:text-[#0a0a0a]" onClick={() => toggleS("area")}>전용면적{sArrow("area")}</th>
             <th className="px-2 py-1 text-right cursor-pointer hover:text-[#0a0a0a]" onClick={() => toggleS("dppSales")}>일평당매출{sArrow("dppSales")}</th>
-            <th className="px-2 py-1 text-right cursor-pointer hover:text-[#0a0a0a]" onClick={() => toggleS("dppGp")}>일평당이익{sArrow("dppGp")}</th>
+            <th className="px-2 py-1 text-right cursor-pointer hover:text-[#0a0a0a]" onClick={() => toggleS("dppSalesGrowthPct")} title="면적 변화 제거된 좌판효율 변화">일평당매출 성장율{sArrow("dppSalesGrowthPct")}</th>
           </tr>
         </thead>
         <tbody>
@@ -466,7 +493,7 @@ const SubBreakdownTable = memo(function SubBreakdownTable({ bySub, firstColLabel
               <td className="px-2 py-1 text-right"><YoY pct={s.growthGPct} prev={s.pg} closed={s.closed} /></td>
               <td className="px-2 py-1 text-right font-mono text-slate-500">{s.area ? `${s.area}평` : "—"}</td>
               <td className="px-2 py-1 text-right font-mono text-slate-500">{s.dppSales ? won(s.dppSales) : "—"}</td>
-              <td className="px-2 py-1 text-right font-mono text-slate-500">{s.dppGp ? won(s.dppGp) : "—"}</td>
+              <td className="px-2 py-1 text-right"><YoY pct={s.dppSalesGrowthPct} prev={s.prevDppSales} closed={s.closed} /></td>
             </tr>
           ))}
         </tbody>

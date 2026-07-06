@@ -37,7 +37,7 @@ function YoY({ pct, prev, closed }: { pct: number; prev?: number; closed?: boole
   const up = pct >= 0;
   return <span className="whitespace-nowrap tabular-nums" style={{ color: up ? "#0d9e6e" : "#e53e3e", fontWeight: 700 }}>{up ? "▲" : "▼"}&nbsp;{Math.abs(pct).toFixed(1)}%</span>;
 }
-type SortKey = "key" | "s" | "g" | "gpm" | "yoyPct" | "dppSales";
+type SortKey = "key" | "s" | "g" | "gpm" | "yoyPct" | "dppSales" | "dppSalesGrowthPct";
 
 export default function OfflineTab(p: Props) {
   const [view, setView] = useState<"brand" | "store">("brand");
@@ -155,14 +155,15 @@ export default function OfflineTab(p: Props) {
           <button
             onClick={() => {
               const header = view === "brand"
-                ? ["순위", "브랜드", "복종", "매장수", "매출(백만)", "이익(백만)", "이익률%", "일평당매출(원/평·일)", "전년매출(백만)", "전년비%"]
-                : ["순위", "지점", "브랜드수", "매출(백만)", "이익(백만)", "이익률%", "일평당매출(원/평·일)", "전년매출(백만)", "전년비%"];
+                ? ["순위", "브랜드", "복종", "매장수", "매출(백만)", "이익(백만)", "이익률%", "일평당매출(원/평·일)", "일평당매출성장율%", "전년매출(백만)", "전년비%"]
+                : ["순위", "지점", "브랜드수", "매출(백만)", "이익(백만)", "이익률%", "일평당매출(원/평·일)", "일평당매출성장율%", "전년매출(백만)", "전년비%"];
               const yoyCell = (r: OffRank) => r.closed ? "퇴점" : r.ps === 0 ? "신규" : r.yoyPct;
               const m = (n: number) => Math.round(n / 1e6);
               const dpp = (r: OffRank) => r.closed ? "—" : r.dppSales;
+              const dppG = (r: OffRank) => r.closed ? "퇴점" : r.prevDppSales === 0 ? "신규" : r.dppSalesGrowthPct;
               const body = filtered.map((r, i) => view === "brand"
-                ? [i + 1, r.key, displayCat(r.cat), r.subCount, m(r.s), m(r.g), r.gpm, dpp(r), m(r.ps), yoyCell(r)]
-                : [i + 1, r.key, r.subCount, m(r.s), m(r.g), r.gpm, dpp(r), m(r.ps), yoyCell(r)]);
+                ? [i + 1, r.key, displayCat(r.cat), r.subCount, m(r.s), m(r.g), r.gpm, dpp(r), dppG(r), m(r.ps), yoyCell(r)]
+                : [i + 1, r.key, r.subCount, m(r.s), m(r.g), r.gpm, dpp(r), dppG(r), m(r.ps), yoyCell(r)]);
               downloadCsv(`${p.periodLabel}_${view === "brand" ? "브랜드" : "지점"}_랭킹`, [header, ...body]);
             }}
             className="shrink-0 border-[2px] border-[#0a0a0a] bg-white px-3 py-1.5 text-[12px] font-bold hover:bg-yellow-100"
@@ -181,7 +182,7 @@ export default function OfflineTab(p: Props) {
         <StatusLegend items={enableLeft ? ["closed", "left", "new"] : ["closed", "new"]} />
       </div>
       <ScrollHint className="border-[2px] border-[#0a0a0a] bg-white">
-        <table className="w-full min-w-[560px] sm:min-w-[720px] text-[12px]">
+        <table className="w-full min-w-[640px] sm:min-w-[800px] text-[12px]">
           <thead className="bg-[#0a0a0a] text-white select-none">
             <tr>
               <th className="sticky left-0 z-[2] bg-[#0a0a0a] px-3 py-2 text-left w-10">#</th>
@@ -197,6 +198,10 @@ export default function OfflineTab(p: Props) {
                   : "지점 총매출 ÷ (지점 내 전 브랜드 전용면적 합 × 일수) — 지점 통합 평균"}>
                 일평당매출{arrow("dppSales")}
               </th>
+              <th className="px-3 py-2 text-right whitespace-nowrap cursor-pointer hover:bg-white/10" onClick={() => toggleSort("dppSalesGrowthPct")}
+                title="(당기 일평당매출 − 전기 일평당매출) ÷ 전기 일평당매출. 면적 변화가 제거된 순수 좌판효율 변화">
+                일평당매출 성장율{arrow("dppSalesGrowthPct")}
+              </th>
               <th className="px-3 py-2 text-right whitespace-nowrap cursor-pointer hover:bg-white/10" onClick={() => toggleSort("yoyPct")}>전년비{arrow("yoyPct")}</th>
             </tr>
           </thead>
@@ -205,7 +210,7 @@ export default function OfflineTab(p: Props) {
               <RankRow key={r.key} rank={i + 1} row={r} showCat={view === "brand"} left={isLeft(r)}
                 open={expanded === r.key} onToggle={onToggleRow} subLabel={subLabel} />
             ))}
-            {filtered.length === 0 && <tr><td colSpan={view === "brand" ? 9 : 8} className="px-3 py-8 text-center text-slate-400">결과 없음</td></tr>}
+            {filtered.length === 0 && <tr><td colSpan={view === "brand" ? 10 : 9} className="px-3 py-8 text-center text-slate-400">결과 없음</td></tr>}
           </tbody>
         </table>
         {filtered.length > visible.length && (
@@ -232,7 +237,7 @@ const RankRow = memo(function RankRow({
   rank: number; row: OffRank; showCat: boolean; open: boolean;
   onToggle: (key: string) => void; subLabel: string; left?: boolean;
 }) {
-  const cols = showCat ? 9 : 8;
+  const cols = showCat ? 10 : 9;
   return (
     <>
       <tr className={`group border-t border-slate-100 ${row.closed ? "opacity-60" : "cursor-pointer hover:bg-yellow-50"} ${open ? "bg-yellow-50" : ""}`} onClick={() => { if (!row.closed) onToggle(row.key); }}>
@@ -248,13 +253,14 @@ const RankRow = memo(function RankRow({
         <td className="hidden sm:table-cell px-3 py-2 text-right font-mono whitespace-nowrap">{row.closed ? "—" : mil(row.g)}</td>
         <td className="hidden sm:table-cell px-3 py-2 text-right font-mono text-slate-500">{row.closed ? "—" : `${row.gpm}%`}</td>
         <td className="px-3 py-2 text-right font-mono text-slate-500 whitespace-nowrap">{row.closed || !row.dppSales ? "—" : won(row.dppSales)}</td>
+        <td className="px-3 py-2 text-right"><YoY pct={row.dppSalesGrowthPct} prev={row.prevDppSales} closed={row.closed} /></td>
         <td className="px-3 py-2 text-right"><YoY pct={row.yoyPct} prev={row.ps} closed={row.closed} /></td>
       </tr>
       {open && row.bySub && (
         <tr className="bg-slate-50">
           <td></td>
           <td colSpan={cols - 1} className="px-3 py-2">
-            <div className="mb-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400">{subLabel}별 매출·이익 (백만) · 일평당매출 (원/평·일) · {row.bySub.length}건</div>
+            <div className="mb-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400">{subLabel}별 매출·이익 (백만) · 일평당매출 (원/평·일) · 성장율 · {row.bySub.length}건</div>
             <div className="flex flex-col gap-1">
               {row.bySub.map((s) => {
                 const pct = row.s ? (s.s / row.s) * 100 : 0;
@@ -269,6 +275,7 @@ const RankRow = memo(function RankRow({
                     <span className="w-24 text-right font-mono font-bold">{s.closed ? "—" : mil(s.s)}</span>
                     <span className="w-20 text-right font-mono text-slate-500">{s.closed ? "—" : mil(s.g)}</span>
                     <span className="w-24 text-right font-mono text-slate-500" title="일평당매출 = 매출 ÷ (전용면적 × 일수)">{s.closed || !s.dppSales ? "—" : `${won(s.dppSales)}/평·일`}</span>
+                    <span className="w-16 text-right"><YoY pct={s.dppSalesGrowthPct} prev={s.prevDppSales} closed={s.closed} /></span>
                   </div>
                 );
               })}

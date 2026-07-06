@@ -86,46 +86,53 @@ async function fetchOff(table, col, periods) {
 
 // ── 집계 (queries.ts aggregate/buildOff 포팅) ────────────────────
 function aggregate(filtered, cur, prev, days) {
+  const growthDpp = (dpp, pdpp) => pdpp ? +((dpp - pdpp) / pdpp * 100).toFixed(1) : 0;
   function rank(keyOf, withCat, subOf, labelOf) {
     const c = new Map(), p = new Map();
-    const subEnsure = (m, sk) => { let e = m.get(sk); if (!e) { e = { s: 0, g: 0, ps: 0, pg: 0, area: 0, cnt: 0 }; m.set(sk, e); } return e; };
+    const subEnsure = (m, sk) => { let e = m.get(sk); if (!e) { e = { s: 0, g: 0, ps: 0, pg: 0, area: 0, parea: 0, cnt: 0 }; m.set(sk, e); } return e; };
     for (const r of filtered) {
       const k = keyOf(r);
       if (r.p === cur) {
-        const e = c.get(k) ?? { s: 0, g: 0, area: 0, label: labelOf ? labelOf(r) : k, cat: r.cat, division: r.division, sub: new Map() };
+        const e = c.get(k) ?? { s: 0, g: 0, area: 0, parea: 0, label: labelOf ? labelOf(r) : k, cat: r.cat, division: r.division, sub: new Map() };
         e.s += r.sales; e.g += r.gp; e.area += r.area_raw;
         if (subOf) { const se = subEnsure(e.sub, subOf(r)); se.s += r.sales; se.g += r.gp; se.area += r.area_raw; se.cnt += r.store_cnt; }
         c.set(k, e);
       } else if (r.p === prev) {
-        const e = p.get(k) ?? { s: 0, g: 0, label: labelOf ? labelOf(r) : k, cat: r.cat, division: r.division };
-        e.s += r.sales; e.g += r.gp; p.set(k, e);
+        const e = p.get(k) ?? { s: 0, g: 0, area: 0, label: labelOf ? labelOf(r) : k, cat: r.cat, division: r.division };
+        e.s += r.sales; e.g += r.gp; e.area += r.area_raw;
+        p.set(k, e);
       }
     }
+    for (const [k, pv] of p) { const e = c.get(k); if (e) e.parea += pv.area; }
     for (const r of filtered) {
       if (r.p !== prev || !subOf) continue;
       const e = c.get(keyOf(r)); if (!e) continue;
-      const se = subEnsure(e.sub, subOf(r)); se.ps += r.sales; se.pg += r.gp;
+      const se = subEnsure(e.sub, subOf(r)); se.ps += r.sales; se.pg += r.gp; se.parea += r.area_raw;
     }
     const out = [];
     for (const [k, e] of c) {
-      const pv = p.get(k) ?? { s: 0, g: 0 };
+      const pv = p.get(k) ?? { s: 0, g: 0, area: 0 };
+      const dppSales = e.area ? Math.round(e.s / e.area) : 0;
+      const prevDppSales = e.parea ? Math.round(pv.s / e.parea) : 0;
       out.push({
         key: e.label, cat: withCat ? e.cat : undefined, division: withCat ? e.division : undefined,
         s: e.s, ps: pv.s, g: e.g, pg: pv.g,
         gpm: e.s ? +(e.g / e.s * 100).toFixed(1) : 0,
         yoyPct: pv.s ? +((e.s - pv.s) / pv.s * 100).toFixed(1) : 0,
         subCount: [...e.sub.values()].filter((v) => v.s > 0).length,
-        dppSales: e.area ? Math.round(e.s / e.area) : 0,
-        dppGp: e.area ? Math.round(e.g / e.area) : 0,
-        bySub: subOf ? [...e.sub.entries()].map(([key, v]) => ({
-          key, s: v.s, ps: v.ps, g: v.g, pg: v.pg,
-          growthS: v.s - v.ps, growthPct: v.ps ? +((v.s - v.ps) / v.ps * 100).toFixed(1) : 0,
-          growthG: v.g - v.pg, growthGPct: v.pg ? +((v.g - v.pg) / v.pg * 100).toFixed(1) : 0,
-          area: days ? Math.round(v.area / days) : 0,
-          dppSales: v.area ? Math.round(v.s / v.area) : 0,
-          dppGp: v.area ? Math.round(v.g / v.area) : 0,
-          storeCnt: v.cnt, closed: v.s === 0 && v.ps > 0,
-        })).sort((a, b) => b.s - a.s).slice(0, 50) : undefined,
+        dppSales, prevDppSales, dppSalesGrowthPct: growthDpp(dppSales, prevDppSales),
+        bySub: subOf ? [...e.sub.entries()].map(([key, v]) => {
+          const dpp = v.area ? Math.round(v.s / v.area) : 0;
+          const pdpp = v.parea ? Math.round(v.ps / v.parea) : 0;
+          return {
+            key, s: v.s, ps: v.ps, g: v.g, pg: v.pg,
+            growthS: v.s - v.ps, growthPct: v.ps ? +((v.s - v.ps) / v.ps * 100).toFixed(1) : 0,
+            growthG: v.g - v.pg, growthGPct: v.pg ? +((v.g - v.pg) / v.pg * 100).toFixed(1) : 0,
+            area: days ? Math.round(v.area / days) : 0,
+            dppSales: dpp, prevDppSales: pdpp, dppSalesGrowthPct: growthDpp(dpp, pdpp),
+            storeCnt: v.cnt, closed: v.s === 0 && v.ps > 0,
+          };
+        }).sort((a, b) => b.s - a.s).slice(0, 50) : undefined,
       });
     }
     for (const [k, pv] of p) {
@@ -133,7 +140,10 @@ function aggregate(filtered, cur, prev, days) {
       out.push({
         key: pv.label, cat: withCat ? pv.cat : undefined, division: withCat ? pv.division : undefined,
         s: 0, ps: pv.s, g: 0, pg: pv.g, gpm: 0, yoyPct: -100, subCount: 0,
-        dppSales: 0, dppGp: 0, closed: true, bySub: subOf ? [] : undefined,
+        dppSales: 0,
+        prevDppSales: pv.area ? Math.round(pv.s / pv.area) : 0,
+        dppSalesGrowthPct: -100,
+        closed: true, bySub: subOf ? [] : undefined,
       });
     }
     return out.sort((a, b) => b.s - a.s);

@@ -428,8 +428,9 @@ export interface OffSub {
   growthS: number; growthPct: number;   // 매출 성장액/율
   growthG: number; growthGPct: number;  // 매총익 성장액/율
   area: number;                   // 전용면적(평)
-  dppSales: number;               // 일평당매출
-  dppGp: number;                  // 일평당이익
+  dppSales: number;               // 일평당매출 (당기)
+  prevDppSales: number;           // 일평당매출 (전기)
+  dppSalesGrowthPct: number;      // 일평당매출 성장율 %
   storeCnt: number;               // 매장수(참고)
   closed?: boolean;               // 퇴점: 전년 실적만 있고 올해 매출 없음
 }
@@ -443,7 +444,8 @@ export interface OffRank {
   yoyPct: number;                 // 매출 전년비
   subCount: number;               // 하위 개수 (브랜드→매장수 / 지점→브랜드수)
   dppSales: number;               // 일평당매출 (당기, 매출/면적합)
-  dppGp: number;                  // 일평당이익
+  prevDppSales: number;           // 일평당매출 (전기)
+  dppSalesGrowthPct: number;      // 일평당매출 성장율 % — 면적변화 제거된 좌판효율 변화
   closed?: boolean;               // 퇴점: 전년 실적만 있고 올해 매출 없음
   bySub?: OffSub[];
 }
@@ -480,56 +482,71 @@ async function fetchOff(table: "sales_offline_cum" | "sales_offline_month", col:
 
 /** 한 행 묶음(filtered)에 대한 전체 집계 — 본류/그외 동일 로직 재사용 */
 function aggregate(filtered: (OffRow & { p: string })[], cur: string, prev: string, days: number) {
-  type SubAgg = { s: number; g: number; ps: number; pg: number; area: number; cnt: number };
+  // parea = 전기 면적·일. cur/prev 를 함께 잡아 일평당매출 성장율까지 계산.
+  type SubAgg = { s: number; g: number; ps: number; pg: number; area: number; parea: number; cnt: number };
+  // 일평당매출 성장율 = (dpp - prevDpp) / prevDpp * 100. prevDpp=0(신규)이면 0으로 두고 UI에서 "신규" 표기.
+  const growthDpp = (dpp: number, prev: number) => prev ? +((dpp - prev) / prev * 100).toFixed(1) : 0;
   // keyOf: 그룹 키, labelOf: 표시명(없으면 키와 동일)
   function rank(keyOf: (r: OffRow) => string, withCat: boolean, subOf?: (r: OffRow) => string, labelOf?: (r: OffRow) => string): OffRank[] {
-    const c = new Map<string, { s: number; g: number; area: number; label: string; cat: string; division: string; sub: Map<string, SubAgg> }>();
-    const p = new Map<string, { s: number; g: number; label: string; cat: string; division: string }>();
+    const c = new Map<string, { s: number; g: number; area: number; parea: number; label: string; cat: string; division: string; sub: Map<string, SubAgg> }>();
+    const p = new Map<string, { s: number; g: number; area: number; label: string; cat: string; division: string }>();
     const subEnsure = (m: Map<string, SubAgg>, sk: string) => {
-      let e = m.get(sk); if (!e) { e = { s: 0, g: 0, ps: 0, pg: 0, area: 0, cnt: 0 }; m.set(sk, e); } return e;
+      let e = m.get(sk); if (!e) { e = { s: 0, g: 0, ps: 0, pg: 0, area: 0, parea: 0, cnt: 0 }; m.set(sk, e); } return e;
     };
     for (const r of filtered) {
       const k = keyOf(r);
       if (r.p === cur) {
-        const e = c.get(k) ?? { s: 0, g: 0, area: 0, label: labelOf ? labelOf(r) : k, cat: r.cat, division: r.division, sub: new Map() };
+        const e = c.get(k) ?? { s: 0, g: 0, area: 0, parea: 0, label: labelOf ? labelOf(r) : k, cat: r.cat, division: r.division, sub: new Map() };
         e.s += r.sales; e.g += r.gp; e.area += r.area_raw;
         if (subOf) { const se = subEnsure(e.sub, subOf(r)); se.s += r.sales; se.g += r.gp; se.area += r.area_raw; se.cnt += r.store_cnt; }
         c.set(k, e);
       } else if (r.p === prev) {
-        const e = p.get(k) ?? { s: 0, g: 0, label: labelOf ? labelOf(r) : k, cat: r.cat, division: r.division };
-        e.s += r.sales; e.g += r.gp; p.set(k, e);
+        const e = p.get(k) ?? { s: 0, g: 0, area: 0, label: labelOf ? labelOf(r) : k, cat: r.cat, division: r.division };
+        e.s += r.sales; e.g += r.gp; e.area += r.area_raw;
+        p.set(k, e);
         // 하위(지점)의 전년 값도 누적 — 성장 계산용 (cur 그룹에 미리 있을 수도, 없을 수도)
       }
     }
-    // 전년 하위값: cur 그룹의 sub에 prev를 합산. 올해 없던 지점도 생성 → 지점 단위 퇴점 노출
+    // 전년 → cur 그룹에 병합: cur 그룹의 parea 및 sub.parea/ps/pg 채움. 올해 없던 지점도 생성 → 지점 단위 퇴점 노출.
+    for (const [k, pv] of p) {
+      const e = c.get(k); if (e) e.parea += pv.area;
+    }
     for (const r of filtered) {
       if (r.p !== prev || !subOf) continue;
       const k = keyOf(r);
       const e = c.get(k); if (!e) continue;
       const se = subEnsure(e.sub, subOf(r));
-      se.ps += r.sales; se.pg += r.gp;
+      se.ps += r.sales; se.pg += r.gp; se.parea += r.area_raw;
     }
     const out: OffRank[] = [];
     for (const [k, e] of c) {
-      const pv = p.get(k) ?? { s: 0, g: 0 };
+      const pv = p.get(k) ?? { s: 0, g: 0, area: 0 };
+      const dppSales = e.area ? Math.round(e.s / e.area) : 0;
+      const prevDppSales = e.parea ? Math.round(pv.s / e.parea) : 0;
       out.push({
         key: e.label, cat: withCat ? e.cat : undefined, division: withCat ? e.division : undefined,
         s: e.s, ps: pv.s, g: e.g, pg: pv.g,
         gpm: e.s ? +(e.g / e.s * 100).toFixed(1) : 0,
         yoyPct: pv.s ? +((e.s - pv.s) / pv.s * 100).toFixed(1) : 0,
         subCount: [...e.sub.values()].filter((v) => v.s > 0).length,   // 운영 중 지점만
-        dppSales: e.area ? Math.round(e.s / e.area) : 0,   // 일평당매출 = 매출/(평·일)
-        dppGp: e.area ? Math.round(e.g / e.area) : 0,        // 일평당이익
-        bySub: subOf ? [...e.sub.entries()].map(([key, v]) => ({
-          key, s: v.s, ps: v.ps, g: v.g, pg: v.pg,
-          growthS: v.s - v.ps, growthPct: v.ps ? +((v.s - v.ps) / v.ps * 100).toFixed(1) : 0,
-          growthG: v.g - v.pg, growthGPct: v.pg ? +((v.g - v.pg) / v.pg * 100).toFixed(1) : 0,
-          area: days ? Math.round(v.area / days) : 0,         // 전용면적(평)
-          dppSales: v.area ? Math.round(v.s / v.area) : 0,    // 일평당매출 = 매출/(평·일)
-          dppGp: v.area ? Math.round(v.g / v.area) : 0,       // 일평당이익
-          storeCnt: v.cnt,
-          closed: v.s === 0 && v.ps > 0,                      // 지점 단위 퇴점
-        })).sort((a, b) => b.s - a.s).slice(0, 50) : undefined,
+        dppSales,
+        prevDppSales,
+        dppSalesGrowthPct: growthDpp(dppSales, prevDppSales),
+        bySub: subOf ? [...e.sub.entries()].map(([key, v]) => {
+          const dpp = v.area ? Math.round(v.s / v.area) : 0;
+          const pdpp = v.parea ? Math.round(v.ps / v.parea) : 0;
+          return {
+            key, s: v.s, ps: v.ps, g: v.g, pg: v.pg,
+            growthS: v.s - v.ps, growthPct: v.ps ? +((v.s - v.ps) / v.ps * 100).toFixed(1) : 0,
+            growthG: v.g - v.pg, growthGPct: v.pg ? +((v.g - v.pg) / v.pg * 100).toFixed(1) : 0,
+            area: days ? Math.round(v.area / days) : 0,         // 전용면적(평)
+            dppSales: dpp,
+            prevDppSales: pdpp,
+            dppSalesGrowthPct: growthDpp(dpp, pdpp),
+            storeCnt: v.cnt,
+            closed: v.s === 0 && v.ps > 0,                      // 지점 단위 퇴점
+          };
+        }).sort((a, b) => b.s - a.s).slice(0, 50) : undefined,
       });
     }
     // 퇴점: 전년(prev)에는 있었으나 올해(cur)에 없는 항목 — s=0, 전년 실적만 보유
@@ -539,7 +556,10 @@ function aggregate(filtered: (OffRow & { p: string })[], cur: string, prev: stri
         key: pv.label, cat: withCat ? pv.cat : undefined, division: withCat ? pv.division : undefined,
         s: 0, ps: pv.s, g: 0, pg: pv.g,
         gpm: 0, yoyPct: -100, subCount: 0,
-        dppSales: 0, dppGp: 0, closed: true,
+        dppSales: 0,
+        prevDppSales: pv.area ? Math.round(pv.s / pv.area) : 0,
+        dppSalesGrowthPct: -100,
+        closed: true,
         bySub: subOf ? [] : undefined,
       });
     }
