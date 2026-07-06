@@ -22,6 +22,13 @@ export function ymRange(start: string, end: string): string[] {
 }
 
 const DAYS_PER_MONTH = 30;
+
+/** 'YYYY-MM' 의 실제 말일 (28~31). Feb 윤년 처리 포함. */
+function daysInMonth(ym: string): number {
+  const [y, m] = ym.split("-").map(Number);
+  if (!y || !m) return DAYS_PER_MONTH;
+  return new Date(y, m, 0).getDate();   // 다음달 0일 = 이번달 말일
+}
 interface MonthlyAgg { sales: number; gp: number; }
 
 // 키: division|cat|brand|store
@@ -462,10 +469,11 @@ async function fetchOff(table: "sales_offline_cum" | "sales_offline_month", col:
     if (!data || data.length < PAGE) break;
     from += PAGE;
   }
-  // 단위 정규화: 당월 area_raw는 ERP가 "평"으로 내려주므로 30 곱해 "평·일" 로 맞춘다.
-  // (누적은 이미 "평·일" 로 내려옴 → 그대로.) 이후 aggregate 는 v.area/days=30 으로 나눠 평 복원.
+  // 단위 정규화: 당월 area_raw는 ERP가 "평"으로 내려주므로 그 월의 실제 일수만큼 곱해
+  // 누적과 동일한 "평·일" 단위로 맞춘다. (2월=28/29, 4·6·9·11월=30, 나머지=31)
+  // 이후 aggregate 는 v.area/days=daysInMonth(ym) 로 나눠 평을 복원.
   if (table === "sales_offline_month") {
-    for (const r of all) r.area_raw = (r.area_raw ?? 0) * DAYS_PER_MONTH;
+    for (const r of all) r.area_raw = (r.area_raw ?? 0) * daysInMonth(r.p);
   }
   return all;
 }
@@ -618,10 +626,10 @@ async function getOfflineCumImpl(year: string, prevYear: string, divisions: stri
   return { year, prevYear, ...buildOff(rows, year, prevYear, divisions, days) };
 }
 
-/** 오프라인 당월 (6번) — 평당 일수 30 */
+/** 오프라인 당월 (6번) — 평당 일수는 해당 월 실제 말일(28~31) */
 async function getOfflineMonthImpl(ym: string, prevYm: string, divisions: string[] | null = null) {
   const rows = await fetchOff("sales_offline_month", "ym", [ym, prevYm]);
-  return { ym, prevYm, ...buildOff(rows, ym, prevYm, divisions, 30) };
+  return { ym, prevYm, ...buildOff(rows, ym, prevYm, divisions, daysInMonth(ym)) };
 }
 
 // ── BCD (등급 분석) ──────────────────────────────────────────
