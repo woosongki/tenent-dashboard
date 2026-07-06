@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import Badge from "@/components/ui/Badge";
 import EmptyState from "@/components/ui/EmptyState";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
-import { approveUser, rejectUser, revokeApproval, setUserHiddenMenus } from "../_actions";
+import { approveUser, rejectUser, revokeApproval, setUserHiddenMenus, setUserRole } from "../_actions";
 import { CONTROLLABLE_MENUS } from "@/lib/nav";
 
 export interface UserRow {
@@ -186,9 +186,29 @@ function UserRowItem({ row, zebra = false }: { row: UserRow; zebra?: boolean }) 
       </td>
       <td className="py-3 px-3">
         {row.role ? (
-          <Badge tone={ROLE_TONE[row.role]} size="xs">
-            {row.role}
-          </Badge>
+          row.role !== "owner" && !row.isMe && row.isApproved ? (
+            <select
+              value={row.role}
+              disabled={pending}
+              onChange={(e) => {
+                const next = e.target.value as "admin" | "member";
+                if (next === row.role) return;
+                start(async () => {
+                  const res = await setUserRole(row.id, next);
+                  if (!res.ok) toast.error(res.error);
+                  else toast.success(`${row.email} → ${next}`);
+                });
+              }}
+              className="h-7 border-[2px] border-[#0a0a0a] bg-white px-1.5 text-[11px] font-extrabold uppercase tracking-wider shadow-[2px_2px_0_0_#0a0a0a] focus:outline-none disabled:opacity-50"
+            >
+              <option value="admin">admin</option>
+              <option value="member">member</option>
+            </select>
+          ) : (
+            <Badge tone={ROLE_TONE[row.role]} size="xs">
+              {row.role}
+            </Badge>
+          )
         ) : (
           <span className="text-[10px] font-bold uppercase tracking-wider text-[#0a0a0a]/40">조직 미배정</span>
         )}

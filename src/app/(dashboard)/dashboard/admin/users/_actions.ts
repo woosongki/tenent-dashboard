@@ -88,6 +88,39 @@ export async function rejectUser(
   return { ok: true };
 }
 
+/** 조직 내 사용자 권한 변경 — admin ↔ member. owner는 대상/주체 모두 불가, 본인 변경 불가. */
+export async function setUserRole(
+  targetId: string,
+  role: "admin" | "member",
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  if (role !== "admin" && role !== "member") {
+    return { ok: false, error: "허용되지 않는 권한입니다." };
+  }
+  const { adminId, orgId } = await requireAdmin();
+  if (targetId === adminId) {
+    return { ok: false, error: "본인의 권한은 변경할 수 없습니다." };
+  }
+  const supabase = await createClient();
+  const { data: cur, error: cErr } = await supabase
+    .from("organization_members")
+    .select("role")
+    .eq("user_id", targetId)
+    .eq("organization_id", orgId)
+    .maybeSingle();
+  if (cErr) return { ok: false, error: cErr.message };
+  if (!cur) return { ok: false, error: "조직 멤버가 아닙니다. 먼저 승인해 주세요." };
+  if (cur.role === "owner") return { ok: false, error: "owner의 권한은 변경할 수 없습니다." };
+
+  const { error } = await supabase
+    .from("organization_members")
+    .update({ role })
+    .eq("user_id", targetId)
+    .eq("organization_id", orgId);
+  if (error) return { ok: false, error: error.message };
+  revalidatePath("/dashboard/admin/users");
+  return { ok: true };
+}
+
 export async function revokeApproval(
   targetId: string,
 ): Promise<{ ok: true } | { ok: false; error: string }> {
