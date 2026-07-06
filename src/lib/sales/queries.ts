@@ -462,6 +462,11 @@ async function fetchOff(table: "sales_offline_cum" | "sales_offline_month", col:
     if (!data || data.length < PAGE) break;
     from += PAGE;
   }
+  // 단위 정규화: 당월 area_raw는 ERP가 "평"으로 내려주므로 30 곱해 "평·일" 로 맞춘다.
+  // (누적은 이미 "평·일" 로 내려옴 → 그대로.) 이후 aggregate 는 v.area/days=30 으로 나눠 평 복원.
+  if (table === "sales_offline_month") {
+    for (const r of all) r.area_raw = (r.area_raw ?? 0) * DAYS_PER_MONTH;
+  }
   return all;
 }
 
