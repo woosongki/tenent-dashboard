@@ -254,7 +254,7 @@ const RankRow = memo(function RankRow({
         <tr className="bg-slate-50">
           <td></td>
           <td colSpan={cols - 1} className="px-3 py-2">
-            <div className="mb-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400">{subLabel}별 매출·이익 (백만, {row.bySub.length})</div>
+            <div className="mb-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400">{subLabel}별 매출·이익 (백만) · 일평당매출 (원/평·일) · {row.bySub.length}건</div>
             <div className="flex flex-col gap-1">
               {row.bySub.map((s) => {
                 const pct = row.s ? (s.s / row.s) * 100 : 0;
@@ -268,6 +268,7 @@ const RankRow = memo(function RankRow({
                     <span className="w-10 text-right font-mono text-slate-400">{s.closed ? "" : `${pct.toFixed(0)}%`}</span>
                     <span className="w-24 text-right font-mono font-bold">{s.closed ? "—" : mil(s.s)}</span>
                     <span className="w-20 text-right font-mono text-slate-500">{s.closed ? "—" : mil(s.g)}</span>
+                    <span className="w-24 text-right font-mono text-slate-500" title="일평당매출 = 매출 ÷ (전용면적 × 일수)">{s.closed || !s.dppSales ? "—" : `${won(s.dppSales)}/평·일`}</span>
                   </div>
                 );
               })}

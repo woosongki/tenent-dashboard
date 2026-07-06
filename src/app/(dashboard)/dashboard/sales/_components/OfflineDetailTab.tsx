@@ -62,7 +62,7 @@ function YoY({ pct, prev, closed }: { pct: number; prev?: number; closed?: boole
 
 type Sel = { type: "cat" | "div"; key: string };
 type Dir = "asc" | "desc";
-type BSortKey = "key" | "subCount" | "s" | "g" | "gpm" | "yoyPct";
+type BSortKey = "key" | "subCount" | "s" | "g" | "gpm" | "yoyPct" | "dppSales";
 type SSortKey = "key" | "s" | "growthS" | "growthPct" | "g" | "growthG" | "growthGPct" | "area" | "dppSales" | "dppGp";
 type OffSubLite = import("@/lib/sales/queries").OffSub;
 
@@ -108,13 +108,15 @@ export default function OfflineDetailTab(p: Props) {
     const selBrands = p.brands.filter((b) => stSel.type === "cat"
       ? (b.division === "패션" && b.cat === stSel.key)
       : b.division === stSel.key);
-    // 지점별로 해당 복종 브랜드들을 모음
-    const m = new Map<string, { s: number; ps: number; g: number; pg: number; subs: OffSubLite[] }>();
+    // 지점별로 해당 복종 브랜드들을 모음.
+    // areaDays: sub.s / sub.dppSales 로 (평·일) 역산 → 지점 스코프 dppSales 재계산.
+    const m = new Map<string, { s: number; ps: number; g: number; pg: number; areaDays: number; subs: OffSubLite[] }>();
     for (const b of selBrands) {
       for (const sub of b.bySub ?? []) {
         let e = m.get(sub.key);
-        if (!e) { e = { s: 0, ps: 0, g: 0, pg: 0, subs: [] }; m.set(sub.key, e); }
+        if (!e) { e = { s: 0, ps: 0, g: 0, pg: 0, areaDays: 0, subs: [] }; m.set(sub.key, e); }
         e.s += sub.s; e.ps += sub.ps; e.g += sub.g; e.pg += sub.pg;
+        if (sub.dppSales) e.areaDays += sub.s / sub.dppSales;
         e.subs.push({ ...sub, key: b.key });   // 하위 = 브랜드 (지점 내)
       }
     }
@@ -123,7 +125,8 @@ export default function OfflineDetailTab(p: Props) {
       gpm: e.s ? +(e.g / e.s * 100).toFixed(1) : 0,
       yoyPct: e.ps ? +((e.s - e.ps) / e.ps * 100).toFixed(1) : 0,
       subCount: e.subs.filter((x) => x.s > 0).length,
-      dppSales: 0, dppGp: 0,
+      dppSales: e.areaDays ? Math.round(e.s / e.areaDays) : 0,
+      dppGp: e.areaDays ? Math.round(e.g / e.areaDays) : 0,
       closed: e.s === 0 && e.ps > 0,
       bySub: e.subs,
     })).sort((a, b) => b.s - a.s);
@@ -258,7 +261,7 @@ export default function OfflineDetailTab(p: Props) {
 
       {/* 브랜드 랭킹 (지점 드릴다운) */}
       <ScrollHint className="border-[2px] border-[#0a0a0a] bg-white">
-        <table className="w-full min-w-[480px] sm:min-w-[560px] text-[12px]">
+        <table className="w-full min-w-[560px] sm:min-w-[660px] text-[12px]">
           <thead className="bg-[#0a0a0a] text-white select-none">
             <tr>
               <th className="sticky left-0 z-[2] bg-[#0a0a0a] px-3 py-2 text-left w-10">#</th>
@@ -267,6 +270,10 @@ export default function OfflineDetailTab(p: Props) {
               <th className="px-3 py-2 text-right whitespace-nowrap cursor-pointer hover:bg-white/10" onClick={() => toggleB("s")}>매출(백만){bArrow("s")}</th>
               <th className="hidden sm:table-cell px-3 py-2 text-right whitespace-nowrap cursor-pointer hover:bg-white/10" onClick={() => toggleB("g")}>이익(백만){bArrow("g")}</th>
               <th className="hidden sm:table-cell px-3 py-2 text-right whitespace-nowrap cursor-pointer hover:bg-white/10" onClick={() => toggleB("gpm")}>이익률{bArrow("gpm")}</th>
+              <th className="px-3 py-2 text-right whitespace-nowrap cursor-pointer hover:bg-white/10" onClick={() => toggleB("dppSales")}
+                title="브랜드 총매출 ÷ (해당 브랜드 전용면적 합 × 일수)">
+                일평당매출{bArrow("dppSales")}
+              </th>
               <th className="px-3 py-2 text-right whitespace-nowrap cursor-pointer hover:bg-white/10" onClick={() => toggleB("yoyPct")}>전년비{bArrow("yoyPct")}</th>
             </tr>
           </thead>
@@ -278,7 +285,7 @@ export default function OfflineDetailTab(p: Props) {
                   open={expanded === id} onToggle={onToggleBrand} sSort={sSort} sDir={sDir} toggleS={toggleS} monthCount={p.monthCount} periodLabel={p.periodLabel} cohort={brandCohort} />
               );
             })}
-            {rows.length === 0 && <tr><td colSpan={7} className="px-3 py-8 text-center text-slate-400">데이터 없음</td></tr>}
+            {rows.length === 0 && <tr><td colSpan={8} className="px-3 py-8 text-center text-slate-400">데이터 없음</td></tr>}
           </tbody>
         </table>
         {rows.length > visible.length && (
@@ -318,7 +325,7 @@ export default function OfflineDetailTab(p: Props) {
       </div>
 
       <ScrollHint className="border-[2px] border-[#0a0a0a] bg-white">
-        <table className="w-full min-w-[480px] sm:min-w-[560px] text-[12px]">
+        <table className="w-full min-w-[560px] sm:min-w-[660px] text-[12px]">
           <thead className="bg-[#0a0a0a] text-white select-none">
             <tr>
               <th className="sticky left-0 z-[2] bg-[#0a0a0a] px-3 py-2 text-left w-10">#</th>
@@ -327,6 +334,10 @@ export default function OfflineDetailTab(p: Props) {
               <th className="px-3 py-2 text-right whitespace-nowrap cursor-pointer hover:bg-white/10" onClick={() => toggleSt("s")}>매출(백만){stArrow("s")}</th>
               <th className="hidden sm:table-cell px-3 py-2 text-right whitespace-nowrap cursor-pointer hover:bg-white/10" onClick={() => toggleSt("g")}>매총익(백만){stArrow("g")}</th>
               <th className="hidden sm:table-cell px-3 py-2 text-right whitespace-nowrap cursor-pointer hover:bg-white/10" onClick={() => toggleSt("gpm")}>이익률{stArrow("gpm")}</th>
+              <th className="px-3 py-2 text-right whitespace-nowrap cursor-pointer hover:bg-white/10" onClick={() => toggleSt("dppSales")}
+                title={stSel ? "선택 스코프 매출 ÷ (해당 브랜드×지점 전용면적 합 × 일수) — 스코프 통합 평균" : "지점 총매출 ÷ (지점 내 전 브랜드 전용면적 합 × 일수) — 지점 통합 평균"}>
+                일평당매출{stArrow("dppSales")}
+              </th>
               <th className="px-3 py-2 text-right whitespace-nowrap cursor-pointer hover:bg-white/10" onClick={() => toggleSt("yoyPct")}>전년비{stArrow("yoyPct")}</th>
             </tr>
           </thead>
@@ -335,7 +346,7 @@ export default function OfflineDetailTab(p: Props) {
               <DetailRow key={st.key} id={st.key} row={st} rank={i + 1} firstColLabel="브랜드" left={!isOthersStSel && storeLeft(st)}
                 open={stExpanded === st.key} onToggle={onToggleStore} sSort={sSort} sDir={sDir} toggleS={toggleS} monthCount={p.monthCount} periodLabel={p.periodLabel} cohort={storeCohort} />
             ))}
-            {storeRows.length === 0 && <tr><td colSpan={7} className="px-3 py-8 text-center text-slate-400">지점 데이터 없음</td></tr>}
+            {storeRows.length === 0 && <tr><td colSpan={8} className="px-3 py-8 text-center text-slate-400">지점 데이터 없음</td></tr>}
           </tbody>
         </table>
         {storeRows.length > stVisible.length && (
@@ -372,12 +383,13 @@ const DetailRow = memo(function DetailRow({ row, id, rank, firstColLabel, open, 
         <td className="px-3 py-2 text-right font-mono font-bold whitespace-nowrap">{row.closed ? "—" : mil(row.s)}</td>
         <td className="hidden sm:table-cell px-3 py-2 text-right font-mono whitespace-nowrap">{row.closed ? "—" : mil(row.g)}</td>
         <td className="hidden sm:table-cell px-3 py-2 text-right font-mono text-slate-500">{row.closed ? "—" : `${row.gpm}%`}</td>
+        <td className="px-3 py-2 text-right font-mono text-slate-500 whitespace-nowrap">{row.closed || !row.dppSales ? "—" : won(row.dppSales)}</td>
         <td className="px-3 py-2 text-right"><YoY pct={row.yoyPct} prev={row.ps} closed={row.closed} /></td>
       </tr>
       {open && row.bySub && row.bySub.length > 0 && (
         <tr className="bg-slate-50">
           <td></td>
-          <td colSpan={6} className="px-3 py-2">
+          <td colSpan={7} className="px-3 py-2">
             <div className="mb-1.5 flex items-center justify-between gap-2">
               <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">{subTitle} ({row.bySub.length})</span>
               {!row.closed && (
