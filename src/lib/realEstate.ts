@@ -62,7 +62,7 @@ export async function fetchCommercialTrade(
           num_of_rows: String(rows),
         });
       try {
-        const res = await fetch(url, { next: { revalidate: 3600 } });
+        const res = await fetch(url, { next: { revalidate: 3600 }, signal: AbortSignal.timeout(8000) });
         if (!res.ok) return null;
         return (await res.json()) as TradeResponse;
       } catch {

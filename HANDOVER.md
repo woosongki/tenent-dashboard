@@ -252,6 +252,25 @@ API 라우트 인증을 `src/lib/auth/guards.ts`(`requireUser`/`requireApproved`
 
 ---
 
+## 12. 버전업 배치 2 (상권 데이터원 · 성능 · 자동수집 · CI)
+
+### 상권분석 카테고리 비중 소스 전환 (#2)
+`getCategoryGap` 이 정적 JSON 대신 소스를 고를 수 있게 됨.
+- 기본: `store-categories.json`(ERP 2026-04 정적) → **무설정 시 기존과 동일**.
+- 전환: Vercel 환경변수 **`BRANCH_CATEGORY_SOURCE=supabase`** 설정 시 `sales_offline_month` 최신월에서 카테고리 비중을 파생 → 매출 갱신을 따라감. 기준월 라벨(‘최신 반영’)도 자동.
+- 안전장치: ERP 복종→10카테고리 매핑 커버리지가 낮은 점포는 자동으로 static 폴백(상권분석 숫자가 조용히 틀어지지 않음). 처음 켤 때 몇 개 점포 카테고리 갭이 static 과 유사한지 눈으로 대조 권장.
+
+### 상권분석 페이지 성능 (#4)
+직렬 `await` 를 `Promise.all` 2단계로 병렬화(실거래가·혼잡도·카테고리갭 동시). 외부 API(realEstate 8s·congestion 6s)에 `AbortSignal.timeout` 추가 → 느린 공공 API가 페이지 전체를 잡지 않음(실패 시 해당 섹션만 생략).
+
+### 데이터 정기 수집 (#7) — `.github/workflows/data-refresh.yml`
+로컬 수동 실행하던 수집 스크립트를 월 1회 스케줄 + 수동 트리거로 자동화, 변경분을 PR 로 올림. **필요 시크릿**: `KAKAO_REST_API_KEY`(체인 좌표), `DATA_GO_KR_POP_KEY`(인구), `SBIZ_API_KEY`(상권). 저장소 Settings → Secrets 에 등록해야 동작.
+
+### 품질 CI (#8) — `.github/workflows/ci.yml`
+PR·push 마다 typecheck + vitest + build 실행(lint 는 기존 경고 때문에 advisory). 테스트 추가: `retailCategories`(복종 매핑)·`categoryGap`(빈 카테고리 판정)·`salesLogic`(dedupe·그외 브랜드). vitest 는 `server-only` 를 스텁 alias 처리해 서버 로직도 단위 테스트 가능(기존에 깨져 있던 `brand-fit/score.test` 도 이때 함께 복구).
+
+---
+
 ## 부록 A. MCP 서버 재연결
 
 새 Claude 계정으로 작업 시 `.claude/MCP_SETUP.md` 참조.

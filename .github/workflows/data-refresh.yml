@@ -1,0 +1,82 @@
+name: Data Refresh
+
+# 지도 체인·행정동 인구·상권 데이터를 정기 수집해 PR 로 올린다.
+# 그동안 로컬에서 수동 실행하던 스크립트를 스케줄/수동 트리거로 자동화(지도 데이터 고정 문제 해소).
+#
+# 필요한 저장소 시크릿:
+#   KAKAO_REST_API_KEY   — 체인 매장 좌표(Kakao Local)
+#   DATA_GO_KR_POP_KEY   — 행정동 인구(행안부/공공데이터)
+#   SBIZ_API_KEY         — 상권 분석(소상공인시장진흥공단)
+# 시크릿 미설정 시 해당 단계는 실패해도 계속 진행(continue-on-error)하고, 변경분만 PR 로 묶는다.
+
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: 수집 대상
+        type: choice
+        options: [all, chains, population, trade-area]
+        default: all
+  schedule:
+    - cron: "0 18 1 * *" # 매월 1일 03:00 KST (UTC 18:00 전날)
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+
+      - name: Chains (Kakao Local)
+        if: github.event_name == 'schedule' || inputs.target == 'all' || inputs.target == 'chains'
+        continue-on-error: true
+        env:
+          KAKAO_REST_API_KEY: ${{ secrets.KAKAO_REST_API_KEY }}
+        run: |
+          for s in artbox daiso oliveyoung abcmart eightseconds dept other-mart; do
+            echo "── fetch-$s-stores ──"
+            node "scripts/fetch-$s-stores.mjs" || echo "skip: $s"
+          done
+          node scripts/fetch-brand-chains.mjs || echo "skip: brand-chains"
+
+      - name: Population (data.go.kr)
+        if: github.event_name == 'schedule' || inputs.target == 'all' || inputs.target == 'population'
+        continue-on-error: true
+        env:
+          DATA_GO_KR_POP_KEY: ${{ secrets.DATA_GO_KR_POP_KEY }}
+        run: node scripts/fetch-population.mjs || echo "skip: population"
+
+      - name: Trade area (SBIZ)
+        if: github.event_name == 'schedule' || inputs.target == 'all' || inputs.target == 'trade-area'
+        continue-on-error: true
+        env:
+          SBIZ_API_KEY: ${{ secrets.SBIZ_API_KEY }}
+        run: node scripts/fetch-trade-area.mjs || echo "skip: trade-area"
+
+      - name: Open PR if data changed
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if [ -z "$(git status --porcelain)" ]; then
+            echo "변경된 데이터 없음 — PR 생략."
+            exit 0
+          fi
+          stamp="$(date +%Y%m%d-%H%M)"
+          branch="chore/data-refresh-$stamp"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git checkout -b "$branch"
+          git add -A
+          git commit -m "chore: 데이터 정기 수집 ($(date +%Y-%m-%d))"
+          git push -u origin "$branch"
+          gh pr create --base main --head "$branch" \
+            --title "데이터 정기 수집 $(date +%Y-%m-%d)" \
+            --body "GitHub Actions 자동 수집 결과입니다. 변경된 데이터 파일(체인 좌표/인구/상권)을 검토 후 머지하세요."

@@ -75,27 +75,34 @@ export default async function StoreDetailPage({
   const store = getStoreById(storeId);
   if (!store) notFound();
 
-  const trade = await fetchCommercialTrade(store.lawdCd, { months: 3 });
+  // ── 동기 계산 (외부 호출 없음) ──
   const tradeArea = getTradeArea(store.id);
   const cohort = getCohortStat(store.id);
   const rent = getCommercialRent(store.lawdCd);
   const rentSource = getRentSource();
-  // 1km 인근 (동일 행정동 우선) 추정 임대료
+  const residents = getResidents(storeId); // 행안부 주민등록(시군구 합산 + 점포 행정동)
+  const hotspotMatch = findNearestHotspot({ lat: store.lat, lng: store.lng }, 5000); // 서울 핫스팟 매칭
+
+  // ── 독립 비동기 병렬 (외부 API·Supabase·동적 import). 각 함수는 실패 시 안전값 반환 ──
+  const [trade, congestion, categoryGap] = await Promise.all([
+    fetchCommercialTrade(store.lawdCd, { months: 3 }),
+    hotspotMatch ? fetchCongestionByAreaName(hotspotMatch.hotspot.name) : Promise.resolve(null),
+    getCategoryGap(storeId, store.name),
+  ]);
+
+  // 1km 인근 (동일 행정동 우선) 추정 임대료 — trade 결과 의존
   const localRent = computeLocalRent({
     trades: trade.items,
     storeRegion3: store.region3,
     storeRegion2: store.region2,
   });
 
-  // 행정동 거주인구 (행안부 주민등록, 시군구 합산 + 점포 행정동)
-  const residents = getResidents(storeId);
+  // ── categoryGap 의존 2차 병렬 (인근 외부 체인 + 유치검토 후보) ──
+  const [nearbyChains, attractionRows] = await Promise.all([
+    categoryGap ? getNearbyExternalChains(store.lat, store.lng, 3) : Promise.resolve<NearbyChain[]>([]),
+    categoryGap && categoryGap.weak.length > 0 ? getAttractionRows() : Promise.resolve([]),
+  ]);
 
-  // 카테고리 갭(상권유형 대비). 제안 브랜드는 외부 시장에서 → 리테일 지도 인근 외부 체인.
-  const categoryGap = getCategoryGap(storeId, store.name);
-  const attractionByWeakCat = new Map<RetailCategory, string[]>();
-  const nearbyChains: NearbyChain[] = categoryGap
-    ? await getNearbyExternalChains(store.lat, store.lng, 3)
-    : [];
   // 외부 체인을 카테고리별로 묶어 빈 카테고리 매칭에 사용
   const nearbyByCat = new Map<RetailCategory, NearbyChain[]>();
   for (const c of nearbyChains) {
@@ -103,10 +110,10 @@ export default async function StoreDetailPage({
     list.push(c);
     nearbyByCat.set(c.cat, list);
   }
+  const attractionByWeakCat = new Map<RetailCategory, string[]>();
   if (categoryGap && categoryGap.weak.length > 0) {
     const weakCats = new Set(categoryGap.weak.map((w) => w.cat));
-    const rows = await getAttractionRows();
-    for (const r of rows) {
+    for (const r of attractionRows) {
       if (r.is_completed || !r.category) continue;
       const mapped = ATTRACTION_TO_RETAIL[r.category.trim()];
       if (!mapped || !weakCats.has(mapped)) continue;
@@ -115,12 +122,6 @@ export default async function StoreDetailPage({
       attractionByWeakCat.set(mapped, list);
     }
   }
-
-  // 서울 핫스팟 매칭 + 실시간 혼잡도
-  const hotspotMatch = findNearestHotspot({ lat: store.lat, lng: store.lng }, 5000);
-  const congestion = hotspotMatch
-    ? await fetchCongestionByAreaName(hotspotMatch.hotspot.name)
-    : null;
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
@@ -505,7 +506,8 @@ export default async function StoreDetailPage({
               )}
 
               <p className="mt-4 text-[10px] font-medium text-[#0a0a0a]/55">
-                ERP 점포×카테고리 매출(2026-04) 기준 · 빈 카테고리 = 상권유형 평균의 70% 미만 또는 gap 3%p↑ · 제안 브랜드 = 리테일 지도 외부 체인 중 반경 3km 내 매장 보유(상권 수요 검증). ‘갭’ 표시 = 빈 카테고리에 해당
+                ERP 점포×카테고리 매출({categoryGap.period}
+                {categoryGap.source === "supabase" ? " · 최신 반영" : " 기준"}) · 빈 카테고리 = 상권유형 평균의 70% 미만 또는 gap 3%p↑ · 제안 브랜드 = 리테일 지도 외부 체인 중 반경 3km 내 매장 보유(상권 수요 검증). ‘갭’ 표시 = 빈 카테고리에 해당
               </p>
             </Section>
           )}

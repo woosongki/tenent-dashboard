@@ -135,7 +135,7 @@ export async function fetchCongestionByAreaName(
 
   let res;
   try {
-    res = await fetch(url, { next: { revalidate: 300 } }); // 5분 캐시
+    res = await fetch(url, { next: { revalidate: 300 }, signal: AbortSignal.timeout(6000) }); // 5분 캐시 · 6s 타임아웃
   } catch {
     return null;
   }

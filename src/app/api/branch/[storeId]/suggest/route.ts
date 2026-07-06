@@ -35,7 +35,7 @@ export async function POST(_req: NextRequest, ctx: { params: Promise<{ storeId: 
   const store = getStoreById(storeId);
   if (!store) return Response.json({ error: "점포를 찾을 수 없음" }, { status: 404 });
 
-  const categoryGap = getCategoryGap(storeId, store.name);
+  const categoryGap = await getCategoryGap(storeId, store.name);
   if (!categoryGap || categoryGap.weak.length === 0) {
     return Response.json(
       { error: "상권유형 평균 대비 빈 카테고리가 없어 제안할 대상이 없습니다." },
