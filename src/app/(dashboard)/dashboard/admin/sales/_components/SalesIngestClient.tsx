@@ -2,8 +2,8 @@
 
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
-import { createClient } from "@/lib/supabase/client";
 import { buildOfflineRows, buildOnlineRows, dedupe } from "@/lib/sales/ingest";
+import { commitSalesChunk, type SalesTable } from "../_actions";
 
 type Kind = "offline" | "online";
 type DatasetId = "offlineMonth" | "offlineCum" | "onlineMonth" | "onlineCum";
@@ -13,13 +13,13 @@ interface DatasetDef {
   no: string;          // 파일 번호(5/6/8/9)
   title: string;
   sheets: string;      // 필요한 시트 안내
-  table: string;       // Supabase 테이블
+  table: SalesTable;   // Supabase 테이블
   kind: Kind;
   periodField: "ym" | "year";
 }
 
 // 붙여넣기가 아닌 파일 업로드 — 각 시트가 6천~1만 행이라 브라우저 textarea엔 부적합.
-// 파싱·DB 쓰기 모두 브라우저에서 수행(RLS가 인증 유저 쓰기 허용) → Vercel 본문 한계 회피.
+// 파싱은 브라우저에서, DB 쓰기는 서버 액션에서 (service_role) — RLS 하드닝으로 브라우저 직접 쓰기가 막힘.
 const DATASETS: DatasetDef[] = [
   { id: "offlineMonth", no: "6", title: "오프라인 당월", sheets: "당월매출비교(브랜드) + 26·25년 당월평당(지점)", table: "sales_offline_month", kind: "offline", periodField: "ym" },
   { id: "offlineCum",   no: "5", title: "오프라인 누적", sheets: "누적매출비교(브랜드) + 26·25년 누적평당(지점)", table: "sales_offline_cum", kind: "offline", periodField: "year" },
@@ -116,19 +116,23 @@ export default function SalesIngestClient() {
     if (!window.confirm(`아래 테이블을 통째로 교체합니다 (기존 행 전체 삭제 후 재삽입).\n\n${summary}\n\n진행할까요?`)) return;
 
     setCommitting(true);
-    const supabase = createClient();
     for (const def of targets) {
       const parsed = (results[def.id] as { ok: true; parsed: Parsed }).parsed;
       setPhase((p) => ({ ...p, [def.id]: "idle" }));
       setProgress((p) => ({ ...p, [def.id]: 0 }));
       try {
-        const { error: delErr } = await supabase.from(def.table).delete().neq("id", -1);
-        if (delErr) throw new Error(`삭제 실패: ${delErr.message}`);
-        const C = 500;
-        for (let i = 0; i < parsed.rows.length; i += C) {
-          const { error } = await supabase.from(def.table).insert(parsed.rows.slice(i, i + C));
-          if (error) throw new Error(`적재 실패 (@${i}행): ${error.message}`);
-          setProgress((p) => ({ ...p, [def.id]: Math.min(i + C, parsed.rows.length) }));
+        // 빈 행이라도 첫 청크는 reset=true 로 테이블 초기화 (기존 동작 유지).
+        if (parsed.rows.length === 0) {
+          const res = await commitSalesChunk(def.table, [], { reset: true });
+          if (!res.ok) throw new Error(res.error);
+        } else {
+          const C = 500;
+          for (let i = 0; i < parsed.rows.length; i += C) {
+            const chunk = parsed.rows.slice(i, i + C);
+            const res = await commitSalesChunk(def.table, chunk, { reset: i === 0 });
+            if (!res.ok) throw new Error(`@${i}행: ${res.error}`);
+            setProgress((p) => ({ ...p, [def.id]: Math.min(i + C, parsed.rows.length) }));
+          }
         }
         setPhase((p) => ({ ...p, [def.id]: "done" }));
       } catch (e) {
