@@ -85,14 +85,17 @@ create index if not exists idx_offcum_lookup on public.sales_offline_cum (divisi
 create index if not exists idx_offcum_year on public.sales_offline_cum (year);
 
 -- ── 6. 오프라인 당월 (6번, 월 단위, 매출+이익) ──
+-- days: 파일 "N일누적" 파싱값. 예: "6일누적" → 6. 없으면 daysInMonth(ym) 캘린더 말일 fallback.
 create table if not exists public.sales_offline_month (
   id        bigint generated always as identity primary key,
   division  text not null, cat text not null, brand text not null, store text not null,
   ym        text not null,
   sales     bigint not null default 0,
   gp        bigint not null default 0,
+  days      smallint,
   unique (division, cat, brand, store, ym)
 );
+alter table public.sales_offline_month add column if not exists days smallint;
 create index if not exists idx_offmon_lookup on public.sales_offline_month (division, cat, brand, store);
 create index if not exists idx_offmon_ym on public.sales_offline_month (ym);
 

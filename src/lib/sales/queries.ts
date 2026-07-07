@@ -455,27 +455,33 @@ export interface OffOthers {
   brands: OffRank[]; stores: OffRank[]; detailBrands: OffRank[];
 }
 
-interface OffRow { division: string; cat: string; brand: string; store: string; sales: number; gp: number; area_raw: number; store_cnt: number; }
+interface OffRow { division: string; cat: string; brand: string; store: string; sales: number; gp: number; area_raw: number; store_cnt: number; days: number | null; }
 
 async function fetchOff(table: "sales_offline_cum" | "sales_offline_month", col: "year" | "ym", periods: string[]): Promise<(OffRow & { p: string })[]> {
   const supabase = createServiceClient();
   const all: (OffRow & { p: string })[] = [];
   let from = 0; const PAGE = 1000;
+  // days 컬럼은 sales_offline_month 에만 존재 (당월 파일 "N일누적" 파싱값).
+  const cols = table === "sales_offline_month"
+    ? `division,cat,brand,store,sales,gp,area_raw,store_cnt,days,${col}`
+    : `division,cat,brand,store,sales,gp,area_raw,store_cnt,${col}`;
   for (;;) {
     const { data, error } = await supabase
-      .from(table).select(`division,cat,brand,store,sales,gp,area_raw,store_cnt,${col}`).in(col, periods)
+      .from(table).select(cols).in(col, periods)
       .order("id", { ascending: true })   // 안정 정렬 — range 페이징 누락/중복 방지
       .range(from, from + PAGE - 1);
     if (error) throw new Error(`${table}: ${error.message}`);
-    all.push(...(data ?? []).map((r) => ({ ...r, p: (r as Record<string, string>)[col] })) as (OffRow & { p: string })[]);
-    if (!data || data.length < PAGE) break;
+    // 동적 select 문자열로 인해 data 타입이 GenericStringError로 좁혀지지 못함 → unknown 경유 캐스팅.
+    const rows = (data as unknown as Record<string, unknown>[]) ?? [];
+    all.push(...rows.map((r) => ({ ...(r as unknown as OffRow), p: r[col] as string })));
+    if (rows.length < PAGE) break;
     from += PAGE;
   }
-  // 단위 정규화: 당월 area_raw는 ERP가 "평"으로 내려주므로 그 월의 실제 일수만큼 곱해
-  // 누적과 동일한 "평·일" 단위로 맞춘다. (2월=28/29, 4·6·9·11월=30, 나머지=31)
-  // 이후 aggregate 는 v.area/days=daysInMonth(ym) 로 나눠 평을 복원.
+  // 단위 정규화: 당월 area_raw는 ERP가 "평"으로 내려주므로 실제 영업일수만큼 곱해
+  // 누적과 동일한 "평·일" 단위로 맞춘다. 우선순위: r.days(파일 "N일누적") → daysInMonth(ym) 캘린더 말일.
+  // 6일누적처럼 부분 영업 지점을 반영해야 dpp매출이 실제(94k) 대로 나옴.
   if (table === "sales_offline_month") {
-    for (const r of all) r.area_raw = (r.area_raw ?? 0) * daysInMonth(r.p);
+    for (const r of all) r.area_raw = (r.area_raw ?? 0) * (r.days ?? daysInMonth(r.p));
   }
   return all;
 }
@@ -646,10 +652,12 @@ async function getOfflineCumImpl(year: string, prevYear: string, divisions: stri
   return { year, prevYear, ...buildOff(rows, year, prevYear, divisions, days) };
 }
 
-/** 오프라인 당월 (6번) — 평당 일수는 해당 월 실제 말일(28~31) */
+/** 오프라인 당월 (6번) — 평당 일수는 DB days(파일 "N일누적") 우선, 없으면 캘린더 말일 */
 async function getOfflineMonthImpl(ym: string, prevYm: string, divisions: string[] | null = null) {
   const rows = await fetchOff("sales_offline_month", "ym", [ym, prevYm]);
-  return { ym, prevYm, ...buildOff(rows, ym, prevYm, divisions, daysInMonth(ym)) };
+  // 표시용 평 복원(area/days)에 쓸 대표 일수 — 당기(ym) 행의 days 우선.
+  const curDays = rows.find((r) => r.p === ym && r.days != null)?.days ?? daysInMonth(ym);
+  return { ym, prevYm, ...buildOff(rows, ym, prevYm, divisions, curDays) };
 }
 
 // ── BCD (등급 분석) ──────────────────────────────────────────

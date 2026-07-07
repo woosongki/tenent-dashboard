@@ -41,9 +41,11 @@ async function parseDataset(def: DatasetDef, file: File, monthYm: string, cumYea
     const cur = def.periodField === "ym" ? monthYm : cumYear;
     const prev = def.periodField === "ym" ? prevYm(monthYm) : String(Number(cumYear) - 1);
     const raw = buildOfflineRows(arrbuf, cur, prev);
+    // 당월 파일에서 "N일누적" 파싱된 경우 days 컬럼도 함께 저장. dedupe 시엔 sum 아닌 대표값이 유지되면 OK.
     const mapped: DbRow[] = raw.map((r) => ({
       division: r.division, cat: r.cat, brand: r.brand, store: r.store,
       [def.periodField]: r.period, sales: r.sales, gp: r.gp, area_raw: r.area_raw, store_cnt: r.store_cnt,
+      ...(r.days != null ? { days: r.days } : {}),
     }));
     const rows = dedupe(mapped, ["division", "cat", "brand", "store", def.periodField], ["sales", "gp", "area_raw", "store_cnt"]);
     const currentSum = rows.filter((r) => r[def.periodField] === cur).reduce((t, r) => t + (r.sales as number), 0);

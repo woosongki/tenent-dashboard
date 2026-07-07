@@ -19,6 +19,7 @@ export interface OfflineRow {
   division: string; cat: string; brand: string; store: string;
   period: string;                       // year('2026') 또는 ym('2026-06')
   sales: number; gp: number; area_raw: number; store_cnt: number;
+  days?: number;                        // 당월 파일 "N일누적" 파싱값. 미검출/누적파일=undefined
 }
 export interface OnlineRow {
   division: string; cat: string; brand: string; store: string;
@@ -91,6 +92,31 @@ function findMainSheet(wb: XLSX.WorkBook): string | undefined {
 }
 
 /**
+ * "N일누적" 파싱 — 시트명 / 시트 상단 8행 셀 텍스트 순서로 탐색.
+ * 당월 파일에 사용자가 "6일누적" 같이 적어두면 그 값을 반환. 없으면 null → 캘린더 말일 fallback.
+ */
+function parseCumDays(wb: XLSX.WorkBook): number | null {
+  const RE = /(\d+)\s*일\s*누적/;
+  for (const name of wb.SheetNames) {
+    const m = name.match(RE);
+    if (m) return Number(m[1]);
+  }
+  for (const name of wb.SheetNames) {
+    const ws = wb.Sheets[name];
+    if (!ws) continue;
+    const rows = toGrid(ws);
+    for (let i = 0; i < Math.min(rows.length, 8); i++) {
+      for (const v of rows[i] ?? []) {
+        if (typeof v !== "string") continue;
+        const m = v.match(RE);
+        if (m) return Number(m[1]);
+      }
+    }
+  }
+  return null;
+}
+
+/**
  * 오프라인 파일(5/6번) 1개 → 당기+전기 행. period 는 'YYYY'(누적) 또는 'YYYY-MM'(당월).
  * @throws 매출비교(브랜드) 시트를 찾지 못하면 에러.
  */
@@ -103,13 +129,16 @@ export function buildOfflineRows(buf: ArrayBuffer, periodCur: string, periodPrev
   const main = parseMain(wb.Sheets[mainSheet]);
   const aCur = parsePyeong(wb.Sheets[findPyeongSheet(wb, yyCur) ?? ""]);
   const aPrev = parsePyeong(wb.Sheets[findPyeongSheet(wb, yyPrev) ?? ""]);
+  // 당월 파일(periodCur='YYYY-MM')만 "N일누적" 적용. 누적 파일은 이미 ERP가 평·일로 내려줌.
+  const isMonth = /^\d{4}-\d{2}$/.test(periodCur);
+  const cumDays = isMonth ? parseCumDays(wb) ?? undefined : undefined;
 
   const rows: OfflineRow[] = [];
   for (const r of main) {
     const k = `${r.store}|${r.cat}|${r.brand}`;
     const pc = aCur.get(k), pp = aPrev.get(k);
-    if (r.sCur || r.gCur) rows.push({ division: r.division, cat: r.cat, brand: r.brand, store: r.store, period: periodCur, sales: r.sCur, gp: r.gCur, area_raw: pc ? pc.areaRaw : 0, store_cnt: pc ? pc.cnt : 0 });
-    if (r.sPrev || r.gPrev) rows.push({ division: r.division, cat: r.cat, brand: r.brand, store: r.store, period: periodPrev, sales: r.sPrev, gp: r.gPrev, area_raw: pp ? pp.areaRaw : 0, store_cnt: pp ? pp.cnt : 0 });
+    if (r.sCur || r.gCur) rows.push({ division: r.division, cat: r.cat, brand: r.brand, store: r.store, period: periodCur, sales: r.sCur, gp: r.gCur, area_raw: pc ? pc.areaRaw : 0, store_cnt: pc ? pc.cnt : 0, days: cumDays });
+    if (r.sPrev || r.gPrev) rows.push({ division: r.division, cat: r.cat, brand: r.brand, store: r.store, period: periodPrev, sales: r.sPrev, gp: r.gPrev, area_raw: pp ? pp.areaRaw : 0, store_cnt: pp ? pp.cnt : 0, days: cumDays });
   }
   return rows;
 }
