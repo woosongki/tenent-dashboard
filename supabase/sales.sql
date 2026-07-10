@@ -73,16 +73,24 @@ create index if not exists idx_sales_online_cum_lookup on public.sales_online_cu
 create index if not exists idx_sales_online_cum_year on public.sales_online_cum (year);
 
 -- ── 5. 오프라인 누적 (5번, 연 단위, 매출+이익) ──
+-- through_ym: 누적 마감월('YYYY-MM'). 당월 테이블(sales_offline_month)의 최신 ym과 별개.
+-- 예: 6월 마감 누적 + 7월 당월이 동시에 존재해도, cumMonths 계산이 through_ym를 우선 참조하므로
+--   누적을 6개월로 정확히 나눔. 없으면(legacy) 호출부가 monthYm으로 폴백.
 create table if not exists public.sales_offline_cum (
-  id        bigint generated always as identity primary key,
-  division  text not null, cat text not null, brand text not null, store text not null,
-  year      text not null,
-  sales     bigint not null default 0,
-  gp        bigint not null default 0,
+  id         bigint generated always as identity primary key,
+  division   text not null, cat text not null, brand text not null, store text not null,
+  year       text not null,
+  sales      bigint not null default 0,
+  gp         bigint not null default 0,
+  through_ym text,
   unique (division, cat, brand, store, year)
 );
+alter table public.sales_offline_cum add column if not exists through_ym text;
 create index if not exists idx_offcum_lookup on public.sales_offline_cum (division, cat, brand, store);
 create index if not exists idx_offcum_year on public.sales_offline_cum (year);
+-- 백필 가이드: 기존 행은 through_ym 이 null. 누적 파일을 재업로드하면 자동 채워짐.
+-- 즉시 픽스가 필요하면 예: update public.sales_offline_cum set through_ym = '2026-06' where year = '2026';
+--                        update public.sales_offline_cum set through_ym = '2025-06' where year = '2025';
 
 -- ── 6. 오프라인 당월 (6번, 월 단위, 매출+이익) ──
 -- days: 파일 "N일누적" 파싱값. 예: "6일누적" → 6. 없으면 daysInMonth(ym) 캘린더 말일 fallback.

@@ -49,10 +49,13 @@ export default async function SalesPage() {
     // 오프라인 누적·당월 (온라인 부문 제외)
     safe(async () => {
       const offMeta = await getOfflineMeta();
+      // 누적 마감월 = 누적 테이블에 저장된 through_ym 우선, 없으면 당월 최신 ym로 폴백.
+      // 이렇게 하지 않으면 당월(7월)이 앞서 적재됐을 때 6월 누적을 7로 나누는 회귀가 남.
+      const throughYm = offMeta.cumThroughYm ?? offMeta.monthYm;
       let offCum = null, offMonth = null;
       if (offMeta.cumYear) {
         const py = String(Number(offMeta.cumYear) - 1);
-        const c = await getOfflineCum(offMeta.cumYear, py, OFFLINE_DIVISIONS, cumDays(offMeta.cumYear, offMeta.monthYm));
+        const c = await getOfflineCum(offMeta.cumYear, py, OFFLINE_DIVISIONS, cumDays(offMeta.cumYear, throughYm));
         offCum = { ...c, periodLabel: `${offMeta.cumYear} 누적`, prevLabel: `${py} 누적` };
       }
       if (offMeta.monthYm) {
@@ -60,17 +63,18 @@ export default async function SalesPage() {
         const m = await getOfflineMonth(offMeta.monthYm, pym, OFFLINE_DIVISIONS);
         offMonth = { ...m, periodLabel: offMeta.monthYm, prevLabel: pym };
       }
-      return { offCum, offMonth, monthYm: offMeta.monthYm, cumYear: offMeta.cumYear };
+      return { offCum, offMonth, monthYm: offMeta.monthYm, cumYear: offMeta.cumYear, cumThroughYm: offMeta.cumThroughYm };
     }),
   ]);
 
   const offCum = offData?.offCum ?? null;
   const offMonth = offData?.offMonth ?? null;
-  const offMeta = { monthYm: offData?.monthYm ?? null, cumYear: offData?.cumYear ?? null };
-  // 누적 개월수 — 누적 테이블은 당월까지 포함한 누적.
-  // 예: monthYm "2026-06" → 누적은 6월까지 → 6개월로 나눠 월평균 계산. (cumDays 181일과 정합)
+  const offMeta = { monthYm: offData?.monthYm ?? null, cumYear: offData?.cumYear ?? null, cumThroughYm: offData?.cumThroughYm ?? null };
+  // 누적 개월수 — 누적 테이블의 through_ym(마감월)을 우선 사용. legacy 데이터는 monthYm 폴백.
+  // 예: through_ym "2026-06" → 6개월로 나눠 월평균 계산.
   const cumMonths = (() => {
-    const digits = (offMeta.monthYm ?? "").replace(/[^0-9]/g, "");
+    const src = offMeta.cumThroughYm ?? offMeta.monthYm ?? "";
+    const digits = src.replace(/[^0-9]/g, "");
     const m = Number(digits.slice(4, 6));
     return m >= 1 && m <= 12 ? m : 1;
   })();

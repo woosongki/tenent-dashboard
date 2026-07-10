@@ -26,7 +26,9 @@ export async function getSalesOverview(): Promise<SalesOverview | null> {
   if (!meta.cumYear) return null;
 
   const py = String(Number(meta.cumYear) - 1);
-  const cum = await getOfflineCum(meta.cumYear, py, OFFLINE_DIVISIONS, cumDays(meta.cumYear, meta.monthYm));
+  // 누적 마감월(through_ym) 우선 — 당월(monthYm)이 앞서가는 시점에도 누적 일수가 정확히 유지됨.
+  const throughYm = meta.cumThroughYm ?? meta.monthYm;
+  const cum = await getOfflineCum(meta.cumYear, py, OFFLINE_DIVISIONS, cumDays(meta.cumYear, throughYm));
 
   let monthTotal: number | null = null;
   let monthYoy: number | null = null;

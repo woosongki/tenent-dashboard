@@ -123,7 +123,8 @@ export async function buildSalesBenchmark(
     const meta = await getOfflineMeta();
     if (!meta.cumYear) return null;
     const prevYear = String(Number(meta.cumYear) - 1);
-    const cum = await getOfflineCum(meta.cumYear, prevYear, null, cumDays(meta.cumYear, meta.monthYm));
+    const throughYm = meta.cumThroughYm ?? meta.monthYm;
+    const cum = await getOfflineCum(meta.cumYear, prevYear, null, cumDays(meta.cumYear, throughYm));
 
     // 전체 브랜드(본류 + '그 외') — OffRank: key=브랜드명, cat=복종, s/ps=매출 당기/전기, g=이익 당기, yoyPct=매출 전년비
     const allBrands = [...cum.brands, ...cum.others.brands];

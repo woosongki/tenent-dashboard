@@ -30,7 +30,8 @@ export default async function BcdPage() {
     let cum = null, month = null;
     if (meta.cumYear) {
       const py = String(Number(meta.cumYear) - 1);
-      cum = await getBcdCum(meta.cumYear, py, cumDays(meta.cumYear, meta.monthYm));
+      const throughYm = meta.cumThroughYm ?? meta.monthYm;
+      cum = await getBcdCum(meta.cumYear, py, cumDays(meta.cumYear, throughYm));
     }
     if (meta.monthYm) {
       const pym = `${Number(meta.monthYm.slice(0, 4)) - 1}${meta.monthYm.slice(4)}`;

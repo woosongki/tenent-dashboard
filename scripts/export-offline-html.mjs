@@ -213,10 +213,11 @@ function buildChips(period) {
 async function main() {
   console.log("· 기간 메타 조회…");
   const [{ data: cy }, { data: my }] = await Promise.all([
-    supabase.from("sales_offline_cum").select("year").order("year", { ascending: false }).limit(1),
+    supabase.from("sales_offline_cum").select("year, through_ym").order("year", { ascending: false }).limit(1),
     supabase.from("sales_offline_month").select("ym").order("ym", { ascending: false }).limit(1),
   ]);
   const cumYear = cy?.[0]?.year ?? null;
+  const cumThroughYm = cy?.[0]?.through_ym ?? null;
   const monthYm = my?.[0]?.ym ?? null;
   if (!cumYear && !monthYm) { console.error("❌ 오프라인 데이터 없음"); process.exit(1); }
 
@@ -225,8 +226,10 @@ async function main() {
     const py = String(Number(cumYear) - 1);
     console.log(`· 누적 ${cumYear} vs ${py} 집계…`);
     const rows = await fetchOff("sales_offline_cum", "year", [cumYear, py]);
+    // 누적 마감월(through_ym) 우선. legacy(=null)만 monthYm 폴백.
+    const throughYm = cumThroughYm ?? monthYm;
     offCum = { year: cumYear, prevYear: py, periodLabel: `${cumYear} 누적`, prevLabel: `${py} 누적`,
-      ...buildOff(rows, cumYear, py, OFFLINE_DIVISIONS, cumDays(cumYear, monthYm)) };
+      ...buildOff(rows, cumYear, py, OFFLINE_DIVISIONS, cumDays(cumYear, throughYm)) };
   }
   if (monthYm) {
     const pym = `${Number(String(monthYm).slice(0, 4)) - 1}${String(monthYm).slice(4)}`;

@@ -782,14 +782,22 @@ export const getOnlineCumulative = unstable_cache(getOnlineCumulativeImpl, ["onl
 export const getOfflineCum = unstable_cache(getOfflineCumImpl, ["offline-cum"], { revalidate: 60, tags: ["sales"] });
 export const getOfflineMonth = unstable_cache(getOfflineMonthImpl, ["offline-month"], { revalidate: 60, tags: ["sales"] });
 
-/** 오프라인 가용 기간 */
+/** 오프라인 가용 기간
+ *
+ * cumThroughYm: 누적 마감월('YYYY-MM'). 누적 파일 업로드 시 form의 기준월이 각 행에 저장되어
+ * 당월 테이블(monthYm)이 앞서가도 누적 개월수를 정확히 반영한다. legacy 행은 null.
+ * 호출부는 `cumThroughYm ?? monthYm` 폴백을 사용해야 한다. */
 export async function getOfflineMeta() {
   const supabase = createServiceClient();
   const [{ data: cy }, { data: my }] = await Promise.all([
-    supabase.from("sales_offline_cum").select("year").order("year", { ascending: false }).limit(1),
+    supabase.from("sales_offline_cum").select("year, through_ym").order("year", { ascending: false }).limit(1),
     supabase.from("sales_offline_month").select("ym").order("ym", { ascending: false }).limit(1),
   ]);
-  return { cumYear: cy?.[0]?.year ?? null, monthYm: my?.[0]?.ym ?? null };
+  return {
+    cumYear: cy?.[0]?.year ?? null,
+    monthYm: my?.[0]?.ym ?? null,
+    cumThroughYm: (cy?.[0]?.through_ym as string | null | undefined) ?? null,
+  };
 }
 
 /** 데이터 존재 여부 + 가용 기간 + 부문 목록 (UI 초기화용) */

@@ -42,10 +42,14 @@ async function parseDataset(def: DatasetDef, file: File, monthYm: string, cumYea
     const prev = def.periodField === "ym" ? prevYm(monthYm) : String(Number(cumYear) - 1);
     const raw = buildOfflineRows(arrbuf, cur, prev);
     // 당월 파일에서 "N일누적" 파싱된 경우 days 컬럼도 함께 저장. dedupe 시엔 sum 아닌 대표값이 유지되면 OK.
+    // 누적 파일: 각 행에 through_ym = `${year}-MM` 저장. MM은 form의 기준월에서 추출.
+    //   → 당월 테이블이 다음달로 앞서가도 cumMonths가 정확히 유지됨.
+    const monthMm = /^\d{4}-\d{2}$/.test(monthYm) ? monthYm.slice(5, 7) : "";
     const mapped: DbRow[] = raw.map((r) => ({
       division: r.division, cat: r.cat, brand: r.brand, store: r.store,
       [def.periodField]: r.period, sales: r.sales, gp: r.gp, area_raw: r.area_raw, store_cnt: r.store_cnt,
       ...(r.days != null ? { days: r.days } : {}),
+      ...(def.table === "sales_offline_cum" && monthMm ? { through_ym: `${r.period}-${monthMm}` } : {}),
     }));
     const rows = dedupe(mapped, ["division", "cat", "brand", "store", def.periodField], ["sales", "gp", "area_raw", "store_cnt"]);
     const currentSum = rows.filter((r) => r[def.periodField] === cur).reduce((t, r) => t + (r.sales as number), 0);
