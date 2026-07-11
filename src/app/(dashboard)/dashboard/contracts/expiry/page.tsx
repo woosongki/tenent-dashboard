@@ -1,9 +1,11 @@
 import { redirect } from "next/navigation";
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
+import { getSessionContext } from "@/lib/auth/session";
 import TopBar from "@/components/layout/TopBar";
 import PageHeader from "@/components/ui/PageHeader";
 import AppFooter from "@/components/ui/AppFooter";
+import EmptyState from "@/components/ui/EmptyState";
 import { SPACE } from "@/lib/tokens";
 import {
   getExpiringContracts,
@@ -42,6 +44,8 @@ export default async function ExpiryPage({
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
+  const { role } = await getSessionContext();
+  const isAdmin = role === "owner" || role === "admin";
 
   const sp = await searchParams;
   const days = parseBand(sp.days);
@@ -96,13 +100,15 @@ export default async function ExpiryPage({
           />
 
           {meta.count === 0 ? (
-            <div className="brutal bg-white p-8 text-center">
-              <p className="font-mono text-[13px] text-[#0a0a0a]/70">
-                Supabase <code className="bg-[#F1ECDB] px-1.5 py-0.5">tenant_contracts</code> 테이블이 비어있습니다.<br />
-                로컬에서 <code className="bg-[#F1ECDB] px-1.5 py-0.5">contractdata/</code> 에 최신 TSV를 저장한 뒤{" "}
-                <code className="bg-[#F1ECDB] px-1.5 py-0.5">npm run upload:contracts</code> 로 업로드하세요.
-              </p>
-            </div>
+            <EmptyState
+              namedIcon="calendar"
+              title="계약 데이터가 없습니다"
+              description={
+                isAdmin
+                  ? "계약 마스터가 아직 업로드되지 않았습니다. 로컬에서 contractdata/ 에 최신 TSV를 저장한 뒤 npm run upload:contracts 로 업로드하세요."
+                  : "계약 마스터가 아직 업로드되지 않았습니다. 관리자에게 계약 데이터 갱신을 요청하세요."
+              }
+            />
           ) : (
             <>
               <ExpiryFilters

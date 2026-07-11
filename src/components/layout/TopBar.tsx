@@ -1,5 +1,6 @@
 import SearchTrigger from "./SearchTrigger";
 import NotificationBell from "./NotificationBell";
+import RefreshButton from "./RefreshButton";
 
 interface Crumb {
   label: string;
@@ -13,15 +14,6 @@ interface Props {
   lastUpdated?: string | Date | null;
   /** 모바일 햄버거 클릭 핸들러 (모바일에서만 노출) */
   onOpenSidebar?: () => void;
-}
-
-function IconRefresh() {
-  return (
-    <svg className="h-[15px] w-[15px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-      <path strokeLinecap="round" strokeLinejoin="round"
-        d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
-    </svg>
-  );
 }
 
 function formatLastUpdated(d: string | Date): string {
@@ -86,16 +78,7 @@ export default function TopBar({ crumbs, action, lastUpdated, onOpenSidebar }: P
 
         {action && <div className="flex items-center">{action}</div>}
 
-        <form action="">
-          <button
-            type="submit"
-            title="새로고침"
-            aria-label="새로고침"
-            className="flex h-8 w-8 items-center justify-center border-[2px] border-[#0a0a0a] bg-white text-[#0a0a0a] transition-colors hover:bg-yellow-300"
-          >
-            <IconRefresh />
-          </button>
-        </form>
+        <RefreshButton />
 
         <NotificationBell />
       </div>

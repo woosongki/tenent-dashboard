@@ -132,7 +132,7 @@ export default async function StoreDetailPage({
           { label: `${store.brand} ${store.name}` },
         ]}
       />
-      <main className="flex-1 overflow-y-auto px-7 py-6 space-y-5">
+      <main className="flex-1 overflow-y-auto px-7 py-6 space-y-5 scroll-smooth">
         {/* Header */}
         <div>
           <div className="flex items-center gap-2">
@@ -155,9 +155,32 @@ export default async function StoreDetailPage({
           </p>
         </div>
 
+        {/* 섹션 점프 내비 — 존재하는 섹션만 칩으로 */}
+        <nav className="flex flex-wrap gap-1.5">
+          {[
+            { id: "loc", label: "위치", show: true },
+            { id: "trade", label: "주변상권", show: true },
+            { id: "congest", label: "혼잡도", show: !!(congestion && hotspotMatch) },
+            { id: "pop", label: "거주인구", show: !!residents },
+            { id: "category", label: "카테고리 갭", show: !!(categoryGap && (categoryGap.weak.length > 0 || nearbyChains.length > 0)) },
+            { id: "rent-local", label: "1차 임대료", show: localRent.sampleCount > 0 },
+            { id: "rent-region", label: "권역 임대료", show: true },
+            { id: "cohort", label: "유형 비교", show: true },
+            { id: "deal", label: "실거래가", show: true },
+          ].filter((a) => a.show).map((a) => (
+            <a
+              key={a.id}
+              href={`#${a.id}`}
+              className="border-[1.5px] border-[#0a0a0a] bg-white px-2 py-1 text-[10.5px] font-bold uppercase tracking-wider text-[#0a0a0a]/70 transition-colors hover:bg-yellow-300 hover:text-[#0a0a0a]"
+            >
+              {a.label}
+            </a>
+          ))}
+        </nav>
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           {/* 위치 + 좌표/코드 */}
-          <Section title="위치" className="lg:col-span-2">
+          <Section title="위치" id="loc" className="lg:col-span-2">
             <KakaoStoreMap
               lat={store.lat}
               lng={store.lng}
@@ -175,7 +198,7 @@ export default async function StoreDetailPage({
           </Section>
 
           {/* 상권 분석 */}
-          <Section title={`주변 상권 (반경 ${tradeArea?.radius ?? 500}m)`}>
+          <Section title={`주변 상권 (반경 ${tradeArea?.radius ?? 500}m)`} id="trade">
             {tradeArea ? (
               <>
                 <div className="flex items-center gap-2 mb-3">
@@ -214,8 +237,14 @@ export default async function StoreDetailPage({
               <div className="border-[2px] border-[#0a0a0a] bg-[#F1ECDB] p-3 text-[12px]">
                 <p className="font-extrabold uppercase tracking-wider text-[#0a0a0a]">상권 데이터 수집 전</p>
                 <p className="mt-1 text-[11px] font-medium text-[#0a0a0a]/70 leading-relaxed">
-                  <code className="px-1 py-0.5 rounded bg-slate-200 text-[10px]">node scripts/fetch-trade-area.mjs --only {store.id}</code>{" "}
-                  실행 후 새로고침
+                  {canUseAi ? (
+                    <>
+                      <code className="px-1 py-0.5 rounded bg-slate-200 text-[10px]">node scripts/fetch-trade-area.mjs --only {store.id}</code>{" "}
+                      실행 후 새로고침
+                    </>
+                  ) : (
+                    "이 점포의 상권 데이터가 아직 수집되지 않았습니다."
+                  )}
                 </p>
               </div>
             )}
@@ -225,6 +254,7 @@ export default async function StoreDetailPage({
           {congestion && hotspotMatch && (
             <Section
               title={`실시간 혼잡도 (${congestion.areaName})`}
+              id="congest"
               className="lg:col-span-3"
             >
               <div className="flex items-center gap-2 mb-4 flex-wrap">
@@ -340,6 +370,7 @@ export default async function StoreDetailPage({
           {residents && (
             <Section
               title={`거주인구 · 연령/성별 (${RESIDENTS_BASE_YM.slice(0, 7)})`}
+              id="pop"
               className="lg:col-span-3"
             >
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -406,6 +437,7 @@ export default async function StoreDetailPage({
           {categoryGap && (categoryGap.weak.length > 0 || nearbyChains.length > 0) && (
             <Section
               title={`카테고리 갭 & 제안 (${categoryGap.tradeAreaType} ${categoryGap.cohortSize}곳)`}
+              id="category"
               className="lg:col-span-3"
             >
               {/* 빈 카테고리 */}
@@ -516,6 +548,7 @@ export default async function StoreDetailPage({
           {localRent.sampleCount > 0 && (
             <Section
               title={`1차상권 추정 임대료 (${localRent.scope === "동" ? "동일 행정동" : "시군구 평균"})`}
+              id="rent-local"
               className="lg:col-span-3"
             >
               <div className="flex items-center gap-2 mb-4 flex-wrap">
@@ -582,6 +615,7 @@ export default async function StoreDetailPage({
           {/* 권역 평균 임대료 (한국부동산원) */}
           <Section
             title={`권역 평균 상가 임대료 (${rentSource.period})`}
+            id="rent-region"
             className="lg:col-span-3"
           >
             <div className="flex items-center gap-2 mb-3 flex-wrap">
@@ -635,6 +669,7 @@ export default async function StoreDetailPage({
           {cohort && tradeArea ? (
             <Section
               title={`같은 '${tradeArea.tradeAreaType}' 매장 ${cohort.cohortSize}곳 비교`}
+              id="cohort"
               className="lg:col-span-3"
             >
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
@@ -713,7 +748,7 @@ export default async function StoreDetailPage({
               )}
             </Section>
           ) : (
-            <Section title="같은 상권 유형 매장 비교" className="lg:col-span-3">
+            <Section title="같은 상권 유형 매장 비교" id="cohort" className="lg:col-span-3">
               <p className="text-[13px] font-bold uppercase tracking-wider text-[#0a0a0a]/65">
                 cohort 비교 데이터 준비 중입니다.
               </p>
@@ -726,6 +761,7 @@ export default async function StoreDetailPage({
           {/* 상업용 매매 실거래가 */}
           <Section
             title={`상업용 부동산 매매 실거래가 (최근 3개월, ${store.region2})`}
+            id="deal"
             className="lg:col-span-3"
           >
             {trade.summary && trade.summary.sample_count > 0 ? (
@@ -796,13 +832,15 @@ function Section({
   title,
   children,
   className = "",
+  id,
 }: {
   title: string;
   children: React.ReactNode;
   className?: string;
+  id?: string;
 }) {
   return (
-    <section className={`brutal bg-white p-5 ${className}`}>
+    <section id={id} className={`brutal bg-white p-5 scroll-mt-4 ${className}`}>
       <h2 className="text-[11px] font-extrabold uppercase tracking-[.14em] text-[#0a0a0a] mb-4 inline-block border-[2px] border-[#0a0a0a] bg-yellow-300 px-2 py-0.5">
         {title}
       </h2>
