@@ -4,7 +4,9 @@ import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import { getSalesOverview } from "@/lib/dashboard/salesOverview";
 import { getLastUpdatedMax } from "@/lib/dashboard/lastUpdated";
+import { getHomeSummary } from "@/lib/dashboard/homeSummary";
 import SalesOverviewSection from "./_components/SalesOverview";
+import HomeActionStrip from "./_components/HomeActionStrip";
 import TopBar from "@/components/layout/TopBar";
 import PageHeader from "@/components/ui/PageHeader";
 import AppFooter from "@/components/ui/AppFooter";
@@ -40,8 +42,9 @@ export default async function DashboardPage() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const lastUpdated = await getLastUpdatedMax([
-    "goals", "attraction_status", "vendor_fnb",
+  const [lastUpdated, summary] = await Promise.all([
+    getLastUpdatedMax(["goals", "attraction_status", "vendor_fnb"]),
+    getHomeSummary(),
   ]);
   const todayStr = new Date().toLocaleDateString("ko-KR", {
     year: "numeric", month: "long", day: "numeric", weekday: "long",
@@ -59,8 +62,13 @@ export default async function DashboardPage() {
             eyebrow="OVERVIEW"
             title="브랜드 성과"
             subtitle="당월·누적 매출과 이탈·퇴점, 부문별·카테고리별 성장·매출 TOP을 한눈에. 카드·카테고리를 눌러 매출분석으로 드릴다운하세요."
+            freshness={summary.salesBaseYm}
+            freshnessLabel="매출 기준"
             meta={todayStr}
           />
+
+          {/* 오늘 봐야 할 것 — 계약만료·미팅·승인·매출기준월 점프 */}
+          <HomeActionStrip summary={summary} />
 
           <Suspense fallback={<SummarySkeleton />}>
             <SummarySection />
