@@ -29,8 +29,9 @@ This version has breaking changes — APIs, conventions, and file structure may 
 - 기존 페이지의 Section/Stat/PageHeader/EmptyState 컴포넌트를 재사용하고 새로 만들지 않는다.
 
 ## 도메인 함정 (틀리기 쉬운 것)
-- **일평당매출**: `area_raw` = 면적×일수(ERP가 30일 고정으로 구움). 면적 복원은 ÷30, 일평당 분모는
-  실제 경과일수 N(`sales_offline_month_meta.days`, 없으면 30). 당월 파일은 월 중간 스냅샷일 수 있다.
+- **일평당매출(당월)**: 저장된 `area_raw`는 평(면적), 조회 시 행별 `days`(파일 "N일누적" 파싱값,
+  없으면 그 달 말일)를 곱해 평·일로 정규화. 당월 파일은 월 중간 스냅샷일 수 있다.
+  전년/당년 평당 시트의 면적 단위가 다르면 일평당 성장율이 그 배율로 튄다 — 튀면 두 시트부터 대조.
 - **'그외' 브랜드**(엠페스트·문화센터·소극장( 등, `isOthersBrand`)는 본 수치·제안에서 제외.
 - **제안 브랜드는 외부 시장에서** — 이랜드 보유 브랜드(스파오·미쏘·모던하우스 등)를 제안하지 않는다.
 - **RLS**: anon key는 공개다. 페이지 role 게이트는 UI일 뿐 — 쓰기 보호는 RLS/RPC(security definer)로.

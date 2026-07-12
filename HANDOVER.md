@@ -229,12 +229,17 @@ A. Supabase 회원가입 차단 + `profiles.is_approved` 플래그. 로그인하
 
 이번 버전업에서 코드만으로 끝나지 않는 조치 3가지. **순서대로** 처리.
 
-### ① 매출 적재 v2 SQL 적용 (필수)
-Supabase 대시보드 → SQL Editor 에서 `supabase/sales_ingest_v2.sql` **전체 1회 실행**.
-- staging/backup 테이블, `swap_sales_from_staging` / `clear_sales_staging` / `restore_sales_backup` RPC 생성.
-- 실 매출 테이블의 광범위 쓰기 RLS 제거 → 쓰기는 owner/admin 이 RPC 경유만(일반 유저 직접 쓰기 차단).
-- **미적용 시**: 관리 → 매출 데이터 갱신에서 "DB 함수 …를 찾을 수 없습니다" 안내가 뜨고 확정이 막힘(실 데이터는 안전하게 유지).
-- 적용 후: 확정 업로드가 원자적 스왑으로 동작하고, 실패해도 실 테이블은 옛 데이터 그대로(반쯤 빈 상태 없음). 직전 스냅샷은 `↩ 되돌리기`로 1단계 복원.
+### ① 매출 적재 — 현행: 서버 액션(service_role) 방식 (2026-07 정리)
+매출 적재는 **관리 → 매출 데이터 갱신**에서 브라우저 파싱 후 `commitSalesChunk` 서버 액션
+(service_role, owner/admin 재검증)으로 적재한다. 실 매출 테이블 RLS는 service_role 쓰기만 허용으로
+하드닝돼 있어 anon key 로는 쓰기 불가.
+- `supabase/sales_ingest_v2.sql`(staging/swap RPC)은 DB에 적용돼 있으나 **현행 적재 경로는 사용하지 않음**
+  (브라우저 직접쓰기 시절의 원자적 교체 장치). RPC·staging 테이블은 무해하며, 서버 액션에
+  원자적 스왑을 다시 원하면 재활용 가능. 현행 서버 액션은 삭제→청크 삽입이라 중간 실패 시 재업로드 필요.
+- 당월 파일의 실제 영업일수는 파일 시트명/상단에 **"N일누적"** 표기를 넣으면 자동 파싱되어
+  행별 `days` 컬럼으로 저장 → 일평당 분모에 반영(미표기 시 그 달 말일 기준).
+- ⚠ 전년/당년 **평당 시트의 면적 컬럼 단위가 서로 다르면** 일평당매출 성장율이 그 배율만큼 튄다
+  (실사례: 전년 시트가 10배 → 성장율 10배 부풀림). 튀면 두 시트 단위부터 대조.
 
 ### ② xlsx 취약점 — 로컬에서 SheetJS 정식판으로 교체 (권장)
 `xlsx@0.18.5` 는 npm 배포본에 고위험 취약점(Prototype Pollution·ReDoS)이 있고 **npm 상엔 패치가 없음**(SheetJS가 자체 CDN으로 이전). 원격 실행 환경은 그 CDN(cdn.sheetjs.com)이 프록시에 막혀 여기서 교체 불가 → **로컬/CI에서** 아래 실행:
