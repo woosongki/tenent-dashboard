@@ -161,8 +161,11 @@ scripts/
 ├─ import-popup-contacts.mjs      # CSV → 팝업 컨텍판 JSON
 ├─ import-vacancy.mjs             # CSV → 공실 데이터 JSON
 ├─ seed-calendar52.mjs            # 캘린더 DB 시드
-└─ debug-sgis.mjs                 # SGIS API 진단 (사용 X)
+└─ living-popup-daily.mjs         # 리빙 일매출 변환·import·미매치 리포트 (--convert/--dry/--report)
 ```
+
+※ 2026-07 정리: build-sales.mjs(앱 내 업로드로 대체)·debug-sgis.mjs(일회성 진단) 삭제,
+   리빙 일매출 3종(convert/import/report)은 living-popup-daily.mjs 하나로 병합.
 
 각 스크립트는 `.env.local` 자동 로드. 필요 환경변수는 코드 상단에 명시되어 있음.
 
