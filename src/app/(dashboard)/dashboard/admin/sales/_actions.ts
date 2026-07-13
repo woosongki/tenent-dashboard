@@ -49,6 +49,10 @@ export async function commitSalesChunk(
 ): Promise<Result> {
   if (!ALLOWED.has(table)) return { ok: false, error: `허용되지 않은 테이블: ${table}` };
   await requireAdmin();
+  // 방어선: reset=true + rows 0행 조합은 테이블만 비우는 사일런트 실패 경로. 클라이언트가 파싱 실패/0행을 잘못 확정 보낸 경우에도 서버에서 거부해 데이터 손실을 막는다.
+  if (opts.reset && rows.length === 0) {
+    return { ok: false, error: "0행으로는 테이블을 교체할 수 없습니다 (안전 가드). 파일 파싱 결과를 확인하세요." };
+  }
   const supabase = createServiceClient();
 
   if (opts.reset) {

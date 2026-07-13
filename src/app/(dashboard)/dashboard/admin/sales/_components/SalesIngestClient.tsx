@@ -88,8 +88,14 @@ export default function SalesIngestClient() {
   const selectedDefs = DATASETS.filter((d) => files[d.id]);
   const parsedOk = DATASETS.filter((d) => results[d.id]?.ok);
   const anyError = DATASETS.some((d) => results[d.id] && !results[d.id]!.ok);
+  // 파싱 결과 0행이면 확정 시 테이블만 통째로 비워지는 사일런트 실패가 발생. 확정을 막는다.
+  const emptyParsed = DATASETS.filter((d) => {
+    const r = results[d.id];
+    return r?.ok && r.parsed.count === 0;
+  });
+  const hasEmptyParsed = emptyParsed.length > 0;
   const canParse = selectedDefs.length > 0 && validMonth && validYear && !parsing && !committing;
-  const canCommit = parsedOk.length > 0 && !anyError && !parsing && !committing;
+  const canCommit = parsedOk.length > 0 && !anyError && !hasEmptyParsed && !parsing && !committing;
 
   function setFile(id: DatasetId, f: File | null) {
     setFiles((p) => ({ ...p, [id]: f }));
@@ -127,18 +133,14 @@ export default function SalesIngestClient() {
       setPhase((p) => ({ ...p, [def.id]: "idle" }));
       setProgress((p) => ({ ...p, [def.id]: 0 }));
       try {
-        // 빈 행이라도 첫 청크는 reset=true 로 테이블 초기화 (기존 동작 유지).
-        if (parsed.rows.length === 0) {
-          const res = await commitSalesChunk(def.table, [], { reset: true });
-          if (!res.ok) throw new Error(res.error);
-        } else {
-          const C = 500;
-          for (let i = 0; i < parsed.rows.length; i += C) {
-            const chunk = parsed.rows.slice(i, i + C);
-            const res = await commitSalesChunk(def.table, chunk, { reset: i === 0 });
-            if (!res.ok) throw new Error(`@${i}행: ${res.error}`);
-            setProgress((p) => ({ ...p, [def.id]: Math.min(i + C, parsed.rows.length) }));
-          }
+        // 0행은 상위 canCommit 가드로 이미 차단됨. 방어적으로 스킵 (UI 우회 방지).
+        if (parsed.rows.length === 0) throw new Error("파싱 0행 — 확정을 스킵합니다");
+        const C = 500;
+        for (let i = 0; i < parsed.rows.length; i += C) {
+          const chunk = parsed.rows.slice(i, i + C);
+          const res = await commitSalesChunk(def.table, chunk, { reset: i === 0 });
+          if (!res.ok) throw new Error(`@${i}행: ${res.error}`);
+          setProgress((p) => ({ ...p, [def.id]: Math.min(i + C, parsed.rows.length) }));
         }
         setPhase((p) => ({ ...p, [def.id]: "done" }));
       } catch (e) {
@@ -194,11 +196,16 @@ export default function SalesIngestClient() {
                 onChange={(e) => setFile(def.id, e.target.files?.[0] ?? null)}
                 className="text-[12px] font-bold file:mr-2 file:border-[2px] file:border-[#0a0a0a] file:bg-white file:px-2 file:py-1 file:text-[12px] file:font-bold hover:file:bg-yellow-300"
               />
-              {res && res.ok && (
+              {res && res.ok && res.parsed.count > 0 && (
                 <div className="mt-1 border-[2px] border-[#0a0a0a] bg-[#F1ECDB] px-2.5 py-1.5 text-[12px] font-bold">
                   <span className="font-mono">{won(res.parsed.count)}</span>행 · {res.parsed.currentLabel} 매출합{" "}
                   <span className="font-mono">{won(res.parsed.currentSum)}</span>원
                   <span className="block text-[10px] text-[#0a0a0a]/55">원본 ‘전체 결과’ 행과 대조해 확인하세요</span>
+                </div>
+              )}
+              {res && res.ok && res.parsed.count === 0 && (
+                <div className="mt-1 border-[2px] border-rose-500 bg-rose-50 px-2.5 py-1.5 text-[12px] font-bold text-rose-700">
+                  ⚠ 파싱 결과 0행 — 이 상태로 확정하면 <code className="text-[11px]">{def.table}</code> 테이블이 통째로 비워집니다. 파일이 올바른지, 기준월/연도가 맞는지 확인 후 다시 파싱하세요.
                 </div>
               )}
               {res && !res.ok && (
@@ -228,8 +235,13 @@ export default function SalesIngestClient() {
         >
           {committing ? "적재중…" : "② 확정 업로드 (DB 통째 교체)"}
         </button>
-        {parsedOk.length > 0 && !anyError && (
+        {parsedOk.length > 0 && !anyError && !hasEmptyParsed && (
           <span className="text-[12px] font-bold text-[#0a0a0a]/60">{parsedOk.length}개 파일 검증됨 — 확정 시 즉시 반영</span>
+        )}
+        {hasEmptyParsed && (
+          <span className="text-[12px] font-extrabold text-rose-700">
+            ⚠ {emptyParsed.map((d) => `${d.no}.${d.title}`).join(", ")} 파싱 0행 — 확정 차단됨
+          </span>
         )}
       </div>
 
