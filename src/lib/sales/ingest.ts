@@ -44,6 +44,34 @@ function findHeader(rows: Grid, first: string): number {
   return -1;
 }
 
+// ERP 시트 간 표기 불일치 정규화. 매출비교/평당 시트의 지점/브랜드명이 어긋나
+// (store|cat|brand) join 실패 → 당월 dpp매출/면적이 0으로 표시되는 문제 해결.
+// 양쪽 시트에 동일 규칙으로 적용하여 canonical 표기로 통일.
+const STORE_NAME_ALIAS = new Map<string, string>([
+  ["NC대전 유성점", "대전유성점"],
+]);
+function normalizeStore(name: string): string {
+  return STORE_NAME_ALIAS.get(name) ?? name;
+}
+
+// 매출비교/평당 시트 간 관측된 브랜드명 불일치. canonical 로 통일해 area 조인 성공.
+const BRAND_NAME_ALIAS = new Map<string, string>([
+  ["애슐리퀸즈", "애슐리"],
+  ["두촌가마솥밥&쭈꾸미", "두촌가마솥밥"],
+  ["속초코다리냉면", "속초코다리"],
+  ["다솜쥬토피아생태체험관", "다솜쥬토피아생태체험"],
+  ["세라", "세라젬"],
+  ["아가방", "아가방갤러리"],
+  ["뷰티아울렛", "S뷰티아울렛"],
+  ["크록스(CROCS)", "크록스"],
+  ["포트메리온(PORTMEIRION)", "포트메리온"],
+  ["더카페()", "더카페"],
+]);
+function normalizeBrand(name: string): string {
+  const t = name.trim();
+  return BRAND_NAME_ALIAS.get(t) ?? t;
+}
+
 // 평당(지점) 시트 → (지점|복종|브랜드) → {areaRaw, cnt}
 function parsePyeong(ws: XLSX.WorkSheet | undefined): Map<string, { areaRaw: number; cnt: number }> {
   const map = new Map<string, { areaRaw: number; cnt: number }>();
@@ -57,9 +85,33 @@ function parsePyeong(ws: XLSX.WorkSheet | undefined): Map<string, { areaRaw: num
     // ERP 잡행 차단: "지정되지 않음"·"#"(소계/미분류)
     if (bname === "지정되지 않음" || bcode === "#") continue;
     // area_raw/store_cnt은 DB bigint 컬럼이므로 소수값이 들어가지 않도록 반올림.
-    map.set(`${store}|${cat}|${bname}`, { areaRaw: Math.round(Number(r[7] || 0)), cnt: Math.round(Number(r[10] || 0)) });
+    const key = `${normalizeStore(String(store))}|${cat}|${normalizeBrand(String(bname))}`;
+    const prev = map.get(key);
+    // 동일 (store|cat|brand) 중복 시 합산 — ERP가 fit 세분 등으로 여러 행에 나눠 내리는 케이스.
+    const areaRaw = Math.round(Number(r[7] || 0)) + (prev?.areaRaw ?? 0);
+    const cnt = Math.round(Number(r[10] || 0)) + (prev?.cnt ?? 0);
+    map.set(key, { areaRaw, cnt });
   }
   return map;
+}
+
+/**
+ * (store|brand) 폴백 맵 — 매출비교와 평당의 cat 표기가 다른 케이스(예: 신구로점 다이소는
+ * 매출비교=테넌트일반 / 평당=가정문화) 대비. (store|brand) 조합이 평당에서 단일 cat 이면
+ * 그 area 를 사용하고, 여러 cat 에 걸치면 모호 → 폴백 미적용.
+ */
+function pyeongByStoreBrand(pyeong: Map<string, { areaRaw: number; cnt: number }>): Map<string, { areaRaw: number; cnt: number } | null> {
+  const buckets = new Map<string, { areaRaw: number; cnt: number; cats: number }>();
+  for (const [k, v] of pyeong) {
+    const [store, , brand] = k.split("|");
+    const sb = `${store}|${brand}`;
+    const b = buckets.get(sb);
+    if (b) { b.areaRaw += v.areaRaw; b.cnt += v.cnt; b.cats++; }
+    else buckets.set(sb, { areaRaw: v.areaRaw, cnt: v.cnt, cats: 1 });
+  }
+  const out = new Map<string, { areaRaw: number; cnt: number } | null>();
+  for (const [k, v] of buckets) out.set(k, v.cats === 1 ? { areaRaw: v.areaRaw, cnt: v.cnt } : null);
+  return out;
 }
 
 // 매출비교(브랜드) 시트 → leaf 행 (지점 단위 당기/전기 매출·이익)
@@ -76,7 +128,7 @@ function parseMain(ws: XLSX.WorkSheet): MainRow[] {
     if (bname === "지정되지 않음") continue;
     out.push({
       division: divisionOf(String(gcode || "")), cat: String(cat || "").trim(),
-      brand: String(bname).trim(), store: String(sname).trim(),
+      brand: normalizeBrand(String(bname).trim()), store: normalizeStore(String(sname).trim()),
       sCur: Math.round(Number(r[6] || 0)), sPrev: Math.round(Number(r[7] || 0)),
       gCur: Math.round(Number(r[9] || 0)), gPrev: Math.round(Number(r[10] || 0)),
     });
@@ -129,6 +181,9 @@ export function buildOfflineRows(buf: ArrayBuffer, periodCur: string, periodPrev
   const main = parseMain(wb.Sheets[mainSheet]);
   const aCur = parsePyeong(wb.Sheets[findPyeongSheet(wb, yyCur) ?? ""]);
   const aPrev = parsePyeong(wb.Sheets[findPyeongSheet(wb, yyPrev) ?? ""]);
+  // (store|cat|brand) 미스 시 폴백: 평당의 cat 표기가 매출비교와 달라도 (store|brand) 단일 매칭이면 area 회수.
+  const aCurSB = pyeongByStoreBrand(aCur);
+  const aPrevSB = pyeongByStoreBrand(aPrev);
   // 당월 파일(periodCur='YYYY-MM')만 "N일누적" 적용. 누적 파일은 이미 ERP가 평·일로 내려줌.
   const isMonth = /^\d{4}-\d{2}$/.test(periodCur);
   const cumDays = isMonth ? parseCumDays(wb) ?? undefined : undefined;
@@ -136,7 +191,9 @@ export function buildOfflineRows(buf: ArrayBuffer, periodCur: string, periodPrev
   const rows: OfflineRow[] = [];
   for (const r of main) {
     const k = `${r.store}|${r.cat}|${r.brand}`;
-    const pc = aCur.get(k), pp = aPrev.get(k);
+    const sb = `${r.store}|${r.brand}`;
+    const pc = aCur.get(k) ?? aCurSB.get(sb) ?? null;
+    const pp = aPrev.get(k) ?? aPrevSB.get(sb) ?? null;
     if (r.sCur || r.gCur) rows.push({ division: r.division, cat: r.cat, brand: r.brand, store: r.store, period: periodCur, sales: r.sCur, gp: r.gCur, area_raw: pc ? pc.areaRaw : 0, store_cnt: pc ? pc.cnt : 0, days: cumDays });
     if (r.sPrev || r.gPrev) rows.push({ division: r.division, cat: r.cat, brand: r.brand, store: r.store, period: periodPrev, sales: r.sPrev, gp: r.gPrev, area_raw: pp ? pp.areaRaw : 0, store_cnt: pp ? pp.cnt : 0, days: cumDays });
   }
@@ -213,8 +270,8 @@ function parseStoreSheet(ws: XLSX.WorkSheet): Omit<OnlineRow, "label">[] {
       out.push({
         division: "패션",
         cat: String(cat || "").trim(),
-        brand: String(bName).trim(),
-        store: String(store).trim(),
+        brand: normalizeBrand(String(bName).trim()),
+        store: normalizeStore(String(store).trim()),
         channel: ch,
         sales: Math.round(Number(v)),
       });
