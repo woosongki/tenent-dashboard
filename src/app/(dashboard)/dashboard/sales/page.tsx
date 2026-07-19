@@ -6,6 +6,7 @@ import {
   getOnlineMeta, getOnlineMonth, getOnlineCumMeta, getOnlineCumulative,
   getOfflineMeta, getOfflineCum, getOfflineMonth, cumDays,
 } from "@/lib/sales/queries";
+import { getLifestyleMonthReport } from "@/lib/sales/lifestyleReport";
 import TopBar from "@/components/layout/TopBar";
 import PageHeader from "@/components/ui/PageHeader";
 import DataFreshnessBadge from "@/components/ui/DataFreshnessBadge";
@@ -27,7 +28,7 @@ export default async function SalesPage() {
   const OFFLINE_DIVISIONS = ["패션", "F&B", "기타"];
 
   // 각 데이터셋을 독립적으로 로드 — 하나가 실패해도 나머지 탭은 정상.
-  const [online, onlineCum, offData] = await Promise.all([
+  const [online, onlineCum, offData, lifestyleReport] = await Promise.all([
     // 온라인(당월) — 최신 월 + 전년동월
     safe(async () => {
       const meta = await getOnlineMeta();
@@ -65,6 +66,8 @@ export default async function SalesPage() {
       }
       return { offCum, offMonth, monthYm: offMeta.monthYm, cumYear: offMeta.cumYear, cumThroughYm: offMeta.cumThroughYm };
     }),
+    // 라이프스타일 부문 리포트 (당월) — 성장 분해
+    safe(() => getLifestyleMonthReport()),
   ]);
 
   const offCum = offData?.offCum ?? null;
@@ -106,7 +109,7 @@ export default async function SalesPage() {
             action={<DataFreshnessBadge monthYm={offMeta.monthYm} />}
           />
 
-        <SalesTabsShell online={online} onlineCum={onlineCum} offCum={offCum} offMonth={offMonth} monthActive={monthActive} onlineMonthActive={onlineMonthActive} cumMonths={cumMonths} />
+        <SalesTabsShell online={online} onlineCum={onlineCum} offCum={offCum} offMonth={offMonth} monthActive={monthActive} onlineMonthActive={onlineMonthActive} cumMonths={cumMonths} lifestyleReport={lifestyleReport ?? null} />
 
           <p className="text-[10px] font-bold uppercase tracking-wider text-[#0a0a0a]/55">
             Supabase 라이브 데이터 · 오프라인(특정) 누적{offMeta.cumYear ? ` ${offMeta.cumYear}` : ""}·당월{offMeta.monthYm ? ` ${offMeta.monthYm}` : ""} + 온라인 · 부문/복종/지점/브랜드 · 월 1회 갱신
