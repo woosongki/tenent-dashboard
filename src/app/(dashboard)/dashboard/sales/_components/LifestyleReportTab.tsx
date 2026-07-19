@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import type { LifestyleReport, LifestyleStoreLine } from "@/lib/sales/lifestyleReport";
 
 const eok = (n: number) => (n / 1e8).toFixed(1);            // 억 (1자리)
@@ -9,9 +9,37 @@ const mil = (n: number) => Math.round(n / 1e6).toLocaleString("ko-KR"); // 백�
 const won = (n: number) => Math.round(n).toLocaleString("ko-KR");
 const pctS = (n: number) => `${n >= 0 ? "+" : ""}${n}%`;
 const KIND_LABEL: Record<LifestyleStoreLine["kind"], string> = { existing: "기존", new: "신규", closed: "퇴점" };
+const KIND_RANK: Record<LifestyleStoreLine["kind"], number> = { new: 0, existing: 1, closed: 2 };
+
+// 3버킷 재분류: 면적확대(증평)는 신규출점으로 합산, 좌판효율은 '기존점 매출'로.
+//   신규출점 = 신규점 매출 + 기존점 면적효과 / 기존점 매출 = 기존점 효율효과 / 퇴점 = 그대로.
+//   합 = ΔS 그대로 유지.
+function regroup(d: LifestyleReport["decomposition"]) {
+  return {
+    newExpand: d.newStore + d.existingArea, // 신규출점(증평 포함)
+    existingSales: d.existingEff,           // 기존점 매출(동일면적 성장)
+    closed: d.closedStore,
+    total: d.total,
+  };
+}
+
+type SortKey = "store" | "kind" | "areaCur" | "areaDelta" | "dppCur" | "dppGrowthPct" | "salesCur" | "areaEffect" | "effEffect";
 
 export default function LifestyleReportTab({ report }: { report: LifestyleReport | null }) {
   const html = useMemo(() => (report ? buildStandaloneHtml(report) : ""), [report]);
+  const [sortKey, setSortKey] = useState<SortKey>("salesCur");
+  const [dir, setDir] = useState<"asc" | "desc">("desc");
+
+  const sortedStores = useMemo(() => {
+    const arr = [...(report?.stores ?? [])];
+    const mul = dir === "asc" ? 1 : -1;
+    arr.sort((a, b) => {
+      if (sortKey === "store") return a.store.localeCompare(b.store, "ko") * mul;
+      if (sortKey === "kind") return (KIND_RANK[a.kind] - KIND_RANK[b.kind]) * mul;
+      return ((a[sortKey] as number) - (b[sortKey] as number)) * mul;
+    });
+    return arr;
+  }, [report, sortKey, dir]);
 
   if (!report) {
     return (
@@ -21,6 +49,13 @@ export default function LifestyleReportTab({ report }: { report: LifestyleReport
     );
   }
   const { totals: t, decomposition: d } = report;
+  const g = regroup(d);
+
+  function toggle(k: SortKey) {
+    if (sortKey === k) setDir((x) => (x === "asc" ? "desc" : "asc"));
+    else { setSortKey(k); setDir(k === "store" ? "asc" : "desc"); }
+  }
+  const arrow = (k: SortKey) => (sortKey === k ? (dir === "asc" ? " ▲" : " ▼") : "");
 
   function download() {
     const blob = new Blob([html], { type: "text/html;charset=utf-8" });
@@ -52,16 +87,16 @@ export default function LifestyleReportTab({ report }: { report: LifestyleReport
 
       {/* 반박 콜아웃 — 성장의 질 */}
       <div className="border-[3px] border-[#0a0a0a] bg-yellow-100 p-4 shadow-[4px_4px_0_0_#0a0a0a]">
-        <p className="text-[11px] font-extrabold uppercase tracking-wider text-[#0a0a0a]/70">성장의 질 — 면적 효과 vs 좌판효율</p>
+        <p className="text-[11px] font-extrabold uppercase tracking-wider text-[#0a0a0a]/70">성장의 질 — 신규출점(증평) vs 기존점 매출</p>
         <p className="mt-1.5 text-[13.5px] font-bold text-[#0a0a0a] leading-relaxed">
           매출 <b>{eokS(t.salesDelta)}억</b>({pctS(t.salesGrowthPct)}) 증가 중 —
-          신규출점 <b>{eokS(d.newStore)}억</b> · 기존점 면적확대 <b>{eokS(d.existingArea)}억</b> ·{" "}
-          <span className="bg-yellow-300 px-1">기존점 좌판효율 {eokS(d.existingEff)}억</span>
-          {d.closedStore ? ` · 퇴점 ${eokS(d.closedStore)}억` : ""}.
+          신규출점(증평 포함) <b>{eokS(g.newExpand)}억</b> ·{" "}
+          <span className="bg-yellow-300 px-1">기존점 매출 {eokS(g.existingSales)}억</span>
+          {g.closed ? ` · 퇴점 ${eokS(g.closed)}억` : ""}.
         </p>
         <p className="mt-1.5 text-[12px] font-medium text-[#0a0a0a]/75">
-          기존점({d.existingCount}곳) 일평당매출 <b>{pctS(d.existingDppGrowthPct)}</b> 성장 — 면적 확대와 무관한 질적 성장.
-          {d.existingEff > 0 && t.salesDelta > 0 && ` 전체 증가의 ${Math.round((d.existingEff / t.salesDelta) * 100)}%가 좌판효율 기여.`}
+          기존점({d.existingCount}곳) 동일면적 매출 <b>{pctS(d.existingDppGrowthPct)}</b> 성장 — 면적 확대와 무관한 순수 매출 성장.
+          {g.existingSales > 0 && t.salesDelta > 0 && ` 전체 증가의 ${Math.round((g.existingSales / t.salesDelta) * 100)}%가 기존점 매출 기여.`}
         </p>
       </div>
 
@@ -69,30 +104,32 @@ export default function LifestyleReportTab({ report }: { report: LifestyleReport
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         <Kpi title="매출" cur={`${eok(t.salesCur)}억`} prev={`${eok(t.salesPrev)}억`} pct={t.salesGrowthPct} />
         <Kpi title="전용면적" cur={`${t.areaCur.toLocaleString()}평`} prev={`${t.areaPrev.toLocaleString()}평`} pct={t.areaGrowthPct} sub={`${t.areaDelta >= 0 ? "+" : ""}${t.areaDelta.toLocaleString()}평`} />
-        <Kpi title={`일평당매출 (원/평·일)`} cur={won(t.dppCur)} prev={won(t.dppPrev)} pct={t.dppGrowthPct} highlight />
+        <Kpi title="일평당매출 (원/평·일)" cur={won(t.dppCur)} prev={won(t.dppPrev)} pct={t.dppGrowthPct} highlight />
       </div>
 
-      {/* 성장 분해 막대 */}
-      <Waterfall d={d} />
+      {/* 성장 분해 막대 (3버킷) */}
+      <Waterfall g={g} />
 
-      {/* 지점별 표 */}
+      {/* 지점별 표 — 전 컬럼 정렬 */}
       <div className="overflow-x-auto border-[2px] border-[#0a0a0a]">
-        <table className="w-full min-w-[720px] text-[12px]">
-          <thead className="bg-[#0a0a0a] text-white">
+        <table className="w-full min-w-[760px] text-[12px]">
+          <thead className="bg-[#0a0a0a] text-white select-none">
             <tr>
-              <th className="px-3 py-2 text-left">지점</th>
-              <th className="px-2 py-2 text-center">구분</th>
-              <th className="px-2 py-2 text-right">면적(전→당)</th>
-              <th className="px-2 py-2 text-right">면적증감</th>
-              <th className="px-2 py-2 text-right">일평당(전→당)</th>
-              <th className="px-2 py-2 text-right">일평당증감</th>
-              <th className="px-2 py-2 text-right">매출(백만)</th>
-              <th className="px-2 py-2 text-right">면적효과</th>
-              <th className="px-2 py-2 text-right">효율효과</th>
+              {([
+                ["store", "지점", "text-left"], ["kind", "구분", "text-center"],
+                ["areaCur", "면적(전→당)", "text-right"], ["areaDelta", "면적증감", "text-right"],
+                ["dppCur", "일평당(전→당)", "text-right"], ["dppGrowthPct", "일평당증감", "text-right"],
+                ["salesCur", "매출(백만)", "text-right"], ["areaEffect", "증평효과", "text-right"], ["effEffect", "기존점매출", "text-right"],
+              ] as [SortKey, string, string][]).map(([k, label, align]) => (
+                <th key={k} onClick={() => toggle(k)}
+                  className={`px-2 py-2 cursor-pointer hover:bg-white/10 whitespace-nowrap ${align}`}>
+                  {label}{arrow(k)}
+                </th>
+              ))}
             </tr>
           </thead>
           <tbody>
-            {report.stores.map((s) => (
+            {sortedStores.map((s) => (
               <tr key={s.store} className={`border-b border-slate-100 ${s.kind === "closed" ? "opacity-55" : ""}`}>
                 <td className="px-3 py-1.5 font-bold text-[#0a0a0a] whitespace-nowrap">{s.store}</td>
                 <td className="px-2 py-1.5 text-center">
@@ -111,8 +148,8 @@ export default function LifestyleReportTab({ report }: { report: LifestyleReport
         </table>
       </div>
       <p className="text-[10px] font-medium text-[#0a0a0a]/55">
-        면적효과 = (당기−전기 면적) × 평균 평당매출 · 효율효과 = 평균 면적 × (당기−전기 평당매출) — 대칭(Shapley) 분해라 합은 정확히 매출 증감과 일치.
-        신규점은 전년 기준이 없어 매출 전액을 신규 기여로 집계. 금액 단위: 억/백만.
+        증평효과 = (당기−전기 면적) × 평균 평당매출(→ 신규출점으로 합산) · 기존점매출 = 평균 면적 × (당기−전기 평당매출).
+        대칭(Shapley) 분해라 합은 정확히 매출 증감과 일치. 신규점·증평은 모두 신규출점으로 집계. 금액 단위: 억/백만.
       </p>
     </div>
   );
@@ -132,21 +169,20 @@ function Kpi({ title, cur, prev, pct, sub, highlight }: { title: string; cur: st
   );
 }
 
-function Waterfall({ d }: { d: LifestyleReport["decomposition"] }) {
+function Waterfall({ g }: { g: ReturnType<typeof regroup> }) {
   const parts = [
-    { label: "신규출점", v: d.newStore, color: "#22d3ee" },
-    { label: "기존점 면적확대", v: d.existingArea, color: "#a78bfa" },
-    { label: "기존점 좌판효율", v: d.existingEff, color: "#facc15" },
-    ...(d.closedStore ? [{ label: "퇴점", v: d.closedStore, color: "#fda4af" }] : []),
+    { label: "신규출점(증평 포함)", v: g.newExpand, color: "#22d3ee" },
+    { label: "기존점 매출", v: g.existingSales, color: "#facc15" },
+    ...(g.closed ? [{ label: "퇴점", v: g.closed, color: "#fda4af" }] : []),
   ];
   const max = Math.max(1, ...parts.map((p) => Math.abs(p.v)));
   return (
     <div className="border-[2px] border-[#0a0a0a] bg-white p-4 shadow-[3px_3px_0_0_#0a0a0a]">
-      <p className="mb-3 text-[11px] font-extrabold uppercase tracking-wider text-[#0a0a0a]/65">매출 증감 분해 (총 {eokS(d.total)}억)</p>
+      <p className="mb-3 text-[11px] font-extrabold uppercase tracking-wider text-[#0a0a0a]/65">매출 증감 분해 (총 {eokS(g.total)}억)</p>
       <div className="space-y-2">
         {parts.map((p) => (
           <div key={p.label} className="flex items-center gap-2">
-            <span className="w-28 shrink-0 text-[11px] font-bold text-[#0a0a0a]/70">{p.label}</span>
+            <span className="w-36 shrink-0 text-[11px] font-bold text-[#0a0a0a]/70">{p.label}</span>
             <div className="relative h-4 flex-1 border-[1.5px] border-[#0a0a0a] bg-white">
               <div className="absolute inset-y-0 left-0" style={{ width: `${(Math.abs(p.v) / max) * 100}%`, background: p.color }} />
             </div>
@@ -158,24 +194,18 @@ function Waterfall({ d }: { d: LifestyleReport["decomposition"] }) {
   );
 }
 
-// ── 단독 HTML 내보내기 (자체 완결 · 임원 보고/공유용) ──
+// ── 단독 HTML 내보내기 (자체 완결 · 임원 보고/공유용, 표는 클릭 정렬 지원) ──
 function buildStandaloneHtml(r: LifestyleReport): string {
-  const t = r.totals, d = r.decomposition;
-  const rows = r.stores.map((s) => `
-    <tr class="${s.kind === "closed" ? "dim" : ""}">
-      <td class="l"><b>${esc(s.store)}</b></td>
-      <td class="c"><span class="tag ${s.kind}">${KIND_LABEL[s.kind]}</span></td>
-      <td class="r">${s.areaPrev.toLocaleString()}→${s.areaCur.toLocaleString()}</td>
-      <td class="r ${s.areaDelta >= 0 ? "up" : "dn"}">${s.areaDelta >= 0 ? "+" : ""}${s.areaDelta.toLocaleString()}</td>
-      <td class="r">${won(s.dppPrev)}→${won(s.dppCur)}</td>
-      <td class="r ${s.kind === "new" ? "" : s.dppGrowthPct >= 0 ? "up" : "dn"}"><b>${s.kind === "new" ? "신규" : pctS(s.dppGrowthPct)}</b></td>
-      <td class="r"><b>${mil(s.salesCur)}</b></td>
-      <td class="r">${s.kind === "existing" ? mil(s.areaEffect) : "—"}</td>
-      <td class="r ${s.kind === "existing" && s.effEffect >= 0 ? "up" : s.kind === "existing" ? "dn" : ""}">${s.kind === "existing" ? mil(s.effEffect) : "—"}</td>
-    </tr>`).join("");
+  const t = r.totals, d = r.decomposition, g = regroup(d);
+  const rowsData = r.stores.map((s) => ({
+    store: s.store, kind: s.kind, kindRank: KIND_RANK[s.kind],
+    areaCur: s.areaCur, areaPrev: s.areaPrev, areaDelta: s.areaDelta,
+    dppCur: s.dppCur, dppPrev: s.dppPrev, dppGrowthPct: s.dppGrowthPct,
+    salesCur: s.salesCur, areaEffect: s.areaEffect, effEffect: s.effEffect,
+  }));
   const bars = [
-    ["신규출점", d.newStore, "#22d3ee"], ["기존점 면적확대", d.existingArea, "#a78bfa"],
-    ["기존점 좌판효율", d.existingEff, "#facc15"], ...(d.closedStore ? [["퇴점", d.closedStore, "#fda4af"]] : []),
+    ["신규출점(증평 포함)", g.newExpand, "#22d3ee"], ["기존점 매출", g.existingSales, "#facc15"],
+    ...(g.closed ? [["퇴점", g.closed, "#fda4af"]] : []),
   ] as [string, number, string][];
   const bmax = Math.max(1, ...bars.map((b) => Math.abs(b[1])));
   const barHtml = bars.map(([l, v, c]) => `
@@ -186,7 +216,7 @@ function buildStandaloneHtml(r: LifestyleReport): string {
 <title>라이프스타일 실적 리포트 ${esc(r.curLabel)}</title>
 <style>
 *{box-sizing:border-box} body{margin:0;background:#FAF7EC;color:#0a0a0a;font-family:-apple-system,'Malgun Gothic',sans-serif;padding:28px;font-size:13px}
-.wrap{max-width:960px;margin:0 auto}
+.wrap{max-width:980px;margin:0 auto}
 h1{font-size:20px;margin:0 0 2px} .sub{color:#0a0a0a99;font-weight:700;font-size:12px;margin:0 0 18px}
 .callout{border:3px solid #0a0a0a;background:#fef9c3;padding:16px;box-shadow:5px 5px 0 #0a0a0a;margin-bottom:18px}
 .callout .h{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:#0a0a0a99}
@@ -198,11 +228,12 @@ h1{font-size:20px;margin:0 0 2px} .sub{color:#0a0a0a99;font-weight:700;font-size
 .kpi .p{font-size:11px;font-weight:700;color:#0a0a0a88}
 .panel{border:2px solid #0a0a0a;background:#fff;padding:14px;box-shadow:3px 3px 0 #0a0a0a;margin-bottom:18px}
 .panel .h{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:#0a0a0a99;margin-bottom:10px}
-.bar{display:flex;align-items:center;gap:8px;margin:6px 0} .bl{width:120px;font-size:11px;font-weight:700;color:#0a0a0abb}
+.bar{display:flex;align-items:center;gap:8px;margin:6px 0} .bl{width:150px;font-size:11px;font-weight:700;color:#0a0a0abb}
 .bt{position:relative;height:16px;flex:1;border:1.5px solid #0a0a0a;background:#fff} .bt i{position:absolute;left:0;top:0;bottom:0;display:block}
 .bv{width:80px;text-align:right;font-size:11.5px;font-weight:800;font-variant-numeric:tabular-nums}
 table{width:100%;border-collapse:collapse;border:2px solid #0a0a0a;background:#fff;font-size:12px}
-th{background:#0a0a0a;color:#fff;padding:7px 8px;text-align:right;font-weight:700;white-space:nowrap} th:first-child{text-align:left}
+th{background:#0a0a0a;color:#fff;padding:7px 8px;text-align:right;font-weight:700;white-space:nowrap;cursor:pointer;user-select:none} th:first-child,th:nth-child(2){text-align:left}
+th:hover{background:#333}
 td{padding:5px 8px;border-bottom:1px solid #eee;font-variant-numeric:tabular-nums} td.l{text-align:left} td.c{text-align:center} td.r{text-align:right;font-family:ui-monospace,monospace}
 .up{color:#0d9e6e} .dn{color:#e53e3e} tr.dim{opacity:.55}
 .tag{border:1.5px solid #0a0a0a;padding:0 4px;font-size:9px;font-weight:800} .tag.new{background:#a5f3fc} .tag.closed{background:#fecdd3}
@@ -211,18 +242,65 @@ td{padding:5px 8px;border-bottom:1px solid #eee;font-variant-numeric:tabular-num
 </style></head><body><div class="wrap">
 <h1>라이프스타일 부문 실적 리포트 · 당월</h1>
 <p class="sub">${esc(r.prevLabel)} → ${esc(r.curLabel)} · ${r.days}일 동일기간 비교 · 일평당매출 = 매출 ÷ (면적 × ${r.days})</p>
-<div class="callout"><div class="h">성장의 질 — 면적 효과 vs 좌판효율</div>
-<p>매출 <b>${eokS(t.salesDelta)}억</b>(${pctS(t.salesGrowthPct)}) 증가 중 — 신규출점 <b>${eokS(d.newStore)}억</b> · 기존점 면적확대 <b>${eokS(d.existingArea)}억</b> · <span class="hl">기존점 좌판효율 ${eokS(d.existingEff)}억</span>${d.closedStore ? ` · 퇴점 ${eokS(d.closedStore)}억` : ""}.</p>
-<p>기존점(${d.existingCount}곳) 일평당매출 <b>${pctS(d.existingDppGrowthPct)}</b> 성장 — 면적 확대와 무관한 질적 성장.${d.existingEff > 0 && t.salesDelta > 0 ? ` 전체 증가의 ${Math.round((d.existingEff / t.salesDelta) * 100)}%가 좌판효율 기여.` : ""}</p></div>
+<div class="callout"><div class="h">성장의 질 — 신규출점(증평) vs 기존점 매출</div>
+<p>매출 <b>${eokS(t.salesDelta)}억</b>(${pctS(t.salesGrowthPct)}) 증가 중 — 신규출점(증평 포함) <b>${eokS(g.newExpand)}억</b> · <span class="hl">기존점 매출 ${eokS(g.existingSales)}억</span>${g.closed ? ` · 퇴점 ${eokS(g.closed)}억` : ""}.</p>
+<p>기존점(${d.existingCount}곳) 동일면적 매출 <b>${pctS(d.existingDppGrowthPct)}</b> 성장 — 면적 확대와 무관한 순수 매출 성장.${g.existingSales > 0 && t.salesDelta > 0 ? ` 전체 증가의 ${Math.round((g.existingSales / t.salesDelta) * 100)}%가 기존점 매출 기여.` : ""}</p></div>
 <div class="kpis">
 <div class="kpi"><div class="t">매출</div><div class="v">${eok(t.salesCur)}억</div><div class="p">전년 ${eok(t.salesPrev)}억 (${pctS(t.salesGrowthPct)})</div></div>
 <div class="kpi"><div class="t">전용면적</div><div class="v">${t.areaCur.toLocaleString()}평</div><div class="p">전년 ${t.areaPrev.toLocaleString()}평 (${pctS(t.areaGrowthPct)})</div></div>
 <div class="kpi"><div class="t">일평당매출 (원/평·일)</div><div class="v">${won(t.dppCur)}</div><div class="p">전년 ${won(t.dppPrev)} (${pctS(t.dppGrowthPct)})</div></div>
 </div>
-<div class="panel"><div class="h">매출 증감 분해 (총 ${eokS(d.total)}억)</div>${barHtml}</div>
-<table><thead><tr><th>지점</th><th>구분</th><th>면적(전→당)</th><th>면적증감</th><th>일평당(전→당)</th><th>일평당증감</th><th>매출(백만)</th><th>면적효과</th><th>효율효과</th></tr></thead><tbody>${rows}</tbody></table>
-<p class="foot">면적효과 = (당기−전기 면적) × 평균 평당매출 · 효율효과 = 평균 면적 × (당기−전기 평당매출) — 대칭(Shapley) 분해로 합은 매출 증감과 일치. 신규점은 전년 기준이 없어 매출 전액을 신규 기여로 집계.<br>생성: ${new Date().toLocaleString("ko-KR")} · lifestyle 대시보드</p>
-</div></body></html>`;
+<div class="panel"><div class="h">매출 증감 분해 (총 ${eokS(g.total)}억)</div>${barHtml}</div>
+<table id="tbl"><thead><tr>
+<th data-k="store" data-t="s">지점</th><th data-k="kindRank" data-t="n">구분</th>
+<th data-k="areaCur" data-t="n">면적(전→당)</th><th data-k="areaDelta" data-t="n">면적증감</th>
+<th data-k="dppCur" data-t="n">일평당(전→당)</th><th data-k="dppGrowthPct" data-t="n">일평당증감</th>
+<th data-k="salesCur" data-t="n">매출(백만)</th><th data-k="areaEffect" data-t="n">증평효과</th><th data-k="effEffect" data-t="n">기존점매출</th>
+</tr></thead><tbody></tbody></table>
+<p class="foot">증평효과 = (당기−전기 면적) × 평균 평당매출(→ 신규출점으로 합산) · 기존점매출 = 평균 면적 × (당기−전기 평당매출). 대칭(Shapley) 분해로 합은 매출 증감과 일치. 신규점·증평은 모두 신규출점으로 집계. 헤더 클릭 = 정렬(오름/내림).<br>생성: ${new Date().toLocaleString("ko-KR")} · lifestyle 대시보드</p>
+</div>
+<script>
+var DATA=${JSON.stringify(rowsData)};
+var KL={existing:"기존",new:"신규",closed:"퇴점"};
+var won=function(n){return Math.round(n).toLocaleString("ko-KR")};
+var mil=function(n){return Math.round(n/1e6).toLocaleString("ko-KR")};
+var pctS=function(n){return (n>=0?"+":"")+n+"%"};
+var sk="salesCur",sd=-1;
+function render(){
+  var rows=DATA.slice().sort(function(a,b){
+    if(sk==="store")return a.store.localeCompare(b.store,"ko")*sd;
+    return (a[sk]-b[sk])*sd;
+  });
+  var h="";
+  rows.forEach(function(s){
+    var ad=s.areaDelta, adc=ad>0?"up":ad<0?"dn":"";
+    var dg=s.kind==="new"?"신규":pctS(s.dppGrowthPct);
+    var dgc=s.kind==="new"?"":s.dppGrowthPct>=0?"up":"dn";
+    var ef=s.kind==="existing"?mil(s.effEffect):"—";
+    var efc=s.kind==="existing"?(s.effEffect>=0?"up":"dn"):"";
+    h+='<tr class="'+(s.kind==="closed"?"dim":"")+'">'
+      +'<td class="l"><b>'+s.store+'</b></td>'
+      +'<td class="c"><span class="tag '+s.kind+'">'+KL[s.kind]+'</span></td>'
+      +'<td class="r">'+s.areaPrev.toLocaleString()+"→"+s.areaCur.toLocaleString()+'</td>'
+      +'<td class="r '+adc+'">'+(ad>0?"+":"")+ad.toLocaleString()+'</td>'
+      +'<td class="r">'+won(s.dppPrev)+"→"+won(s.dppCur)+'</td>'
+      +'<td class="r '+dgc+'"><b>'+dg+'</b></td>'
+      +'<td class="r"><b>'+mil(s.salesCur)+'</b></td>'
+      +'<td class="r">'+(s.kind==="existing"?mil(s.areaEffect):"—")+'</td>'
+      +'<td class="r '+efc+'">'+ef+'</td></tr>';
+  });
+  document.querySelector("#tbl tbody").innerHTML=h;
+}
+document.querySelectorAll("#tbl th").forEach(function(th){
+  th.addEventListener("click",function(){
+    var k=th.getAttribute("data-k");
+    if(sk===k)sd=-sd; else {sk=k; sd=(k==="store"?1:-1);}
+    render();
+  });
+});
+render();
+</script>
+</body></html>`;
 }
 
 function esc(s: string): string {
