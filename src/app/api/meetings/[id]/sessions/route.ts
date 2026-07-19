@@ -1,6 +1,6 @@
 import type { NextRequest } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { getSessionContext } from "@/lib/auth/session";
+import { requireApproved } from "@/lib/auth/guards";
 import { rateLimit } from "@/lib/rate-limit";
 import { extractSession } from "@/lib/meetings/extract";
 
@@ -29,8 +29,9 @@ export async function POST(
   req: NextRequest,
   ctx: { params: Promise<{ id: string }> }
 ) {
-  const { user } = await getSessionContext();
-  if (!user) return Response.json({ error: "인증이 필요합니다." }, { status: 401 });
+  const g = await requireApproved();
+  if (!g.ok) return g.response;
+  const { user } = g;
 
   const limited = rateLimit(`meetings-session:${user.id}`, { limit: 30, windowMs: 60_000 });
   if (limited) {
@@ -117,8 +118,8 @@ export async function GET(
   _req: NextRequest,
   ctx: { params: Promise<{ id: string }> }
 ) {
-  const { user } = await getSessionContext();
-  if (!user) return Response.json({ error: "인증이 필요합니다." }, { status: 401 });
+  const g = await requireApproved();
+  if (!g.ok) return g.response;
 
   const { id } = await ctx.params;
   if (!id) return Response.json({ error: "meeting id 필요" }, { status: 400 });

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { syncAll } from "@/lib/notion/sync";
-import { createClient } from "@/lib/supabase/server";
+import { requireApproved } from "@/lib/auth/guards";
 
 /**
  * Notion → Supabase 동기화 라우트.
@@ -18,10 +18,9 @@ async function isAuthorized(req: Request): Promise<boolean> {
   const secret = process.env.CRON_SECRET;
   if (secret && auth === `Bearer ${secret}`) return true;
 
-  // 사용자 인증
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  return Boolean(user);
+  // 사용자 인증 + 승인
+  const g = await requireApproved();
+  return g.ok;
 }
 
 export async function GET(req: Request) {

@@ -1,6 +1,6 @@
 import type { NextRequest } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { getSessionContext } from "@/lib/auth/session";
+import { requireApproved } from "@/lib/auth/guards";
 import { extractSession, sanitizeExtracted, type ExtractedSession } from "@/lib/meetings/extract";
 
 export const runtime = "nodejs";
@@ -16,8 +16,8 @@ export async function PATCH(
   req: NextRequest,
   ctx: { params: Promise<{ id: string; sid: string }> }
 ) {
-  const { user } = await getSessionContext();
-  if (!user) return Response.json({ error: "인증이 필요합니다." }, { status: 401 });
+  const g = await requireApproved();
+  if (!g.ok) return g.response;
 
   const { sid } = await ctx.params;
   if (!sid) return Response.json({ error: "session id 필요" }, { status: 400 });
@@ -68,8 +68,8 @@ export async function DELETE(
   _req: NextRequest,
   ctx: { params: Promise<{ id: string; sid: string }> }
 ) {
-  const { user } = await getSessionContext();
-  if (!user) return Response.json({ error: "인증이 필요합니다." }, { status: 401 });
+  const g = await requireApproved();
+  if (!g.ok) return g.response;
 
   const { sid } = await ctx.params;
   if (!sid) return Response.json({ error: "session id 필요" }, { status: 400 });

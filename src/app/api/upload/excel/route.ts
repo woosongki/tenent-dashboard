@@ -3,6 +3,7 @@ import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { parseExcelBuffer, validateFile, ExcelParseError } from "@/lib/excel/parser";
 import { uploadExcelToStorage } from "@/lib/excel/storage";
+import { requireApproved } from "@/lib/auth/guards";
 import type { ExcelApiResponse, ParseOptions } from "@/types/excel";
 
 function err(message: string, status: number, detail?: string): NextResponse<ExcelApiResponse> {
@@ -41,10 +42,12 @@ async function getOrgId(request: NextRequest): Promise<string | null> {
 }
 
 export async function POST(request: NextRequest): Promise<NextResponse<ExcelApiResponse>> {
-  // ── 1. 인증 확인 ─────────────────────────────
+  // ── 1. 인증·승인 확인 ─────────────────────────────
+  const g = await requireApproved();
+  if (!g.ok) return err(g.response.status === 403 ? "승인 대기 중인 계정입니다." : "인증이 필요합니다.", g.response.status);
   const orgId = await getOrgId(request);
   if (!orgId) {
-    return err("인증이 필요합니다. x-organization-id 헤더를 포함하세요.", 401);
+    return err("조직 정보가 필요합니다. x-organization-id 헤더를 포함하세요.", 400);
   }
 
   // ── 2. multipart/form-data 파싱 ───────────────

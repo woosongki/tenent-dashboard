@@ -1,6 +1,6 @@
 import type { NextRequest } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { getSessionContext } from "@/lib/auth/session";
+import { requireApproved } from "@/lib/auth/guards";
 import { rateLimit } from "@/lib/rate-limit";
 import { buildSeedQuestions } from "@/lib/meetings/seeds";
 import type { MeetingBriefPayload } from "@/lib/meetings/brief";
@@ -32,8 +32,9 @@ type Stage = (typeof ALLOWED_STAGES)[number];
  * - stage 전환, Q&A 저장 모두 같은 엔드포인트로
  */
 export async function PATCH(req: NextRequest, ctx: RouteContext<"/api/meetings/[id]">) {
-  const { user } = await getSessionContext();
-  if (!user) return Response.json({ error: "인증이 필요합니다." }, { status: 401 });
+  const g = await requireApproved();
+  if (!g.ok) return g.response;
+  const { user } = g;
 
   const limited = rateLimit(`meetings-patch:${user.id}`, { limit: 30, windowMs: 60_000 });
   if (limited) {
@@ -147,8 +148,8 @@ export async function PATCH(req: NextRequest, ctx: RouteContext<"/api/meetings/[
  * (RouteContext 미사용 — 로컬 typed-route 스테일 오탐 회피)
  */
 export async function DELETE(_req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
-  const { user } = await getSessionContext();
-  if (!user) return Response.json({ error: "인증이 필요합니다." }, { status: 401 });
+  const g = await requireApproved();
+  if (!g.ok) return g.response;
 
   const { id } = await ctx.params;
   if (!id) return Response.json({ error: "id 필요" }, { status: 400 });

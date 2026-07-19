@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { requireApproved } from "@/lib/auth/guards";
 import { rateLimit } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
@@ -88,12 +88,10 @@ async function fetchNaverPage(brand: string, start: number): Promise<NaverShopRe
 }
 
 export async function POST(req: NextRequest) {
-  // 인증 게이트 — 로그인하지 않은 호출 차단 (네이버 API 비용 보호)
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) {
-    return Response.json({ error: "인증이 필요합니다." }, { status: 401 });
-  }
+  // 인증·승인 게이트 — 미승인 호출 차단 (네이버 API 비용 보호)
+  const g = await requireApproved();
+  if (!g.ok) return g.response;
+  const { user } = g;
 
   // 레이트 리밋 — 네이버 쇼핑 API 1회 호출당 3페이지 fetch (비용 보호)
   const limited = rateLimit(`brand-keyword:${user.id}`, { limit: 20, windowMs: 60_000 });

@@ -1,6 +1,6 @@
 import type { NextRequest } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { getSessionContext } from "@/lib/auth/session";
+import { requireRole } from "@/lib/auth/guards";
 import { rateLimit } from "@/lib/rate-limit";
 import { analyzeWithClaude, type AnalysisResult } from "@/lib/verify/analyzer";
 import { fetchMajorShareholders } from "@/lib/verify/dart";
@@ -34,14 +34,9 @@ export const maxDuration = 60;
  * - force=true 일 때만 캐시 무시하고 재분석.
  */
 export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
-  const { user, role } = await getSessionContext();
-  if (!user) return Response.json({ error: "인증이 필요합니다." }, { status: 401 });
-  if (role !== "owner" && role !== "admin") {
-    return Response.json(
-      { error: "AI 심층분석은 owner/admin만 실행할 수 있습니다 (API 비용 보호)." },
-      { status: 403 },
-    );
-  }
+  const g = await requireRole("owner", "admin");
+  if (!g.ok) return g.response;
+  const { user } = g;
 
   const limited = rateLimit(`meetings-analyze:${user.id}`, { limit: 10, windowMs: 60_000 });
   if (limited) {

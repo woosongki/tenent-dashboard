@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { getSessionContext } from "@/lib/auth/session";
+import { requireApproved } from "@/lib/auth/guards";
 import { rateLimit } from "@/lib/rate-limit";
 import { runMeetingBrief, summarizeBrief } from "@/lib/meetings/brief";
 
@@ -40,8 +40,9 @@ async function getOrgId(userId: string): Promise<string | null> {
  * 24시간 내 동일 브랜드 row가 있으면 재사용. force=true 면 새로 fetch.
  */
 export async function POST(req: NextRequest) {
-  const { user } = await getSessionContext();
-  if (!user) return Response.json({ error: "인증이 필요합니다." }, { status: 401 });
+  const g = await requireApproved();
+  if (!g.ok) return g.response;
+  const { user } = g;
 
   const limited = rateLimit(`meetings-brief:${user.id}`, { limit: 10, windowMs: 60_000 });
   if (limited) {
@@ -112,8 +113,9 @@ export async function POST(req: NextRequest) {
  * 최근 브리프 row 리스트. brand 지정시 해당 브랜드만.
  */
 export async function GET(req: NextRequest) {
-  const { user } = await getSessionContext();
-  if (!user) return Response.json({ error: "인증이 필요합니다." }, { status: 401 });
+  const g = await requireApproved();
+  if (!g.ok) return g.response;
+  const { user } = g;
 
   const orgId = await getOrgId(user.id);
   if (!orgId) return Response.json({ error: "조직 멤버십이 필요합니다." }, { status: 403 });

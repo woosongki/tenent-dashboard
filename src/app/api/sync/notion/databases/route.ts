@@ -5,15 +5,13 @@
  */
 import { NextResponse } from "next/server";
 import { getNotionClient } from "@/lib/notion/client";
-import { createClient } from "@/lib/supabase/server";
+import { requireApproved } from "@/lib/auth/guards";
 
 export const dynamic = "force-dynamic";
 
 export async function GET() {
-  // 로그인 유저만 접근
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const g = await requireApproved();
+  if (!g.ok) return g.response;
 
   const notion = getNotionClient();
   if (!notion) return NextResponse.json({ error: "NOTION_API_KEY not configured" }, { status: 503 });

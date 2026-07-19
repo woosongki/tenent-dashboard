@@ -1,4 +1,6 @@
 import SearchTrigger from "./SearchTrigger";
+import NotificationBell from "./NotificationBell";
+import RefreshButton from "./RefreshButton";
 
 interface Crumb {
   label: string;
@@ -12,24 +14,6 @@ interface Props {
   lastUpdated?: string | Date | null;
   /** 모바일 햄버거 클릭 핸들러 (모바일에서만 노출) */
   onOpenSidebar?: () => void;
-}
-
-function IconBell() {
-  return (
-    <svg className="h-[17px] w-[17px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-      <path strokeLinecap="round" strokeLinejoin="round"
-        d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
-    </svg>
-  );
-}
-
-function IconRefresh() {
-  return (
-    <svg className="h-[15px] w-[15px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-      <path strokeLinecap="round" strokeLinejoin="round"
-        d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
-    </svg>
-  );
 }
 
 function formatLastUpdated(d: string | Date): string {
@@ -94,26 +78,9 @@ export default function TopBar({ crumbs, action, lastUpdated, onOpenSidebar }: P
 
         {action && <div className="flex items-center">{action}</div>}
 
-        <form action="">
-          <button
-            type="submit"
-            title="새로고침"
-            aria-label="새로고침"
-            className="flex h-8 w-8 items-center justify-center border-[2px] border-[#0a0a0a] bg-white text-[#0a0a0a] transition-colors hover:bg-yellow-300"
-          >
-            <IconRefresh />
-          </button>
-        </form>
+        <RefreshButton />
 
-        <button
-          type="button"
-          title="알림"
-          aria-label="알림"
-          className="relative flex h-8 w-8 items-center justify-center border-[2px] border-[#0a0a0a] bg-white text-[#0a0a0a] transition-colors hover:bg-yellow-300"
-        >
-          <IconBell />
-          <span className="absolute -top-1 -right-1 h-2.5 w-2.5 border-[2px] border-[#0a0a0a] bg-fuchsia-500" />
-        </button>
+        <NotificationBell />
       </div>
     </div>
   );

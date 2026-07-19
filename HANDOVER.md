@@ -3,7 +3,7 @@
 > **새 Claude Code 세션에서 이 파일을 먼저 읽어 주세요.**
 > AGENTS.md 와 함께 프로젝트 컨텍스트를 5분 안에 따라잡을 수 있습니다.
 
-마지막 갱신: 2026-05-12
+마지막 갱신: 2026-07-05
 
 ---
 
@@ -161,8 +161,11 @@ scripts/
 ├─ import-popup-contacts.mjs      # CSV → 팝업 컨텍판 JSON
 ├─ import-vacancy.mjs             # CSV → 공실 데이터 JSON
 ├─ seed-calendar52.mjs            # 캘린더 DB 시드
-└─ debug-sgis.mjs                 # SGIS API 진단 (사용 X)
+└─ living-popup-daily.mjs         # 리빙 일매출 변환·import·미매치 리포트 (--convert/--dry/--report)
 ```
+
+※ 2026-07 정리: build-sales.mjs(앱 내 업로드로 대체)·debug-sgis.mjs(일회성 진단) 삭제,
+   리빙 일매출 3종(convert/import/report)은 living-popup-daily.mjs 하나로 병합.
 
 각 스크립트는 `.env.local` 자동 로드. 필요 환경변수는 코드 상단에 명시되어 있음.
 
@@ -219,6 +222,60 @@ A. 자본환원율 5.5% 가정. 실시장 임대료와 차이 가능. UI에 "추
 
 **Q. 인증 게이트는 어떻게 동작?**  
 A. Supabase 회원가입 차단 + `profiles.is_approved` 플래그. 로그인하면 layout에서 미승인자는 `/pending-approval` 격리. `/dashboard/admin/users` 에서 owner/admin 만 승인 처리.
+
+---
+
+## 11. 배포 전 필수 조치 (매출 파이프라인 v2 · 인증 · 의존성)
+
+이번 버전업에서 코드만으로 끝나지 않는 조치 3가지. **순서대로** 처리.
+
+### ① 매출 적재 — 현행: 서버 액션(service_role) 방식 (2026-07 정리)
+매출 적재는 **관리 → 매출 데이터 갱신**에서 브라우저 파싱 후 `commitSalesChunk` 서버 액션
+(service_role, owner/admin 재검증)으로 적재한다. 실 매출 테이블 RLS는 service_role 쓰기만 허용으로
+하드닝돼 있어 anon key 로는 쓰기 불가.
+- `supabase/sales_ingest_v2.sql`(staging/swap RPC)은 DB에 적용돼 있으나 **현행 적재 경로는 사용하지 않음**
+  (브라우저 직접쓰기 시절의 원자적 교체 장치). RPC·staging 테이블은 무해하며, 서버 액션에
+  원자적 스왑을 다시 원하면 재활용 가능. 현행 서버 액션은 삭제→청크 삽입이라 중간 실패 시 재업로드 필요.
+- 당월 파일의 실제 영업일수는 파일 시트명/상단에 **"N일누적"** 표기를 넣으면 자동 파싱되어
+  행별 `days` 컬럼으로 저장 → 일평당 분모에 반영(미표기 시 그 달 말일 기준).
+- ⚠ 전년/당년 **평당 시트의 면적 컬럼 단위가 서로 다르면** 일평당매출 성장율이 그 배율만큼 튄다
+  (실사례: 전년 시트가 10배 → 성장율 10배 부풀림). 튀면 두 시트 단위부터 대조.
+
+### ② xlsx 취약점 — 로컬에서 SheetJS 정식판으로 교체 (권장)
+`xlsx@0.18.5` 는 npm 배포본에 고위험 취약점(Prototype Pollution·ReDoS)이 있고 **npm 상엔 패치가 없음**(SheetJS가 자체 CDN으로 이전). 원격 실행 환경은 그 CDN(cdn.sheetjs.com)이 프록시에 막혀 여기서 교체 불가 → **로컬/CI에서** 아래 실행:
+
+```bash
+npm rm xlsx
+npm i https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz   # 동일 API, 드롭인 교체
+npm run build && SALES_FIXTURE_DIR=<xlsx폴더> npx vitest run src/lib/sales/ingest.test.ts
+```
+- API가 동일해 코드 수정 불필요. 커밋으로 package.json/lock 반영.
+- 잠정 완화: 업로드·매출 적재 경로는 이번에 owner/admin+승인 게이트로 좁혀 실사용 공격면은 축소됨(①③).
+
+### ③ 참고 — 프레임워크 취약점(미조치)
+`npm audit` 에 Next.js 16.2.4 관련 high 권고가 있으나, 본 프로젝트는 커스터마이즈된 Next 를 **의도적으로 핀**(AGENTS.md)해 두어 자동 bump 하지 않았음. 프레임워크 업그레이드는 별도 검증 후 진행 권장. `ws` high 는 이번에 8.21.0 으로 패치 완료.
+
+### 인증 가드 통일 (코드, 자동 반영)
+API 라우트 인증을 `src/lib/auth/guards.ts`(`requireUser`/`requireApproved`/`requireRole`)로 통일. 이전엔 승인(`is_approved`) 체크가 대시보드 레이아웃에만 있어 미승인 유저가 API(네이버·DART·Notion 등)를 직접 호출 가능했음 → 이제 각 라우트에서 차단.
+
+---
+
+## 12. 버전업 배치 2 (상권 데이터원 · 성능 · 자동수집 · CI)
+
+### 상권분석 카테고리 비중 소스 전환 (#2)
+`getCategoryGap` 이 정적 JSON 대신 소스를 고를 수 있게 됨.
+- 기본: `store-categories.json`(ERP 2026-04 정적) → **무설정 시 기존과 동일**.
+- 전환: Vercel 환경변수 **`BRANCH_CATEGORY_SOURCE=supabase`** 설정 시 `sales_offline_month` 최신월에서 카테고리 비중을 파생 → 매출 갱신을 따라감. 기준월 라벨(‘최신 반영’)도 자동.
+- 안전장치: ERP 복종→10카테고리 매핑 커버리지가 낮은 점포는 자동으로 static 폴백(상권분석 숫자가 조용히 틀어지지 않음). 처음 켤 때 몇 개 점포 카테고리 갭이 static 과 유사한지 눈으로 대조 권장.
+
+### 상권분석 페이지 성능 (#4)
+직렬 `await` 를 `Promise.all` 2단계로 병렬화(실거래가·혼잡도·카테고리갭 동시). 외부 API(realEstate 8s·congestion 6s)에 `AbortSignal.timeout` 추가 → 느린 공공 API가 페이지 전체를 잡지 않음(실패 시 해당 섹션만 생략).
+
+### 데이터 정기 수집 (#7) — `.github/workflows/data-refresh.yml`
+로컬 수동 실행하던 수집 스크립트를 월 1회 스케줄 + 수동 트리거로 자동화, 변경분을 PR 로 올림. **필요 시크릿**: `KAKAO_REST_API_KEY`(체인 좌표), `DATA_GO_KR_POP_KEY`(인구), `SBIZ_API_KEY`(상권). 저장소 Settings → Secrets 에 등록해야 동작.
+
+### 품질 CI (#8) — `.github/workflows/ci.yml`
+PR·push 마다 typecheck + vitest + build 실행(lint 는 기존 경고 때문에 advisory). 테스트 추가: `retailCategories`(복종 매핑)·`categoryGap`(빈 카테고리 판정)·`salesLogic`(dedupe·그외 브랜드). vitest 는 `server-only` 를 스텁 alias 처리해 서버 로직도 단위 테스트 가능(기존에 깨져 있던 `brand-fit/score.test` 도 이때 함께 복구).
 
 ---
 

@@ -1,5 +1,5 @@
 import type { NextRequest } from "next/server";
-import { getSessionContext } from "@/lib/auth/session";
+import { requireApproved } from "@/lib/auth/guards";
 import { rateLimit } from "@/lib/rate-limit";
 import { extractOfficeText } from "@/lib/meetings/officeText";
 
@@ -14,8 +14,9 @@ const MAX_BYTES = 20 * 1024 * 1024; // 20MB
  * PPTX·DOCX·PDF → 순수 텍스트 추출(LLM 아님·비용 0). 세션 원문 채우기용.
  */
 export async function POST(req: NextRequest) {
-  const { user } = await getSessionContext();
-  if (!user) return Response.json({ error: "인증이 필요합니다." }, { status: 401 });
+  const g = await requireApproved();
+  if (!g.ok) return g.response;
+  const { user } = g;
 
   const limited = rateLimit(`meetings-extract:${user.id}`, { limit: 20, windowMs: 60_000 });
   if (limited) {

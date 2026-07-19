@@ -45,6 +45,23 @@ export default function AppShell({ userEmail, role = null, hiddenMenus = [], chi
     return () => window.removeEventListener("popstate", close);
   }, []);
 
+  // 데스크톱 레일 접힘 상태 복원 (섹션 접힘과 동일하게 localStorage 유지)
+  useEffect(() => {
+    try {
+      // 마운트 후 1회 복원 (SSR엔 localStorage 없음) — 의도된 초기 동기화.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      if (localStorage.getItem("sidebar:collapsed") === "1") setCollapsed(true);
+    } catch { /* localStorage 접근 불가 시 펼침 유지 */ }
+  }, []);
+
+  function toggleCollapse() {
+    setCollapsed((v) => {
+      const next = !v;
+      try { localStorage.setItem("sidebar:collapsed", next ? "1" : "0"); } catch { /* 저장 실패 무시 */ }
+      return next;
+    });
+  }
+
   // 열릴 때 body 스크롤 막기
   useEffect(() => {
     document.body.style.overflow = mobileOpen ? "hidden" : "";
@@ -96,7 +113,7 @@ export default function AppShell({ userEmail, role = null, hiddenMenus = [], chi
           hiddenMenus={hiddenMenus}
           onClose={() => setMobileOpen(false)}
           collapsed={collapsed}
-          onToggleCollapse={() => setCollapsed((v) => !v)}
+          onToggleCollapse={toggleCollapse}
           theme={theme}
           onToggleTheme={() => setTheme(theme === "dark" ? "light" : "dark")}
           reportMode={reportMode}
