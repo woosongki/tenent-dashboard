@@ -1,5 +1,4 @@
 import "server-only";
-import { unstable_cache } from "next/cache";
 import { createServiceClient } from "@/lib/supabase/service";
 import { isOthersBrand } from "./labels";
 import type { SalesStoreMeta, AggRow, GroupSummary, Grade } from "./types";
@@ -776,13 +775,15 @@ export async function getBcdMonth(ym: string, prevYm: string) {
   return { periodLabel: ym, prevLabel: prevYm, ...overlayBcd(off as unknown as Awaited<ReturnType<typeof getOfflineCumImpl>>, gm) };
 }
 
-// ── 캐싱 (서비스 클라이언트 기반, 인자별 60초) ──
-// 인자(연/월)가 달라지면 새 캐시키 → 새 월 데이터는 즉시 반영.
-// 같은 월 재import 정정은 최대 60초 후 반영. 즉시 무효화는 revalidateTag("sales").
-export const getOnlineMonth = unstable_cache(getOnlineMonthImpl, ["online-month"], { revalidate: 60, tags: ["sales"] });
-export const getOnlineCumulative = unstable_cache(getOnlineCumulativeImpl, ["online-cum"], { revalidate: 60, tags: ["sales"] });
-export const getOfflineCum = unstable_cache(getOfflineCumImpl, ["offline-cum"], { revalidate: 60, tags: ["sales"] });
-export const getOfflineMonth = unstable_cache(getOfflineMonthImpl, ["offline-month"], { revalidate: 60, tags: ["sales"] });
+// unstable_cache 제거 — Vercel Fluid Compute의 warm 인스턴스가 stale in-memory
+// 사본을 보유해 dynamic 페이지에서도 옛 결과가 반환되는 문제 확인(2026-07-20).
+// 소비 페이지(sales)는 force-dynamic 이라 요청당 재실행이 정상 동작. 60초 TTL
+// 캐시 이득보다 정합성이 우선. 즉시 무효화가 필요하면 이 지점을 다시 감싸고
+// revalidateTag를 사용.
+export const getOnlineMonth = getOnlineMonthImpl;
+export const getOnlineCumulative = getOnlineCumulativeImpl;
+export const getOfflineCum = getOfflineCumImpl;
+export const getOfflineMonth = getOfflineMonthImpl;
 
 /** 오프라인 가용 기간
  *
