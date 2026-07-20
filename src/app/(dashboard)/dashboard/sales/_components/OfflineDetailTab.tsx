@@ -242,7 +242,7 @@ export default function OfflineDetailTab(p: Props) {
 
       {/* [DIAG] 임시 진단 배지 — 원인 규명 후 삭제 */}
       <div className="border-[2px] border-rose-500 bg-rose-50 p-2 text-[11px] font-mono">
-        [DIAG] fashionCats={p.fashionCats.length} · divisions={p.divisions.length} · chips={chips.length}
+        [DIAG] periodLabel=&quot;{p.periodLabel}&quot; · prevLabel=&quot;{p.prevLabel}&quot; · fashionCats={p.fashionCats.length} · divisions={p.divisions.length} · chips={chips.length}
         {" | fashionCats: "}{p.fashionCats.map((c) => c.cat).join(", ") || "(빈)"}
         {" | divisions: "}{p.divisions.map((d) => d.division).join(", ") || "(빈)"}
       </div>
