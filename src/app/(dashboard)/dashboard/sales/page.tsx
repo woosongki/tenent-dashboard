@@ -15,6 +15,11 @@ import { SPACE } from "@/lib/tokens";
 
 export const metadata: Metadata = { title: "매출분석 — lifestyle" };
 
+// Full Route Cache 방지 — 매 요청마다 최신 데이터 사용.
+// 없으면 빌드 시점 스냅샷이 계속 서빙되어 신규 부문·복종·브랜드가 안 보임.
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 /** 한 데이터셋 로드 실패가 페이지 전체를 죽이지 않도록 격리 (실패 시 null → 해당 탭만 빈 상태) */
 async function safe<T>(fn: () => Promise<T>): Promise<T | null> {
   try { return await fn(); } catch (e) { console.error("[sales] 데이터 로드 실패:", e); return null; }
@@ -73,6 +78,7 @@ export default async function SalesPage() {
   const offCum = offData?.offCum ?? null;
   const offMonth = offData?.offMonth ?? null;
   const offMeta = { monthYm: offData?.monthYm ?? null, cumYear: offData?.cumYear ?? null, cumThroughYm: offData?.cumThroughYm ?? null };
+
   // 누적 개월수 — 누적 테이블의 through_ym(마감월)을 우선 사용. legacy 데이터는 monthYm 폴백.
   // 예: through_ym "2026-06" → 6개월로 나눠 월평균 계산.
   const cumMonths = (() => {
