@@ -2,6 +2,8 @@ import "server-only";
 import { createServiceClient } from "@/lib/supabase/service";
 import { isOthersBrand } from "./labels";
 import { decomposeSymmetric } from "./decompose";
+import { computeDecomposition, type Decomposition } from "./diagnose";
+import type { OffRank, OffSub } from "./queries";
 
 // 라이프스타일 부문 실적 리포트 — "면적 늘어서 오른 것 아니냐" 도전에 답하기 위한 성장 분해.
 //
@@ -36,6 +38,8 @@ export interface LifestyleStoreLine {
   salesGrowthPct: number;
   areaEffect: number;   // 원 — 기존점 매출증감 중 면적 기여 (신규/퇴점=0)
   effEffect: number;    // 원 — 기존점 매출증감 중 좌판효율 기여
+  /** 지점 내 브랜드 단위 매출증감분해 (신규/평수증가/기존/퇴점 + TOP5). 비교 대상 없으면 undefined. */
+  decomposition?: Decomposition;
 }
 
 export interface LifestyleReport {
@@ -105,11 +109,20 @@ export async function getLifestyleMonthReport(): Promise<LifestyleReport | null>
 
   type Agg = { s1: number; s0: number; a1: number; a0: number };
   const byStore = new Map<string, Agg>();
+  // 지점 내 브랜드 단위 집계 — computeDecomposition(신규/평수증가/기존/퇴점) 입력용.
+  const byStoreBrand = new Map<string, Map<string, Agg>>();
   for (const r of rows) {
     const e = byStore.get(r.store) ?? { s1: 0, s0: 0, a1: 0, a0: 0 };
     if (r.p === cur) { e.s1 += r.sales; e.a1 += r.area; }
     else if (r.p === prev) { e.s0 += r.sales; e.a0 += r.area; }
     byStore.set(r.store, e);
+
+    let bm = byStoreBrand.get(r.store);
+    if (!bm) { bm = new Map(); byStoreBrand.set(r.store, bm); }
+    const be = bm.get(r.brand) ?? { s1: 0, s0: 0, a1: 0, a0: 0 };
+    if (r.p === cur) { be.s1 += r.sales; be.a1 += r.area; }
+    else if (r.p === prev) { be.s0 += r.sales; be.a0 += r.area; }
+    bm.set(r.brand, be);
   }
 
   const stores: LifestyleStoreLine[] = [];
@@ -136,12 +149,52 @@ export async function getLifestyleMonthReport(): Promise<LifestyleReport | null>
 
     const dppCur = a1 > 0 ? s1 / (a1 * N) : 0;
     const dppPrev = a0 > 0 ? s0 / (a0 * N) : 0;
+
+    // 브랜드 단위 매출증감분해 — 지점 탭 열었을 때 워터폴/TOP5 렌더 입력.
+    const brandMap = byStoreBrand.get(store);
+    let decomposition: Decomposition | undefined;
+    if (brandMap && brandMap.size > 0) {
+      const bySub: OffSub[] = [];
+      for (const [brand, ba] of brandMap) {
+        const bDppCur = ba.a1 > 0 ? Math.round(ba.s1 / (ba.a1 * N)) : 0;
+        const bDppPrev = ba.a0 > 0 ? Math.round(ba.s0 / (ba.a0 * N)) : 0;
+        bySub.push({
+          key: brand,
+          s: ba.s1, ps: ba.s0,
+          g: 0, pg: 0,
+          growthS: ba.s1 - ba.s0, growthPct: pct1(ba.s1 - ba.s0, ba.s0),
+          growthG: 0, growthGPct: 0,
+          area: round1(ba.a1), prevArea: round1(ba.a0),
+          dppSales: bDppCur, prevDppSales: bDppPrev,
+          dppSalesGrowthPct: pct1(bDppCur - bDppPrev, bDppPrev),
+          storeCnt: 1,
+          closed: ba.s1 <= 0 && ba.s0 > 0,
+        });
+      }
+      bySub.sort((a, b) => b.s - a.s);
+      const offRank: OffRank = {
+        key: store,
+        s: s1, ps: s0,
+        g: 0, pg: 0,
+        gpm: 0,
+        yoyPct: pct1(s1 - s0, s0),
+        subCount: bySub.filter((x) => x.s > 0).length,
+        dppSales: Math.round(dppCur),
+        prevDppSales: Math.round(dppPrev),
+        dppSalesGrowthPct: pct1(dppCur - dppPrev, dppPrev),
+        closed: kind === "closed",
+        bySub,
+      };
+      decomposition = computeDecomposition(offRank);
+    }
+
     stores.push({
       store, kind,
       areaCur: round1(a1), areaPrev: round1(a0), areaDelta: round1(a1 - a0),
       dppCur: Math.round(dppCur), dppPrev: Math.round(dppPrev), dppGrowthPct: pct1(dppCur - dppPrev, dppPrev),
       salesCur: s1, salesPrev: s0, salesDelta: s1 - s0, salesGrowthPct: pct1(s1 - s0, s0),
       areaEffect: Math.round(areaEffect), effEffect: Math.round(effEffect),
+      decomposition,
     });
   }
   stores.sort((a, b) => b.salesCur - a.salesCur);

@@ -1,7 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { Fragment, useMemo, useState } from "react";
 import type { LifestyleReport, LifestyleStoreLine } from "@/lib/sales/lifestyleReport";
+import DecompositionView from "./DecompositionView";
 
 const eok = (n: number) => (n / 1e8).toFixed(1);            // 억 (1자리)
 const eokS = (n: number) => `${n >= 0 ? "+" : ""}${(n / 1e8).toFixed(1)}`;
@@ -29,6 +30,7 @@ export default function LifestyleReportTab({ report }: { report: LifestyleReport
   const html = useMemo(() => (report ? buildStandaloneHtml(report) : ""), [report]);
   const [sortKey, setSortKey] = useState<SortKey>("salesCur");
   const [dir, setDir] = useState<"asc" | "desc">("desc");
+  const [expanded, setExpanded] = useState<string | null>(null);
 
   const sortedStores = useMemo(() => {
     const arr = [...(report?.stores ?? [])];
@@ -129,21 +131,40 @@ export default function LifestyleReportTab({ report }: { report: LifestyleReport
             </tr>
           </thead>
           <tbody>
-            {sortedStores.map((s) => (
-              <tr key={s.store} className={`border-b border-slate-100 ${s.kind === "closed" ? "opacity-55" : ""}`}>
-                <td className="px-3 py-1.5 font-bold text-[#0a0a0a] whitespace-nowrap">{s.store}</td>
-                <td className="px-2 py-1.5 text-center">
-                  <span className={`border-[1.5px] border-[#0a0a0a] px-1 py-0 text-[9px] font-extrabold ${s.kind === "new" ? "bg-cyan-300" : s.kind === "closed" ? "bg-rose-200" : "bg-white"}`}>{KIND_LABEL[s.kind]}</span>
-                </td>
-                <td className="px-2 py-1.5 text-right font-mono text-slate-600 whitespace-nowrap">{s.areaPrev.toLocaleString()}→{s.areaCur.toLocaleString()}</td>
-                <td className="px-2 py-1.5 text-right font-mono" style={{ color: s.areaDelta > 0 ? "#0d9e6e" : s.areaDelta < 0 ? "#e53e3e" : "#94a3b8" }}>{s.areaDelta > 0 ? "+" : ""}{s.areaDelta.toLocaleString()}</td>
-                <td className="px-2 py-1.5 text-right font-mono text-slate-600 whitespace-nowrap">{won(s.dppPrev)}→{won(s.dppCur)}</td>
-                <td className="px-2 py-1.5 text-right font-mono font-bold" style={{ color: s.kind === "new" ? "#7c3aed" : s.dppGrowthPct >= 0 ? "#0d9e6e" : "#e53e3e" }}>{s.kind === "new" ? "신규" : pctS(s.dppGrowthPct)}</td>
-                <td className="px-2 py-1.5 text-right font-mono font-bold">{mil(s.salesCur)}</td>
-                <td className="px-2 py-1.5 text-right font-mono text-slate-500">{s.kind === "existing" ? mil(s.areaEffect) : "—"}</td>
-                <td className="px-2 py-1.5 text-right font-mono" style={{ color: s.kind !== "existing" ? "#94a3b8" : s.effEffect >= 0 ? "#0d9e6e" : "#e53e3e" }}>{s.kind === "existing" ? mil(s.effEffect) : "—"}</td>
-              </tr>
-            ))}
+            {sortedStores.map((s) => {
+              const canExpand = !!s.decomposition;
+              const isOpen = expanded === s.store;
+              return (
+                <Fragment key={s.store}>
+                  <tr
+                    onClick={() => canExpand && setExpanded(isOpen ? null : s.store)}
+                    className={`border-b border-slate-100 ${s.kind === "closed" ? "opacity-55" : ""} ${canExpand ? "cursor-pointer hover:bg-yellow-50" : ""} ${isOpen ? "bg-yellow-100" : ""}`}
+                  >
+                    <td className="px-3 py-1.5 font-bold text-[#0a0a0a] whitespace-nowrap">
+                      {canExpand && <span className="mr-1 text-[10px] text-[#0a0a0a]/60">{isOpen ? "▾" : "▸"}</span>}
+                      {s.store}
+                    </td>
+                    <td className="px-2 py-1.5 text-center">
+                      <span className={`border-[1.5px] border-[#0a0a0a] px-1 py-0 text-[9px] font-extrabold ${s.kind === "new" ? "bg-cyan-300" : s.kind === "closed" ? "bg-rose-200" : "bg-white"}`}>{KIND_LABEL[s.kind]}</span>
+                    </td>
+                    <td className="px-2 py-1.5 text-right font-mono text-slate-600 whitespace-nowrap">{s.areaPrev.toLocaleString()}→{s.areaCur.toLocaleString()}</td>
+                    <td className="px-2 py-1.5 text-right font-mono" style={{ color: s.areaDelta > 0 ? "#0d9e6e" : s.areaDelta < 0 ? "#e53e3e" : "#94a3b8" }}>{s.areaDelta > 0 ? "+" : ""}{s.areaDelta.toLocaleString()}</td>
+                    <td className="px-2 py-1.5 text-right font-mono text-slate-600 whitespace-nowrap">{won(s.dppPrev)}→{won(s.dppCur)}</td>
+                    <td className="px-2 py-1.5 text-right font-mono font-bold" style={{ color: s.kind === "new" ? "#7c3aed" : s.dppGrowthPct >= 0 ? "#0d9e6e" : "#e53e3e" }}>{s.kind === "new" ? "신규" : pctS(s.dppGrowthPct)}</td>
+                    <td className="px-2 py-1.5 text-right font-mono font-bold">{mil(s.salesCur)}</td>
+                    <td className="px-2 py-1.5 text-right font-mono text-slate-500">{s.kind === "existing" ? mil(s.areaEffect) : "—"}</td>
+                    <td className="px-2 py-1.5 text-right font-mono" style={{ color: s.kind !== "existing" ? "#94a3b8" : s.effEffect >= 0 ? "#0d9e6e" : "#e53e3e" }}>{s.kind === "existing" ? mil(s.effEffect) : "—"}</td>
+                  </tr>
+                  {isOpen && s.decomposition && (
+                    <tr className="bg-[#FAF7EC]">
+                      <td colSpan={9} className="px-3 py-2">
+                        <DecompositionView decomp={s.decomposition} subLabel="브랜드" defaultOpen />
+                      </td>
+                    </tr>
+                  )}
+                </Fragment>
+              );
+            })}
           </tbody>
         </table>
       </div>
