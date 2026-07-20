@@ -233,7 +233,7 @@ export function diagnoseBrand(
     const existCount = Math.max(b.subCount - newOrExpanded.length, 0);
     const existPctTxt = existPrev > 0 ? pct1(existChange / existPrev * 100) : "전년 0";
     if (existChange < 0) {
-      hyp.push({ label: "가설", text: `전체는 ${pct1(b.yoyPct)}지만 신규출점(평수증가 포함) ${newOrExpanded.length}개점을 빼면 기존 ${existCount}개점은 ${existPctTxt} — 출점·증평이 동일점 부진을 가린 '표면 성장'. 추가 출점을 멈추면 역성장으로 전환될 위험.\n   확인: 기존점 동일점 추세가 반등하는가, 계속 출점·증평에 의존하는가.` });
+      hyp.push({ label: "가설", text: `전체는 ${pct1(b.yoyPct)}지만 신규출점(평수증가 포함) ${newOrExpanded.length}개점을 빼면 기존 ${existCount}개점은 ${existPctTxt} — 출점·평수증가이 동일점 부진을 가린 '표면 성장'. 추가 출점을 멈추면 역성장으로 전환될 위험.\n   확인: 기존점 동일점 추세가 반등하는가, 계속 출점·평수증가에 의존하는가.` });
     } else if (share >= 60) {
       hyp.push({ label: "가설", text: `성장의 ${share.toFixed(0)}%가 신규출점(평수증가 포함) 주도 — 기존점만의 성장 동력은 제한적일 수 있음.\n   확인: 기존 ${existCount}개점의 동일점 성장률(${existPctTxt})이 지속되는가.` });
     }

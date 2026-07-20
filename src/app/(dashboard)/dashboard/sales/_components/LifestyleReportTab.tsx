@@ -11,12 +11,12 @@ const pctS = (n: number) => `${n >= 0 ? "+" : ""}${n}%`;
 const KIND_LABEL: Record<LifestyleStoreLine["kind"], string> = { existing: "기존", new: "신규", closed: "퇴점" };
 const KIND_RANK: Record<LifestyleStoreLine["kind"], number> = { new: 0, existing: 1, closed: 2 };
 
-// 3버킷 재분류: 면적확대(증평)는 신규출점으로 합산, 좌판효율은 '기존점 매출'로.
+// 3버킷 재분류: 면적확대(평수증가)는 신규출점으로 합산, 좌판효율은 '기존점 매출'로.
 //   신규출점 = 신규점 매출 + 기존점 면적효과 / 기존점 매출 = 기존점 효율효과 / 퇴점 = 그대로.
 //   합 = ΔS 그대로 유지.
 function regroup(d: LifestyleReport["decomposition"]) {
   return {
-    newExpand: d.newStore + d.existingArea, // 신규출점(증평 포함)
+    newExpand: d.newStore + d.existingArea, // 신규출점(평수증가 포함)
     existingSales: d.existingEff,           // 기존점 매출(동일면적 성장)
     closed: d.closedStore,
     total: d.total,
@@ -87,10 +87,10 @@ export default function LifestyleReportTab({ report }: { report: LifestyleReport
 
       {/* 반박 콜아웃 — 성장의 질 */}
       <div className="border-[3px] border-[#0a0a0a] bg-yellow-100 p-4 shadow-[4px_4px_0_0_#0a0a0a]">
-        <p className="text-[11px] font-extrabold uppercase tracking-wider text-[#0a0a0a]/70">성장의 질 — 신규출점(증평) vs 기존점 매출</p>
+        <p className="text-[11px] font-extrabold uppercase tracking-wider text-[#0a0a0a]/70">성장의 질 — 신규출점(평수증가) vs 기존점 매출</p>
         <p className="mt-1.5 text-[13.5px] font-bold text-[#0a0a0a] leading-relaxed">
           매출 <b>{eokS(t.salesDelta)}억</b>({pctS(t.salesGrowthPct)}) 증가 중 —
-          신규출점(증평 포함) <b>{eokS(g.newExpand)}억</b> ·{" "}
+          신규출점(평수증가 포함) <b>{eokS(g.newExpand)}억</b> ·{" "}
           <span className="bg-yellow-300 px-1">기존점 매출 {eokS(g.existingSales)}억</span>
           {g.closed ? ` · 퇴점 ${eokS(g.closed)}억` : ""}.
         </p>
@@ -119,7 +119,7 @@ export default function LifestyleReportTab({ report }: { report: LifestyleReport
                 ["store", "지점", "text-left"], ["kind", "구분", "text-center"],
                 ["areaCur", "면적(전→당)", "text-right"], ["areaDelta", "면적증감", "text-right"],
                 ["dppCur", "일평당(전→당)", "text-right"], ["dppGrowthPct", "일평당증감", "text-right"],
-                ["salesCur", "매출(백만)", "text-right"], ["areaEffect", "증평효과", "text-right"], ["effEffect", "기존점매출", "text-right"],
+                ["salesCur", "매출(백만)", "text-right"], ["areaEffect", "평수증가효과", "text-right"], ["effEffect", "기존점매출", "text-right"],
               ] as [SortKey, string, string][]).map(([k, label, align]) => (
                 <th key={k} onClick={() => toggle(k)}
                   className={`px-2 py-2 cursor-pointer hover:bg-white/10 whitespace-nowrap ${align}`}>
@@ -148,8 +148,8 @@ export default function LifestyleReportTab({ report }: { report: LifestyleReport
         </table>
       </div>
       <p className="text-[10px] font-medium text-[#0a0a0a]/55">
-        증평효과 = (당기−전기 면적) × 평균 평당매출(→ 신규출점으로 합산) · 기존점매출 = 평균 면적 × (당기−전기 평당매출).
-        대칭(Shapley) 분해라 합은 정확히 매출 증감과 일치. 신규점·증평은 모두 신규출점으로 집계. 금액 단위: 억/백만.
+        평수증가효과 = (당기−전기 면적) × 평균 평당매출(→ 신규출점으로 합산) · 기존점매출 = 평균 면적 × (당기−전기 평당매출).
+        대칭(Shapley) 분해라 합은 정확히 매출 증감과 일치. 신규점·평수증가은 모두 신규출점으로 집계. 금액 단위: 억/백만.
       </p>
     </div>
   );
@@ -171,7 +171,7 @@ function Kpi({ title, cur, prev, pct, sub, highlight }: { title: string; cur: st
 
 function Waterfall({ g }: { g: ReturnType<typeof regroup> }) {
   const parts = [
-    { label: "신규출점(증평 포함)", v: g.newExpand, color: "#22d3ee" },
+    { label: "신규출점(평수증가 포함)", v: g.newExpand, color: "#22d3ee" },
     { label: "기존점 매출", v: g.existingSales, color: "#facc15" },
     ...(g.closed ? [{ label: "퇴점", v: g.closed, color: "#fda4af" }] : []),
   ];
@@ -204,7 +204,7 @@ function buildStandaloneHtml(r: LifestyleReport): string {
     salesCur: s.salesCur, areaEffect: s.areaEffect, effEffect: s.effEffect,
   }));
   const bars = [
-    ["신규출점(증평 포함)", g.newExpand, "#22d3ee"], ["기존점 매출", g.existingSales, "#facc15"],
+    ["신규출점(평수증가 포함)", g.newExpand, "#22d3ee"], ["기존점 매출", g.existingSales, "#facc15"],
     ...(g.closed ? [["퇴점", g.closed, "#fda4af"]] : []),
   ] as [string, number, string][];
   const bmax = Math.max(1, ...bars.map((b) => Math.abs(b[1])));
@@ -242,8 +242,8 @@ td{padding:5px 8px;border-bottom:1px solid #eee;font-variant-numeric:tabular-num
 </style></head><body><div class="wrap">
 <h1>라이프스타일 부문 실적 리포트 · 당월</h1>
 <p class="sub">${esc(r.prevLabel)} → ${esc(r.curLabel)} · ${r.days}일 동일기간 비교 · 일평당매출 = 매출 ÷ (면적 × ${r.days})</p>
-<div class="callout"><div class="h">성장의 질 — 신규출점(증평) vs 기존점 매출</div>
-<p>매출 <b>${eokS(t.salesDelta)}억</b>(${pctS(t.salesGrowthPct)}) 증가 중 — 신규출점(증평 포함) <b>${eokS(g.newExpand)}억</b> · <span class="hl">기존점 매출 ${eokS(g.existingSales)}억</span>${g.closed ? ` · 퇴점 ${eokS(g.closed)}억` : ""}.</p>
+<div class="callout"><div class="h">성장의 질 — 신규출점(평수증가) vs 기존점 매출</div>
+<p>매출 <b>${eokS(t.salesDelta)}억</b>(${pctS(t.salesGrowthPct)}) 증가 중 — 신규출점(평수증가 포함) <b>${eokS(g.newExpand)}억</b> · <span class="hl">기존점 매출 ${eokS(g.existingSales)}억</span>${g.closed ? ` · 퇴점 ${eokS(g.closed)}억` : ""}.</p>
 <p>기존점(${d.existingCount}곳) 동일면적 매출 <b>${pctS(d.existingDppGrowthPct)}</b> 성장 — 면적 확대와 무관한 순수 매출 성장.${g.existingSales > 0 && t.salesDelta > 0 ? ` 전체 증가의 ${Math.round((g.existingSales / t.salesDelta) * 100)}%가 기존점 매출 기여.` : ""}</p></div>
 <div class="kpis">
 <div class="kpi"><div class="t">매출</div><div class="v">${eok(t.salesCur)}억</div><div class="p">전년 ${eok(t.salesPrev)}억 (${pctS(t.salesGrowthPct)})</div></div>
@@ -255,9 +255,9 @@ td{padding:5px 8px;border-bottom:1px solid #eee;font-variant-numeric:tabular-num
 <th data-k="store" data-t="s">지점</th><th data-k="kindRank" data-t="n">구분</th>
 <th data-k="areaCur" data-t="n">면적(전→당)</th><th data-k="areaDelta" data-t="n">면적증감</th>
 <th data-k="dppCur" data-t="n">일평당(전→당)</th><th data-k="dppGrowthPct" data-t="n">일평당증감</th>
-<th data-k="salesCur" data-t="n">매출(백만)</th><th data-k="areaEffect" data-t="n">증평효과</th><th data-k="effEffect" data-t="n">기존점매출</th>
+<th data-k="salesCur" data-t="n">매출(백만)</th><th data-k="areaEffect" data-t="n">평수증가효과</th><th data-k="effEffect" data-t="n">기존점매출</th>
 </tr></thead><tbody></tbody></table>
-<p class="foot">증평효과 = (당기−전기 면적) × 평균 평당매출(→ 신규출점으로 합산) · 기존점매출 = 평균 면적 × (당기−전기 평당매출). 대칭(Shapley) 분해로 합은 매출 증감과 일치. 신규점·증평은 모두 신규출점으로 집계. 헤더 클릭 = 정렬(오름/내림).<br>생성: ${new Date().toLocaleString("ko-KR")} · lifestyle 대시보드</p>
+<p class="foot">평수증가효과 = (당기−전기 면적) × 평균 평당매출(→ 신규출점으로 합산) · 기존점매출 = 평균 면적 × (당기−전기 평당매출). 대칭(Shapley) 분해로 합은 매출 증감과 일치. 신규점·평수증가은 모두 신규출점으로 집계. 헤더 클릭 = 정렬(오름/내림).<br>생성: ${new Date().toLocaleString("ko-KR")} · lifestyle 대시보드</p>
 </div>
 <script>
 var DATA=${JSON.stringify(rowsData)};

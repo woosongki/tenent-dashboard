@@ -428,7 +428,7 @@ export interface OffSub {
   growthS: number; growthPct: number;   // 매출 성장액/율
   growthG: number; growthGPct: number;  // 매총익 성장액/율
   area: number;                   // 전용면적(평)
-  prevArea: number;               // 전용면적(평, 전기) — 평수 증가(증평) 판정용
+  prevArea: number;               // 전용면적(평, 전기) — 평수증가 판정용
   dppSales: number;               // 일평당매출 (당기)
   prevDppSales: number;           // 일평당매출 (전기)
   dppSalesGrowthPct: number;      // 일평당매출 성장율 %
