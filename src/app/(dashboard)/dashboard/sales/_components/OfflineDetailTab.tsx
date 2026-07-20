@@ -240,13 +240,6 @@ export default function OfflineDetailTab(p: Props) {
       {view === "brand" && (<>
       <p className="text-[11px] text-slate-500">복종(패션)·부문(F&B 등)을 선택해 상세 실적을 봅니다. 브랜드 클릭 시 지점별 매출이 펼쳐집니다.</p>
 
-      {/* [DIAG] 임시 진단 배지 — 원인 규명 후 삭제 */}
-      <div className="border-[2px] border-rose-500 bg-rose-50 p-2 text-[11px] font-mono">
-        [DIAG] periodLabel=&quot;{p.periodLabel}&quot; · prevLabel=&quot;{p.prevLabel}&quot; · fashionCats={p.fashionCats.length} · divisions={p.divisions.length} · chips={chips.length}
-        {" | fashionCats: "}{p.fashionCats.map((c) => c.cat).join(", ") || "(빈)"}
-        {" | divisions: "}{p.divisions.map((d) => d.division).join(", ") || "(빈)"}
-      </div>
-
       {/* 카테고리 칩 */}
       <div className="flex flex-wrap gap-1.5">
         {chips.map((c) => {
