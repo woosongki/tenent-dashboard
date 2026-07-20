@@ -2,12 +2,36 @@
 // 명세: [사실]/[해석]/[가설]/[확인필요] 라벨, 산술 분해는 식과 결과 동시 표기.
 // 입력에 없는 축은 [확인필요]로 남기고, 외부 사실을 지어내지 않는다.
 
-import type { OffRank } from "./queries";
+import type { OffRank, OffSub } from "./queries";
 
 export type Label = "사실" | "계산" | "해석" | "가설" | "확인필요" | "질문";
 export interface DiagLine { label: Label; text: string; }
 export interface DiagSection { title: string; lines: DiagLine[]; }
-export interface Diagnosis { sections: DiagSection[]; asOf: string; }
+
+/** 매출증감분해 — BrandDiagnosis 워터폴 그래프 + TOP5 리스트용. */
+export interface DecompItem {
+  key: string;
+  s: number; ps: number;
+  growthS: number;                // s - ps
+  area: number; prevArea: number;
+  reason?: "신규" | "평수증가";   // 신규출점(평수증가 포함) 내부 소분류
+}
+export interface Decomposition {
+  prevTotal: number;
+  curTotal: number;
+  totalChange: number;
+  /** 신규출점(평수증가 포함) 기여 = 순수 신규 당기 매출 합 + 평수증가 지점 증가액(s-ps) 합 */
+  newContribution: number;
+  /** 기존점(전년 매출 있고 평수 변화 없음/감소) 순증감 */
+  existChange: number;
+  /** 퇴점 손실 (전년 매출 −, 음수) */
+  closedLoss: number;
+  /** 신규출점(평수증가 포함) TOP5 — 당기 매출 큰 순 */
+  newTop5: DecompItem[];
+  /** 기존점 TOP5 — 당기 매출 큰 순 */
+  existTop5: DecompItem[];
+}
+export interface Diagnosis { sections: DiagSection[]; asOf: string; decomposition?: Decomposition; }
 
 /** 네이버 쇼핑 기반 외부 신호 (brand-keyword API 결과 일부) */
 export interface ExternalSignal {
@@ -28,6 +52,38 @@ export interface CohortStat {
   medianGpm: number;    // 또래 이익률 중앙값(%)
   totalS: number;       // 또래 당기 매출합
   totalPs: number;      // 또래 전년 매출합
+}
+
+/** 매출증감분해 계산 — diagnoseBrand 내부와 UI(TOP5 요약 블록) 공용. */
+export function computeDecomposition(b: OffRank): Decomposition {
+  const sub = b.bySub ?? [];
+  const newOnes = sub.filter((s) => s.ps === 0 && s.s > 0);
+  const expandedOnes = sub.filter((s) => s.ps > 0 && s.prevArea > 0 && s.area > s.prevArea);
+  const closedOnes = sub.filter((s) => s.closed);
+  const totalChange = b.s - b.ps;
+  const newBrandsSum = newOnes.reduce((t, s) => t + s.s, 0);
+  const expandedContrib = expandedOnes.reduce((t, s) => t + (s.s - s.ps), 0);
+  const newSum = newBrandsSum + expandedContrib;
+  const existChange = totalChange - newSum;
+  const closedLoss = -closedOnes.reduce((t, s) => t + s.ps, 0);
+
+  const toItem = (s: OffSub, reason: "신규" | "평수증가"): DecompItem => ({
+    key: s.key, s: s.s, ps: s.ps, growthS: s.s - s.ps, area: s.area, prevArea: s.prevArea, reason,
+  });
+  const newItems: DecompItem[] = [
+    ...newOnes.map((s) => toItem(s, "신규")),
+    ...expandedOnes.map((s) => toItem(s, "평수증가")),
+  ];
+  const existItems: DecompItem[] = sub
+    .filter((s) => !s.closed && s.ps > 0 && !(s.prevArea > 0 && s.area > s.prevArea))
+    .map((s) => ({ key: s.key, s: s.s, ps: s.ps, growthS: s.s - s.ps, area: s.area, prevArea: s.prevArea }));
+
+  return {
+    prevTotal: b.ps, curTotal: b.s, totalChange,
+    newContribution: newSum, existChange, closedLoss,
+    newTop5: [...newItems].sort((a, c) => c.s - a.s).slice(0, 5),
+    existTop5: [...existItems].sort((a, c) => c.s - a.s).slice(0, 5),
+  };
 }
 
 function median(xs: number[]): number {
@@ -54,18 +110,29 @@ export function diagnoseBrand(
 ): Diagnosis {
   const sub = b.bySub ?? [];
   const subLabel = opts.subLabel ?? "지점";
-  const newOnes = sub.filter((s) => s.ps === 0 && s.s > 0);   // 신규 (전년 0, 당기 有)
+  // 순수 신규 (전년 매출 0, 당기 有)
+  const newOnes = sub.filter((s) => s.ps === 0 && s.s > 0);
+  // 평수증가 = 전년에도 있었지만 전용면적이 늘어난 지점 (전년 매출 有)
+  const expandedOnes = sub.filter((s) => s.ps > 0 && s.prevArea > 0 && s.area > s.prevArea);
+  // 신규출점(평수증가 포함) = 신규 + 평수증가 (한 지점을 두 번 세지 않음)
+  const newOrExpanded = [...newOnes, ...expandedOnes];
   const closedOnes = sub.filter((s) => s.closed);              // 퇴점
   const totalChange = b.s - b.ps;
-  const newSum = newOnes.reduce((t, s) => t + s.s, 0);
+  // 기여도: 순수 신규는 당기 매출 전액, 평수증가는 증가분(s-ps)만 편입.
+  const newBrandsSum = newOnes.reduce((t, s) => t + s.s, 0);
+  const expandedContrib = expandedOnes.reduce((t, s) => t + (s.s - s.ps), 0);
+  const newSum = newBrandsSum + expandedContrib;
+  const expandedPrev = expandedOnes.reduce((t, s) => t + s.ps, 0);
   const existChange = totalChange - newSum;
-  const existPrev = b.ps;                                      // 신규 전년=0 → 기존 전년합 = 전체 전년
+  // 기존 전년합 = 전체 전년 − 평수증가 지점 전년 (평수증가 지점의 "잔여 기존" 부분은 기여도에서 이미 뺀 s가 아니라 ps가 남지만,
+  // 여기선 "평수증가 지점 자체는 기존점 성장률 계산에서 제외"하는 일관성을 위해 전년합에서도 뺀다).
+  const existPrev = b.ps - expandedPrev;
   const pgpm = b.ps > 0 ? (b.pg / b.ps) * 100 : null;
 
   // ── 1) 관찰 ──────────────────────────────────────────────
   const obs: DiagLine[] = [];
   const newClosedNote = [
-    newOnes.length ? `신규 ${newOnes.length}개점` : "",
+    newOrExpanded.length ? `신규출점(평수증가 포함) ${newOrExpanded.length}개점` : "",
     closedOnes.length ? `퇴점 ${closedOnes.length}개점` : "",
   ].filter(Boolean).join(" · ");
   if (b.ps === 0) {
@@ -78,13 +145,21 @@ export function diagnoseBrand(
   const dec: DiagLine[] = [];
   if (b.ps > 0 && sub.length > 0) {
     dec.push({ label: "계산", text: `총 증감 = 당기 ${fM(b.s)} − 전년 ${fM(b.ps)} = ${fMs(totalChange)}백만` });
-    if (newOnes.length > 0 && totalChange !== 0) {
+    if (newOrExpanded.length > 0 && totalChange !== 0) {
       const share = (newSum / totalChange) * 100;
-      dec.push({ label: "계산", text: `신규 기여 = 신규합 ${fM(newSum)} ÷ 총증감 ${fMs(totalChange)} = ${share.toFixed(0)}% (신규: ${newOnes.map((s) => s.key).join(", ")})` });
-      dec.push({ label: "계산", text: `기존점 증감 = 총증감 ${fMs(totalChange)} − 신규 ${fM(newSum)} = ${fMs(existChange)}백만${existPrev > 0 ? `, 기존 성장률 = ${pct1(existChange / existPrev * 100)}` : ""}` });
-      dec.push({ label: "해석", text: share >= 60 ? `성장의 ${share.toFixed(0)}%가 출점 효과. 기존점 기여는 ${(100 - share).toFixed(0)}%.` : `출점 기여 ${share.toFixed(0)}% + 기존점 기여 ${(100 - share).toFixed(0)}% 동반.` });
-    } else if (newOnes.length === 0) {
-      dec.push({ label: "사실", text: `신규 출점 없음 → 증감 ${fMs(totalChange)}백만은 전부 기존점 변동.` });
+      const parts = [
+        newOnes.length ? `신규 ${fM(newBrandsSum)}` : "",
+        expandedOnes.length ? `평수증가 +${fM(expandedContrib)}` : "",
+      ].filter(Boolean).join(" + ");
+      const nameList = newOrExpanded.map((s) => {
+        const isExp = s.ps > 0;
+        return `${s.key}${isExp ? "(평수증가)" : ""}`;
+      }).join(", ");
+      dec.push({ label: "계산", text: `신규출점(평수증가 포함) 기여 = ${parts} = ${fM(newSum)} ÷ 총증감 ${fMs(totalChange)} = ${share.toFixed(0)}% (${nameList})` });
+      dec.push({ label: "계산", text: `기존점 증감 = 총증감 ${fMs(totalChange)} − 신규출점(평수증가 포함) ${fM(newSum)} = ${fMs(existChange)}백만${existPrev > 0 ? `, 기존 성장률 = ${pct1(existChange / existPrev * 100)}` : ""}` });
+      dec.push({ label: "해석", text: share >= 60 ? `성장의 ${share.toFixed(0)}%가 신규출점(평수증가 포함) 효과. 기존점 기여는 ${(100 - share).toFixed(0)}%.` : `신규출점(평수증가 포함) 기여 ${share.toFixed(0)}% + 기존점 기여 ${(100 - share).toFixed(0)}% 동반.` });
+    } else if (newOrExpanded.length === 0) {
+      dec.push({ label: "사실", text: `신규출점(평수증가 포함) 없음 → 증감 ${fMs(totalChange)}백만은 전부 기존점 변동.` });
     }
   } else if (b.ps === 0) {
     dec.push({ label: "확인필요", text: "전년 실적이 없어 증감 분해 불가(신규 또는 미집계)." });
@@ -152,15 +227,15 @@ export function diagnoseBrand(
     }
   }
 
-  // (A) 출점 vs 동일점: 표면성장 경고 → 출점주도
-  if (b.ps > 0 && newOnes.length > 0 && totalChange > 0) {
+  // (A) 신규출점(평수증가 포함) vs 동일점: 표면성장 경고 → 출점주도
+  if (b.ps > 0 && newOrExpanded.length > 0 && totalChange > 0) {
     const share = (newSum / totalChange) * 100;
-    const existCount = Math.max(b.subCount - newOnes.length, 0);
+    const existCount = Math.max(b.subCount - newOrExpanded.length, 0);
     const existPctTxt = existPrev > 0 ? pct1(existChange / existPrev * 100) : "전년 0";
     if (existChange < 0) {
-      hyp.push({ label: "가설", text: `전체는 ${pct1(b.yoyPct)}지만 신규 ${newOnes.length}개점을 빼면 기존 ${existCount}개점은 ${existPctTxt} — 출점이 동일점 부진을 가린 '표면 성장'. 추가 출점을 멈추면 역성장으로 전환될 위험.\n   확인: 기존점 동일점 추세가 반등하는가, 계속 출점에 의존하는가.` });
+      hyp.push({ label: "가설", text: `전체는 ${pct1(b.yoyPct)}지만 신규출점(평수증가 포함) ${newOrExpanded.length}개점을 빼면 기존 ${existCount}개점은 ${existPctTxt} — 출점·증평이 동일점 부진을 가린 '표면 성장'. 추가 출점을 멈추면 역성장으로 전환될 위험.\n   확인: 기존점 동일점 추세가 반등하는가, 계속 출점·증평에 의존하는가.` });
     } else if (share >= 60) {
-      hyp.push({ label: "가설", text: `성장의 ${share.toFixed(0)}%가 출점 주도 — 기존점만의 성장 동력은 제한적일 수 있음.\n   확인: 기존 ${existCount}개점의 동일점 성장률(${existPctTxt})이 지속되는가.` });
+      hyp.push({ label: "가설", text: `성장의 ${share.toFixed(0)}%가 신규출점(평수증가 포함) 주도 — 기존점만의 성장 동력은 제한적일 수 있음.\n   확인: 기존 ${existCount}개점의 동일점 성장률(${existPctTxt})이 지속되는가.` });
     }
   }
 
@@ -275,6 +350,8 @@ export function diagnoseBrand(
   // 과다 노출 방지: 우선순위 상위 6개까지만 노출
   const hypShown = hyp.length > 6 ? hyp.slice(0, 6) : hyp;
 
+  const decomposition = computeDecomposition(b);
+
   return {
     sections: [
       { title: "1) 관찰", lines: obs },
@@ -283,5 +360,6 @@ export function diagnoseBrand(
       { title: "4) 가설", lines: hypShown },
     ],
     asOf: opts.asOf,
+    decomposition,
   };
 }

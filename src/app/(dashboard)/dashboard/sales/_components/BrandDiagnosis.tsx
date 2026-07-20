@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import type { OffRank } from "@/lib/sales/queries";
 import { diagnoseBrand, type Label, type ExternalSignal, type CohortStat } from "@/lib/sales/diagnose";
+import DecompositionView from "./DecompositionView";
 
 const LABEL_STYLE: Record<Label, string> = {
   사실: "bg-slate-200 text-slate-700",
@@ -78,6 +79,11 @@ export default function BrandDiagnosis({ row, periodLabel, asOf, subLabel = "지
                 </div>
               ))}
             </div>
+            {sec.title === "2) 분해" && diag.decomposition && (
+              <div className="mt-1.5">
+                <DecompositionView decomp={diag.decomposition} subLabel={subLabel} />
+              </div>
+            )}
           </div>
         ))}
       </div>

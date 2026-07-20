@@ -31,7 +31,7 @@ type Stage = (typeof ALLOWED_STAGES)[number];
  * - autoSeed=true & 기존 meeting_payload 없음 → 브리프 payload로 seed 질문 생성해 채움
  * - stage 전환, Q&A 저장 모두 같은 엔드포인트로
  */
-export async function PATCH(req: NextRequest, ctx: RouteContext<"/api/meetings/[id]">) {
+export async function PATCH(req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
   const g = await requireApproved();
   if (!g.ok) return g.response;
   const { user } = g;

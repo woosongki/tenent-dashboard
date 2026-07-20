@@ -428,6 +428,7 @@ export interface OffSub {
   growthS: number; growthPct: number;   // 매출 성장액/율
   growthG: number; growthGPct: number;  // 매총익 성장액/율
   area: number;                   // 전용면적(평)
+  prevArea: number;               // 전용면적(평, 전기) — 평수 증가(증평) 판정용
   dppSales: number;               // 일평당매출 (당기)
   prevDppSales: number;           // 일평당매출 (전기)
   dppSalesGrowthPct: number;      // 일평당매출 성장율 %
@@ -546,6 +547,7 @@ function aggregate(filtered: (OffRow & { p: string })[], cur: string, prev: stri
             growthS: v.s - v.ps, growthPct: v.ps ? +((v.s - v.ps) / v.ps * 100).toFixed(1) : 0,
             growthG: v.g - v.pg, growthGPct: v.pg ? +((v.g - v.pg) / v.pg * 100).toFixed(1) : 0,
             area: days ? Math.round(v.area / days) : 0,         // 전용면적(평)
+            prevArea: days ? Math.round(v.parea / days) : 0,    // 전용면적(평, 전기) — 평수 증가 판정
             dppSales: dpp,
             prevDppSales: pdpp,
             dppSalesGrowthPct: growthDpp(dpp, pdpp),

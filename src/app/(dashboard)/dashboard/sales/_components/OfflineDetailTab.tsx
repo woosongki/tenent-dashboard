@@ -5,10 +5,11 @@ import ScrollHint from "@/components/ui/ScrollHint";
 import UnitChip from "@/components/ui/UnitChip";
 import StatusLegend from "@/components/ui/StatusLegend";
 import BrandDiagnosis from "./BrandDiagnosis";
+import DecompositionView from "./DecompositionView";
 import { pillBtn, inputCompact } from "@/lib/tokens";
 import { displayDivision, isHiddenCat, displayCat, catRank, divisionRank, OTHERS_KEY, OTHERS_LABEL } from "@/lib/sales/labels";
 import type { OffRank, OffOthers } from "@/lib/sales/queries";
-import type { CohortStat } from "@/lib/sales/diagnose";
+import { computeDecomposition, type CohortStat } from "@/lib/sales/diagnose";
 
 interface DivSummary { division: string; s: number; ps: number; g: number; gpm: number; yoyPct: number }
 interface CatSummary { cat: string; s: number; ps: number; g: number; gpm: number; yoyPct: number }
@@ -429,6 +430,11 @@ const DetailRow = memo(function DetailRow({ row, id, rank, firstColLabel, open, 
             {showDiag && (
               <div className="mb-2.5">
                 <BrandDiagnosis row={row} periodLabel={periodLabel} asOf={periodLabel} subLabel={firstColLabel} cohort={cohort} />
+              </div>
+            )}
+            {!showDiag && row.ps > 0 && (
+              <div className="mb-2">
+                <DecompositionView decomp={computeDecomposition(row)} subLabel={firstColLabel} />
               </div>
             )}
             <SubBreakdownTable bySub={row.bySub} firstColLabel={firstColLabel} sSort={sSort} sDir={sDir} toggleS={toggleS} monthCount={monthCount} />
