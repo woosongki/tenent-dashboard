@@ -33,17 +33,6 @@ export interface Decomposition {
 }
 export interface Diagnosis { sections: DiagSection[]; asOf: string; decomposition?: Decomposition; }
 
-/** 네이버 쇼핑 기반 외부 신호 (brand-keyword API 결과 일부) */
-export interface ExternalSignal {
-  total: number;                       // 검색결과수
-  priceMin: number | null;
-  priceAvg: number | null;
-  priceMax: number | null;
-  uniqueSellers: number;               // 판매처수
-  relatedKeywords: { keyword: string }[];
-  categories: { name: string; pct: number }[];
-}
-
 /** 또래(코호트) 통계 — 같은 카테고리/부문 형제 브랜드(또는 형제 지점) 집계. 캘러가 화면의 목록에서 계산해 전달(새 쿼리 0). */
 export interface CohortStat {
   label: string;        // 비교 기준 라벨 (예: "캐주얼", "전 부문 지점")
@@ -106,7 +95,7 @@ const pct1 = (n: number) => `${n >= 0 ? "+" : ""}${n.toFixed(1)}%`;
  */
 export function diagnoseBrand(
   b: OffRank,
-  opts: { periodLabel: string; asOf: string; external?: ExternalSignal | null; subLabel?: string; cohort?: CohortStat | null },
+  opts: { periodLabel: string; asOf: string; subLabel?: string; cohort?: CohortStat | null },
 ): Diagnosis {
   const sub = b.bySub ?? [];
   const subLabel = opts.subLabel ?? "지점";
@@ -191,26 +180,7 @@ export function diagnoseBrand(
     dec.push({ label: "확인필요", text: "전용면적/일평당 데이터 부족으로 면적효율 비교 불가." });
   }
 
-  // ── 3) 외부 대조 ─────────────────────────────────────────
-  const ext: DiagLine[] = [];
-  const e = opts.external;
-  if (e) {
-    const priceTxt = e.priceAvg != null ? `평균가 ${won(e.priceAvg)}원${e.priceMin != null && e.priceMax != null ? `(${won(e.priceMin)}~${won(e.priceMax)})` : ""}` : "가격 정보 없음";
-    const kw = e.relatedKeywords.slice(0, 5).map((k) => k.keyword).join("·");
-    const cat = e.categories.slice(0, 2).map((c) => `${c.name} ${c.pct}%`).join(", ");
-    ext.push({ label: "사실", text: `네이버: 검색결과 ${e.total.toLocaleString()}건 · 판매처 ${e.uniqueSellers}곳 · ${priceTxt}${kw ? ` · 키워드 ${kw}` : ""}${cat ? ` · ${cat}` : ""}` });
-    // 내부 마진 vs 외부 가격대 방향 대조
-    if (pgpm !== null && e.priceAvg != null) {
-      const lowMargin = b.gpm < 15;
-      ext.push({ label: "해석", text: lowMargin
-        ? `내부 저마진(이익률 ${b.gpm}%)과 외부 가격/키워드(저가·볼륨)가 같은 방향으로 관찰됨 (상관 관찰, 인과 아님).`
-        : `내부 이익률 ${b.gpm}%와 외부 가격 신호의 방향성은 데이터로 단정 어려움.` });
-    }
-  } else {
-    ext.push({ label: "확인필요", text: "외부 신호(검색량·가격·키워드) 미연결 — '외부 신호 불러오기'로 대조." });
-  }
-
-  // ── 4) 가설 (우선순위 순으로 후보를 쌓고 최대 6개로 정리) ──────
+  // ── 3) 가설 (우선순위 순으로 후보를 쌓고 최대 6개로 정리) ──────
   // '왜 좋아/나빠졌나'·'왜 점포마다 갈리나'·'또래 대비 어떤가'에 답한다.
   const hyp: DiagLine[] = [];
   const co = opts.cohort;
@@ -356,8 +326,7 @@ export function diagnoseBrand(
     sections: [
       { title: "1) 관찰", lines: obs },
       { title: "2) 분해", lines: dec },
-      { title: "3) 외부 대조", lines: ext },
-      { title: "4) 가설", lines: hypShown },
+      { title: "3) 가설", lines: hypShown },
     ],
     asOf: opts.asOf,
     decomposition,

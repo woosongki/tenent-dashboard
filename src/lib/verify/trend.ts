@@ -36,7 +36,7 @@ export async function fetchSearchTrend(keyword: string): Promise<SearchTrend | n
   };
 
   try {
-    const res = await fetch("https://naverapihub.apigw.ntruss.com/datalab/v1/search", {
+    const res = await fetch("https://naverapihub.apigw.ntruss.com/search-trend/v1/search", {
       method: "POST",
       headers: {
         "X-NCP-APIGW-API-KEY-ID": clientId,

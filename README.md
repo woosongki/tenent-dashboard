@@ -21,7 +21,6 @@
 | `/dashboard/drilldown` | 채널·브랜드 드릴다운 |
 | `/dashboard/branch/[storeId]` | 점포별 상세 (상권·인구·임대료) |
 | `/dashboard/brand-fit` | **브랜드 적합도 진단** — 룰베이스 스코어링으로 입점 적합 점포 추천 |
-| `/dashboard/brand-keyword` | 네이버 쇼핑 기반 브랜드 키워드 분석 |
 | `/dashboard/verify` | **컨텐츠 검증** — DART 공시 + 뉴스 + Claude 분석 → Notion 브리프 |
 | `/dashboard/homeplus` | 리테일 지도 (점포·경쟁사·체인 매장) |
 | `/dashboard/calendar` | 52주 시즌 캘린더 / 팝업 배치 |
@@ -67,7 +66,7 @@ npm run dev                         # http://localhost:3000
 |---|---|
 | `ANTHROPIC_API_KEY` | 컨텐츠 검증(Claude 분석·SWOT) |
 | `DART_API_KEY` | 컨텐츠 검증(전자공시 조회) |
-| `NAVER_SEARCH_CLIENT_ID` / `NAVER_SEARCH_CLIENT_SECRET` | 브랜드 키워드·뉴스 검색 |
+| `NAVER_SEARCH_CLIENT_ID` / `NAVER_SEARCH_CLIENT_SECRET` | 뉴스 검색·검색어 트렌드 (NCP Naver API Hub 키) |
 | `NOTION_API_KEY` | 검증 결과 Notion 저장 |
 | `NOTION_DB_VERIFY_TENANT_ID` / `NOTION_DB_VERIFY_NEWS_ID` | 검증 Notion DB ID |
 | `KAKAO_REST_API_KEY` | 매장 지오코딩(데이터 스크립트) |

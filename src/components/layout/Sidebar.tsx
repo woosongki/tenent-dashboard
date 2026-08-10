@@ -87,14 +87,6 @@ function IconTarget() {
     </svg>
   );
 }
-function IconKeyword() {
-  return (
-    <svg fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" d="M9.568 3H5.25A2.25 2.25 0 0 0 3 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 0 0 5.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 0 0 9.568 3Z" />
-      <path strokeLinecap="round" strokeLinejoin="round" d="M6 6h.008v.008H6V6Z" />
-    </svg>
-  );
-}
 function IconSofa() {
   return (
     <svg fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
@@ -200,7 +192,7 @@ const NAV: NavGroup[] = [
     items: [
       { href: "/dashboard/branch",    label: "상권분석",       icon: <IconMap /> },
       // 컨텐츠 검증은 업체미팅 'AI 심층분석'으로 흡수됨 (page·api 라우트 제거, lib/verify는 미팅이 사용).
-      { href: "/dashboard/brand-keyword", label: "브랜드 키워드", icon: <IconKeyword /> },
+      // 브랜드 키워드는 네이버 쇼핑 상품 검색 API가 종료되어 페이지·라우트 제거됨.
       { href: "/dashboard/brand-fit", label: "브랜드 적합도",  icon: <IconGauge /> },
       // 클릭하면 바로 지도로 — 레이어 선택은 지도 화면 자체 패널에서. (하위 메뉴 없음)
       { href: "/dashboard/homeplus", label: "리테일 지도", icon: <IconStorefront /> },

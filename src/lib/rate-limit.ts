@@ -6,7 +6,7 @@
 //   Upstash Redis 등 외부 스토어로 교체.
 //
 // 사용:
-//   const limited = rateLimit(`brand-keyword:${userId}`, { limit: 20, windowMs: 60_000 });
+//   const limited = rateLimit(`meetings-candidates:${userId}`, { limit: 30, windowMs: 60_000 });
 //   if (limited) return Response.json({ error: limited.message }, { status: 429 });
 
 interface Bucket {

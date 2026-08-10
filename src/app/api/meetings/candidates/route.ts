@@ -9,7 +9,7 @@ export const maxDuration = 15;
 /**
  * GET /api/meetings/candidates?q=<brand>
  * DART에서 회사명 후보 검색 (typeahead 보조).
- * brand-keyword와 달리 모든 로그인 멤버 허용 (조회만).
+ * 모든 로그인 멤버 허용 (조회만).
  */
 export async function GET(req: NextRequest) {
   const g = await requireApproved();

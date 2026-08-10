@@ -21,7 +21,7 @@ export const CONTROLLABLE_MENUS: MenuItem[] = [
   { key: "floorplans",    label: "전점도면",       href: "/dashboard/floorplans" },
   { key: "branch",        label: "상권분석",       href: "/dashboard/branch" },
   // "verify"(컨텐츠 검증)는 업체미팅 'AI 심층분석'으로 흡수돼 사이드바에서 은퇴 → 접근제어 대상에서 제외.
-  { key: "brand-keyword", label: "브랜드 키워드",  href: "/dashboard/brand-keyword" },
+  // "brand-keyword"(네이버 쇼핑 검색 기반)는 네이버 쇼핑 상품 검색 API가 종료되어 페이지·라우트 제거됨.
   { key: "brand-fit",     label: "브랜드 적합도",  href: "/dashboard/brand-fit" },
   { key: "homeplus",      label: "리테일 지도",    href: "/dashboard/homeplus" },
   { key: "meetings",      label: "업체미팅",       href: "/dashboard/meetings" },
