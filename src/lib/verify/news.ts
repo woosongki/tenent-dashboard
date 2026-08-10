@@ -48,13 +48,13 @@ export async function fetchNews(companyName: string): Promise<NewsArticle[]> {
   if (!clientId || !clientSecret) return [];
 
   const query = encodeURIComponent(`"${companyName}"`);
-  const url = `https://openapi.naver.com/v1/search/news.json?query=${query}&display=100&start=1&sort=date`;
+  const url = `https://naverapihub.apigw.ntruss.com/search/v1/news?query=${query}&display=100&start=1&sort=date`;
 
   try {
     const res = await fetch(url, {
       headers: {
-        "X-Naver-Client-Id": clientId,
-        "X-Naver-Client-Secret": clientSecret,
+        "X-NCP-APIGW-API-KEY-ID": clientId,
+        "X-NCP-APIGW-API-KEY": clientSecret,
       },
       next: { revalidate: 0 },
     });

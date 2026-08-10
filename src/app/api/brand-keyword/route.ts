@@ -75,10 +75,10 @@ async function fetchNaverPage(brand: string, start: number): Promise<NaverShopRe
   const clientSecret = process.env.NAVER_SEARCH_CLIENT_SECRET;
   if (!clientId || !clientSecret) return null;
 
-  const url = `https://openapi.naver.com/v1/search/shop.json?query=${encodeURIComponent(brand)}&display=100&start=${start}&sort=sim`;
+  const url = `https://naverapihub.apigw.ntruss.com/search/v1/shop?query=${encodeURIComponent(brand)}&display=100&start=${start}&sort=sim`;
   try {
     const res = await fetch(url, {
-      headers: { "X-Naver-Client-Id": clientId, "X-Naver-Client-Secret": clientSecret },
+      headers: { "X-NCP-APIGW-API-KEY-ID": clientId, "X-NCP-APIGW-API-KEY": clientSecret },
     });
     if (!res.ok) return null;
     return (await res.json()) as NaverShopResponse;

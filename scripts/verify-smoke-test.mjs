@@ -123,8 +123,8 @@ if (discl.status === "000") {
 // ── 3. 네이버 뉴스 ─────────────────────────────────────────────
 step(5, "네이버 뉴스 검색 (최근 12개월)");
 const newsRes = await fetch(
-  `https://openapi.naver.com/v1/search/news.json?query=${encodeURIComponent(`"${company}"`)}&display=20&sort=date`,
-  { headers: { "X-Naver-Client-Id": NAVER_ID, "X-Naver-Client-Secret": NAVER_SECRET } }
+  `https://naverapihub.apigw.ntruss.com/search/v1/news?query=${encodeURIComponent(`"${company}"`)}&display=20&sort=date`,
+  { headers: { "X-NCP-APIGW-API-KEY-ID": NAVER_ID, "X-NCP-APIGW-API-KEY": NAVER_SECRET } }
 );
 const newsData = await newsRes.json();
 if (newsData.items) {
