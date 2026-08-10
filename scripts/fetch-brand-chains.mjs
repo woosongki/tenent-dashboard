@@ -148,6 +148,73 @@ const BRANDS = [
     },
     requireFurniture: false,
   },
+  // 마리떼프랑소와저버 — 한글/불어 표기 혼재. "마리떼프랑소와저버" 표준, "마리떼프랑스와저버" 오기·"MARITHE"/"MARITHÉ" 영문 병기 인정.
+  {
+    key: "marithe",
+    const: "MARITHE_STORES",
+    file: "marithe.ts",
+    label: "마리떼프랑소와저버",
+    keywords: ["마리떼프랑소와저버", "마리떼프랑스와저버", "MARITHE", "MARITHÉ"],
+    matches: (name) => {
+      const h = norm(name);
+      return h.includes("마리떼") || h.startsWith("MARITHE") || h.startsWith("MARITHÉ");
+    },
+    requireFurniture: false,
+  },
+  // 하고하우스 — HAGO 편집숍 오프라인 매장 (롯데백화점 위주). 매장 표기가 "하고하우스" / "HAGO HOUSE".
+  // 온라인 플랫폼 "하고"만 단독으로 있는 카페·중국집·문구점 등의 동음 노이즈 배제.
+  {
+    key: "hago",
+    const: "HAGO_STORES",
+    file: "hago.ts",
+    label: "하고하우스",
+    keywords: ["하고하우스", "HAGO HOUSE", "HAGOHOUSE"],
+    matches: (name) => {
+      const h = norm(name);
+      return h.startsWith("하고하우스") || h.startsWith("HAGOHOUSE");
+    },
+    requireFurniture: false,
+  },
+  // 마뗑킴 — 성수 플래그십·백화점 팝업. 매장명 "마뗑킴" 또는 "MATIN KIM".
+  {
+    key: "matinkim",
+    const: "MATINKIM_STORES",
+    file: "matinkim.ts",
+    label: "마뗑킴",
+    keywords: ["마뗑킴", "MATIN KIM", "MATINKIM"],
+    matches: (name) => {
+      const h = norm(name);
+      return h.startsWith("마뗑킴") || h.startsWith("MATINKIM");
+    },
+    requireFurniture: false,
+  },
+  // 브라운브레스 — 홍대 위주. 매장명 "브라운브레스" 또는 "BROWNBREATH".
+  {
+    key: "brownbreath",
+    const: "BROWNBREATH_STORES",
+    file: "brownbreath.ts",
+    label: "브라운브레스",
+    keywords: ["브라운브레스", "BROWNBREATH", "BROWN BREATH"],
+    matches: (name) => {
+      const h = norm(name);
+      return h.startsWith("브라운브레스") || h.startsWith("BROWNBREATH");
+    },
+    requireFurniture: false,
+  },
+  // 커버낫 — 매장 다수. 공식 리스트가 더 완전하지만 Kakao 키워드 검색으로도 대부분 커버.
+  // 별도 fetch-covernat-official.mjs 로도 보완 가능. 매장명 "커버낫" 또는 "COVERNAT".
+  {
+    key: "covernat",
+    const: "COVERNAT_STORES",
+    file: "covernat.ts",
+    label: "커버낫",
+    keywords: ["커버낫", "COVERNAT"],
+    matches: (name) => {
+      const h = norm(name);
+      return h.startsWith("커버낫") || h.startsWith("COVERNAT");
+    },
+    requireFurniture: false,
+  },
 ];
 
 async function searchKeyword(query, page = 1) {

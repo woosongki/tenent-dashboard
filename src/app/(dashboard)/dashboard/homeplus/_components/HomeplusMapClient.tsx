@@ -49,6 +49,12 @@ import {
   emartIcon,
   lottemartIcon,
   hanaromartIcon,
+  maritheIcon,
+  hagoIcon,
+  matinkimIcon,
+  brownbreathIcon,
+  covernatIcon,
+  leeIcon,
 } from "./mapIcons";
 import {
   HOMEPLUS_STORES,
@@ -121,6 +127,13 @@ export default function HomeplusMapClient() {
   const [showIloom, setShowIloom] = useState(initialLayer === "iloom");
   const [showNitori, setShowNitori] = useState(initialLayer === "nitori");
   const [showUniqlo, setShowUniqlo] = useState(initialLayer === "uniqlo");
+  // 그 외 — 추가 브랜드 (사용자 요청: 리테일지도 그외 섹션 노출)
+  const [showMarithe, setShowMarithe] = useState(initialLayer === "marithe");
+  const [showHago, setShowHago] = useState(initialLayer === "hago");
+  const [showMatinkim, setShowMatinkim] = useState(initialLayer === "matinkim");
+  const [showBrownbreath, setShowBrownbreath] = useState(initialLayer === "brownbreath");
+  const [showCovernat, setShowCovernat] = useState(initialLayer === "covernat");
+  const [showLee, setShowLee] = useState(initialLayer === "lee");
   // 마트
   const [showEmart, setShowEmart] = useState(initialLayer === "emart");
   const [showLottemart, setShowLottemart] = useState(initialLayer === "lottemart");
@@ -161,6 +174,12 @@ export default function HomeplusMapClient() {
   const EMART_STORES = chains.emart ?? NO_STORES;
   const LOTTEMART_STORES = chains.lottemart ?? NO_STORES;
   const HANAROMART_STORES = chains.hanaromart ?? NO_STORES;
+  const MARITHE_STORES = chains.marithe ?? NO_STORES;
+  const HAGO_STORES = chains.hago ?? NO_STORES;
+  const MATINKIM_STORES = chains.matinkim ?? NO_STORES;
+  const BROWNBREATH_STORES = chains.brownbreath ?? NO_STORES;
+  const COVERNAT_STORES = chains.covernat ?? NO_STORES;
+  const LEE_STORES = chains.lee ?? NO_STORES;
 
   // 출점 공백지 발굴: 반경 N km 이내 이랜드 점포가 없는 체인 매장만 표시
   const [gapMode, setGapMode] = useState(false);
@@ -198,6 +217,12 @@ export default function HomeplusMapClient() {
     setShowIloom(initialLayer === "iloom");
     setShowNitori(initialLayer === "nitori");
     setShowUniqlo(initialLayer === "uniqlo");
+    setShowMarithe(initialLayer === "marithe");
+    setShowHago(initialLayer === "hago");
+    setShowMatinkim(initialLayer === "matinkim");
+    setShowBrownbreath(initialLayer === "brownbreath");
+    setShowCovernat(initialLayer === "covernat");
+    setShowLee(initialLayer === "lee");
     setShowEmart(initialLayer === "emart");
     setShowLottemart(initialLayer === "lottemart");
     setShowHanaromart(initialLayer === "hanaromart");
@@ -252,6 +277,12 @@ export default function HomeplusMapClient() {
       { show: showIloom,       stores: ILOOM_STORES,       icon: iloomIcon,       color: "#a16207", emoji: "🛋️", k: "il", off: 4 },
       { show: showNitori,      stores: NITORI_STORES,      icon: nitoriIcon,      color: "#c2410c", emoji: "🏡", k: "nt", off: 4 },
       { show: showUniqlo,      stores: UNIQLO_STORES,      icon: uniqloIcon,      color: "#9f1239", emoji: "👕", k: "uq", off: 4 },
+      { show: showMarithe,     stores: MARITHE_STORES,     icon: maritheIcon,     color: "#b8865b", emoji: "👗", k: "mrt", off: 4 },
+      { show: showHago,        stores: HAGO_STORES,        icon: hagoIcon,        color: "#ff6b9d", emoji: "🏠", k: "hago", off: 4 },
+      { show: showMatinkim,    stores: MATINKIM_STORES,    icon: matinkimIcon,    color: "#2d2d2d", emoji: "👗", k: "mk", off: 4 },
+      { show: showBrownbreath, stores: BROWNBREATH_STORES, icon: brownbreathIcon, color: "#6b3410", emoji: "👕", k: "bb", off: 4 },
+      { show: showCovernat,    stores: COVERNAT_STORES,    icon: covernatIcon,    color: "#4a5d23", emoji: "👕", k: "cvn", off: 4 },
+      { show: showLee,         stores: LEE_STORES,         icon: leeIcon,         color: "#1a237e", emoji: "👖", k: "lee", off: 4 },
       { show: showEmart,       stores: EMART_STORES,       icon: emartIcon,       color: "#b88a00", emoji: "🛒", k: "em", off: 6 },
       { show: showLottemart,   stores: LOTTEMART_STORES,   icon: lottemartIcon,   color: "#a01a1a", emoji: "🛒", k: "lm", off: 6 },
       { show: showHanaromart,  stores: HANAROMART_STORES,  icon: hanaromartIcon,  color: "#1f4d3a", emoji: "🛒", k: "hm", off: 6 },
@@ -277,6 +308,7 @@ export default function HomeplusMapClient() {
     showEntersix, showModa, showSavezone, showLf, showSpao, showMixxo, showModernhouse,
     showAbcmart, showEightseconds,
     showMuji, showHanssem, showLivart, showIloom, showNitori, showUniqlo,
+    showMarithe, showHago, showMatinkim, showBrownbreath, showCovernat, showLee,
     showEmart, showLottemart, showHanaromart,
     activeTiers, gapMode, gapRadius,
   ]);
@@ -302,7 +334,7 @@ export default function HomeplusMapClient() {
   const LAYER_SECTIONS: { name: string; setters: SetBool[]; values: boolean[] }[] = [
     { name: "체인",   setters: [setShowArtbox, setShowDaiso, setShowOliveYoung], values: [showArtbox, showDaiso, showOliveYoung] },
     { name: "백화점", setters: [setShowLotte, setShowHyundai, setShowShinsegae, setShowAk, setShowGalleria], values: [showLotte, showHyundai, showShinsegae, showAk, showGalleria] },
-    { name: "그 외",  setters: [setShowAbcmart, setShowEightseconds, setShowEntersix, setShowHanssem, setShowIloom, setShowLf, setShowLivart, setShowMixxo, setShowModa, setShowModernhouse, setShowMuji, setShowNitori, setShowSavezone, setShowSpao, setShowUniqlo], values: [showAbcmart, showEightseconds, showEntersix, showHanssem, showIloom, showLf, showLivart, showMixxo, showModa, showModernhouse, showMuji, showNitori, showSavezone, showSpao, showUniqlo] },
+    { name: "그 외",  setters: [setShowAbcmart, setShowBrownbreath, setShowCovernat, setShowEightseconds, setShowEntersix, setShowHago, setShowHanssem, setShowIloom, setShowLee, setShowLf, setShowLivart, setShowMarithe, setShowMatinkim, setShowMixxo, setShowModa, setShowModernhouse, setShowMuji, setShowNitori, setShowSavezone, setShowSpao, setShowUniqlo], values: [showAbcmart, showBrownbreath, showCovernat, showEightseconds, showEntersix, showHago, showHanssem, showIloom, showLee, showLf, showLivart, showMarithe, showMatinkim, showMixxo, showModa, showModernhouse, showMuji, showNitori, showSavezone, showSpao, showUniqlo] },
     { name: "마트",   setters: [setShowEmart, setShowLottemart, setShowHanaromart, setShowHomeplus], values: [showEmart, showLottemart, showHanaromart, showHomeplus] },
   ];
   const anyLayerOn = LAYER_SECTIONS.some((s) => s.values.some(Boolean));
@@ -675,6 +707,48 @@ export default function HomeplusMapClient() {
                 <input type="checkbox" checked={showUniqlo} onChange={(e) => setShowUniqlo(e.target.checked)} disabled={UNIQLO_STORES.length === 0} className="h-3.5 w-3.5 disabled:opacity-40" />
                 <span className="inline-block h-2 w-2" style={{ background: "#be123c" }} />
                 <span className="font-bold text-[#0a0a0a]">유니클로 ({UNIQLO_STORES.length})</span>
+              </label>
+              <label className="flex cursor-pointer items-center gap-1.5" title={MARITHE_STORES.length === 0 ? "수집 필요 (Kakao 키워드)" : `전국 ${MARITHE_STORES.length}개 매장`}>
+                <input type="checkbox" checked={showMarithe} onChange={(e) => setShowMarithe(e.target.checked)} disabled={MARITHE_STORES.length === 0} className="h-3.5 w-3.5 disabled:opacity-40" />
+                <span className="inline-block h-2 w-2" style={{ background: "#b8865b" }} />
+                <span className={`font-bold ${MARITHE_STORES.length === 0 ? "text-slate-400 line-through" : "text-[#0a0a0a]"}`}>
+                  마리떼프랑소와저버 {MARITHE_STORES.length > 0 && `(${MARITHE_STORES.length})`}
+                </span>
+              </label>
+              <label className="flex cursor-pointer items-center gap-1.5" title={HAGO_STORES.length === 0 ? "수집 필요 (Kakao 키워드)" : `전국 ${HAGO_STORES.length}개 매장`}>
+                <input type="checkbox" checked={showHago} onChange={(e) => setShowHago(e.target.checked)} disabled={HAGO_STORES.length === 0} className="h-3.5 w-3.5 disabled:opacity-40" />
+                <span className="inline-block h-2 w-2" style={{ background: "#ff6b9d" }} />
+                <span className={`font-bold ${HAGO_STORES.length === 0 ? "text-slate-400 line-through" : "text-[#0a0a0a]"}`}>
+                  하고하우스 {HAGO_STORES.length > 0 && `(${HAGO_STORES.length})`}
+                </span>
+              </label>
+              <label className="flex cursor-pointer items-center gap-1.5" title={MATINKIM_STORES.length === 0 ? "수집 필요 (Kakao 키워드)" : `전국 ${MATINKIM_STORES.length}개 매장`}>
+                <input type="checkbox" checked={showMatinkim} onChange={(e) => setShowMatinkim(e.target.checked)} disabled={MATINKIM_STORES.length === 0} className="h-3.5 w-3.5 disabled:opacity-40" />
+                <span className="inline-block h-2 w-2" style={{ background: "#2d2d2d" }} />
+                <span className={`font-bold ${MATINKIM_STORES.length === 0 ? "text-slate-400 line-through" : "text-[#0a0a0a]"}`}>
+                  마뗑킴 {MATINKIM_STORES.length > 0 && `(${MATINKIM_STORES.length})`}
+                </span>
+              </label>
+              <label className="flex cursor-pointer items-center gap-1.5" title={BROWNBREATH_STORES.length === 0 ? "수집 필요 (Kakao 키워드)" : `전국 ${BROWNBREATH_STORES.length}개 매장`}>
+                <input type="checkbox" checked={showBrownbreath} onChange={(e) => setShowBrownbreath(e.target.checked)} disabled={BROWNBREATH_STORES.length === 0} className="h-3.5 w-3.5 disabled:opacity-40" />
+                <span className="inline-block h-2 w-2" style={{ background: "#6b3410" }} />
+                <span className={`font-bold ${BROWNBREATH_STORES.length === 0 ? "text-slate-400 line-through" : "text-[#0a0a0a]"}`}>
+                  브라운브레스 {BROWNBREATH_STORES.length > 0 && `(${BROWNBREATH_STORES.length})`}
+                </span>
+              </label>
+              <label className="flex cursor-pointer items-center gap-1.5" title={COVERNAT_STORES.length === 0 ? "수집 필요 (Kakao 키워드)" : `전국 ${COVERNAT_STORES.length}개 매장`}>
+                <input type="checkbox" checked={showCovernat} onChange={(e) => setShowCovernat(e.target.checked)} disabled={COVERNAT_STORES.length === 0} className="h-3.5 w-3.5 disabled:opacity-40" />
+                <span className="inline-block h-2 w-2" style={{ background: "#4a5d23" }} />
+                <span className={`font-bold ${COVERNAT_STORES.length === 0 ? "text-slate-400 line-through" : "text-[#0a0a0a]"}`}>
+                  커버낫 {COVERNAT_STORES.length > 0 && `(${COVERNAT_STORES.length})`}
+                </span>
+              </label>
+              <label className="flex cursor-pointer items-center gap-1.5" title={LEE_STORES.length === 0 ? "수집 필요 (공식 홈페이지 스크레이핑)" : `전국 ${LEE_STORES.length}개 매장`}>
+                <input type="checkbox" checked={showLee} onChange={(e) => setShowLee(e.target.checked)} disabled={LEE_STORES.length === 0} className="h-3.5 w-3.5 disabled:opacity-40" />
+                <span className="inline-block h-2 w-2" style={{ background: "#1a237e" }} />
+                <span className={`font-bold ${LEE_STORES.length === 0 ? "text-slate-400 line-through" : "text-[#0a0a0a]"}`}>
+                  LEE {LEE_STORES.length > 0 && `(${LEE_STORES.length})`}
+                </span>
               </label>
             </div>
             )}

@@ -32,6 +32,12 @@ import { UNIQLO_STORES } from "./uniqlo";
 import { EMART_STORES } from "./emart";
 import { LOTTEMART_STORES } from "./lottemart";
 import { HANAROMART_STORES } from "./hanaromart";
+import { MARITHE_STORES } from "./marithe";
+import { HAGO_STORES } from "./hago";
+import { MATINKIM_STORES } from "./matinkim";
+import { BROWNBREATH_STORES } from "./brownbreath";
+import { COVERNAT_STORES } from "./covernat";
+import { LEE_STORES } from "./lee";
 
 export const CHAINS: Record<string, ChainStore[]> = {
   artbox: ARTBOX_STORES,
@@ -60,6 +66,12 @@ export const CHAINS: Record<string, ChainStore[]> = {
   emart: EMART_STORES,
   lottemart: LOTTEMART_STORES,
   hanaromart: HANAROMART_STORES,
+  marithe: MARITHE_STORES,
+  hago: HAGO_STORES,
+  matinkim: MATINKIM_STORES,
+  brownbreath: BROWNBREATH_STORES,
+  covernat: COVERNAT_STORES,
+  lee: LEE_STORES,
 };
 
 export type Chains = typeof CHAINS;
