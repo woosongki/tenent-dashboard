@@ -358,15 +358,26 @@ export function buildOfflineMonthlyHistRows(buf: ArrayBuffer): OfflineMonthlyHis
     areaMap.set(k, e);
   }
 
-  const out: OfflineMonthlyHistRow[] = [];
+  // (division, cat, brand, store, ym) 로 dedupe 하면서 sales/gp는 합산.
+  // 중복 발생 케이스: ① BRAND_NAME_ALIAS/STORE_NAME_ALIAS 로 두 원본 표기가 같은 키로 붕괴
+  // (예: "애슐리퀸즈"+"애슐리"), ② ERP 가 같은 (store, brand) 를 fit 등으로 여러 물리행으로 분할.
+  // area_raw/store_cnt 는 areaMap 에서 같은 키로 조회되므로 첫 값 유지(중복 합산 시 2배 팽창 방지).
+  // 단위 unique 제약(sales_offline_monthly_hist_division_cat_brand_store_ym_key) 위반 방지 필수.
+  const merged = new Map<string, OfflineMonthlyHistRow>();
   for (const r of mainRows) {
     const sales = r.sales ?? 0;
     const gp = r.gp ?? 0;
     if (!sales && !gp) continue;
     const k = `${r.division}|${r.cat}|${r.brand}|${r.store}|${r.ym}`;
+    const prev = merged.get(k);
+    if (prev) {
+      prev.sales += Math.round(sales);
+      prev.gp += Math.round(gp);
+      continue;
+    }
     const a = areaMap.get(k);
     const days = daysInMonth(r.ym);
-    out.push({
+    merged.set(k, {
       division: r.division, cat: r.cat, brand: r.brand, store: r.store,
       year: r.ym.slice(0, 4), ym: r.ym,
       sales: Math.round(sales), gp: Math.round(gp),
@@ -374,7 +385,7 @@ export function buildOfflineMonthlyHistRows(buf: ArrayBuffer): OfflineMonthlyHis
       store_cnt: Math.round(a?.store_cnt ?? 0),
     });
   }
-  return out;
+  return [...merged.values()];
 }
 
 // ── 온라인 ───────────────────────────────────────────────────────
