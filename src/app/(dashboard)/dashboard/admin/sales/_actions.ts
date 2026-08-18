@@ -64,3 +64,30 @@ export async function commitSalesChunk(
   if (error) return { ok: false, error: `적재 실패: ${error.message}` };
   return { ok: true, count: rows.length };
 }
+
+/**
+ * 오프라인 월별 이력(sales_offline_monthly_hist) 청크 적재.
+ * 요구사항 C: 파일에 담긴 연도만 삭제 후 재삽입 — 그 외 과거 연도는 보존.
+ * `resetYears` 첫 호출에만 값 전달, 이후 청크는 빈 배열로 인서트만.
+ */
+export async function commitOfflineHistChunk(
+  rows: Row[],
+  opts: { resetYears: string[] },
+): Promise<Result> {
+  await requireAdmin();
+  if (opts.resetYears.length > 0 && rows.length === 0) {
+    return { ok: false, error: "0행으로는 연도를 교체할 수 없습니다 (안전 가드). 파싱 결과를 확인하세요." };
+  }
+  const supabase = createServiceClient();
+  if (opts.resetYears.length > 0) {
+    const { error: delErr } = await supabase
+      .from("sales_offline_monthly_hist")
+      .delete()
+      .in("year", opts.resetYears);
+    if (delErr) return { ok: false, error: `삭제 실패: ${delErr.message}` };
+  }
+  if (rows.length === 0) return { ok: true, count: 0 };
+  const { error } = await supabase.from("sales_offline_monthly_hist").insert(rows);
+  if (error) return { ok: false, error: `적재 실패: ${error.message}` };
+  return { ok: true, count: rows.length };
+}

@@ -5,6 +5,7 @@ import SalesTabsShell from "./_components/SalesTabsShell";
 import {
   getOnlineMeta, getOnlineMonth, getOnlineCumMeta, getOnlineCumulative,
   getOfflineMeta, getOfflineCum, getOfflineMonth, cumDays,
+  getOfflineHistMeta, getOfflineHistYearBundle,
 } from "@/lib/sales/queries";
 import { getLifestyleMonthReport } from "@/lib/sales/lifestyleReport";
 import TopBar from "@/components/layout/TopBar";
@@ -25,15 +26,16 @@ async function safe<T>(fn: () => Promise<T>): Promise<T | null> {
   try { return await fn(); } catch (e) { console.error("[sales] 데이터 로드 실패:", e); return null; }
 }
 
-export default async function SalesPage() {
+export default async function SalesPage({ searchParams }: { searchParams: Promise<{ histYear?: string }> }) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
   const OFFLINE_DIVISIONS = ["패션", "F&B", "기타"];
+  const params = await searchParams;
 
   // 각 데이터셋을 독립적으로 로드 — 하나가 실패해도 나머지 탭은 정상.
-  const [online, onlineCum, offData, lifestyleReport] = await Promise.all([
+  const [online, onlineCum, offData, lifestyleReport, histData] = await Promise.all([
     // 온라인(당월) — 최신 월 + 전년동월
     safe(async () => {
       const meta = await getOnlineMeta();
@@ -73,11 +75,37 @@ export default async function SalesPage() {
     }),
     // 라이프스타일 부문 리포트 (당월) — 성장 분해
     safe(() => getLifestyleMonthReport()),
+    // 오프라인 월별 이력 — 누적탭 하위 [월별 서브탭]. 선택 연도(?histYear) 기본 최신.
+    safe(async () => {
+      const meta = await getOfflineHistMeta();
+      if (!meta.hasData) return null;
+      const selectedYear = params.histYear && meta.years.includes(params.histYear) ? params.histYear : meta.latestYear!;
+      const monthsOfYear = meta.months[selectedYear] ?? [];
+      const throughMonth = monthsOfYear.length > 0 ? Number(monthsOfYear[monthsOfYear.length - 1].slice(5, 7)) : 1;
+      const prevYear = String(Number(selectedYear) - 1);
+      const bundle = await getOfflineHistYearBundle(selectedYear, prevYear, throughMonth, OFFLINE_DIVISIONS);
+      return { meta, bundle };
+    }),
   ]);
 
   const offCum = offData?.offCum ?? null;
   const offMonth = offData?.offMonth ?? null;
   const offMeta = { monthYm: offData?.monthYm ?? null, cumYear: offData?.cumYear ?? null, cumThroughYm: offData?.cumThroughYm ?? null };
+
+  // 오프라인 월별 이력 — 누적탭 하위 서브탭용
+  const hist = histData ? (() => {
+    const { meta, bundle } = histData;
+    const year = bundle.year;
+    const prevYear = bundle.prevYear;
+    const cum = { periodLabel: `${year} 누적(1~${bundle.throughMonth}월)`, prevLabel: `${prevYear} 누적(1~${bundle.throughMonth}월)`, ...bundle.cum };
+    const byMonth: Record<string, typeof cum> = {};
+    for (const ym of bundle.months) {
+      const b = bundle.byMonth[ym];
+      const pym = `${Number(ym.slice(0, 4)) - 1}${ym.slice(4)}`;
+      byMonth[ym] = { periodLabel: ym, prevLabel: pym, ...b };
+    }
+    return { year, prevYear, throughMonth: bundle.throughMonth, months: bundle.months, cum, byMonth, availableYears: meta.years };
+  })() : null;
 
   // 누적 개월수 — 누적 테이블의 through_ym(마감월)을 우선 사용. legacy 데이터는 monthYm 폴백.
   // 예: through_ym "2026-06" → 6개월로 나눠 월평균 계산.
@@ -115,7 +143,7 @@ export default async function SalesPage() {
             action={<DataFreshnessBadge monthYm={offMeta.monthYm} />}
           />
 
-        <SalesTabsShell online={online} onlineCum={onlineCum} offCum={offCum} offMonth={offMonth} monthActive={monthActive} onlineMonthActive={onlineMonthActive} cumMonths={cumMonths} lifestyleReport={lifestyleReport ?? null} />
+        <SalesTabsShell online={online} onlineCum={onlineCum} offCum={offCum} offMonth={offMonth} monthActive={monthActive} onlineMonthActive={onlineMonthActive} cumMonths={cumMonths} lifestyleReport={lifestyleReport ?? null} hist={hist} />
 
           <p className="text-[10px] font-bold uppercase tracking-wider text-[#0a0a0a]/55">
             Supabase 라이브 데이터 · 오프라인(특정) 누적{offMeta.cumYear ? ` ${offMeta.cumYear}` : ""}·당월{offMeta.monthYm ? ` ${offMeta.monthYm}` : ""} + 온라인 · 부문/복종/지점/브랜드 · 월 1회 갱신

@@ -785,6 +785,135 @@ export const getOnlineCumulative = getOnlineCumulativeImpl;
 export const getOfflineCum = getOfflineCumImpl;
 export const getOfflineMonth = getOfflineMonthImpl;
 
+// ── 오프라인 월별 이력 (sales_offline_monthly_hist) — 누적 안에서 월별로 보기 ─
+// area_raw 는 이미 "평·일"(적재 시 area×daysInMonth) → 기존 sales_offline_cum 과 같은 단위.
+// fetchOff 처럼 곱하지 않는다. buildOff 는 그대로 재사용.
+
+async function fetchOffHist(yms: string[]): Promise<(OffRow & { p: string })[]> {
+  const supabase = createServiceClient();
+  const all: (OffRow & { p: string })[] = [];
+  let from = 0; const PAGE = 1000;
+  for (;;) {
+    const { data, error } = await supabase
+      .from("sales_offline_monthly_hist")
+      .select("division,cat,brand,store,sales,gp,area_raw,store_cnt,ym")
+      .in("ym", yms)
+      .order("id", { ascending: true })
+      .range(from, from + PAGE - 1);
+    if (error) throw new Error(`sales_offline_monthly_hist: ${error.message}`);
+    const rows = (data ?? []) as { division: string; cat: string; brand: string; store: string; sales: number; gp: number; area_raw: number; store_cnt: number; ym: string }[];
+    all.push(...rows.map((r) => ({
+      division: r.division, cat: r.cat, brand: r.brand, store: r.store,
+      sales: Number(r.sales), gp: Number(r.gp),
+      area_raw: Number(r.area_raw), store_cnt: Number(r.store_cnt),
+      days: null,
+      p: r.ym,
+    })));
+    if (rows.length < PAGE) break;
+    from += PAGE;
+  }
+  return all;
+}
+
+/** 오프라인 월별 이력 — 단일 월. area_raw 이미 평·일 → days=해당월 말일로 aggregate 에 area 복원 지시. */
+async function getOfflineHistMonthImpl(ym: string, prevYm: string, divisions: string[] | null = null) {
+  const rows = await fetchOffHist([ym, prevYm]);
+  return { ym, prevYm, ...buildOff(rows, ym, prevYm, divisions, daysInMonth(ym)) };
+}
+
+/**
+ * 오프라인 월별 이력 — 누적(YTD). year 의 1~throughMonth 합산.
+ * (division|cat|brand|store) 로 월들을 미리 합쳐 year 단위 행 하나로 만든 뒤 buildOff 에 전달.
+ * Why 사전 합산: store_cnt 는 스냅샷(월별 지점 수) → sum 하면 부풀림. max 로 취해야 정합.
+ */
+async function getOfflineHistCumImpl(year: string, prevYear: string, throughMonth: number, divisions: string[] | null = null) {
+  const mm = Math.min(12, Math.max(1, throughMonth));
+  const curYms = ymRange(`${year}-01`, `${year}-${String(mm).padStart(2, "0")}`);
+  const prevYms = ymRange(`${prevYear}-01`, `${prevYear}-${String(mm).padStart(2, "0")}`);
+  const raw = await fetchOffHist([...curYms, ...prevYms]);
+
+  const acc = new Map<string, OffRow & { p: string }>();
+  for (const r of raw) {
+    const yr = r.p.slice(0, 4);
+    const key = `${r.division}|${r.cat}|${r.brand}|${r.store}|${yr}`;
+    const e = acc.get(key);
+    if (e) {
+      e.sales += r.sales; e.gp += r.gp; e.area_raw += r.area_raw;
+      if (r.store_cnt > e.store_cnt) e.store_cnt = r.store_cnt;
+    } else {
+      acc.set(key, { ...r, p: yr });
+    }
+  }
+  const rows = [...acc.values()];
+  const days = curYms.reduce((t, y) => t + daysInMonth(y), 0);
+  return { year, prevYear, throughMonth: mm, ...buildOff(rows, year, prevYear, divisions, days) };
+}
+
+export const getOfflineHistMonth = getOfflineHistMonthImpl;
+export const getOfflineHistCum = getOfflineHistCumImpl;
+
+/**
+ * 오프라인 월별 이력 — 한 연도 통짜 로드해서 (누적 YTD + 월별 N개) 한번에 반환.
+ * page.tsx 초기 로드 최적화 — fetchOffHist 를 1회만 실행하고 파생 뷰를 in-memory 로 계산.
+ */
+export async function getOfflineHistYearBundle(year: string, prevYear: string, throughMonth: number, divisions: string[] | null = null) {
+  const mm = Math.min(12, Math.max(1, throughMonth));
+  const curYms = ymRange(`${year}-01`, `${year}-${String(mm).padStart(2, "0")}`);
+  const prevYms = curYms.map(prevYearYm);
+  const rows = await fetchOffHist([...curYms, ...prevYms]);
+
+  // 누적 — 월들을 (division|cat|brand|store|year) 로 사전 합산.
+  const acc = new Map<string, OffRow & { p: string }>();
+  for (const r of rows) {
+    const yr = r.p.slice(0, 4);
+    const key = `${r.division}|${r.cat}|${r.brand}|${r.store}|${yr}`;
+    const e = acc.get(key);
+    if (e) {
+      e.sales += r.sales; e.gp += r.gp; e.area_raw += r.area_raw;
+      if (r.store_cnt > e.store_cnt) e.store_cnt = r.store_cnt;
+    } else acc.set(key, { ...r, p: yr });
+  }
+  const cumRows = [...acc.values()];
+  const cumDaysAcc = curYms.reduce((t, y) => t + daysInMonth(y), 0);
+  const cum = buildOff(cumRows, year, prevYear, divisions, cumDaysAcc);
+
+  // 월별 — 각 ym × 전년동월 만 필터해 buildOff.
+  const byMonth: Record<string, ReturnType<typeof buildOff>> = {};
+  for (const ym of curYms) {
+    const pym = prevYearYm(ym);
+    const monthRows = rows.filter((r) => r.p === ym || r.p === pym);
+    byMonth[ym] = buildOff(monthRows, ym, pym, divisions, daysInMonth(ym));
+  }
+  return { year, prevYear, throughMonth: mm, months: curYms, cum, byMonth };
+}
+
+/** 오프라인 월별 이력 가용 연도·월 목록.
+ *  각 연도 max ym 만 조회 → 1~max 를 그 연도의 월 목록으로 반환 (업로드가 1..N 연속인 전제). */
+export async function getOfflineHistMeta() {
+  const supabase = createServiceClient();
+  const { data: latest } = await supabase
+    .from("sales_offline_monthly_hist")
+    .select("ym").order("ym", { ascending: false }).limit(1);
+  const latestYm = (latest?.[0]?.ym as string | undefined);
+  if (!latestYm) return { years: [] as string[], months: {} as Record<string, string[]>, latestYear: null as string | null, latestYm: null as string | null, hasData: false };
+  const latestYear = latestYm.slice(0, 4);
+  const years: string[] = [];
+  const months: Record<string, string[]> = {};
+  // 최신 연도부터 5년 역방향 스캔 — 각 연도의 max ym 이 없으면 종료.
+  for (let y = Number(latestYear); y >= Number(latestYear) - 5; y--) {
+    const ys = String(y);
+    const { data } = await supabase
+      .from("sales_offline_monthly_hist")
+      .select("ym").eq("year", ys).order("ym", { ascending: false }).limit(1);
+    const yMax = data?.[0]?.ym as string | undefined;
+    if (!yMax) break;
+    const mMax = Number(yMax.slice(5, 7));
+    months[ys] = ymRange(`${ys}-01`, `${ys}-${String(mMax).padStart(2, "0")}`);
+    years.unshift(ys);
+  }
+  return { years, months, latestYear, latestYm, hasData: true };
+}
+
 /** 오프라인 가용 기간
  *
  * cumThroughYm: 누적 마감월('YYYY-MM'). 누적 파일 업로드 시 form의 기준월이 각 행에 저장되어

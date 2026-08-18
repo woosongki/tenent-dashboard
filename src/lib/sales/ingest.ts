@@ -200,6 +200,183 @@ export function buildOfflineRows(buf: ArrayBuffer, periodCur: string, periodPrev
   return rows;
 }
 
+// ── 오프라인 월별 이력 (5.특정(누적)_DB 파일 → sales_offline_monthly_hist) ─
+// 이 파일은 기존 5번(연 누적) 이 아니라 "누적 파일 안에 월별 컬럼(1~마감월)까지 담긴" 신규 포맷.
+// 6개 시트: 누적매출비교(브랜드/지점) + 26/25 누적평당(브랜드/지점).
+// 매출/이익 = 매출비교 시트(원본), 면적/매장수 = 누적평당 시트(원본). 시트3의 매출은 검증용.
+
+export interface OfflineMonthlyHistRow {
+  division: string; cat: string; brand: string; store: string;
+  year: string;    // 'YYYY'
+  ym: string;      // 'YYYY-MM'
+  sales: number; gp: number;
+  area_raw: number;   // 평·일 (실면적 × 해당월 일수)
+  store_cnt: number;
+}
+
+function daysInMonth(ym: string): number {
+  const [y, m] = ym.split("-").map(Number);
+  if (!y || !m) return 30;
+  return new Date(y, m, 0).getDate();
+}
+
+type HistMetric = "sales" | "gp" | "area" | "store_cnt";
+interface HistColDef { metric: HistMetric; ym: string; col: number }
+
+function normHistMetric(s: string, kind: "main" | "pyeong"): HistMetric | null {
+  const t = s.replace(/\s+/g, "");
+  if (kind === "main") {
+    if (t === "총매출액") return "sales";
+    if (t === "매출총이익") return "gp";
+    return null;
+  }
+  if (t === "전용면적") return "area";
+  if (t === "매장수") return "store_cnt";
+  // "총매출액"·"일평당매출"·"일평당이익"은 pyeong 시트에서 무시 — 매출/이익은 main, 일평당은 앱에서 재계산.
+  return null;
+}
+
+interface HistLeaf {
+  division: string; cat: string; brand: string; store: string; ym: string;
+  sales?: number; gp?: number; area?: number; store_cnt?: number;
+}
+
+/**
+ * 5.특정(누적) 파일의 한 시트 → leaf 행(월별). kind로 헤더 구조(main=4행 / pyeong=3행) 구분.
+ * main:   r4=지표 / r5=조회구간(YYYY-01-01·성장율) / r6=월(1~12·전체 결과) / r7=라벨
+ * pyeong: r4=지표 / r5=YYYY-MM·전체 결과 / r6=라벨
+ */
+function parseHistSheet(ws: XLSX.WorkSheet | undefined, kind: "main" | "pyeong"): HistLeaf[] {
+  if (!ws) return [];
+  const rows = toGrid(ws);
+  // 라벨 헤더 행 탐색 — 첫 컬럼이 "구매그룹…" 또는 "플랜트"
+  let h = -1;
+  for (let i = 0; i < 12; i++) {
+    const v = rows[i]?.[0];
+    if (typeof v === "string" && (v.startsWith("구매그룹") || v === "플랜트")) { h = i; break; }
+  }
+  if (h < 0) return [];
+
+  // 라벨 컬럼 위치(코드/이름 쌍) — 시트별 순서 대응
+  const labelRow = rows[h];
+  let groupCol = -1, brandCol = -1, storeCol = -1;
+  for (let c = 0; c < labelRow.length; c++) {
+    const v = labelRow[c];
+    if (typeof v !== "string") continue;
+    if (groupCol < 0 && v.startsWith("구매그룹")) groupCol = c;
+    else if (brandCol < 0 && (v === "브랜드" || v.startsWith("브랜드"))) brandCol = c;
+    else if (storeCol < 0 && (v === "플랜트" || v.startsWith("지점"))) storeCol = c;
+  }
+  if (groupCol < 0 || brandCol < 0 || storeCol < 0) return [];
+
+  // 컬럼 매핑 생성 (main: h-3/h-2/h-1 세 헤더, pyeong: h-2/h-1 두 헤더)
+  const cols: HistColDef[] = [];
+  const width = Math.max(...[h - 3, h - 2, h - 1].map((r) => rows[r]?.length ?? 0));
+  for (let c = 6; c < width; c++) {
+    if (kind === "main") {
+      const mr = rows[h - 3]?.[c];
+      const pr = rows[h - 2]?.[c];
+      const mo = rows[h - 1]?.[c];
+      if (typeof mr !== "string" || typeof pr !== "string" || mo == null) continue;
+      if (pr.includes("성장율")) continue;
+      const ym4 = pr.match(/^(\d{4})-\d{2}-\d{2}$/);
+      if (!ym4) continue;
+      const month = String(mo).replace(/\s+/g, "");
+      if (!/^\d{1,2}$/.test(month)) continue;
+      const metric = normHistMetric(mr, "main");
+      if (!metric) continue;
+      cols.push({ metric, ym: `${ym4[1]}-${String(Number(month)).padStart(2, "0")}`, col: c });
+    } else {
+      const mr = rows[h - 2]?.[c];
+      const ymRaw = rows[h - 1]?.[c];
+      if (typeof mr !== "string" || ymRaw == null) continue;
+      const ymStr = String(ymRaw).trim();
+      if (!/^\d{4}-\d{2}$/.test(ymStr)) continue;
+      const metric = normHistMetric(mr, "pyeong");
+      if (!metric) continue;
+      cols.push({ metric, ym: ymStr, col: c });
+    }
+  }
+  if (cols.length === 0) return [];
+
+  const out: HistLeaf[] = [];
+  for (let i = h + 1; i < rows.length; i++) {
+    const r = rows[i]; if (!r) continue;
+    const gCode = r[groupCol], gName = r[groupCol + 1];
+    const bCode = r[brandCol], bName = r[brandCol + 1];
+    const sCode = r[storeCol], sName = r[storeCol + 1];
+    // 소계·잡행 필터
+    if (!bName || bCode === "결과" || bName === "지정되지 않음" || bCode === "#") continue;
+    if (!sName || sCode === "결과" || sName === "전체 결과" || sCode === "#") continue;
+
+    const division = divisionOf(String(gCode || ""));
+    const cat = String(gName || "").trim();
+    const brand = normalizeBrand(String(bName).trim());
+    const store = normalizeStore(String(sName).trim());
+
+    // ym별 지표 그룹
+    const byYm = new Map<string, { sales?: number; gp?: number; area?: number; store_cnt?: number }>();
+    for (const cd of cols) {
+      const v = Number(r[cd.col] ?? 0);
+      if (!v) continue;
+      const e = byYm.get(cd.ym) ?? {};
+      e[cd.metric] = v;
+      byYm.set(cd.ym, e);
+    }
+    for (const [ym, v] of byYm) {
+      out.push({ division, cat, brand, store, ym, ...v });
+    }
+  }
+  return out;
+}
+
+/**
+ * 5.특정(누적)_DB 파일 → (브랜드×지점×월) 이력 행.
+ * 매출/이익은 "누적매출비교(브랜드)" 시트, 면적/매장수는 "26/25년 누적평당(브랜드)" 시트에서.
+ * area_raw는 평·일(실면적 × 해당월 일수)로 변환해 저장.
+ */
+export function buildOfflineMonthlyHistRows(buf: ArrayBuffer): OfflineMonthlyHistRow[] {
+  const wb = XLSX.read(buf, { type: "array" });
+  const mainName = wb.SheetNames.find((n) => n.includes("누적매출비교") && n.includes("브랜드"));
+  if (!mainName) throw new Error("‘누적매출비교(브랜드)’ 시트를 찾지 못했습니다. 5.특정(누적) 신규 포맷 파일인지 확인하세요.");
+  const pyeong26 = wb.SheetNames.find((n) => n.includes("26년") && n.includes("누적평당") && n.includes("브랜드"));
+  const pyeong25 = wb.SheetNames.find((n) => n.includes("25년") && n.includes("누적평당") && n.includes("브랜드"));
+
+  const mainRows = parseHistSheet(wb.Sheets[mainName], "main");
+  const pyeongRows = [
+    ...parseHistSheet(wb.Sheets[pyeong26 ?? ""], "pyeong"),
+    ...parseHistSheet(wb.Sheets[pyeong25 ?? ""], "pyeong"),
+  ];
+
+  // 면적/매장수 맵 (division|cat|brand|store|ym)
+  const areaMap = new Map<string, { area?: number; store_cnt?: number }>();
+  for (const r of pyeongRows) {
+    const k = `${r.division}|${r.cat}|${r.brand}|${r.store}|${r.ym}`;
+    const e = areaMap.get(k) ?? {};
+    if (r.area != null) e.area = r.area;
+    if (r.store_cnt != null) e.store_cnt = r.store_cnt;
+    areaMap.set(k, e);
+  }
+
+  const out: OfflineMonthlyHistRow[] = [];
+  for (const r of mainRows) {
+    const sales = r.sales ?? 0;
+    const gp = r.gp ?? 0;
+    if (!sales && !gp) continue;
+    const k = `${r.division}|${r.cat}|${r.brand}|${r.store}|${r.ym}`;
+    const a = areaMap.get(k);
+    const days = daysInMonth(r.ym);
+    out.push({
+      division: r.division, cat: r.cat, brand: r.brand, store: r.store,
+      year: r.ym.slice(0, 4), ym: r.ym,
+      sales: Math.round(sales), gp: Math.round(gp),
+      area_raw: Math.round((a?.area ?? 0) * days),
+      store_cnt: Math.round(a?.store_cnt ?? 0),
+    });
+  }
+  return out;
+}
+
 // ── 온라인 ───────────────────────────────────────────────────────
 function parseMonthYm(sheetName: string): string | null {
   const m = sheetName.match(/(\d{2})년\s*(\d{1,2})월/);
