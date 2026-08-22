@@ -44,11 +44,12 @@ export async function loadPool(): Promise<{ pool: BrandInput[]; brands: BrandRow
 
   const { data: metricRows, error: metricErr } = await sb
     .from("bcd_metric_values")
-    .select("brand_id, metric_code, value, checked_on")
-    .order("checked_on", { ascending: false });
+    .select("brand_id, metric_code, value, checked_on, created_at")
+    .order("checked_on", { ascending: false })
+    .order("created_at", { ascending: false });
   if (metricErr) throw new Error(`bcd loadPool(metrics): ${metricErr.message}`);
 
-  // 브랜드별 최신값만 (checked_on desc 정렬이라 첫 등장이 최신)
+  // 브랜드별 최신값만 (checked_on desc → 같은 날이면 created_at desc → 첫 등장이 최신)
   const latestByBrand = new Map<string, Record<string, number | null>>();
   for (const row of (metricRows ?? []) as { brand_id: string; metric_code: string; value: number | null }[]) {
     const bucket = latestByBrand.get(row.brand_id) ?? {};

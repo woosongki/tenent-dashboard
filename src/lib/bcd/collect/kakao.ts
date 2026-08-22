@@ -73,9 +73,8 @@ export async function runKakaoCollection(opts: {
   if (bErr) throw new Error(`brands 조회 실패: ${bErr.message}`);
   const brands = (brandsRaw ?? []) as BrandLite[];
 
+  // C1(벤치마크 입점률)은 수기 실측(benchmark_survey)이 정본 — 카카오 매칭은 부정확해 여기서 쓰지 않는다.
   const { data: lists } = await svc.from("bcd_lists").select("list_type, name, match_strings, is_full_survey");
-  const benchmarks = ((lists ?? []) as (ListRow & { list_type: string })[]).filter((l) => l.list_type === "benchmark");
-  const fullSurvey = benchmarks.filter((b) => b.is_full_survey);
   const hotspots = ((lists ?? []) as (ListRow & { list_type: string })[]).filter((l) => l.list_type === "hotspot");
 
   // 직전 카카오 회차의 브랜드별 C3 (C6 순증률 계산용)
@@ -125,15 +124,6 @@ export async function runKakaoCollection(opts: {
         );
       }
 
-      // C1 벤치마크 입점률
-      let c1: number | null = null;
-      if (fullSurvey.length > 0) {
-        const matchedMalls = fullSurvey.filter((mall) =>
-          places.some((p) => matchesAny(`${p.place_name} ${p.road_address_name} ${p.address_name}`, mall.match_strings.length ? mall.match_strings : [mall.name]))
-        ).length;
-        c1 = Math.round((matchedMalls / fullSurvey.length) * 100);
-      }
-
       // C2 핫플 상권 입점 수 = 매장이 존재하는 '핫플 상권' 수(상권 단위 중복 제거).
       //   "50대 핵심상권 중 컨텐츠가 있는 상권이 몇 곳인가" — 한 상권에 매장이 여럿이어도 1로 집계.
       let c2: number | null = null;
@@ -161,7 +151,6 @@ export async function runKakaoCollection(opts: {
       const rows: Record<string, unknown>[] = [
         { brand_id: brand.id, metric_code: "C3", value: c3, source: "kakao_map", snapshot_run_id: runId, checked_by: opts.triggeredBy, detail: { keywords } },
       ];
-      if (c1 !== null) rows.push({ brand_id: brand.id, metric_code: "C1", value: c1, source: "kakao_map", snapshot_run_id: runId, checked_by: opts.triggeredBy });
       if (c2 !== null) rows.push({ brand_id: brand.id, metric_code: "C2", value: c2, source: "kakao_map", snapshot_run_id: runId, checked_by: opts.triggeredBy });
       else if (c2Na) rows.push({ brand_id: brand.id, metric_code: "C2", value: null, na_reason: "표본부족", source: "kakao_map", snapshot_run_id: runId, checked_by: opts.triggeredBy });
       if (c6 !== null) rows.push({ brand_id: brand.id, metric_code: "C6", value: c6, source: "kakao_map", snapshot_run_id: runId, checked_by: opts.triggeredBy });
