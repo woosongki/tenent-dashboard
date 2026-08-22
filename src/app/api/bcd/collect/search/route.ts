@@ -40,7 +40,12 @@ export async function POST(req: NextRequest) {
 
   try {
     const summary = await runNaverCollection({
-      creds: { apiKey, secretKey, customerId },
+      creds: {
+        apiKey, secretKey, customerId,
+        // C5(추세)용 데이터랩 — 있으면 전년 동월 대비 계산, 없으면 C5는 N/A.
+        datalabId: process.env.NAVER_SEARCH_CLIENT_ID,
+        datalabSecret: process.env.NAVER_SEARCH_CLIENT_SECRET,
+      },
       triggeredBy: `manual:${g.user.email ?? g.user.id}`,
       brandIds: body.brandIds,
       limit: typeof body.limit === "number" ? Math.min(Math.max(body.limit, 1), 100) : undefined,
