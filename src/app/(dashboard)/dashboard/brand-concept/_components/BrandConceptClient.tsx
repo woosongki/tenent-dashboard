@@ -73,23 +73,45 @@ export default function BrandConceptClient({
   }
 
   async function runCollect(kind: "kakao" | "naver") {
-    const label = kind === "kakao" ? "카카오맵 매장 수집(C1·C2·C3·C6)" : "네이버 검색량 수집(C4·C5)";
+    const url = kind === "kakao" ? "/api/bcd/collect/kakao" : "/api/bcd/collect/search";
+    const label = kind === "kakao" ? "카카오맵 매장 수집(C2·C3·C6)" : "네이버 검색량 수집(C4·C5)";
     const ids = [...selected];
-    const scopeMsg = ids.length ? `선택한 ${ids.length}개 브랜드` : "활성 브랜드 최대 30건";
-    if (!window.confirm(`${label}을 ${scopeMsg}에 실행합니다. 외부 API를 호출합니다(비용 발생). 진행할까요?`)) return;
+    const CHUNK = 12; // 서버리스 타임아웃 방지 — 큰 선택은 나눠 호출
+    const scopeMsg = ids.length ? `선택한 ${ids.length}개 브랜드` : "활성 브랜드 최대 15건";
+    if (!window.confirm(`${label}을 ${scopeMsg}에 실행합니다. 외부 API 호출(비용 발생) · 큰 선택은 12건씩 나눠 실행합니다. 진행할까요?`)) return;
     setCollecting(kind);
+
+    async function callOnce(body: object) {
+      const res = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+      const text = await res.text();
+      let data: { brandsOk?: number; brandsTotal?: number; errors?: unknown[]; error?: string };
+      try { data = JSON.parse(text); }
+      catch { throw new Error(res.ok ? "응답 형식 오류" : `서버 오류(${res.status}) — 타임아웃 가능`); }
+      if (!res.ok) throw new Error(data.error ?? `실패(${res.status})`);
+      return data;
+    }
+
     try {
-      const res = await fetch(kind === "kakao" ? "/api/bcd/collect/kakao" : "/api/bcd/collect/search", {
-        method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(ids.length ? { brandIds: ids, limit: Math.max(ids.length, 30) } : {}),
-      });
-      const data = await res.json();
-      if (!res.ok) { toast.error(data.error ?? "수집 실패"); return; }
-      const errN = data.errors?.length ?? 0;
-      toast.success(`${label} 완료 · 성공 ${data.brandsOk}/${data.brandsTotal}${errN ? ` · 오류 ${errN}` : ""}`);
+      let totalOk = 0, total = 0, errN = 0;
+      if (ids.length) {
+        const chunks: string[][] = [];
+        for (let i = 0; i < ids.length; i += CHUNK) chunks.push(ids.slice(i, i + CHUNK));
+        for (let i = 0; i < chunks.length; i++) {
+          try {
+            const d = await callOnce({ brandIds: chunks[i], limit: chunks[i].length });
+            totalOk += d.brandsOk ?? 0; total += d.brandsTotal ?? 0; errN += d.errors?.length ?? 0;
+            toast(`${label} 진행 ${i + 1}/${chunks.length} · 누적 성공 ${totalOk}`);
+          } catch (e) {
+            errN += chunks[i].length;
+            toast.error(`배치 ${i + 1}/${chunks.length} 실패: ${e instanceof Error ? e.message : ""}`);
+          }
+        }
+      } else {
+        const d = await callOnce({});
+        totalOk = d.brandsOk ?? 0; total = d.brandsTotal ?? 0; errN = d.errors?.length ?? 0;
+      }
+      toast.success(`${label} 완료 · 성공 ${totalOk}${total ? `/${total}` : ""}${errN ? ` · 오류 ${errN}` : ""}`);
       router.refresh();
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "네트워크 오류");
     } finally {
       setCollecting(null);
     }

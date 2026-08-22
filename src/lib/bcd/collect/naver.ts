@@ -136,7 +136,7 @@ export async function runNaverCollection(opts: {
 
   let bq = svc.from("bcd_brands").select("id, name, search_keywords").eq("scope_status", "active");
   if (opts.brandIds?.length) bq = bq.in("id", opts.brandIds);
-  bq = bq.order("name", { ascending: true }).limit(opts.limit ?? 30);
+  bq = bq.order("name", { ascending: true }).limit(opts.limit ?? 15);
   const { data: brandsRaw, error: bErr } = await bq;
   if (bErr) throw new Error(`brands 조회 실패: ${bErr.message}`);
   const brands = (brandsRaw ?? []) as BrandLite[];
@@ -151,13 +151,25 @@ export async function runNaverCollection(opts: {
   const errors: { brand: string; error: string }[] = [];
   let ok = 0;
 
-  for (const brand of brands) {
-    try {
-      const keywords = (brand.search_keywords?.length ? brand.search_keywords : [brand.name]).slice(0, 5);
+  const emsg = (e: unknown) => (e instanceof Error ? e.message : String(e));
 
-      // C4 — 검색광고 절대 검색수 (재시도 포함)
-      const rows = await withRetry(() => keywordstool(keywords, opts.creds));
-      const byKw = new Map(rows.map((r) => [norm(r.relKeyword), r]));
+  for (const brand of brands) {
+    const keywords = (brand.search_keywords?.length ? brand.search_keywords : [brand.name]).slice(0, 5);
+
+    // C4(검색광고)·C5(데이터랩)를 병렬 호출 — 서로 독립. 하나 실패해도 다른 건 기록.
+    const [c4r, c5r] = await Promise.allSettled([
+      withRetry(() => keywordstool(keywords, opts.creds), 2),
+      hasDatalab
+        ? withRetry(() => datalabYoY(keywords, opts.creds.datalabId!, opts.creds.datalabSecret!), 2)
+        : Promise.resolve<number | null>(null),
+    ]);
+
+    const metricRows: Record<string, unknown>[] = [];
+    const errParts: string[] = [];
+
+    // C4
+    if (c4r.status === "fulfilled") {
+      const byKw = new Map(c4r.value.map((r) => [norm(r.relKeyword), r]));
       let pcSum = 0, mobileSum = 0;
       const volRows: Record<string, unknown>[] = [];
       for (const kw of keywords) {
@@ -168,30 +180,27 @@ export async function runNaverCollection(opts: {
         volRows.push({ brand_id: brand.id, keyword: kw.replace(/\s+/g, ""), ym, pc, mobile, source: "naver_ads" });
       }
       if (volRows.length) await svc.from("bcd_search_volume").upsert(volRows, { onConflict: "brand_id,keyword,ym" });
-      const c4 = pcSum + mobileSum;
+      metricRows.push({ brand_id: brand.id, metric_code: "C4", value: pcSum + mobileSum, source: "naver_ads", snapshot_run_id: runId, checked_by: opts.triggeredBy, detail: { ym, keywords } });
+    } else {
+      errParts.push(`C4:${emsg(c4r.reason)}`);
+    }
 
-      // C5 — 데이터랩 전년 동월 대비(있을 때만). 실패/불가 시 N/A(시계열부족).
-      let c5: number | null = null;
-      if (hasDatalab) {
-        try { c5 = await withRetry(() => datalabYoY(keywords, opts.creds.datalabId!, opts.creds.datalabSecret!), 2); }
-        catch { c5 = null; }
-      }
-
-      const metricRows: Record<string, unknown>[] = [
-        { brand_id: brand.id, metric_code: "C4", value: c4, source: "naver_ads", snapshot_run_id: runId, checked_by: opts.triggeredBy, detail: { ym, keywords } },
-      ];
+    // C5 (데이터랩 있을 때만 기록)
+    if (hasDatalab) {
+      const c5 = c5r.status === "fulfilled" ? c5r.value : null;
+      if (c5r.status === "rejected") errParts.push(`C5:${emsg(c5r.reason)}`);
       if (c5 !== null) {
         metricRows.push({ brand_id: brand.id, metric_code: "C5", value: c5, source: "naver_datalab", snapshot_run_id: runId, checked_by: opts.triggeredBy, detail: { ym, yoy: true } });
       } else {
         metricRows.push({ brand_id: brand.id, metric_code: "C5", value: null, na_reason: "시계열부족", source: "naver_datalab", snapshot_run_id: runId, checked_by: opts.triggeredBy });
       }
-
-      await svc.from("bcd_metric_values").insert(metricRows);
-      ok++;
-    } catch (e) {
-      errors.push({ brand: brand.name, error: e instanceof Error ? e.message : String(e) });
     }
-    await delay(300); // 브랜드 간 간격 — 레이트리밋 완화
+
+    if (metricRows.length) await svc.from("bcd_metric_values").insert(metricRows);
+    if (metricRows.length) ok++;
+    else errors.push({ brand: brand.name, error: errParts.join(" / ") || "기록 없음" });
+
+    await delay(120); // 브랜드 간 간격 — 레이트리밋 완화
   }
 
   if (runId) {
