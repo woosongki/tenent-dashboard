@@ -13,6 +13,7 @@ export const ATTRACTION_PLAN_LABEL = `입점계획(${String(ATTRACTION_PLAN_YEAR
 export const CONTROLLABLE_MENUS: MenuItem[] = [
   { key: "sales",         label: "매출분석",       href: "/dashboard/sales" },
   { key: "bcd",           label: "BCD 분석",       href: "/dashboard/bcd" },
+  { key: "brand-concept", label: "브랜드컨셉등급",  href: "/dashboard/brand-concept" },
   { key: "drilldown",     label: ATTRACTION_PLAN_LABEL, href: "/dashboard/drilldown" },
   { key: "vacancy",       label: "공실해결",       href: "/dashboard/vacancy" },
   { key: "goals",         label: "컨텐츠 풀",      href: "/dashboard/goals" },

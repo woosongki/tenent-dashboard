@@ -7,7 +7,7 @@ import {
   getOfflineMeta, getOfflineCum, getOfflineMonth, cumDays,
   getOfflineHistMeta, getOfflineHistYearBundle,
 } from "@/lib/sales/queries";
-import { getLifestyleMonthReport } from "@/lib/sales/lifestyleReport";
+import { getLifestyleReport } from "@/lib/sales/lifestyleReport";
 import TopBar from "@/components/layout/TopBar";
 import PageHeader from "@/components/ui/PageHeader";
 import DataFreshnessBadge from "@/components/ui/DataFreshnessBadge";
@@ -35,7 +35,7 @@ export default async function SalesPage({ searchParams }: { searchParams: Promis
   const params = await searchParams;
 
   // 각 데이터셋을 독립적으로 로드 — 하나가 실패해도 나머지 탭은 정상.
-  const [online, onlineCum, offData, lifestyleReport, histData] = await Promise.all([
+  const [online, onlineCum, offData, lifestyle, histData] = await Promise.all([
     // 온라인(당월) — 최신 월 + 전년동월
     safe(async () => {
       const meta = await getOnlineMeta();
@@ -73,8 +73,11 @@ export default async function SalesPage({ searchParams }: { searchParams: Promis
       }
       return { offCum, offMonth, monthYm: offMeta.monthYm, cumYear: offMeta.cumYear, cumThroughYm: offMeta.cumThroughYm };
     }),
-    // 라이프스타일 부문 리포트 (당월) — 성장 분해
-    safe(() => getLifestyleMonthReport()),
+    // 라이프스타일 부문 리포트 (당월·누적) — 성장 분해
+    safe(async () => ({
+      month: await getLifestyleReport("month"),
+      cum: await getLifestyleReport("cum"),
+    })),
     // 오프라인 월별 이력 — 누적탭 하위 [월별 서브탭]. 선택 연도(?histYear) 기본 최신.
     safe(async () => {
       const meta = await getOfflineHistMeta();
@@ -143,7 +146,7 @@ export default async function SalesPage({ searchParams }: { searchParams: Promis
             action={<DataFreshnessBadge monthYm={offMeta.monthYm} />}
           />
 
-        <SalesTabsShell online={online} onlineCum={onlineCum} offCum={offCum} offMonth={offMonth} monthActive={monthActive} onlineMonthActive={onlineMonthActive} cumMonths={cumMonths} lifestyleReport={lifestyleReport ?? null} hist={hist} />
+        <SalesTabsShell online={online} onlineCum={onlineCum} offCum={offCum} offMonth={offMonth} monthActive={monthActive} onlineMonthActive={onlineMonthActive} cumMonths={cumMonths} lifestyleMonth={lifestyle?.month ?? null} lifestyleCum={lifestyle?.cum ?? null} hist={hist} />
 
           <p className="text-[10px] font-bold uppercase tracking-wider text-[#0a0a0a]/55">
             Supabase 라이브 데이터 · 오프라인(특정) 누적{offMeta.cumYear ? ` ${offMeta.cumYear}` : ""}·당월{offMeta.monthYm ? ` ${offMeta.monthYm}` : ""} + 온라인 · 부문/복종/지점/브랜드 · 월 1회 갱신

@@ -1,7 +1,7 @@
 "use client";
 
 import { Fragment, useMemo, useState } from "react";
-import type { LifestyleReport, LifestyleStoreLine } from "@/lib/sales/lifestyleReport";
+import type { LifestyleReport, LifestyleStoreLine, LifestyleScope } from "@/lib/sales/lifestyleReport";
 import DecompositionView from "./DecompositionView";
 
 const eok = (n: number) => (n / 1e8).toFixed(1);            // 억 (1자리)
@@ -26,11 +26,20 @@ function regroup(d: LifestyleReport["decomposition"]) {
 
 type SortKey = "store" | "kind" | "areaCur" | "areaDelta" | "dppCur" | "dppGrowthPct" | "salesCur" | "areaEffect" | "effEffect";
 
-export default function LifestyleReportTab({ report }: { report: LifestyleReport | null }) {
+export default function LifestyleReportTab({ month, cum }: { month: LifestyleReport | null; cum: LifestyleReport | null }) {
+  const [scope, setScope] = useState<LifestyleScope>(month ? "month" : "cum");
+  const report = scope === "month" ? month : cum;
   const html = useMemo(() => (report ? buildStandaloneHtml(report) : ""), [report]);
   const [sortKey, setSortKey] = useState<SortKey>("salesCur");
   const [dir, setDir] = useState<"asc" | "desc">("desc");
   const [expanded, setExpanded] = useState<string | null>(null);
+
+  const scopeTabs = (
+    <div className="flex gap-1.5">
+      <ScopeBtn active={scope === "month"} disabled={!month} onClick={() => setScope("month")}>📅 당월</ScopeBtn>
+      <ScopeBtn active={scope === "cum"} disabled={!cum} onClick={() => setScope("cum")}>🏆 누적</ScopeBtn>
+    </div>
+  );
 
   const sortedStores = useMemo(() => {
     const arr = [...(report?.stores ?? [])];
@@ -45,8 +54,11 @@ export default function LifestyleReportTab({ report }: { report: LifestyleReport
 
   if (!report) {
     return (
-      <div className="border-[2px] border-dashed border-slate-300 p-10 text-center text-[13px] text-slate-400">
-        라이프스타일(기타) 부문 당월 데이터가 없습니다.
+      <div className="space-y-3">
+        {scopeTabs}
+        <div className="border-[2px] border-dashed border-slate-300 p-10 text-center text-[13px] text-slate-400">
+          라이프스타일(기타) 부문 {scope === "month" ? "당월" : "누적"} 데이터가 없습니다.
+        </div>
       </div>
     );
   }
@@ -71,12 +83,15 @@ export default function LifestyleReportTab({ report }: { report: LifestyleReport
 
   return (
     <div className="space-y-5">
+      {/* 스코프 토글 (당월 / 누적) */}
+      {scopeTabs}
+
       {/* 헤더 + 내보내기 */}
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
-          <h3 className="text-[15px] font-extrabold text-[#0a0a0a]">라이프스타일 부문 실적 리포트 · 당월</h3>
+          <h3 className="text-[15px] font-extrabold text-[#0a0a0a]">라이프스타일 부문 실적 리포트 · {scope === "month" ? "당월" : "누적"}</h3>
           <p className="text-[11px] font-bold text-[#0a0a0a]/55">
-            {report.prevLabel} → {report.curLabel} · {report.days}일 동일기간 비교 · 일평당매출 = 매출 ÷ (면적 × {report.days})
+            {report.prevLabel} → {report.curLabel} · {report.days}{report.dayNoun} 기준 · 일평당매출 = 매출 ÷ (면적 × {report.dayNoun})
           </p>
         </div>
         <button
@@ -176,6 +191,24 @@ export default function LifestyleReportTab({ report }: { report: LifestyleReport
   );
 }
 
+function ScopeBtn({ active, disabled, onClick, children }: { active: boolean; disabled?: boolean; onClick: () => void; children: React.ReactNode }) {
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      className={`border-[2px] border-[#0a0a0a] px-3 py-1.5 text-[12px] font-extrabold transition-all ${
+        active
+          ? "bg-yellow-300 text-[#0a0a0a] shadow-[2px_2px_0_0_#0a0a0a]"
+          : disabled
+            ? "cursor-not-allowed border-slate-300 bg-white text-slate-300"
+            : "bg-white text-[#0a0a0a]/60 hover:text-[#0a0a0a]"
+      }`}
+    >
+      {children}
+    </button>
+  );
+}
+
 function Kpi({ title, cur, prev, pct, sub, highlight }: { title: string; cur: string; prev: string; pct: number; sub?: string; highlight?: boolean }) {
   const up = pct >= 0;
   return (
@@ -261,8 +294,8 @@ td{padding:5px 8px;border-bottom:1px solid #eee;font-variant-numeric:tabular-num
 .foot{color:#0a0a0a88;font-size:10px;margin-top:12px;line-height:1.5}
 @media print{body{background:#fff}}
 </style></head><body><div class="wrap">
-<h1>라이프스타일 부문 실적 리포트 · 당월</h1>
-<p class="sub">${esc(r.prevLabel)} → ${esc(r.curLabel)} · ${r.days}일 동일기간 비교 · 일평당매출 = 매출 ÷ (면적 × ${r.days})</p>
+<h1>라이프스타일 부문 실적 리포트 · ${r.scope === "month" ? "당월" : "누적"}</h1>
+<p class="sub">${esc(r.prevLabel)} → ${esc(r.curLabel)} · ${r.days}${esc(r.dayNoun)} 기준 · 일평당매출 = 매출 ÷ (면적 × ${esc(r.dayNoun)})</p>
 <div class="callout"><div class="h">성장의 질 — 신규출점(평수증가) vs 기존점 매출</div>
 <p>매출 <b>${eokS(t.salesDelta)}억</b>(${pctS(t.salesGrowthPct)}) 증가 중 — 신규출점(평수증가 포함) <b>${eokS(g.newExpand)}억</b> · <span class="hl">기존점 매출 ${eokS(g.existingSales)}억</span>${g.closed ? ` · 퇴점 ${eokS(g.closed)}억` : ""}.</p>
 <p>기존점(${d.existingCount}곳) 동일면적 매출 <b>${pctS(d.existingDppGrowthPct)}</b> 성장 — 면적 확대와 무관한 순수 매출 성장.${g.existingSales > 0 && t.salesDelta > 0 ? ` 전체 증가의 ${Math.round((g.existingSales / t.salesDelta) * 100)}%가 기존점 매출 기여.` : ""}</p></div>

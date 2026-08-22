@@ -52,14 +52,15 @@ interface Props {
   monthActive: MonthActive | null;  // 오프라인 당월 활성 키 (이탈 판정)
   onlineMonthActive: { brands: string[]; stores: string[] } | null;  // 온라인 당월 활성 키
   cumMonths: number;              // 누적 개월수 (예: "2026-06" → 6) — 누적상세 월평균 계산용
-  lifestyleReport: LifestyleReport | null;  // 라이프스타일 부문 리포트 (당월)
+  lifestyleMonth: LifestyleReport | null;  // 라이프스타일 부문 리포트 (당월)
+  lifestyleCum: LifestyleReport | null;    // 라이프스타일 부문 리포트 (누적)
   hist: HistBundle | null;        // 오프라인 월별 이력 (신규)
 }
 
 type TabKey = "off-cum" | "off-cum-detail" | "off-month" | "off-month-detail" | "life-month" | "online-cum" | "online-month";
 type MonthTab = "cum" | string; // "cum" or ym string like "2026-07"
 
-export default function SalesTabsShell({ offCum, offMonth, online, onlineCum, monthActive, onlineMonthActive, cumMonths, lifestyleReport, hist }: Props) {
+export default function SalesTabsShell({ offCum, offMonth, online, onlineCum, monthActive, onlineMonthActive, cumMonths, lifestyleMonth, lifestyleCum, hist }: Props) {
   const [tab, setTab] = useState<TabKey>("off-cum");
   // 누적탭 서브탭 — 기본 '누적'. hist 없으면 legacy offCum 로 폴백.
   const [monthTab, setMonthTab] = useState<MonthTab>("cum");
@@ -151,7 +152,7 @@ export default function SalesTabsShell({ offCum, offMonth, online, onlineCum, mo
       {tab === "off-cum-detail" && (offCum ? <OfflineDetailTab periodLabel={offCum.periodLabel} prevLabel={offCum.prevLabel} brands={offCum.detailBrands} stores={offCum.stores} divisions={offCum.divisions} fashionCats={offCum.fashionCats} others={offCum.others} monthActive={monthActive} monthCount={cumMonths} /> : <Empty table="sales_offline_cum" />)}
       {tab === "off-month" && (offMonth ? <OfflineTab {...offMonth} /> : <Empty table="sales_offline_month" />)}
       {tab === "off-month-detail" && (offMonth ? <OfflineDetailTab periodLabel={offMonth.periodLabel} prevLabel={offMonth.prevLabel} brands={offMonth.detailBrands} stores={offMonth.stores} divisions={offMonth.divisions} fashionCats={offMonth.fashionCats} others={offMonth.others} /> : <Empty table="sales_offline_month" />)}
-      {tab === "life-month" && <LifestyleReportTab report={lifestyleReport} />}
+      {tab === "life-month" && <LifestyleReportTab month={lifestyleMonth} cum={lifestyleCum} />}
       {tab === "online-cum" && (onlineCum ? <OnlineMonthTab {...onlineCum} periodLabel="온라인 누적" monthActive={onlineMonthActive} /> : <Empty table="sales_online_cum" />)}
       {tab === "online-month" && (online ? <OnlineMonthTab {...online} /> : <Empty table="sales_online_monthly" />)}
     </div>
