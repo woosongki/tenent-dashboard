@@ -98,8 +98,11 @@ async function datalabYoY(keywords: string[], clientId: string, clientSecret: st
   const data = (await res.json()) as { results?: { data?: { period: string; ratio: number }[] }[] };
   const series = data.results?.[0]?.data ?? [];
   if (series.length === 0) return null;
+  const nowYm = `${end.getFullYear()}-${String(end.getMonth() + 1).padStart(2, "0")}`;
   const map = new Map(series.map((p) => [p.period.slice(0, 7), p.ratio]));
-  const months = [...map.keys()].sort();
+  // 현재(부분)월 제외 → 완결된 직전 월끼리 전년 동월 비교(부분월 하향 왜곡 방지).
+  const months = [...map.keys()].filter((m) => m < nowYm).sort();
+  if (months.length === 0) return null;
   const latest = months[months.length - 1];
   const [ly, lm] = latest.split("-").map(Number);
   const prevKey = `${ly - 1}-${String(lm).padStart(2, "0")}`;
