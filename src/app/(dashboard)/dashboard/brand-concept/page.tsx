@@ -7,7 +7,7 @@ import PageHeader from "@/components/ui/PageHeader";
 import AppFooter from "@/components/ui/AppFooter";
 import { SPACE } from "@/lib/tokens";
 import { loadScored, type BrandRow } from "@/lib/bcd/data";
-import BrandConceptClient from "./_components/BrandConceptClient";
+import BrandConceptClient, { type ListRow } from "./_components/BrandConceptClient";
 
 export const metadata: Metadata = { title: "브랜드컨셉등급(BCD) — lifestyle" };
 
@@ -41,6 +41,18 @@ export default async function BrandConceptPage() {
     return (data ?? []) as BrandRow[];
   });
 
+  const lists = await safe(async () => {
+    const sb = createServiceClient();
+    const { data, error } = await sb
+      .from("bcd_lists")
+      .select("id, list_type, name, match_strings, is_full_survey")
+      .in("list_type", ["benchmark", "hotspot"])
+      .order("list_type", { ascending: true })
+      .order("name", { ascending: true });
+    if (error) throw new Error(error.message);
+    return (data ?? []) as ListRow[];
+  });
+
   const ready = scored !== null || allBrands !== null;
 
   return (
@@ -59,6 +71,7 @@ export default async function BrandConceptPage() {
               ruleset={scored?.ruleset ?? null}
               brands={allBrands ?? []}
               scores={scored?.scores ?? []}
+              lists={lists ?? []}
               canEdit={canEdit}
             />
           ) : (

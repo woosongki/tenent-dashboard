@@ -7,7 +7,15 @@ import type { Ruleset, ScoreResult, CriterionResult } from "@/lib/bcd/score";
 import type { BrandRow } from "@/lib/bcd/data";
 import { pillBtn, inputCompact, TOKENS } from "@/lib/tokens";
 import ScrollHint from "@/components/ui/ScrollHint";
-import { registerBrand, saveMetric, setBrandScope } from "../_actions";
+import { registerBrand, saveMetric, setBrandScope, addList, deleteList } from "../_actions";
+
+export interface ListRow {
+  id: string;
+  list_type: string;
+  name: string;
+  match_strings: string[] | null;
+  is_full_survey: boolean | null;
+}
 
 // ── 등급 표기 ────────────────────────────────────────────────────────────
 const GRADE_ORDER = ["A", "B+", "B", "C", "N", "H", "미평가"] as const;
@@ -37,11 +45,12 @@ interface Row {
 type SortKey = "name" | "category" | "grade" | "total" | "naPoints";
 
 export default function BrandConceptClient({
-  ruleset, brands, scores, canEdit,
+  ruleset, brands, scores, lists, canEdit,
 }: {
   ruleset: Ruleset | null;
   brands: BrandRow[];
   scores: ScoreResult[];
+  lists: ListRow[];
   canEdit: boolean;
 }) {
   const router = useRouter();
@@ -54,15 +63,24 @@ export default function BrandConceptClient({
   const [dir, setDir] = useState<"asc" | "desc">("desc");
   const [expanded, setExpanded] = useState<string | null>(null);
   const [showRegister, setShowRegister] = useState(false);
+  const [showLists, setShowLists] = useState(false);
   const [collecting, setCollecting] = useState<null | "kakao" | "naver">(null);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+
+  function toggleSelect(id: string) {
+    setSelected((prev) => { const n = new Set(prev); if (n.has(id)) n.delete(id); else n.add(id); return n; });
+  }
 
   async function runCollect(kind: "kakao" | "naver") {
     const label = kind === "kakao" ? "카카오맵 매장 수집(C1·C2·C3·C6)" : "네이버 검색량 수집(C4·C5)";
-    if (!window.confirm(`${label}을 실행합니다. 활성 브랜드 최대 30건에 외부 API를 호출합니다(비용 발생). 진행할까요?`)) return;
+    const ids = [...selected];
+    const scopeMsg = ids.length ? `선택한 ${ids.length}개 브랜드` : "활성 브랜드 최대 30건";
+    if (!window.confirm(`${label}을 ${scopeMsg}에 실행합니다. 외부 API를 호출합니다(비용 발생). 진행할까요?`)) return;
     setCollecting(kind);
     try {
       const res = await fetch(kind === "kakao" ? "/api/bcd/collect/kakao" : "/api/bcd/collect/search", {
-        method: "POST", headers: { "Content-Type": "application/json" }, body: "{}",
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(ids.length ? { brandIds: ids, limit: Math.max(ids.length, 30) } : {}),
       });
       const data = await res.json();
       if (!res.ok) { toast.error(data.error ?? "수집 실패"); return; }
@@ -138,6 +156,16 @@ export default function BrandConceptClient({
   }
 
   const activeCount = rows.filter((r) => r.b.scope_status === "active").length;
+  const filteredIds = filtered.map((f) => f.b.id);
+  const allSel = filteredIds.length > 0 && filteredIds.every((id) => selected.has(id));
+  function toggleSelectAll() {
+    setSelected((prev) => {
+      const n = new Set(prev);
+      if (allSel) filteredIds.forEach((id) => n.delete(id));
+      else filteredIds.forEach((id) => n.add(id));
+      return n;
+    });
+  }
 
   return (
     <div className="space-y-4">
@@ -170,21 +198,31 @@ export default function BrandConceptClient({
         </div>
       )}
 
-      {/* 등록 · 자동수집 (관리자) */}
+      {/* 등록 · 목록관리 · 자동수집 (관리자) */}
       {canEdit && (
-        <div>
-          <div className="flex flex-wrap gap-2">
+        <div className="space-y-2">
+          <div className="flex flex-wrap items-center gap-2">
             <button onClick={() => setShowRegister((v) => !v)} className={TOKENS.btn.secondary}>
               {showRegister ? "✕ 닫기" : "＋ 브랜드 등록"}
             </button>
+            <button onClick={() => setShowLists((v) => !v)} className={TOKENS.btn.secondary}>
+              {showLists ? "✕ 닫기" : "📋 벤치마크·핫플 관리"}
+            </button>
+            <span className="mx-1 h-5 w-px bg-[#0a0a0a]/20" />
             <button onClick={() => runCollect("kakao")} disabled={collecting !== null} className={TOKENS.btn.accent}>
               {collecting === "kakao" ? "수집 중…" : "🗺 카카오맵 수집"}
             </button>
             <button onClick={() => runCollect("naver")} disabled={collecting !== null} className={TOKENS.btn.accent}>
               {collecting === "naver" ? "수집 중…" : "🔍 네이버 검색량 수집"}
             </button>
+            <span className="text-[11px] font-bold text-[#0a0a0a]/60">
+              {selected.size > 0
+                ? <>선택 <b>{selected.size}</b>건만 수집 · <button onClick={() => setSelected(new Set())} className="underline">해제</button></>
+                : "선택 없음 → 활성 최대 30건"}
+            </span>
           </div>
           {showRegister && <RegisterForm pending={pending} onDone={() => { setShowRegister(false); router.refresh(); }} startTransition={startTransition} />}
+          {showLists && <ListManager lists={lists} pending={pending} startTransition={startTransition} onDone={() => router.refresh()} />}
         </div>
       )}
 
@@ -216,6 +254,11 @@ export default function BrandConceptClient({
         <table className="w-full min-w-[720px] text-[12px]">
           <thead className="bg-[#0a0a0a] text-white select-none">
             <tr>
+              {canEdit && (
+                <th className="px-2 py-2 text-center" title="수집 대상 선택(전체)">
+                  <input type="checkbox" checked={allSel} onChange={toggleSelectAll} />
+                </th>
+              )}
               <th className="px-3 py-2 text-left cursor-pointer hover:bg-white/10 whitespace-nowrap" onClick={() => toggle("name")}>브랜드{arrow("name")}</th>
               <th className="px-3 py-2 text-left cursor-pointer hover:bg-white/10 whitespace-nowrap" onClick={() => toggle("category")}>부문·중분류{arrow("category")}</th>
               <th className="px-2 py-2 text-center cursor-pointer hover:bg-white/10" onClick={() => toggle("grade")}>등급{arrow("grade")}</th>
@@ -230,13 +273,18 @@ export default function BrandConceptClient({
             {filtered.map(({ b, score }) => {
               const isOpen = expanded === b.id;
               const notActive = b.scope_status !== "active";
-              const colSpan = canEdit ? 8 : 7;
+              const colSpan = canEdit ? 9 : 7;
               return (
                 <Fragment key={b.id}>
                   <tr
                     onClick={() => setExpanded(isOpen ? null : b.id)}
                     className={`border-t border-slate-100 cursor-pointer hover:bg-yellow-50 ${isOpen ? "bg-yellow-100" : ""} ${notActive ? "opacity-60" : ""}`}
                   >
+                    {canEdit && (
+                      <td className="px-2 py-1.5 text-center" onClick={(e) => e.stopPropagation()}>
+                        <input type="checkbox" checked={selected.has(b.id)} onChange={() => toggleSelect(b.id)} />
+                      </td>
+                    )}
                     <td className="px-3 py-1.5 font-bold text-[#0a0a0a] whitespace-nowrap">
                       <span className="mr-1 text-[10px] text-[#0a0a0a]/60">{isOpen ? "▾" : "▸"}</span>{b.name}
                     </td>
@@ -275,7 +323,7 @@ export default function BrandConceptClient({
               );
             })}
             {filtered.length === 0 && (
-              <tr><td colSpan={canEdit ? 8 : 7} className="px-3 py-8 text-center text-slate-400">결과 없음</td></tr>
+              <tr><td colSpan={canEdit ? 9 : 7} className="px-3 py-8 text-center text-slate-400">결과 없음</td></tr>
             )}
           </tbody>
         </table>
@@ -414,6 +462,96 @@ function RegisterForm({
         <input type="checkbox" checked={online} onChange={(e) => setOnline(e.target.checked)} /> 온라인 채널 적용(C7)
       </label>
       <button onClick={submit} disabled={pending} className={TOKENS.btn.primary}>등록</button>
+    </div>
+  );
+}
+
+// ── 벤치마크·핫플 목록 관리(관리자) ────────────────────────────────────────
+function ListManager({
+  lists, pending, startTransition, onDone,
+}: {
+  lists: ListRow[];
+  pending: boolean;
+  startTransition: TransitionStartFunction;
+  onDone: () => void;
+}) {
+  const [type, setType] = useState<"benchmark" | "hotspot">("benchmark");
+  const [name, setName] = useState("");
+  const [match, setMatch] = useState("");
+  const [fullSurvey, setFullSurvey] = useState(true);
+  const rows = lists.filter((l) => l.list_type === type);
+
+  function add() {
+    if (!name.trim()) { toast.error("이름을 입력하세요."); return; }
+    startTransition(async () => {
+      const res = await addList({ list_type: type, name, match_strings: match, is_full_survey: fullSurvey });
+      if (res.ok) { toast.success(`${name.trim()} 추가`); setName(""); setMatch(""); onDone(); }
+      else toast.error(res.error);
+    });
+  }
+  function remove(id: string, nm: string) {
+    if (!window.confirm(`'${nm}' 삭제할까요?`)) return;
+    startTransition(async () => {
+      const res = await deleteList(id);
+      if (res.ok) { toast.success("삭제됨"); onDone(); }
+      else toast.error(res.error);
+    });
+  }
+
+  return (
+    <div className="mt-2 space-y-3 border-[2px] border-[#0a0a0a] bg-white p-3 shadow-[3px_3px_0_0_#0a0a0a]">
+      <div className="flex gap-1.5">
+        <button onClick={() => setType("benchmark")} className={pillBtn(type === "benchmark")}>벤치마크 유통 (C1)</button>
+        <button onClick={() => setType("hotspot")} className={pillBtn(type === "hotspot")}>핫플 상권 (C2)</button>
+      </div>
+      <p className="text-[11px] text-slate-500">
+        {type === "benchmark"
+          ? "C1 분모 = 전수조사(is_full_survey) 벤치마크 유통 수. 매칭어는 매장 주소/상호에 등장하는 표기 변형(쉼표 구분)."
+          : "C2 = 매장 주소가 핫플 상권 매칭어와 겹치는 고유 매장 수. 매칭어는 동/지역 키워드(쉼표 구분)."}
+      </p>
+      <div className="flex flex-wrap items-end gap-2">
+        <label className="flex flex-col gap-0.5 text-[10px] font-bold text-slate-500">이름
+          <input value={name} onChange={(e) => setName(e.target.value)} placeholder={type === "benchmark" ? "예: 신세계 강남" : "예: 강남역·역삼"} className={`${inputCompact} w-40`} />
+        </label>
+        <label className="flex flex-col gap-0.5 text-[10px] font-bold text-slate-500">매칭어(쉼표)
+          <input value={match} onChange={(e) => setMatch(e.target.value)} placeholder={type === "benchmark" ? "신세계강남, 강남점" : "역삼동, 강남대로"} className={`${inputCompact} w-56`} />
+        </label>
+        {type === "benchmark" && (
+          <label className="flex items-center gap-1 text-[11px] font-bold text-slate-600">
+            <input type="checkbox" checked={fullSurvey} onChange={(e) => setFullSurvey(e.target.checked)} /> 전수조사(C1 분모 포함)
+          </label>
+        )}
+        <button onClick={add} disabled={pending} className={TOKENS.btn.primary}>추가</button>
+      </div>
+      <div className="max-h-64 overflow-y-auto border border-slate-200">
+        <table className="w-full text-[11px]">
+          <thead className="bg-[#F1ECDB] text-[#0a0a0a]">
+            <tr>
+              <th className="px-2 py-1 text-left">이름</th>
+              <th className="px-2 py-1 text-left">매칭어</th>
+              {type === "benchmark" && <th className="px-2 py-1 text-center">전수</th>}
+              <th className="px-2 py-1 text-center">삭제</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((l) => (
+              <tr key={l.id} className="border-t border-slate-100">
+                <td className="px-2 py-1 font-bold whitespace-nowrap">{l.name}</td>
+                <td className="px-2 py-1 text-slate-500">{(l.match_strings ?? []).join(", ")}</td>
+                {type === "benchmark" && <td className="px-2 py-1 text-center">{l.is_full_survey ? "✓" : "—"}</td>}
+                <td className="px-2 py-1 text-center">
+                  <button onClick={() => remove(l.id, l.name)} disabled={pending} className="text-rose-600 font-bold hover:underline disabled:opacity-50">삭제</button>
+                </td>
+              </tr>
+            ))}
+            {rows.length === 0 && (
+              <tr><td colSpan={type === "benchmark" ? 4 : 3} className="px-2 py-4 text-center text-slate-400">
+                {type === "benchmark" ? "벤치마크 유통이 없습니다. bcd_seed.sql 적용 또는 위에서 추가하세요." : "핫플 상권이 없습니다. bcd_hotspot_seed.sql 적용 또는 위에서 추가하세요."}
+              </td></tr>
+            )}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }

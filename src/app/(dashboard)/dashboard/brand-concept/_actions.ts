@@ -13,6 +13,7 @@ type Result = { ok: true } | { ok: false; error: string };
 const NA_REASONS = new Set(["시계열부족", "검색어미확정", "매장미검출", "현장미확인", "표본부족"]);
 const CODES = new Set(["C1", "C2", "C3", "C4", "C5", "C6", "C7", "C8"]);
 const SCOPES = new Set(["active", "excluded", "knockout"]);
+const LIST_TYPES = new Set(["benchmark", "hotspot", "channel"]);
 
 /** 인증 + owner/admin 확인. 통과 시 service 클라이언트와 사용자 이메일 반환. */
 async function guard(): Promise<
@@ -91,6 +92,45 @@ export async function saveMetric(input: {
   });
   if (error) return { ok: false, error: `저장 실패: ${error.message}` };
 
+  revalidatePath("/dashboard/brand-concept");
+  return { ok: true };
+}
+
+/** 목록(bcd_lists) 행 추가 — 벤치마크 유통 / 핫플 상권 확장용. match_strings는 CSV로 받아 배열화. */
+export async function addList(input: {
+  list_type: string;
+  name: string;
+  match_strings: string;   // 쉼표 구분
+  is_full_survey?: boolean;
+}): Promise<Result> {
+  const g = await guard();
+  if (!g.ok) return g;
+  if (!LIST_TYPES.has(input.list_type)) return { ok: false, error: "list_type은 benchmark·hotspot·channel 중 하나여야 합니다." };
+  const name = input.name?.trim();
+  if (!name) return { ok: false, error: "이름이 필요합니다." };
+  const match = (input.match_strings ?? "")
+    .split(",").map((s) => s.trim()).filter(Boolean).slice(0, 30);
+
+  const { error } = await g.svc.from("bcd_lists").insert({
+    list_type: input.list_type,
+    version: "v1.0",
+    name: name.slice(0, 200),
+    match_strings: match,
+    is_full_survey: input.list_type === "benchmark" ? !!input.is_full_survey : false,
+  });
+  if (error) return { ok: false, error: `추가 실패: ${error.message}` };
+
+  revalidatePath("/dashboard/brand-concept");
+  return { ok: true };
+}
+
+/** 목록(bcd_lists) 행 삭제. */
+export async function deleteList(id: string): Promise<Result> {
+  const g = await guard();
+  if (!g.ok) return g;
+  if (!id) return { ok: false, error: "id가 필요합니다." };
+  const { error } = await g.svc.from("bcd_lists").delete().eq("id", id);
+  if (error) return { ok: false, error: `삭제 실패: ${error.message}` };
   revalidatePath("/dashboard/brand-concept");
   return { ok: true };
 }
