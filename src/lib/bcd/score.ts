@@ -102,6 +102,8 @@ function isStructurallyImpossible(
   pool: BrandInput[]
 ): boolean {
   if (criterion.mode !== 'abs') return false;
+  // C1(벤치마크 입점률): "입점 없음 = 0% = 0점"이 정본(업종 무관). 구조적 N/A 적용하지 않는다.
+  if (criterion.code === 'C1') return false;
   const peers = pool.filter(b => b.category_minor === brand.category_minor);
   if (peers.length === 0) return false;
   const maxInGroup = Math.max(

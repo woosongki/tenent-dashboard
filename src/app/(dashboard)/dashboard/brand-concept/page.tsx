@@ -29,29 +29,30 @@ export default async function BrandConceptPage() {
   const role = membership?.role as "owner" | "admin" | "member" | undefined;
   const canEdit = role === "owner" || role === "admin";
 
-  // 활성 브랜드 채점 + 전체 로스터(제외·거래불가 포함)를 병렬 로드. 테이블 미적용 시 safe→null.
-  const scored = await safe(() => loadScored());
-  const allBrands = await safe(async () => {
-    const sb = createServiceClient();
-    const { data, error } = await sb
-      .from("bcd_brands")
-      .select("id, name, category_major, category_minor, online_applicable, scope_status")
-      .order("name", { ascending: true });
-    if (error) throw new Error(error.message);
-    return (data ?? []) as BrandRow[];
-  });
-
-  const lists = await safe(async () => {
-    const sb = createServiceClient();
-    const { data, error } = await sb
-      .from("bcd_lists")
-      .select("id, list_type, name, match_strings, is_full_survey")
-      .in("list_type", ["benchmark", "hotspot"])
-      .order("list_type", { ascending: true })
-      .order("name", { ascending: true });
-    if (error) throw new Error(error.message);
-    return (data ?? []) as ListRow[];
-  });
+  // 활성 브랜드 채점 + 전체 로스터 + 목록을 병렬 로드(순차 왕복 제거). 테이블 미적용 시 safe→null.
+  const [scored, allBrands, lists] = await Promise.all([
+    safe(() => loadScored()),
+    safe(async () => {
+      const sb = createServiceClient();
+      const { data, error } = await sb
+        .from("bcd_brands")
+        .select("id, name, category_major, category_minor, online_applicable, scope_status")
+        .order("name", { ascending: true });
+      if (error) throw new Error(error.message);
+      return (data ?? []) as BrandRow[];
+    }),
+    safe(async () => {
+      const sb = createServiceClient();
+      const { data, error } = await sb
+        .from("bcd_lists")
+        .select("id, list_type, name, match_strings, is_full_survey")
+        .in("list_type", ["benchmark", "hotspot"])
+        .order("list_type", { ascending: true })
+        .order("name", { ascending: true });
+      if (error) throw new Error(error.message);
+      return (data ?? []) as ListRow[];
+    }),
+  ]);
 
   const ready = scored !== null || allBrands !== null;
 

@@ -27,6 +27,34 @@ export async function getActiveRuleset(): Promise<Ruleset | null> {
   return data.definition as Ruleset;
 }
 
+type SB = ReturnType<typeof createServiceClient>;
+
+/**
+ * 브랜드별·지표별 최신값 맵. 이력 전체를 페이지네이션으로 읽어(1000행 상한 회피)
+ * checked_on desc → created_at desc 순으로 첫 등장(=최신)만 채택한다.
+ */
+async function fetchLatestMetrics(sb: SB): Promise<Map<string, Record<string, number | null>>> {
+  const latest = new Map<string, Record<string, number | null>>();
+  const PAGE = 1000;
+  for (let from = 0; ; from += PAGE) {
+    const { data, error } = await sb
+      .from("bcd_metric_values")
+      .select("brand_id, metric_code, value, checked_on, created_at")
+      .order("checked_on", { ascending: false })
+      .order("created_at", { ascending: false })
+      .range(from, from + PAGE - 1);
+    if (error) throw new Error(`bcd loadPool(metrics): ${error.message}`);
+    const batch = (data ?? []) as { brand_id: string; metric_code: string; value: number | null }[];
+    for (const row of batch) {
+      const bucket = latest.get(row.brand_id) ?? {};
+      if (!(row.metric_code in bucket)) bucket[row.metric_code] = row.value;
+      latest.set(row.brand_id, bucket);
+    }
+    if (batch.length < PAGE) break;
+  }
+  return latest;
+}
+
 /**
  * 활성 브랜드 + 브랜드별 최신 지표값 + 유효 flag를 채점 입력(BrandInput[])으로 조립한다.
  * brands: 화면 표기용(브랜드명·카테고리) 원본도 함께 반환.
@@ -34,36 +62,23 @@ export async function getActiveRuleset(): Promise<Ruleset | null> {
 export async function loadPool(): Promise<{ pool: BrandInput[]; brands: BrandRow[] }> {
   const sb = createServiceClient();
 
-  const { data: brands, error: brandErr } = await sb
-    .from("bcd_brands")
-    .select("id, name, category_major, category_minor, online_applicable, scope_status")
-    .eq("scope_status", "active")
-    .order("name", { ascending: true });
-  if (brandErr) throw new Error(`bcd loadPool(brands): ${brandErr.message}`);
-  const brandRows = (brands ?? []) as BrandRow[];
-
-  const { data: metricRows, error: metricErr } = await sb
-    .from("bcd_metric_values")
-    .select("brand_id, metric_code, value, checked_on, created_at")
-    .order("checked_on", { ascending: false })
-    .order("created_at", { ascending: false });
-  if (metricErr) throw new Error(`bcd loadPool(metrics): ${metricErr.message}`);
-
-  // 브랜드별 최신값만 (checked_on desc → 같은 날이면 created_at desc → 첫 등장이 최신)
-  const latestByBrand = new Map<string, Record<string, number | null>>();
-  for (const row of (metricRows ?? []) as { brand_id: string; metric_code: string; value: number | null }[]) {
-    const bucket = latestByBrand.get(row.brand_id) ?? {};
-    if (!(row.metric_code in bucket)) bucket[row.metric_code] = row.value;
-    latestByBrand.set(row.brand_id, bucket);
-  }
-
+  // 세 쿼리를 병렬로 — 순차 왕복이 탭 지연의 주원인이었다.
   const today = new Date().toISOString().slice(0, 10);
-  const { data: flagRows } = await sb
-    .from("bcd_flags")
-    .select("brand_id, flag_type, adjustment, valid_until")
-    .or(`valid_until.is.null,valid_until.gte.${today}`);
+  const [brandsRes, latestByBrand, flagRes] = await Promise.all([
+    sb.from("bcd_brands")
+      .select("id, name, category_major, category_minor, online_applicable, scope_status")
+      .eq("scope_status", "active")
+      .order("name", { ascending: true }),
+    fetchLatestMetrics(sb),
+    sb.from("bcd_flags")
+      .select("brand_id, flag_type, adjustment, valid_until")
+      .or(`valid_until.is.null,valid_until.gte.${today}`),
+  ]);
+  if (brandsRes.error) throw new Error(`bcd loadPool(brands): ${brandsRes.error.message}`);
+  const brandRows = (brandsRes.data ?? []) as BrandRow[];
+
   const flagByBrand = new Map(
-    ((flagRows ?? []) as { brand_id: string; flag_type: string; adjustment: number | null }[]).map((f) => [
+    ((flagRes.data ?? []) as { brand_id: string; flag_type: string; adjustment: number | null }[]).map((f) => [
       f.brand_id,
       { type: f.flag_type as "knockout" | "override", adjustment: f.adjustment ?? undefined },
     ])

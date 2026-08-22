@@ -51,6 +51,14 @@ describe("scoreBrand", () => {
     expect(r.naCodes).not.toContain("C7");
   });
 
+  it("C1은 비교군이 전부 낮아도 값 0이면 0점(N/A 아님)", () => {
+    // 같은 중분류 peers의 C1 최고값(5)이 중기준(20) 미만 — 구조적 N/A 조건이지만 C1은 제외 규칙.
+    const p = [brand("a", { C1: 0, C3: 10, C8: 5 }), brand("b", { C1: 5, C3: 20, C8: 5 })];
+    const r = scoreBrand(p[0], p, RULESET);
+    expect(r.breakdown["C1"].score).toBe(0);
+    expect(r.naCodes).not.toContain("C1");
+  });
+
   it("만점 브랜드는 A 등급(base 100 + 가점)", () => {
     // C8은 sel 모드라 원값이 곧 점수(만점 30) — 만점 조건은 C8=30.
     const full = brand("full", { C1: 50, C3: 100, C8: 30, C7: 4 });
