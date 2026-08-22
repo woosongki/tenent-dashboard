@@ -134,23 +134,28 @@ export async function runKakaoCollection(opts: {
         c1 = Math.round((matchedMalls / fullSurvey.length) * 100);
       }
 
-      // C2 핫플 입점 수 (hotspot 목록 있을 때만)
+      // C2 핫플 상권 입점 수 = 매장이 존재하는 '핫플 상권' 수(상권 단위 중복 제거).
+      //   "50대 핵심상권 중 컨텐츠가 있는 상권이 몇 곳인가" — 한 상권에 매장이 여럿이어도 1로 집계.
       let c2: number | null = null;
       let c2Na = false;
       if (hotspots.length > 0) {
-        c2 = places.filter((p) =>
-          hotspots.some((h) => matchesAny(`${p.road_address_name} ${p.address_name}`, h.match_strings.length ? h.match_strings : [h.name]))
-        ).length;
+        const hitDistricts = new Set<string>();
+        for (const p of places) {
+          const addr = `${p.road_address_name} ${p.address_name}`;
+          for (const h of hotspots) {
+            if (matchesAny(addr, h.match_strings.length ? h.match_strings : [h.name])) hitDistricts.add(h.name);
+          }
+        }
+        c2 = hitDistricts.size;
       } else {
         c2Na = true;
       }
 
-      // C6 매장 수 순증률
+      // C6 매장 수 순증률 — 직전 카카오 회차가 있을 때만 계산·기록.
+      //   첫 회차(직전 없음)엔 기록하지 않아 기존 기본값(C6 시드 중간값 5)을 보존한다.
       let c6: number | null = null;
-      let c6Na = false;
       const prior = prevC3.get(brand.id);
       if (prior && prior > 0) c6 = Math.round(((c3 - prior) / prior) * 1000) / 10;
-      else c6Na = true;
 
       // 지표 기록
       const rows: Record<string, unknown>[] = [
@@ -160,7 +165,6 @@ export async function runKakaoCollection(opts: {
       if (c2 !== null) rows.push({ brand_id: brand.id, metric_code: "C2", value: c2, source: "kakao_map", snapshot_run_id: runId, checked_by: opts.triggeredBy });
       else if (c2Na) rows.push({ brand_id: brand.id, metric_code: "C2", value: null, na_reason: "표본부족", source: "kakao_map", snapshot_run_id: runId, checked_by: opts.triggeredBy });
       if (c6 !== null) rows.push({ brand_id: brand.id, metric_code: "C6", value: c6, source: "kakao_map", snapshot_run_id: runId, checked_by: opts.triggeredBy });
-      else if (c6Na) rows.push({ brand_id: brand.id, metric_code: "C6", value: null, na_reason: "시계열부족", source: "kakao_map", snapshot_run_id: runId, checked_by: opts.triggeredBy });
 
       await svc.from("bcd_metric_values").insert(rows);
       ok++;
