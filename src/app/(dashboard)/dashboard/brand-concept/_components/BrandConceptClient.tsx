@@ -3,11 +3,11 @@
 import { Fragment, useMemo, useState, useTransition, type TransitionStartFunction } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import type { Ruleset, ScoreResult, CriterionResult } from "@/lib/bcd/score";
+import type { Ruleset, ScoreResult, CriterionResult, Criterion, CriterionMode } from "@/lib/bcd/score";
 import type { BrandRow } from "@/lib/bcd/data";
 import { pillBtn, inputCompact, TOKENS } from "@/lib/tokens";
 import ScrollHint from "@/components/ui/ScrollHint";
-import { registerBrand, saveMetric, setBrandScope, addList, deleteList } from "../_actions";
+import { registerBrand, saveMetric, setBrandScope, addList, deleteList, saveRuleset } from "../_actions";
 
 export interface ListRow {
   id: string;
@@ -64,6 +64,7 @@ export default function BrandConceptClient({
   const [expanded, setExpanded] = useState<string | null>(null);
   const [showRegister, setShowRegister] = useState(false);
   const [showLists, setShowLists] = useState(false);
+  const [showRuleset, setShowRuleset] = useState(false);
   const [collecting, setCollecting] = useState<null | "kakao" | "naver">(null);
   const [selected, setSelected] = useState<Set<string>>(new Set());
 
@@ -208,6 +209,9 @@ export default function BrandConceptClient({
             <button onClick={() => setShowLists((v) => !v)} className={TOKENS.btn.secondary}>
               {showLists ? "✕ 닫기" : "📋 벤치마크·핫플 관리"}
             </button>
+            <button onClick={() => setShowRuleset((v) => !v)} className={TOKENS.btn.secondary}>
+              {showRuleset ? "✕ 닫기" : "⚙ 기준(C1~C8) 편집"}
+            </button>
             <span className="mx-1 h-5 w-px bg-[#0a0a0a]/20" />
             <button onClick={() => runCollect("kakao")} disabled={collecting !== null} className={TOKENS.btn.accent}>
               {collecting === "kakao" ? "수집 중…" : "🗺 카카오맵 수집"}
@@ -223,6 +227,9 @@ export default function BrandConceptClient({
           </div>
           {showRegister && <RegisterForm pending={pending} onDone={() => { setShowRegister(false); router.refresh(); }} startTransition={startTransition} />}
           {showLists && <ListManager lists={lists} pending={pending} startTransition={startTransition} onDone={() => router.refresh()} />}
+          {showRuleset && (ruleset
+            ? <RulesetEditor ruleset={ruleset} pending={pending} startTransition={startTransition} onDone={() => router.refresh()} />
+            : <p className="mt-2 text-[12px] text-slate-500">활성 ruleset이 없습니다. bcd_seed.sql을 먼저 적용하세요.</p>)}
         </div>
       )}
 
@@ -462,6 +469,162 @@ function RegisterForm({
         <input type="checkbox" checked={online} onChange={(e) => setOnline(e.target.checked)} /> 온라인 채널 적용(C7)
       </label>
       <button onClick={submit} disabled={pending} className={TOKENS.btn.primary}>등록</button>
+    </div>
+  );
+}
+
+// ── 기준(ruleset) 편집기(관리자) — C1~C8 배점·경계값·등급컷 직접 수정 ──────────
+const MODE_LABEL: Record<CriterionMode, string> = { abs: "절대", pct: "백분위", sel: "선택" };
+
+function NumCell({ value, onChange }: { value: number; onChange: (n: number) => void }) {
+  return (
+    <td className="px-1 py-1 text-center">
+      <input type="number" value={value}
+        onChange={(e) => { const n = parseFloat(e.target.value); onChange(Number.isFinite(n) ? n : 0); }}
+        className="w-16 border border-slate-300 px-1 py-0.5 text-[11px] text-right outline-none" />
+    </td>
+  );
+}
+
+function RulesetEditor({
+  ruleset, pending, startTransition, onDone,
+}: {
+  ruleset: Ruleset;
+  pending: boolean;
+  startTransition: TransitionStartFunction;
+  onDone: () => void;
+}) {
+  const [rs, setRs] = useState<Ruleset>(() => JSON.parse(JSON.stringify(ruleset)) as Ruleset);
+  const [note, setNote] = useState("");
+  const [previewing, setPreviewing] = useState(false);
+  const [preview, setPreview] = useState<null | { sum: number; totalBrands: number; changedCount: number; gradeCounts: Record<string, number> }>(null);
+
+  const sum = rs.base.reduce((t, c) => t + (Number(c.weight) || 0), 0);
+  const sumOk = sum === 100;
+
+  function setBase(i: number, field: keyof Criterion, value: number | string) {
+    setRs((prev) => {
+      const base = prev.base.map((c, idx) => (idx === i ? { ...c, [field]: value } : c));
+      return { ...prev, base };
+    });
+    setPreview(null);
+  }
+  function setBonus(field: keyof Criterion, value: number | string) {
+    setRs((prev) => ({ ...prev, bonus: { ...prev.bonus, [field]: value } }));
+    setPreview(null);
+  }
+  function setCut(k: keyof Ruleset["cuts"], value: number) {
+    setRs((prev) => ({ ...prev, cuts: { ...prev.cuts, [k]: value } }));
+    setPreview(null);
+  }
+
+  async function doPreview() {
+    setPreviewing(true);
+    try {
+      const res = await fetch("/api/bcd/score/preview", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ruleset: rs }),
+      });
+      const data = await res.json();
+      if (!res.ok) { toast.error(data.message ?? data.error ?? "미리보기 실패"); return; }
+      setPreview({ sum: data.sum, totalBrands: data.totalBrands, changedCount: data.changedCount, gradeCounts: data.gradeCounts ?? {} });
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "네트워크 오류");
+    } finally { setPreviewing(false); }
+  }
+
+  function save() {
+    if (!sumOk) { toast.error(`기본 배점 합이 ${sum} — 100이어야 저장됩니다.`); return; }
+    if (!window.confirm(`기준을 새 버전으로 저장하고 활성화합니다. 전 브랜드 재채점됩니다. 진행할까요?`)) return;
+    startTransition(async () => {
+      const res = await saveRuleset(rs, note);
+      if (res.ok) { toast.success(`저장됨 · ${res.version} 활성`); onDone(); }
+      else toast.error(res.error);
+    });
+  }
+
+  const num = (v: number) => (Number.isFinite(v) ? v : 0);
+
+  return (
+    <div className="mt-2 space-y-3 border-[2px] border-[#0a0a0a] bg-white p-3 shadow-[3px_3px_0_0_#0a0a0a]">
+      <p className="text-[11px] text-slate-500">
+        배점(만점)·중(중간점수)·상기준(t1)·중기준(t2)·판정방식을 수정합니다. <b>기본 배점 합은 100</b>이어야 저장됩니다.
+        절대=값 자체가 기준 이상, 백분위=비교군 내 상위%, 선택=원값이 곧 점수.
+      </p>
+      <div className="overflow-x-auto">
+        <table className="w-full min-w-[560px] text-[11px]">
+          <thead className="bg-[#F1ECDB] text-[#0a0a0a]">
+            <tr>
+              <th className="px-2 py-1 text-left">지표</th>
+              <th className="px-1 py-1">방식</th>
+              <th className="px-1 py-1">배점</th>
+              <th className="px-1 py-1">중</th>
+              <th className="px-1 py-1">상기준(t1)</th>
+              <th className="px-1 py-1">중기준(t2)</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rs.base.map((c, i) => (
+              <tr key={c.code} className="border-t border-slate-100">
+                <td className="px-2 py-1 font-bold whitespace-nowrap">{c.code} {c.name}</td>
+                <td className="px-1 py-1 text-center">
+                  <select value={c.mode} onChange={(e) => setBase(i, "mode", e.target.value)}
+                    className="border border-slate-300 px-1 py-0.5 text-[11px] outline-none">
+                    {(["abs", "pct", "sel"] as CriterionMode[]).map((m) => <option key={m} value={m}>{MODE_LABEL[m]}</option>)}
+                  </select>
+                </td>
+                <NumCell value={c.weight} onChange={(n) => setBase(i, "weight", n)} />
+                <NumCell value={c.mid} onChange={(n) => setBase(i, "mid", n)} />
+                <NumCell value={c.t1} onChange={(n) => setBase(i, "t1", n)} />
+                <NumCell value={c.t2} onChange={(n) => setBase(i, "t2", n)} />
+              </tr>
+            ))}
+            <tr className="border-t-2 border-[#0a0a0a] bg-slate-50">
+              <td className="px-2 py-1 font-bold whitespace-nowrap">{rs.bonus.code} {rs.bonus.name} (가점)</td>
+              <td className="px-1 py-1 text-center text-slate-400">{MODE_LABEL[rs.bonus.mode]}</td>
+              <NumCell value={rs.bonus.weight} onChange={(n) => setBonus("weight", n)} />
+              <NumCell value={rs.bonus.mid} onChange={(n) => setBonus("mid", n)} />
+              <NumCell value={rs.bonus.t1} onChange={(n) => setBonus("t1", n)} />
+              <NumCell value={rs.bonus.t2} onChange={(n) => setBonus("t2", n)} />
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div className="flex flex-wrap items-center gap-3 text-[12px]">
+        <span className={`font-extrabold ${sumOk ? "text-emerald-700" : "text-rose-600"}`}>기본 배점 합 {sum} {sumOk ? "✓" : "✗ (100 필요)"}</span>
+        <span className="text-slate-500">등급컷:</span>
+        {(["A", "Bp", "B", "C"] as const).map((k) => (
+          <label key={k} className="flex items-center gap-1 text-[11px] font-bold">
+            {k === "Bp" ? "B+" : k}
+            <input type="number" value={rs.cuts[k]} onChange={(e) => setCut(k, num(parseFloat(e.target.value)))}
+              className="w-14 border border-slate-300 px-1 py-0.5 text-right outline-none" />
+          </label>
+        ))}
+        <label className="flex items-center gap-1 text-[11px] font-bold">N/A 한도
+          <input type="number" value={rs.na_policy.max_na_points}
+            onChange={(e) => { const v = num(parseFloat(e.target.value)); setRs((p) => ({ ...p, na_policy: { ...p.na_policy, max_na_points: v } })); setPreview(null); }}
+            className="w-14 border border-slate-300 px-1 py-0.5 text-right outline-none" />
+        </label>
+        <label className="flex items-center gap-1 text-[11px] font-bold">백분위 최소표본
+          <input type="number" value={rs.pct_min_sample}
+            onChange={(e) => { const v = num(parseFloat(e.target.value)); setRs((p) => ({ ...p, pct_min_sample: v })); setPreview(null); }}
+            className="w-14 border border-slate-300 px-1 py-0.5 text-right outline-none" />
+        </label>
+      </div>
+
+      {preview && (
+        <div className="border-[2px] border-[#0a0a0a] bg-yellow-50 p-2 text-[11px]">
+          <b>미리보기</b> · 대상 {preview.totalBrands}개 · 등급 변동 <b>{preview.changedCount}</b>건 · 분포:{" "}
+          {GRADE_ORDER.filter((g) => preview.gradeCounts[g]).map((g) => `${g} ${preview.gradeCounts[g]}`).join(" · ") || "—"}
+        </div>
+      )}
+
+      <div className="flex flex-wrap items-center gap-2">
+        <input value={note} onChange={(e) => setNote(e.target.value)} placeholder="변경 사유(선택)" className={`${inputCompact} w-56`} />
+        <button onClick={doPreview} disabled={previewing} className={TOKENS.btn.secondary}>{previewing ? "계산 중…" : "미리보기(재채점 전)"}</button>
+        <button onClick={save} disabled={pending || !sumOk} className={TOKENS.btn.primary}>새 버전으로 저장·활성화</button>
+      </div>
     </div>
   );
 }

@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
+import { validateRuleset, type Ruleset } from "@/lib/bcd/score";
 
 // 브랜드컨셉등급제(BCD) 콘솔 서버 액션.
 // 인증은 쿠키(createClient)로, 권한조회·쓰기는 service_role(RLS 우회)로 — 기존 bcd/_actions 패턴과 동일.
@@ -94,6 +95,42 @@ export async function saveMetric(input: {
 
   revalidatePath("/dashboard/brand-concept");
   return { ok: true };
+}
+
+/** 기준(ruleset) 저장 — 새 버전으로 활성화(기존은 비활성). 기본배점 합 100 검증 필수(PRD 10.1절). */
+export async function saveRuleset(definition: Ruleset, note?: string): Promise<{ ok: true; version: string } | { ok: false; error: string }> {
+  const g = await guard();
+  if (!g.ok) return g;
+
+  const v = validateRuleset(definition);
+  if (!v.ok) return { ok: false, error: v.message };
+
+  // 다음 버전 계산 (vMAJOR.MINOR 중 최대에서 minor +1, 없으면 v1.1)
+  const { data: rows } = await g.svc.from("bcd_rulesets").select("version");
+  let maxMajor = 1, maxMinor = 0;
+  for (const r of (rows ?? []) as { version: string }[]) {
+    const m = /^v(\d+)\.(\d+)$/.exec(r.version ?? "");
+    if (!m) continue;
+    const major = Number(m[1]), minor = Number(m[2]);
+    if (major > maxMajor || (major === maxMajor && minor > maxMinor)) { maxMajor = major; maxMinor = minor; }
+  }
+  const nextVersion = `v${maxMajor}.${maxMinor + 1}`;
+
+  // 활성 ruleset은 항상 1개(부분 유니크 인덱스) — 먼저 전부 비활성화 후 새 버전 활성 삽입.
+  const { error: deErr } = await g.svc.from("bcd_rulesets").update({ is_active: false }).eq("is_active", true);
+  if (deErr) return { ok: false, error: `기존 비활성화 실패: ${deErr.message}` };
+
+  const { error: insErr } = await g.svc.from("bcd_rulesets").insert({
+    version: nextVersion,
+    definition,
+    is_active: true,
+    created_by: g.email,
+    note: note?.slice(0, 500) || null,
+  });
+  if (insErr) return { ok: false, error: `저장 실패: ${insErr.message}` };
+
+  revalidatePath("/dashboard/brand-concept");
+  return { ok: true, version: nextVersion };
 }
 
 /** 목록(bcd_lists) 행 추가 — 벤치마크 유통 / 핫플 상권 확장용. match_strings는 CSV로 받아 배열화. */
