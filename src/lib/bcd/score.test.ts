@@ -39,9 +39,9 @@ describe("scoreBrand", () => {
   });
 
   it("N/A 배점이 정책 한도(25)를 넘으면 미평가", () => {
-    // C1(40) 결측 → naPoints 40 > 25
-    const r = scoreBrand(brand("n", { C1: null, C3: 100, C8: 10 }), pool, RULESET);
-    expect(r.naCodes).toContain("C1");
+    // C3(30, pct) 결측 → naPoints 30 > 25 (C1은 이제 결측이어도 0점이라 N/A로 안 씀)
+    const r = scoreBrand(brand("n", { C1: 10, C3: null, C8: 10 }), pool, RULESET);
+    expect(r.naCodes).toContain("C3");
     expect(r.grade).toBe("미평가");
   });
 
@@ -49,6 +49,13 @@ describe("scoreBrand", () => {
     const r = scoreBrand(brand("x", { C1: 50, C3: 100, C8: 10, C7: 4 }, { online_applicable: false }), pool, RULESET);
     expect(r.bonusScore).toBe(0);
     expect(r.naCodes).not.toContain("C7");
+  });
+
+  it("C1은 값이 아예 없어도(미측정) 0점 — N/A 아님", () => {
+    const p = [brand("a", { C3: 10, C8: 5 }), brand("b", { C1: 50, C3: 20, C8: 5 })]; // a는 C1 없음
+    const r = scoreBrand(p[0], p, RULESET);
+    expect(r.breakdown["C1"].score).toBe(0);
+    expect(r.naCodes).not.toContain("C1");
   });
 
   it("C1은 비교군이 전부 낮아도 값 0이면 0점(N/A 아님)", () => {

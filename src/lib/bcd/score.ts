@@ -120,7 +120,10 @@ function scoreCriterion(
   pool: BrandInput[],
   minSample: number
 ): CriterionResult {
-  const raw = brand.values[criterion.code];
+  let raw = brand.values[criterion.code];
+
+  // C1(벤치마크 입점률): 미측정도 "입점 없음 = 0% = 0점"으로 취급 — 절대 N/A로 두지 않는다.
+  if ((raw === null || raw === undefined) && criterion.code === 'C1') raw = 0;
 
   if (raw === null || raw === undefined) {
     return { value: null, score: null };
