@@ -97,6 +97,32 @@ export async function saveMetric(input: {
   return { ok: true };
 }
 
+/** C1 입점 매트릭스 저장 — 입점한 벤치마크 유통 목록 → C1% 자동계산해 기록.
+ *  value = 입점 유통 수 ÷ 전수조사(is_full_survey) 유통 수 × 100. source=benchmark_manual, detail.malls 보존. */
+export async function setC1Presence(brandId: string, malls: string[]): Promise<{ ok: true; value: number } | { ok: false; error: string }> {
+  const g = await guard();
+  if (!g.ok) return g;
+  if (!brandId) return { ok: false, error: "brand_id가 필요합니다." };
+
+  const { data: bm, error: bmErr } = await g.svc
+    .from("bcd_lists").select("id").eq("list_type", "benchmark").eq("is_full_survey", true);
+  if (bmErr) return { ok: false, error: `벤치마크 조회 실패: ${bmErr.message}` };
+  const denom = (bm?.length ?? 0) || 10;
+
+  const clean = [...new Set((malls ?? []).map((m) => m.trim()).filter(Boolean))].slice(0, 50);
+  const value = Math.round((clean.length / denom) * 100);
+
+  const { error } = await g.svc.from("bcd_metric_values").insert({
+    brand_id: brandId, metric_code: "C1", value,
+    source: "benchmark_manual", checked_by: g.email,
+    detail: { malls: clean, denom },
+  });
+  if (error) return { ok: false, error: `저장 실패: ${error.message}` };
+
+  revalidatePath("/dashboard/brand-concept");
+  return { ok: true, value };
+}
+
 /** 기준(ruleset) 저장 — 새 버전으로 활성화(기존은 비활성). 기본배점 합 100 검증 필수(PRD 10.1절). */
 export async function saveRuleset(definition: Ruleset, note?: string): Promise<{ ok: true; version: string } | { ok: false; error: string }> {
   const g = await guard();

@@ -1,13 +1,13 @@
 "use client";
 
-import { Fragment, useMemo, useState, useTransition, type TransitionStartFunction } from "react";
+import { Fragment, useEffect, useMemo, useState, useTransition, type TransitionStartFunction } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import type { Ruleset, ScoreResult, CriterionResult, Criterion, CriterionMode } from "@/lib/bcd/score";
 import type { BrandRow } from "@/lib/bcd/data";
 import { pillBtn, inputCompact, TOKENS } from "@/lib/tokens";
 import ScrollHint from "@/components/ui/ScrollHint";
-import { registerBrand, saveMetric, setBrandScope, addList, deleteList, saveRuleset } from "../_actions";
+import { registerBrand, saveMetric, setBrandScope, addList, deleteList, saveRuleset, setC1Presence } from "../_actions";
 
 export interface ListRow {
   id: string;
@@ -179,6 +179,7 @@ export default function BrandConceptClient({
   }
 
   const activeCount = rows.filter((r) => r.b.scope_status === "active").length;
+  const benchmarkMalls = useMemo(() => lists.filter((l) => l.list_type === "benchmark").map((l) => l.name), [lists]);
   const filteredIds = filtered.map((f) => f.b.id);
   const allSel = filteredIds.length > 0 && filteredIds.every((id) => selected.has(id));
   function toggleSelectAll() {
@@ -344,6 +345,7 @@ export default function BrandConceptClient({
                     <tr className="bg-[#FAF7EC]">
                       <td colSpan={colSpan} className="px-3 py-3">
                         <Breakdown score={score} critName={critName} />
+                        {canEdit && <C1Editor brandId={b.id} brandName={b.name} benchmarkMalls={benchmarkMalls} pending={pending} startTransition={startTransition} onDone={() => router.refresh()} />}
                         {canEdit && <MetricForm brandId={b.id} pending={pending} startTransition={startTransition} onDone={() => router.refresh()} ruleset={ruleset} />}
                       </td>
                     </tr>
@@ -403,6 +405,65 @@ function Breakdown({ score, critName }: { score: ScoreResult | null; critName: M
           })}
         </tbody>
       </table>
+    </div>
+  );
+}
+
+// ── C1 입점 매트릭스 편집(관리자) — 벤치마크 유통 체크 → C1% 자동계산 ──────────
+function C1Editor({
+  brandId, brandName, benchmarkMalls, pending, startTransition, onDone,
+}: {
+  brandId: string;
+  brandName: string;
+  benchmarkMalls: string[];
+  pending: boolean;
+  startTransition: TransitionStartFunction;
+  onDone: () => void;
+}) {
+  const [checked, setChecked] = useState<Set<string>>(new Set());
+  const [loaded, setLoaded] = useState(false);
+
+  useEffect(() => {
+    let alive = true;
+    fetch(`/api/bcd/metrics?brand_id=${encodeURIComponent(brandId)}`)
+      .then((r) => r.json())
+      .then((d: { rows?: { metric_code: string; detail?: { malls?: string[] } | null }[] }) => {
+        if (!alive) return;
+        const withMalls = (d.rows ?? []).find((r) => r.metric_code === "C1" && Array.isArray(r.detail?.malls));
+        if (withMalls?.detail?.malls) setChecked(new Set(withMalls.detail.malls));
+        setLoaded(true);
+      })
+      .catch(() => { if (alive) setLoaded(true); });
+    return () => { alive = false; };
+  }, [brandId]);
+
+  function toggle(m: string) {
+    setChecked((s) => { const n = new Set(s); if (n.has(m)) n.delete(m); else n.add(m); return n; });
+  }
+  function save() {
+    startTransition(async () => {
+      const res = await setC1Presence(brandId, [...checked]);
+      if (res.ok) { toast.success(`${brandName} C1 = ${res.value}% 저장`); onDone(); }
+      else toast.error(res.error);
+    });
+  }
+
+  if (benchmarkMalls.length === 0) {
+    return <p className="mt-3 border-t border-slate-200 pt-3 text-[11px] text-slate-500">벤치마크 유통이 없습니다 — 목록 관리에서 추가하거나 bcd_seed.sql을 적용하세요.</p>;
+  }
+  return (
+    <div className="mt-3 border-t border-slate-200 pt-3">
+      <p className="mb-1.5 text-[10px] font-bold uppercase tracking-wider text-[#0a0a0a]/60">
+        C1 입점 벤치마크 유통 (체크 = 입점) {loaded ? `· ${checked.size}/${benchmarkMalls.length}` : "· 불러오는 중…"}
+      </p>
+      <div className="flex flex-wrap gap-1.5">
+        {benchmarkMalls.map((m) => (
+          <label key={m} className={`flex cursor-pointer items-center gap-1 border px-2 py-0.5 text-[11px] font-bold ${checked.has(m) ? "border-[#0a0a0a] bg-yellow-200" : "border-slate-300 bg-white text-slate-500"}`}>
+            <input type="checkbox" className="sr-only" checked={checked.has(m)} onChange={() => toggle(m)} />{m}
+          </label>
+        ))}
+      </div>
+      <button onClick={save} disabled={pending || !loaded} className={`${TOKENS.btn.primary} mt-2`}>C1 입점 저장</button>
     </div>
   );
 }
