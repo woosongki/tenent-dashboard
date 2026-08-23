@@ -10,7 +10,7 @@
 
 // ── 타입 ─────────────────────────────────────────────────────────────────
 
-export type CriterionMode = 'abs' | 'pct' | 'sel';
+export type CriterionMode = 'abs' | 'pct' | 'sel' | 'band';
 
 export interface Criterion {
   code: string;          // 'C1' ... 'C8'
@@ -20,6 +20,8 @@ export interface Criterion {
   mode: CriterionMode;
   t1: number;              // 상 기준 (abs: 절대값 · pct: 백분위 0~100)
   t2: number;              // 중 기준
+  /** mode='band' 전용: 원값이 min 이상이면 score. 내림차순으로 첫 매칭 채택, 없으면 0. */
+  bands?: { min: number; score: number }[];
   unit?: string;
   note?: string;
 }
@@ -141,6 +143,14 @@ function scoreCriterion(
 
   if (criterion.mode === 'abs') {
     const s = raw >= criterion.t1 ? criterion.weight : raw >= criterion.t2 ? criterion.mid : 0;
+    return { value: raw, score: s };
+  }
+
+  // 구간(band): 원값이 min 이상인 첫 구간의 score(내림차순), 없으면 0. 3단계 이상 표현용.
+  if (criterion.mode === 'band') {
+    const bands = [...(criterion.bands ?? [])].sort((a, b) => b.min - a.min);
+    let s = 0;
+    for (const b of bands) { if (raw >= b.min) { s = b.score; break; } }
     return { value: raw, score: s };
   }
 

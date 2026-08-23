@@ -557,7 +557,7 @@ function RegisterForm({
 }
 
 // ── 기준(ruleset) 편집기(관리자) — C1~C8 배점·경계값·등급컷 직접 수정 ──────────
-const MODE_LABEL: Record<CriterionMode, string> = { abs: "절대", pct: "백분위", sel: "선택" };
+const MODE_LABEL: Record<CriterionMode, string> = { abs: "절대", pct: "백분위", sel: "선택", band: "구간" };
 
 function NumCell({ value, onChange }: { value: number; onChange: (n: number) => void }) {
   return (
@@ -653,7 +653,7 @@ function RulesetEditor({
                 <td className="px-1 py-1 text-center">
                   <select value={c.mode} onChange={(e) => setBase(i, "mode", e.target.value)}
                     className="border border-slate-300 px-1 py-0.5 text-[11px] outline-none">
-                    {(["abs", "pct", "sel"] as CriterionMode[]).map((m) => <option key={m} value={m}>{MODE_LABEL[m]}</option>)}
+                    {(["abs", "pct", "sel", "band"] as CriterionMode[]).map((m) => <option key={m} value={m}>{MODE_LABEL[m]}</option>)}
                   </select>
                 </td>
                 <NumCell value={c.weight} onChange={(n) => setBase(i, "weight", n)} />

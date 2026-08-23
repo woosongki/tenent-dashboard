@@ -51,6 +51,21 @@ describe("scoreBrand", () => {
     expect(r.naCodes).not.toContain("C7");
   });
 
+  it("band 모드: 4곳↑25·2~3곳20·1곳10·0곳0 (미측정도 0)", () => {
+    const bandRs: Ruleset = {
+      base: [{ code: "C1", name: "입점", weight: 25, mid: 20, mode: "band", t1: 40, t2: 20,
+        bands: [{ min: 40, score: 25 }, { min: 20, score: 20 }, { min: 10, score: 10 }] }],
+      bonus: RULESET.bonus, cuts: RULESET.cuts, na_policy: RULESET.na_policy, pct_min_sample: 5,
+    };
+    const sc = (v: number | null) => scoreBrand(brand("x", { C1: v }), [brand("x", { C1: v })], bandRs).breakdown["C1"].score;
+    expect(sc(50)).toBe(25);
+    expect(sc(30)).toBe(20);
+    expect(sc(20)).toBe(20);
+    expect(sc(10)).toBe(10);
+    expect(sc(0)).toBe(0);
+    expect(sc(null)).toBe(0);
+  });
+
   it("C1은 값이 아예 없어도(미측정) 0점 — N/A 아님", () => {
     const p = [brand("a", { C3: 10, C8: 5 }), brand("b", { C1: 50, C3: 20, C8: 5 })]; // a는 C1 없음
     const r = scoreBrand(p[0], p, RULESET);
