@@ -94,7 +94,8 @@ export async function GET(req: NextRequest) {
     .from("bcd_metric_values")
     .select("*")
     .eq("brand_id", brandId)
-    .order("checked_on", { ascending: false });
+    .order("checked_on", { ascending: false })
+    .order("created_at", { ascending: false });
 
   if (error) return Response.json({ error: error.message }, { status: 500 });
   return Response.json({ rows: data });

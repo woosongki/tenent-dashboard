@@ -63,6 +63,17 @@ export async function registerBrand(input: {
   return { ok: true };
 }
 
+/** 브랜드 삭제. 하위 지표·flag·검색량은 FK on delete cascade로 함께 삭제. */
+export async function deleteBrand(brandId: string): Promise<Result> {
+  const g = await guard();
+  if (!g.ok) return g;
+  if (!brandId) return { ok: false, error: "brand_id가 필요합니다." };
+  const { error } = await g.svc.from("bcd_brands").delete().eq("id", brandId);
+  if (error) return { ok: false, error: `삭제 실패: ${error.message}` };
+  revalidatePath("/dashboard/brand-concept");
+  return { ok: true };
+}
+
 /** 지표 원값 1건 기록(수동). value=null이면 na_reason 필수(0으로 채우지 않음). */
 export async function saveMetric(input: {
   brand_id: string;

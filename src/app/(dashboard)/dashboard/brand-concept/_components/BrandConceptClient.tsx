@@ -7,7 +7,32 @@ import type { Ruleset, ScoreResult, CriterionResult, Criterion, CriterionMode } 
 import type { BrandRow } from "@/lib/bcd/data";
 import { pillBtn, inputCompact, TOKENS } from "@/lib/tokens";
 import ScrollHint from "@/components/ui/ScrollHint";
-import { registerBrand, saveMetric, setBrandScope, addList, deleteList, saveRuleset, setC1Presence } from "../_actions";
+import { registerBrand, saveMetric, setBrandScope, addList, deleteList, saveRuleset, setC1Presence, deleteBrand } from "../_actions";
+
+// 분류체계 (대분류 8 · 중분류 28) — 마스터 02_분류체계 기준. 등록 폼 드롭다운 소스.
+const TAXONOMY: Record<string, string[]> = {
+  "키즈·교육": ["키즈카페·놀이시설", "교육·학원", "완구"],
+  "홈·리빙": ["침구·매트리스", "주방·식기", "가구", "홈데코·패브릭"],
+  "뷰티·헬스케어": ["헤어·가발", "피부·스파", "네일"],
+  "스포츠·레저": ["피트니스·필라테스", "골프·스크린", "구기·체험스포츠"],
+  "문화·엔터": ["서점·문구", "게임·보드게임", "전시·체험", "영화·미디어"],
+  "생활서비스": ["세탁", "플라워·공방", "반려동물", "자동차"],
+  "리테일·기타": ["패션·잡화", "생활잡화·리세일", "가전·전자", "식품·건강"],
+  "의료·약국·안경": ["의원·병원", "안경·콘택트", "약국"],
+};
+const MAJORS = Object.keys(TAXONOMY);
+
+// C1~C8 기준 설명 — 담당자가 아닌 사람도 보고 작업할 수 있게.
+const CRITERIA_HELP: { code: string; title: string; what: string; how: string; source: string }[] = [
+  { code: "C1", title: "벤치마크 유통 입점률", what: "핵심 벤치마크 유통(더현대·스타필드·롯데월드몰 등 10곳) 중 몇 곳에 입점했는지.", how: "4곳↑=25 · 2~3곳=20 · 1곳=10 · 0곳=0점", source: "수동 — 콘솔 'C1 입점 편집'에서 유통 체크" },
+  { code: "C2", title: "핫플 상권 입점 수", what: "전국 핵심상권(50여 곳) 중 매장이 있는 상권 수(상권 단위).", how: "절대기준 20곳↑=상 · 5곳↑=중 (배점 15)", source: "카카오맵 수집(자동)" },
+  { code: "C3", title: "전국 매장 수", what: "브랜드의 전국 매장 수.", how: "같은 중분류 내 백분위 — 상위 30%↑=상 · 상위 70%↑=중 (배점 10)", source: "카카오맵 수집(자동, 표본 최대 45)" },
+  { code: "C4", title: "검색량 수준", what: "월간 검색량(절대치, PC+모바일).", how: "같은 중분류 내 백분위 (배점 18)", source: "네이버 검색광고(자동)" },
+  { code: "C5", title: "검색량 추세", what: "전년 동월 대비 검색량 증감률.", how: "같은 중분류 내 백분위 (배점 12)", source: "네이버 데이터랩(자동)" },
+  { code: "C6", title: "매장 수 순증률", what: "직전 수집 대비 매장 증가율.", how: "절대기준 (배점 10). 2회차 수집부터 실측, 그전엔 기본값 5", source: "카카오맵 수집(자동)" },
+  { code: "C7", title: "온라인 채널 전개(가점)", what: "자사몰·오픈마켓 등 온라인 판매 채널 수.", how: "가점 최대 5점(기본 100점 밖). 온라인 미적용 브랜드는 제외", source: "수동" },
+  { code: "C8", title: "브랜드 감도", what: "담당자 정성 평가(트렌드·브랜드력).", how: "상(10)/중(5)/하(0) 또는 0~10 직접 (배점 10)", source: "수동 — 지표 입력" },
+];
 
 export interface ListRow {
   id: string;
@@ -65,6 +90,7 @@ export default function BrandConceptClient({
   const [showRegister, setShowRegister] = useState(false);
   const [showLists, setShowLists] = useState(false);
   const [showRuleset, setShowRuleset] = useState(false);
+  const [showHelp, setShowHelp] = useState(false);
   const [collecting, setCollecting] = useState<null | "kakao" | "naver">(null);
   const [selected, setSelected] = useState<Set<string>>(new Set());
 
@@ -172,9 +198,21 @@ export default function BrandConceptClient({
 
   function onScope(brandId: string, scope: string) {
     startTransition(async () => {
-      const res = await setBrandScope(brandId, scope);
-      if (res.ok) { toast.success("범위 변경됨"); router.refresh(); }
-      else toast.error(res.error);
+      try {
+        const res = await setBrandScope(brandId, scope);
+        if (res.ok) { toast.success("범위 변경됨"); router.refresh(); }
+        else toast.error(res.error);
+      } catch (e) { toast.error(e instanceof Error ? e.message : "변경 중 오류"); }
+    });
+  }
+  function onDeleteBrand(id: string, name: string) {
+    if (!window.confirm(`'${name}' 브랜드를 삭제할까요? 이 브랜드의 지표·평가 기록도 함께 삭제됩니다(되돌릴 수 없음).`)) return;
+    startTransition(async () => {
+      try {
+        const res = await deleteBrand(id);
+        if (res.ok) { toast.success(`${name} 삭제됨`); if (expanded === id) setExpanded(null); router.refresh(); }
+        else toast.error(res.error);
+      } catch (e) { toast.error(e instanceof Error ? e.message : "삭제 중 오류"); }
     });
   }
 
@@ -199,6 +237,41 @@ export default function BrandConceptClient({
         <Kpi label="채점 완료" value={scores.length.toLocaleString()} sub={ruleset ? "활성 기준 적용" : "기준 없음"} highlight />
         <Kpi label="A · B+ 등급" value={dist.filter((d) => d.g === "A" || d.g === "B+").reduce((t, d) => t + d.n, 0).toLocaleString()} sub="상위 등급" />
         <Kpi label="N/A 초과(미평가)" value={(scores.filter((s) => s.grade === "미평가").length).toLocaleString()} sub="지표 결측 과다" />
+      </div>
+
+      {/* 기준 설명 (누구나) */}
+      <div>
+        <button onClick={() => setShowHelp((v) => !v)} className={TOKENS.btn.secondary}>
+          {showHelp ? "✕ 닫기" : "❓ C1~C8 점수 기준 설명"}
+        </button>
+        {showHelp && (
+          <div className="mt-2 overflow-x-auto border-[2px] border-[#0a0a0a] bg-white p-1 shadow-[3px_3px_0_0_#0a0a0a]">
+            <table className="w-full min-w-[720px] text-[11px]">
+              <thead className="bg-[#0a0a0a] text-white">
+                <tr>
+                  <th className="px-2 py-1.5 text-left">지표</th>
+                  <th className="px-2 py-1.5 text-left">무엇을 보나</th>
+                  <th className="px-2 py-1.5 text-left">점수 방식</th>
+                  <th className="px-2 py-1.5 text-left">출처</th>
+                </tr>
+              </thead>
+              <tbody>
+                {CRITERIA_HELP.map((c) => (
+                  <tr key={c.code} className="border-t border-slate-100 align-top">
+                    <td className="px-2 py-1.5 font-bold whitespace-nowrap">{c.code} {c.title}</td>
+                    <td className="px-2 py-1.5 text-slate-600">{c.what}</td>
+                    <td className="px-2 py-1.5 text-slate-600">{c.how}</td>
+                    <td className="px-2 py-1.5 text-slate-500 whitespace-nowrap">{c.source}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <p className="px-2 py-1.5 text-[10px] text-slate-500">
+              등급 = 8지표 가중합(기본 100점) + C7 가점(최대 5). 결측 배점이 {ruleset?.na_policy.max_na_points ?? 25}점 초과면 &apos;미평가&apos;.
+              등급컷 A/B+/B/C는 활성 기준(ruleset)에 따르며 관리자가 &apos;기준 편집&apos;에서 조정.
+            </p>
+          </div>
+        )}
       </div>
 
       {/* 등급 분포 막대 */}
@@ -347,6 +420,14 @@ export default function BrandConceptClient({
                         <Breakdown score={score} critName={critName} />
                         {canEdit && <C1Editor brandId={b.id} brandName={b.name} benchmarkMalls={benchmarkMalls} pending={pending} startTransition={startTransition} onDone={() => router.refresh()} />}
                         {canEdit && <MetricForm brandId={b.id} pending={pending} startTransition={startTransition} onDone={() => router.refresh()} ruleset={ruleset} />}
+                        {canEdit && (
+                          <div className="mt-3 border-t border-slate-200 pt-3">
+                            <button onClick={() => onDeleteBrand(b.id, b.name)} disabled={pending}
+                              className="border-[2px] border-rose-600 bg-white px-3 py-1.5 text-[12px] font-extrabold text-rose-600 shadow-[2px_2px_0_0_#e11d48] transition-all hover:bg-rose-50 disabled:opacity-50">
+                              🗑 이 브랜드 삭제
+                            </button>
+                          </div>
+                        )}
                       </td>
                     </tr>
                   )}
@@ -442,9 +523,11 @@ function C1Editor({
   }
   function save() {
     startTransition(async () => {
-      const res = await setC1Presence(brandId, [...checked]);
-      if (res.ok) { toast.success(`${brandName} C1 = ${res.value}% 저장`); onDone(); }
-      else toast.error(res.error);
+      try {
+        const res = await setC1Presence(brandId, [...checked]);
+        if (res.ok) { toast.success(`${brandName} C1 = ${res.value}% 저장`); onDone(); }
+        else toast.error(res.error);
+      } catch (e) { toast.error(e instanceof Error ? e.message : "저장 중 오류"); }
     });
   }
 
@@ -488,9 +571,11 @@ function MetricForm({
     const value = hasVal ? Number(val) : null;
     if (hasVal && Number.isNaN(value)) { toast.error("값은 숫자여야 합니다."); return; }
     startTransition(async () => {
-      const res = await saveMetric({ brand_id: brandId, metric_code: code, value, na_reason: hasVal ? undefined : na });
-      if (res.ok) { toast.success(`${code} 저장`); setVal(""); setNa(""); onDone(); }
-      else toast.error(res.error);
+      try {
+        const res = await saveMetric({ brand_id: brandId, metric_code: code, value, na_reason: hasVal ? undefined : na });
+        if (res.ok) { toast.success(`${code} 저장`); setVal(""); setNa(""); onDone(); }
+        else toast.error(res.error);
+      } catch (e) { toast.error(e instanceof Error ? e.message : "저장 중 오류"); }
     });
   }
 
@@ -524,16 +609,22 @@ function RegisterForm({
   onDone: () => void;
 }) {
   const [name, setName] = useState("");
-  const [major, setMajor] = useState("");
-  const [minor, setMinor] = useState("");
+  const [major, setMajor] = useState(MAJORS[0]);
+  const [minor, setMinor] = useState(TAXONOMY[MAJORS[0]][0]);
   const [online, setOnline] = useState(true);
+  const minors = TAXONOMY[major] ?? [];
+
+  function onMajor(m: string) { setMajor(m); setMinor((TAXONOMY[m] ?? [])[0] ?? ""); }
 
   function submit() {
-    if (!name.trim() || !major.trim() || !minor.trim()) { toast.error("브랜드명·대분류·중분류를 입력하세요."); return; }
+    if (!name.trim()) { toast.error("브랜드명을 입력하세요."); return; }
+    if (!major || !minor) { toast.error("대분류·중분류를 선택하세요."); return; }
     startTransition(async () => {
-      const res = await registerBrand({ name, category_major: major, category_minor: minor, online_applicable: online });
-      if (res.ok) { toast.success(`${name.trim()} 등록`); setName(""); setMajor(""); setMinor(""); setOnline(true); onDone(); }
-      else toast.error(res.error);
+      try {
+        const res = await registerBrand({ name, category_major: major, category_minor: minor, online_applicable: online });
+        if (res.ok) { toast.success(`${name.trim()} 등록`); setName(""); onDone(); }
+        else toast.error(res.error);
+      } catch (e) { toast.error(e instanceof Error ? e.message : "등록 중 오류"); }
     });
   }
 
@@ -543,10 +634,14 @@ function RegisterForm({
         <input value={name} onChange={(e) => setName(e.target.value)} placeholder="브랜드명" className={`${inputCompact} w-40`} />
       </label>
       <label className="flex flex-col gap-0.5 text-[10px] font-bold text-slate-500">대분류
-        <input value={major} onChange={(e) => setMajor(e.target.value)} placeholder="예: 홈·리빙" className={`${inputCompact} w-32`} />
+        <select value={major} onChange={(e) => onMajor(e.target.value)} className="border border-slate-300 px-2 py-1 text-[12px] font-bold outline-none">
+          {MAJORS.map((m) => <option key={m} value={m}>{m}</option>)}
+        </select>
       </label>
       <label className="flex flex-col gap-0.5 text-[10px] font-bold text-slate-500">중분류
-        <input value={minor} onChange={(e) => setMinor(e.target.value)} placeholder="예: 침구·매트리스" className={`${inputCompact} w-36`} />
+        <select value={minor} onChange={(e) => setMinor(e.target.value)} className="border border-slate-300 px-2 py-1 text-[12px] font-bold outline-none">
+          {minors.map((m) => <option key={m} value={m}>{m}</option>)}
+        </select>
       </label>
       <label className="flex items-center gap-1 text-[11px] font-bold text-slate-600">
         <input type="checkbox" checked={online} onChange={(e) => setOnline(e.target.checked)} /> 온라인 채널 적용(C7)
@@ -620,9 +715,11 @@ function RulesetEditor({
     if (!sumOk) { toast.error(`기본 배점 합이 ${sum} — 100이어야 저장됩니다.`); return; }
     if (!window.confirm(`기준을 새 버전으로 저장하고 활성화합니다. 전 브랜드 재채점됩니다. 진행할까요?`)) return;
     startTransition(async () => {
-      const res = await saveRuleset(rs, note);
-      if (res.ok) { toast.success(`저장됨 · ${res.version} 활성`); onDone(); }
-      else toast.error(res.error);
+      try {
+        const res = await saveRuleset(rs, note);
+        if (res.ok) { toast.success(`저장됨 · ${res.version} 활성`); onDone(); }
+        else toast.error(res.error);
+      } catch (e) { toast.error(e instanceof Error ? e.message : "저장 중 오류"); }
     });
   }
 
@@ -730,17 +827,21 @@ function ListManager({
   function add() {
     if (!name.trim()) { toast.error("이름을 입력하세요."); return; }
     startTransition(async () => {
-      const res = await addList({ list_type: type, name, match_strings: match, is_full_survey: fullSurvey });
-      if (res.ok) { toast.success(`${name.trim()} 추가`); setName(""); setMatch(""); onDone(); }
-      else toast.error(res.error);
+      try {
+        const res = await addList({ list_type: type, name, match_strings: match, is_full_survey: fullSurvey });
+        if (res.ok) { toast.success(`${name.trim()} 추가됨`); setName(""); setMatch(""); onDone(); }
+        else toast.error(res.error);
+      } catch (e) { toast.error(e instanceof Error ? e.message : "추가 중 오류"); }
     });
   }
   function remove(id: string, nm: string) {
     if (!window.confirm(`'${nm}' 삭제할까요?`)) return;
     startTransition(async () => {
-      const res = await deleteList(id);
-      if (res.ok) { toast.success("삭제됨"); onDone(); }
-      else toast.error(res.error);
+      try {
+        const res = await deleteList(id);
+        if (res.ok) { toast.success("삭제됨"); onDone(); }
+        else toast.error(res.error);
+      } catch (e) { toast.error(e instanceof Error ? e.message : "삭제 중 오류"); }
     });
   }
 
