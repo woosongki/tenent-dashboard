@@ -34,6 +34,31 @@ async function guard(): Promise<
   return { ok: true, svc, email: user.email ?? null };
 }
 
+/** 벤치마크 유통 수(전수조사) 변경 시 전 브랜드 C1 재계산.
+ *  각 benchmark_manual C1 행의 detail.malls 개수를 새 분모로 나눠 value 갱신. */
+async function recomputeBenchmarkC1(svc: ReturnType<typeof createServiceClient>): Promise<void> {
+  const { data: bm } = await svc.from("bcd_lists").select("id").eq("list_type", "benchmark").eq("is_full_survey", true);
+  const denom = bm?.length ?? 0;
+  if (denom < 1) return; // 전수조사 유통이 없으면 재계산 스킵(0 나눗셈 방지)
+
+  const PAGE = 1000;
+  for (let from = 0; ; from += PAGE) {
+    const { data, error } = await svc
+      .from("bcd_metric_values")
+      .select("id, value, detail")
+      .eq("metric_code", "C1").eq("source", "benchmark_manual")
+      .range(from, from + PAGE - 1);
+    if (error) throw new Error(`C1 재계산 조회 실패: ${error.message}`);
+    const rows = (data ?? []) as { id: string; value: number | null; detail: { malls?: string[] } | null }[];
+    for (const r of rows) {
+      const n = Array.isArray(r.detail?.malls) ? r.detail!.malls!.length : 0;
+      const nv = Math.round((n / denom) * 100);
+      if (nv !== r.value) await svc.from("bcd_metric_values").update({ value: nv }).eq("id", r.id);
+    }
+    if (rows.length < PAGE) break;
+  }
+}
+
 /** 브랜드 등록. category_major/minor는 자유 입력(택소노미 확정 전). */
 export async function registerBrand(input: {
   name: string;
@@ -194,6 +219,9 @@ export async function addList(input: {
   });
   if (error) return { ok: false, error: `추가 실패: ${error.message}` };
 
+  // 벤치마크(전수조사) 추가 시 분모 변동 → 전 브랜드 C1 재계산.
+  if (input.list_type === "benchmark") await recomputeBenchmarkC1(g.svc);
+
   revalidatePath("/dashboard/brand-concept");
   return { ok: true };
 }
@@ -203,8 +231,11 @@ export async function deleteList(id: string): Promise<Result> {
   const g = await guard();
   if (!g.ok) return g;
   if (!id) return { ok: false, error: "id가 필요합니다." };
+  // 삭제 대상이 벤치마크면 분모 변동 → 재계산 필요.
+  const { data: row } = await g.svc.from("bcd_lists").select("list_type").eq("id", id).maybeSingle();
   const { error } = await g.svc.from("bcd_lists").delete().eq("id", id);
   if (error) return { ok: false, error: `삭제 실패: ${error.message}` };
+  if (row?.list_type === "benchmark") await recomputeBenchmarkC1(g.svc);
   revalidatePath("/dashboard/brand-concept");
   return { ok: true };
 }
