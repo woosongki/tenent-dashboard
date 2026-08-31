@@ -169,18 +169,43 @@ function parseCumDays(wb: XLSX.WorkBook): number | null {
 }
 
 /**
+ * 업로드 미리보기 경고용 파싱 리포트.
+ * 평당(지점) 시트를 못 찾아도 파싱은 성공하고 area_raw/store_cnt 만 0이 되는 "조용한 결측"이
+ * 실제로 발생했다(2026-08 당월: 전용면적 전 행 0). 그 사실을 UI가 알 수 있게 노출한다.
+ */
+export interface OfflineIngestReport {
+  sheetNames: string[];              // 파일 내 전체 시트명 — 경고 문구에 그대로 보여줌
+  mainSheet: string;
+  pyeongCurSheet: string | null;     // 당기 평당(지점) 시트. null이면 미검출 → 면적 전부 0
+  pyeongPrevSheet: string | null;    // 전기 평당(지점) 시트
+  cumDays: number | null;            // "N일누적" 검출값 (당월 파일만). null이면 조회 시 캘린더 말일로 대체
+  yyCur: string; yyPrev: string;     // 시트명 매칭에 쓴 '26'/'25' — 경고 문구용
+  curRows: number; curAreaMiss: number;    // 당기 행수 / 그중 면적 0인 행수
+  prevRows: number; prevAreaMiss: number;
+}
+
+/**
  * 오프라인 파일(5/6번) 1개 → 당기+전기 행. period 는 'YYYY'(누적) 또는 'YYYY-MM'(당월).
  * @throws 매출비교(브랜드) 시트를 찾지 못하면 에러.
  */
 export function buildOfflineRows(buf: ArrayBuffer, periodCur: string, periodPrev: string): OfflineRow[] {
+  return buildOfflineWithReport(buf, periodCur, periodPrev).rows;
+}
+
+/** buildOfflineRows + 결측 리포트. 업로드 화면이 경고를 띄우기 위해 사용. */
+export function buildOfflineWithReport(
+  buf: ArrayBuffer, periodCur: string, periodPrev: string,
+): { rows: OfflineRow[]; report: OfflineIngestReport } {
   const wb = XLSX.read(buf, { type: "array" });
   const mainSheet = findMainSheet(wb);
   if (!mainSheet) throw new Error("‘매출비교(브랜드)’ 시트를 찾지 못했습니다. 올바른 오프라인 파일인지 확인하세요.");
   const yyCur = periodCur.slice(2, 4);
   const yyPrev = String(Number(yyCur) - 1).padStart(2, "0");
   const main = parseMain(wb.Sheets[mainSheet]);
-  const aCur = parsePyeong(wb.Sheets[findPyeongSheet(wb, yyCur) ?? ""]);
-  const aPrev = parsePyeong(wb.Sheets[findPyeongSheet(wb, yyPrev) ?? ""]);
+  const pyeongCurSheet = findPyeongSheet(wb, yyCur) ?? null;
+  const pyeongPrevSheet = findPyeongSheet(wb, yyPrev) ?? null;
+  const aCur = parsePyeong(wb.Sheets[pyeongCurSheet ?? ""]);
+  const aPrev = parsePyeong(wb.Sheets[pyeongPrevSheet ?? ""]);
   // (store|cat|brand) 미스 시 폴백: 평당의 cat 표기가 매출비교와 달라도 (store|brand) 단일 매칭이면 area 회수.
   const aCurSB = pyeongByStoreBrand(aCur);
   const aPrevSB = pyeongByStoreBrand(aPrev);
@@ -189,15 +214,27 @@ export function buildOfflineRows(buf: ArrayBuffer, periodCur: string, periodPrev
   const cumDays = isMonth ? parseCumDays(wb) ?? undefined : undefined;
 
   const rows: OfflineRow[] = [];
+  let curRows = 0, curAreaMiss = 0, prevRows = 0, prevAreaMiss = 0;
   for (const r of main) {
     const k = `${r.store}|${r.cat}|${r.brand}`;
     const sb = `${r.store}|${r.brand}`;
     const pc = aCur.get(k) ?? aCurSB.get(sb) ?? null;
     const pp = aPrev.get(k) ?? aPrevSB.get(sb) ?? null;
-    if (r.sCur || r.gCur) rows.push({ division: r.division, cat: r.cat, brand: r.brand, store: r.store, period: periodCur, sales: r.sCur, gp: r.gCur, area_raw: pc ? pc.areaRaw : 0, store_cnt: pc ? pc.cnt : 0, days: cumDays });
-    if (r.sPrev || r.gPrev) rows.push({ division: r.division, cat: r.cat, brand: r.brand, store: r.store, period: periodPrev, sales: r.sPrev, gp: r.gPrev, area_raw: pp ? pp.areaRaw : 0, store_cnt: pp ? pp.cnt : 0, days: cumDays });
+    if (r.sCur || r.gCur) {
+      rows.push({ division: r.division, cat: r.cat, brand: r.brand, store: r.store, period: periodCur, sales: r.sCur, gp: r.gCur, area_raw: pc ? pc.areaRaw : 0, store_cnt: pc ? pc.cnt : 0, days: cumDays });
+      curRows++; if (!pc || pc.areaRaw <= 0) curAreaMiss++;
+    }
+    if (r.sPrev || r.gPrev) {
+      rows.push({ division: r.division, cat: r.cat, brand: r.brand, store: r.store, period: periodPrev, sales: r.sPrev, gp: r.gPrev, area_raw: pp ? pp.areaRaw : 0, store_cnt: pp ? pp.cnt : 0, days: cumDays });
+      prevRows++; if (!pp || pp.areaRaw <= 0) prevAreaMiss++;
+    }
   }
-  return rows;
+  const report: OfflineIngestReport = {
+    sheetNames: wb.SheetNames, mainSheet, pyeongCurSheet, pyeongPrevSheet,
+    cumDays: cumDays ?? null, yyCur, yyPrev,
+    curRows, curAreaMiss, prevRows, prevAreaMiss,
+  };
+  return { rows, report };
 }
 
 // ── 오프라인 월별 이력 (5.특정(누적)_DB 파일 → sales_offline_monthly_hist) ─
@@ -336,6 +373,20 @@ function parseHistSheet(ws: XLSX.WorkSheet | undefined, kind: "main" | "pyeong")
  * area_raw는 평·일(실면적 × 해당월 일수)로 변환해 저장.
  */
 export function buildOfflineMonthlyHistRows(buf: ArrayBuffer): OfflineMonthlyHistRow[] {
+  return buildOfflineHistWithReport(buf).rows;
+}
+
+/** 월별 이력 리포트 — 오프라인과 동일하게 "평당 시트 미검출 → 면적 0" 을 UI에 노출하기 위함. */
+export interface OfflineHistReport {
+  sheetNames: string[];
+  mainSheet: string;
+  pyeong26Sheet: string | null;
+  pyeong25Sheet: string | null;
+  rows: number; areaMiss: number;
+}
+
+/** buildOfflineMonthlyHistRows + 결측 리포트. */
+export function buildOfflineHistWithReport(buf: ArrayBuffer): { rows: OfflineMonthlyHistRow[]; report: OfflineHistReport } {
   const wb = XLSX.read(buf, { type: "array" });
   const mainName = wb.SheetNames.find((n) => n.includes("누적매출비교") && n.includes("브랜드"));
   if (!mainName) throw new Error("‘누적매출비교(브랜드)’ 시트를 찾지 못했습니다. 5.특정(누적) 신규 포맷 파일인지 확인하세요.");
@@ -385,7 +436,15 @@ export function buildOfflineMonthlyHistRows(buf: ArrayBuffer): OfflineMonthlyHis
       store_cnt: Math.round(a?.store_cnt ?? 0),
     });
   }
-  return [...merged.values()];
+  const out = [...merged.values()];
+  return {
+    rows: out,
+    report: {
+      sheetNames: wb.SheetNames, mainSheet: mainName,
+      pyeong26Sheet: pyeong26 ?? null, pyeong25Sheet: pyeong25 ?? null,
+      rows: out.length, areaMiss: out.filter((r) => r.area_raw <= 0).length,
+    },
+  };
 }
 
 // ── 온라인 ───────────────────────────────────────────────────────
