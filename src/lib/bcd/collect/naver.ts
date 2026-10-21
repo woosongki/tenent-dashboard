@@ -106,7 +106,13 @@ async function datalabYoY(keywords: string[], clientId: string, clientSecret: st
     headers: { "X-Naver-Client-Id": clientId, "X-Naver-Client-Secret": clientSecret, "Content-Type": "application/json" },
     body: JSON.stringify(body),
   });
-  if (!res.ok) throw new Error(`데이터랩 ${res.status}: ${(await res.text().catch(() => "")).slice(0, 120)}`);
+  if (!res.ok) {
+    const body = (await res.text().catch(() => "")).slice(0, 160);
+    // 401(024)은 키 불일치가 대부분 — 값은 절대 노출하지 않고 '형태'만 힌트로 남긴다.
+    // 오픈API Client ID/Secret은 보통 10자 내외, 검색광고 라이선스 키는 수십~수백자라 길이로 혼동을 가른다.
+    const hint = res.status === 401 ? ` · 키형태(ID ${clientId.length}자/SECRET ${clientSecret.length}자)` : "";
+    throw new Error(`데이터랩 ${res.status}: ${body}${hint}`);
+  }
   const data = (await res.json()) as { results?: { data?: { period: string; ratio: number }[] }[] };
   const series = data.results?.[0]?.data ?? [];
   if (series.length === 0) return { value: null, refYm, prevYm, reason: "응답 시계열 없음" };

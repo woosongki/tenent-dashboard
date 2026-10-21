@@ -21,9 +21,16 @@ export async function POST(req: NextRequest) {
   const g = await requireRole("owner", "admin");
   if (!g.ok) return g.response;
 
-  const apiKey = process.env.NAVER_AD_API_KEY;
-  const secretKey = process.env.NAVER_AD_SECRET_KEY;
-  const customerId = process.env.NAVER_AD_CUSTOMER_ID;
+  // 환경변수 정제 — 붙여넣기 사고(앞뒤 공백·개행·감싼 따옴표)는 그대로 인증 실패를 만든다.
+  const cleanEnv = (v?: string) => {
+    const t = (v ?? "").trim();
+    return (t.length >= 2 && ((t[0] === '"' && t.at(-1) === '"') || (t[0] === "'" && t.at(-1) === "'")))
+      ? t.slice(1, -1).trim()
+      : t;
+  };
+  const apiKey = cleanEnv(process.env.NAVER_AD_API_KEY);
+  const secretKey = cleanEnv(process.env.NAVER_AD_SECRET_KEY);
+  const customerId = cleanEnv(process.env.NAVER_AD_CUSTOMER_ID);
   if (!apiKey || !secretKey || !customerId) {
     return Response.json(
       { error: "NAVER_AD_API_KEY · NAVER_AD_SECRET_KEY · NAVER_AD_CUSTOMER_ID 환경변수가 필요합니다. 네이버 검색광고(고급 API) 라이선스 키이며, 오픈API(데이터랩) 키와 다릅니다." },
@@ -43,8 +50,8 @@ export async function POST(req: NextRequest) {
       creds: {
         apiKey, secretKey, customerId,
         // C5(추세)용 데이터랩 — 있으면 전년 동월 대비 계산, 없으면 C5는 N/A.
-        datalabId: process.env.NAVER_SEARCH_CLIENT_ID,
-        datalabSecret: process.env.NAVER_SEARCH_CLIENT_SECRET,
+        datalabId: cleanEnv(process.env.NAVER_SEARCH_CLIENT_ID) || undefined,
+        datalabSecret: cleanEnv(process.env.NAVER_SEARCH_CLIENT_SECRET) || undefined,
       },
       triggeredBy: `manual:${g.user.email ?? g.user.id}`,
       brandIds: body.brandIds,
