@@ -76,16 +76,28 @@ async function keywordstool(hintKeywords: string[], creds: NaverAdCreds): Promis
   return data.keywordList ?? [];
 }
 
-/** 데이터랩 검색트렌드로 전년 동월 대비 증감률(%). 계산 불가 시 null. */
-async function datalabYoY(keywords: string[], clientId: string, clientSecret: string): Promise<number | null> {
+interface YoYResult { value: number; refYm: string; prevYm: string }
+
+/** 데이터랩 검색트렌드로 전년 동월 대비 증감률(%). 계산 불가 시 null.
+ *  조회 창을 '완결 월 경계'로 고정 — 기준월 = 직전 완결월, 비교월 = 그 전년 동월.
+ *  (오늘 날짜에서 13개월을 빼면 전년 동월이 부분월로 잡혀 YoY가 과대계상되고,
+ *   월말엔 오버플로로 전년 동월이 조회 범위 밖으로 밀려 N/A가 되던 문제를 해소) */
+async function datalabYoY(keywords: string[], clientId: string, clientSecret: string): Promise<YoYResult | null> {
   const kws = keywords.filter(Boolean).slice(0, 5);
   if (kws.length === 0) return null;
-  const end = new Date();
-  const start = new Date();
-  start.setMonth(end.getMonth() - 13);
+
+  const now = new Date();
+  const ref = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 1, 1)); // 직전 완결월
+  const refY = ref.getUTCFullYear(), refM = ref.getUTCMonth();                     // refM: 0-indexed
+  const mm = String(refM + 1).padStart(2, "0");
+  const refYm = `${refY}-${mm}`;
+  const prevYm = `${refY - 1}-${mm}`;
+  const startDate = `${prevYm}-01`;                                                 // 전년 동월 1일
+  const endDate = new Date(Date.UTC(refY, refM + 1, 0)).toISOString().slice(0, 10); // 기준월 말일
+
   const body = {
-    startDate: start.toISOString().slice(0, 10),
-    endDate: end.toISOString().slice(0, 10),
+    startDate,
+    endDate,
     timeUnit: "month",
     keywordGroups: [{ groupName: kws[0], keywords: kws }],
   };
@@ -98,18 +110,11 @@ async function datalabYoY(keywords: string[], clientId: string, clientSecret: st
   const data = (await res.json()) as { results?: { data?: { period: string; ratio: number }[] }[] };
   const series = data.results?.[0]?.data ?? [];
   if (series.length === 0) return null;
-  const nowYm = `${end.getFullYear()}-${String(end.getMonth() + 1).padStart(2, "0")}`;
   const map = new Map(series.map((p) => [p.period.slice(0, 7), p.ratio]));
-  // 현재(부분)월 제외 → 완결된 직전 월끼리 전년 동월 비교(부분월 하향 왜곡 방지).
-  const months = [...map.keys()].filter((m) => m < nowYm).sort();
-  if (months.length === 0) return null;
-  const latest = months[months.length - 1];
-  const [ly, lm] = latest.split("-").map(Number);
-  const prevKey = `${ly - 1}-${String(lm).padStart(2, "0")}`;
-  const cur = map.get(latest) ?? 0;
-  const prev = map.get(prevKey);
-  if (prev === undefined || prev <= 0) return null; // 전년 동월 데이터 없음 → 시계열부족
-  return Math.round(((cur / prev - 1) * 100) * 10) / 10;
+  const cur = map.get(refYm);
+  const prev = map.get(prevYm);
+  if (cur === undefined || prev === undefined || prev <= 0) return null; // 전년 동월 없음 → 시계열부족
+  return { value: Math.round(((cur / prev - 1) * 100) * 10) / 10, refYm, prevYm };
 }
 
 interface BrandLite { id: string; name: string; search_keywords: string[] }
@@ -161,7 +166,7 @@ export async function runNaverCollection(opts: {
       withRetry(() => keywordstool(keywords, opts.creds), 2),
       hasDatalab
         ? withRetry(() => datalabYoY(keywords, opts.creds.datalabId!, opts.creds.datalabSecret!), 2)
-        : Promise.resolve<number | null>(null),
+        : Promise.resolve<YoYResult | null>(null),
     ]);
 
     const metricRows: Record<string, unknown>[] = [];
@@ -190,7 +195,7 @@ export async function runNaverCollection(opts: {
       const c5 = c5r.status === "fulfilled" ? c5r.value : null;
       if (c5r.status === "rejected") errParts.push(`C5:${emsg(c5r.reason)}`);
       if (c5 !== null) {
-        metricRows.push({ brand_id: brand.id, metric_code: "C5", value: c5, source: "naver_datalab", snapshot_run_id: runId, checked_by: opts.triggeredBy, detail: { ym, yoy: true } });
+        metricRows.push({ brand_id: brand.id, metric_code: "C5", value: c5.value, source: "naver_datalab", snapshot_run_id: runId, checked_by: opts.triggeredBy, detail: { ym, refYm: c5.refYm, prevYm: c5.prevYm, yoy: true } });
       } else {
         metricRows.push({ brand_id: brand.id, metric_code: "C5", value: null, na_reason: "시계열부족", source: "naver_datalab", snapshot_run_id: runId, checked_by: opts.triggeredBy });
       }

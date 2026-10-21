@@ -66,6 +66,23 @@ describe("scoreBrand", () => {
     expect(sc(null)).toBe(0);
   });
 
+  it("band 음수 구간: C5 +20%↑12 · 0~20%9 · −20~0%5 · −20%↓0, 결측은 N/A", () => {
+    const c5Rs: Ruleset = {
+      base: [{ code: "C5", name: "검색량 추세", weight: 12, mid: 9, mode: "band", t1: 20, t2: 0,
+        bands: [{ min: 20, score: 12 }, { min: 0, score: 9 }, { min: -20, score: 5 }] }],
+      bonus: RULESET.bonus, cuts: RULESET.cuts, na_policy: RULESET.na_policy, pct_min_sample: 5,
+    };
+    const sc = (v: number | null) => scoreBrand(brand("x", { C5: v }), [brand("x", { C5: v })], c5Rs).breakdown["C5"].score;
+    expect(sc(35)).toBe(12);
+    expect(sc(20)).toBe(12);
+    expect(sc(5)).toBe(9);
+    expect(sc(0)).toBe(9);
+    expect(sc(-10)).toBe(5);
+    expect(sc(-20)).toBe(5);
+    expect(sc(-50)).toBe(0);
+    expect(sc(null)).toBeNull(); // C1과 달리 C5 결측은 N/A(시계열부족)
+  });
+
   it("C1은 값이 아예 없어도(미측정) 0점 — N/A 아님", () => {
     const p = [brand("a", { C3: 10, C8: 5 }), brand("b", { C1: 50, C3: 20, C8: 5 })]; // a는 C1 없음
     const r = scoreBrand(p[0], p, RULESET);
