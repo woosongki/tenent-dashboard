@@ -76,16 +76,13 @@ async function keywordstool(hintKeywords: string[], creds: NaverAdCreds): Promis
   return data.keywordList ?? [];
 }
 
-interface YoYResult { value: number; refYm: string; prevYm: string }
+interface YoYOutcome { value: number | null; refYm: string; prevYm: string; reason?: string }
 
-/** 데이터랩 검색트렌드로 전년 동월 대비 증감률(%). 계산 불가 시 null.
+/** 데이터랩 검색트렌드로 전년 동월 대비 증감률(%).
  *  조회 창을 '완결 월 경계'로 고정 — 기준월 = 직전 완결월, 비교월 = 그 전년 동월.
- *  (오늘 날짜에서 13개월을 빼면 전년 동월이 부분월로 잡혀 YoY가 과대계상되고,
- *   월말엔 오버플로로 전년 동월이 조회 범위 밖으로 밀려 N/A가 되던 문제를 해소) */
-async function datalabYoY(keywords: string[], clientId: string, clientSecret: string): Promise<YoYResult | null> {
-  const kws = keywords.filter(Boolean).slice(0, 5);
-  if (kws.length === 0) return null;
-
+ *  값이 안 나와도 null만 돌려주지 않고 refYm/prevYm/사유를 함께 반환한다(왜 N/A인지 추적용).
+ *  HTTP 오류는 throw — 호출부에서 사유를 기록한다. */
+async function datalabYoY(keywords: string[], clientId: string, clientSecret: string): Promise<YoYOutcome> {
   const now = new Date();
   const ref = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 1, 1)); // 직전 완결월
   const refY = ref.getUTCFullYear(), refM = ref.getUTCMonth();                     // refM: 0-indexed
@@ -94,6 +91,9 @@ async function datalabYoY(keywords: string[], clientId: string, clientSecret: st
   const prevYm = `${refY - 1}-${mm}`;
   const startDate = `${prevYm}-01`;                                                 // 전년 동월 1일
   const endDate = new Date(Date.UTC(refY, refM + 1, 0)).toISOString().slice(0, 10); // 기준월 말일
+
+  const kws = keywords.filter(Boolean).slice(0, 5);
+  if (kws.length === 0) return { value: null, refYm, prevYm, reason: "검색어 없음" };
 
   const body = {
     startDate,
@@ -109,11 +109,13 @@ async function datalabYoY(keywords: string[], clientId: string, clientSecret: st
   if (!res.ok) throw new Error(`데이터랩 ${res.status}: ${(await res.text().catch(() => "")).slice(0, 120)}`);
   const data = (await res.json()) as { results?: { data?: { period: string; ratio: number }[] }[] };
   const series = data.results?.[0]?.data ?? [];
-  if (series.length === 0) return null;
+  if (series.length === 0) return { value: null, refYm, prevYm, reason: "응답 시계열 없음" };
   const map = new Map(series.map((p) => [p.period.slice(0, 7), p.ratio]));
   const cur = map.get(refYm);
   const prev = map.get(prevYm);
-  if (cur === undefined || prev === undefined || prev <= 0) return null; // 전년 동월 없음 → 시계열부족
+  if (cur === undefined) return { value: null, refYm, prevYm, reason: `기준월(${refYm}) 데이터 없음` };
+  if (prev === undefined) return { value: null, refYm, prevYm, reason: `전년동월(${prevYm}) 데이터 없음` };
+  if (prev <= 0) return { value: null, refYm, prevYm, reason: `전년동월(${prevYm}) 지수 0` };
   return { value: Math.round(((cur / prev - 1) * 100) * 10) / 10, refYm, prevYm };
 }
 
@@ -166,7 +168,7 @@ export async function runNaverCollection(opts: {
       withRetry(() => keywordstool(keywords, opts.creds), 2),
       hasDatalab
         ? withRetry(() => datalabYoY(keywords, opts.creds.datalabId!, opts.creds.datalabSecret!), 2)
-        : Promise.resolve<YoYResult | null>(null),
+        : Promise.resolve<YoYOutcome | null>(null),
     ]);
 
     const metricRows: Record<string, unknown>[] = [];
@@ -190,20 +192,29 @@ export async function runNaverCollection(opts: {
       errParts.push(`C4:${emsg(c4r.reason)}`);
     }
 
-    // C5 (데이터랩 있을 때만 기록)
+    // C5 (데이터랩 있을 때만 기록) — 성공/실패 모두 detail에 근거를 남긴다.
     if (hasDatalab) {
-      const c5 = c5r.status === "fulfilled" ? c5r.value : null;
-      if (c5r.status === "rejected") errParts.push(`C5:${emsg(c5r.reason)}`);
-      if (c5 !== null) {
-        metricRows.push({ brand_id: brand.id, metric_code: "C5", value: c5.value, source: "naver_datalab", snapshot_run_id: runId, checked_by: opts.triggeredBy, detail: { ym, refYm: c5.refYm, prevYm: c5.prevYm, yoy: true } });
-      } else {
-        metricRows.push({ brand_id: brand.id, metric_code: "C5", value: null, na_reason: "시계열부족", source: "naver_datalab", snapshot_run_id: runId, checked_by: opts.triggeredBy });
+      if (c5r.status === "fulfilled" && c5r.value) {
+        const o = c5r.value;
+        if (o.value !== null) {
+          metricRows.push({ brand_id: brand.id, metric_code: "C5", value: o.value, source: "naver_datalab", snapshot_run_id: runId, checked_by: opts.triggeredBy, detail: { ym, refYm: o.refYm, prevYm: o.prevYm, yoy: true } });
+        } else {
+          // 데이터 부족 — 어느 달이 비었는지까지 기록
+          metricRows.push({ brand_id: brand.id, metric_code: "C5", value: null, na_reason: "시계열부족", source: "naver_datalab", snapshot_run_id: runId, checked_by: opts.triggeredBy, detail: { ym, refYm: o.refYm, prevYm: o.prevYm, reason: o.reason } });
+          errParts.push(`C5:${o.reason ?? "데이터 부족"}`);
+        }
+      } else if (c5r.status === "rejected") {
+        // 호출 자체 실패(401 scope 미추가 등) — 지금까지 런 요약에서 삼켜지던 구간
+        const msg = emsg(c5r.reason);
+        errParts.push(`C5:${msg}`);
+        metricRows.push({ brand_id: brand.id, metric_code: "C5", value: null, na_reason: "수집실패", source: "naver_datalab", snapshot_run_id: runId, checked_by: opts.triggeredBy, detail: { ym, error: msg } });
       }
     }
 
-    if (metricRows.length) await svc.from("bcd_metric_values").insert(metricRows);
-    if (metricRows.length) ok++;
-    else errors.push({ brand: brand.name, error: errParts.join(" / ") || "기록 없음" });
+    if (metricRows.length) { await svc.from("bcd_metric_values").insert(metricRows); ok++; }
+    // C4가 성공해도 C5 오류는 반드시 보고 — 부분 실패가 '성공'으로 묻히지 않게.
+    if (errParts.length) errors.push({ brand: brand.name, error: errParts.join(" / ") });
+    else if (!metricRows.length) errors.push({ brand: brand.name, error: "기록 없음" });
 
     await delay(120); // 브랜드 간 간격 — 레이트리밋 완화
   }
@@ -213,7 +224,8 @@ export async function runNaverCollection(opts: {
       status: errors.length ? "review" : "completed",
       finished_at: new Date().toISOString(),
       brands_ok: ok, brands_review: errors.length,
-      note: errors.length ? `${errors.length}개 브랜드 오류` : null,
+      // 대표 사유를 함께 남겨, 회차 기록만 봐도 원인(401 scope·데이터 부족 등)이 보이게.
+      note: errors.length ? `${errors.length}개 브랜드 오류 · ${errors[0].error}`.slice(0, 300) : null,
     }).eq("id", runId);
   }
 
