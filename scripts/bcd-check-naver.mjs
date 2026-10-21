@@ -11,9 +11,17 @@ const KW = [BRAND];
 const cid = process.env.NAVER_SEARCH_CLIENT_ID, csec = process.env.NAVER_SEARCH_CLIENT_SECRET;
 console.log("데이터랩 키:", cid ? "있음" : "❌없음", "/", csec ? "있음" : "❌없음");
 if (cid && csec) {
-  const end = new Date(); const start = new Date(); start.setMonth(end.getMonth() - 13);
-  const body = { startDate: start.toISOString().slice(0,10), endDate: end.toISOString().slice(0,10),
-                 timeUnit: "month", keywordGroups: [{ groupName: KW[0], keywords: KW.slice(0,5) }] };
+  // 프로덕션과 동일: 기준월 = 직전 완결월, 비교월 = 그 전년 동월 (둘 다 완전한 달)
+  const now = new Date();
+  const ref = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 1, 1));
+  const refY = ref.getUTCFullYear(), refM = ref.getUTCMonth();
+  const mm = String(refM + 1).padStart(2, "0");
+  const refYm = `${refY}-${mm}`, prevYm = `${refY - 1}-${mm}`;
+  const startDate = `${prevYm}-01`;
+  const endDate = new Date(Date.UTC(refY, refM + 1, 0)).toISOString().slice(0, 10);
+  console.log(`  조회 ${startDate} ~ ${endDate} | 기준월 ${refYm} vs 전년동월 ${prevYm}`);
+  const body = { startDate, endDate, timeUnit: "month",
+                 keywordGroups: [{ groupName: KW[0], keywords: KW.slice(0,5) }] };
   const res = await fetch("https://openapi.naver.com/v1/datalab/search", {
     method: "POST",
     headers: { "X-Naver-Client-Id": cid, "X-Naver-Client-Secret": csec, "Content-Type": "application/json" },
@@ -27,19 +35,12 @@ if (cid && csec) {
     const data = await res.json();
     const series = (data.results?.[0]?.data ?? []).map(p => [p.period.slice(0,7), p.ratio]);
     console.log("  시계열", series.length, "개월:", series.map(([m,r]) => `${m}:${r}`).join(" "));
-    const nowYm = `${end.getFullYear()}-${String(end.getMonth()+1).padStart(2,"0")}`;
     const map = new Map(series);
-    const months = [...map.keys()].filter(m => m < nowYm).sort();
-    if (!months.length) { console.log("  C5 = N/A (완결월 없음)"); }
-    else {
-      const latest = months[months.length-1];
-      const [ly, lm] = latest.split("-").map(Number);
-      const prevKey = `${ly-1}-${String(lm).padStart(2,"0")}`;
-      const cur = map.get(latest) ?? 0, prev = map.get(prevKey);
-      console.log(`  기준월 ${latest}=${cur} vs 전년 ${prevKey}=${prev ?? "없음"}`);
-      if (prev === undefined || prev <= 0) console.log("  C5 = N/A (전년 동월 데이터 없음 → 시계열부족)");
-      else console.log(`  ✅ C5 = ${Math.round(((cur/prev-1)*100)*10)/10}%  ← 이 값이 채워집니다`);
-    }
+    const cur = map.get(refYm), prev = map.get(prevYm);
+    console.log(`  기준월 ${refYm}=${cur ?? "없음"} vs 전년동월 ${prevYm}=${prev ?? "없음"}`);
+    if (cur === undefined) console.log("  C5 = N/A (기준월 데이터 없음 — 검색량이 매우 적은 키워드)");
+    else if (prev === undefined || prev <= 0) console.log("  C5 = N/A (전년 동월 0 또는 없음 → 시계열부족)");
+    else console.log(`  ✅ C5 = ${Math.round(((cur/prev-1)*100)*10)/10}%  ← 이 값이 채워집니다`);
   }
 } else {
   console.log("→ 데이터랩 키가 없어 C5는 계속 N/A. Vercel/.env.local에 NAVER_SEARCH_CLIENT_ID/SECRET 설정 필요.");
