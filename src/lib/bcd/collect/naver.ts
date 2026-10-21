@@ -9,14 +9,16 @@ import { createServiceClient } from "@/lib/supabase/service";
 //
 // 검색광고 인증: HMAC-SHA256. message=`${ts}.${method}.${path}`, key=SECRET_KEY.
 //   헤더 X-Timestamp·X-API-KEY·X-Customer·X-Signature. 키: NAVER_AD_API_KEY·NAVER_AD_SECRET_KEY·NAVER_AD_CUSTOMER_ID.
-// 데이터랩 인증: X-Naver-Client-Id/Secret. 키: NAVER_SEARCH_CLIENT_ID·NAVER_SEARCH_CLIENT_SECRET(앱에 데이터랩 scope 필요).
+// 데이터랩 인증: NCP Naver API Hub 게이트웨이 — X-NCP-APIGW-API-KEY-ID / X-NCP-APIGW-API-KEY.
+//   키: NAVER_SEARCH_CLIENT_ID·NAVER_SEARCH_CLIENT_SECRET(값은 NCP 키). 구 developers.naver.com
+//   openapi.naver.com + X-Naver-Client-* 조합은 이 계정에서 401(024)로 거절된다 — src/lib/verify/trend.ts와 동일 규약.
 //
 // 신뢰성: 브랜드마다 호출 사이 지연 + 실패 시 재시도(레이트리밋 완화).
 // ⚠ 원격 에이전트 환경은 외부 API 프록시 403 → 여기서 실행 불가. 배포본/로컬에서 호출.
 
 const AD_BASE = "https://api.searchad.naver.com";
 const AD_PATH = "/keywordstool";
-const DATALAB_URL = "https://openapi.naver.com/v1/datalab/search";
+const DATALAB_URL = "https://naverapihub.apigw.ntruss.com/search-trend/v1/search";
 
 export interface NaverAdCreds {
   apiKey: string;
@@ -103,14 +105,14 @@ async function datalabYoY(keywords: string[], clientId: string, clientSecret: st
   };
   const res = await fetch(DATALAB_URL, {
     method: "POST",
-    headers: { "X-Naver-Client-Id": clientId, "X-Naver-Client-Secret": clientSecret, "Content-Type": "application/json" },
+    headers: { "X-NCP-APIGW-API-KEY-ID": clientId, "X-NCP-APIGW-API-KEY": clientSecret, "Content-Type": "application/json" },
     body: JSON.stringify(body),
   });
   if (!res.ok) {
     const body = (await res.text().catch(() => "")).slice(0, 160);
     // 401(024)은 키 불일치가 대부분 — 값은 절대 노출하지 않고 '형태'만 힌트로 남긴다.
-    // 오픈API Client ID/Secret은 보통 10자 내외, 검색광고 라이선스 키는 수십~수백자라 길이로 혼동을 가른다.
-    const hint = res.status === 401 ? ` · 키형태(ID ${clientId.length}자/SECRET ${clientSecret.length}자)` : "";
+    // NCP Naver API Hub 키인지(콘솔 Application key) 확인용. 길이만 남겨 혼동을 가른다.
+    const hint = res.status === 401 ? ` · NCP키 확인(ID ${clientId.length}자/SECRET ${clientSecret.length}자)` : "";
     throw new Error(`데이터랩 ${res.status}: ${body}${hint}`);
   }
   const data = (await res.json()) as { results?: { data?: { period: string; ratio: number }[] }[] };

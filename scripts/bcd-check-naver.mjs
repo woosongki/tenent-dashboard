@@ -22,15 +22,15 @@ if (cid && csec) {
   console.log(`  조회 ${startDate} ~ ${endDate} | 기준월 ${refYm} vs 전년동월 ${prevYm}`);
   const body = { startDate, endDate, timeUnit: "month",
                  keywordGroups: [{ groupName: KW[0], keywords: KW.slice(0,5) }] };
-  const res = await fetch("https://openapi.naver.com/v1/datalab/search", {
+  const res = await fetch("https://naverapihub.apigw.ntruss.com/search-trend/v1/search", {
     method: "POST",
-    headers: { "X-Naver-Client-Id": cid, "X-Naver-Client-Secret": csec, "Content-Type": "application/json" },
+    headers: { "X-NCP-APIGW-API-KEY-ID": cid, "X-NCP-APIGW-API-KEY": csec, "Content-Type": "application/json" },
     body: JSON.stringify(body),
   });
   console.log("\n[데이터랩] HTTP", res.status);
   if (!res.ok) {
     console.error("  ↳ 오류:", (await res.text()).slice(0, 300));
-    console.error("  → 401/403이면 앱에 '데이터랩(검색어트렌드)' scope 미추가일 가능성. 네이버개발자센터에서 API 설정 확인.");
+    console.error("  → 401/403이면 NCP Naver API Hub 키가 아닐 가능성. NCP 콘솔 > Naver API Hub > Application key 확인.");
   } else {
     const data = await res.json();
     const series = (data.results?.[0]?.data ?? []).map(p => [p.period.slice(0,7), p.ratio]);
