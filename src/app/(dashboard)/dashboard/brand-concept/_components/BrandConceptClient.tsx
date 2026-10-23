@@ -8,6 +8,7 @@ import type { BrandRow } from "@/lib/bcd/data";
 import { pillBtn, inputCompact, TOKENS } from "@/lib/tokens";
 import ScrollHint from "@/components/ui/ScrollHint";
 import { registerBrand, saveMetric, setBrandScope, addList, deleteList, saveRuleset, setC1Presence, deleteBrand } from "../_actions";
+import { CRITERIA_HELP, GRADE_BAR, GRADE_ORDER, SCOPE_LABEL } from "@/lib/bcd/display";
 
 // 분류체계 (대분류 8 · 중분류 28) — 마스터 02_분류체계 기준. 등록 폼 드롭다운 소스.
 const TAXONOMY: Record<string, string[]> = {
@@ -22,18 +23,6 @@ const TAXONOMY: Record<string, string[]> = {
 };
 const MAJORS = Object.keys(TAXONOMY);
 
-// C1~C8 기준 설명 — 담당자가 아닌 사람도 보고 작업할 수 있게.
-const CRITERIA_HELP: { code: string; title: string; what: string; how: string; source: string }[] = [
-  { code: "C1", title: "벤치마크 유통 입점률", what: "핵심 벤치마크 유통(더현대·스타필드·롯데월드몰 등 10곳) 중 몇 곳에 입점했는지.", how: "4곳↑=25 · 2~3곳=20 · 1곳=10 · 0곳=0점", source: "수동 — 콘솔 'C1 입점 편집'에서 유통 체크" },
-  { code: "C2", title: "핫플 상권 입점 수", what: "전국 핵심상권(50여 곳) 중 매장이 있는 상권 수(상권 단위).", how: "절대기준 20곳↑=상 · 5곳↑=중 (배점 15)", source: "카카오맵 수집(자동)" },
-  { code: "C3", title: "전국 매장 수", what: "브랜드의 전국 매장 수.", how: "같은 중분류 내 백분위 — 상위 30%↑=상 · 상위 70%↑=중 (배점 10)", source: "카카오맵 수집(자동, 표본 최대 45)" },
-  { code: "C4", title: "검색량 수준", what: "월간 검색량(절대치, PC+모바일).", how: "같은 중분류 내 백분위 (배점 18)", source: "네이버 검색광고(자동)" },
-  { code: "C5", title: "검색량 추세", what: "전년 동월 대비 검색량 증감률.", how: "같은 중분류 내 백분위 (배점 12)", source: "네이버 데이터랩(자동)" },
-  { code: "C6", title: "매장 수 순증률", what: "직전 수집 대비 매장 증가율.", how: "절대기준 (배점 10). 2회차 수집부터 실측, 그전엔 기본값 5", source: "카카오맵 수집(자동)" },
-  { code: "C7", title: "온라인 채널 전개(가점)", what: "자사몰·오픈마켓 등 온라인 판매 채널 수.", how: "가점 최대 5점(기본 100점 밖). 온라인 미적용 브랜드는 제외", source: "수동" },
-  { code: "C8", title: "브랜드 감도", what: "담당자 정성 평가(트렌드·브랜드력).", how: "상(10)/중(5)/하(0) 또는 0~10 직접 (배점 10)", source: "수동 — 지표 입력" },
-];
-
 export interface ListRow {
   id: string;
   list_type: string;
@@ -43,23 +32,22 @@ export interface ListRow {
 }
 
 // ── 등급 표기 ────────────────────────────────────────────────────────────
-const GRADE_ORDER = ["A", "B+", "B", "C", "N", "H", "미평가"] as const;
+// 등급 순서·막대색·기준 설명은 lib/bcd/display.ts 단일 소스 (HTML 내보내기와 공유).
 type Grade = (typeof GRADE_ORDER)[number];
-const GRADE_STYLE: Record<string, { chip: string; bar: string }> = {
-  "A":     { chip: "bg-violet-100 text-violet-800 border-violet-300", bar: "#7c3aed" },
-  "B+":    { chip: "bg-emerald-100 text-emerald-800 border-emerald-300", bar: "#0d9e6e" },
-  "B":     { chip: "bg-sky-100 text-sky-800 border-sky-300", bar: "#2b6cb0" },
-  "C":     { chip: "bg-amber-100 text-amber-800 border-amber-300", bar: "#b7791f" },
-  "N":     { chip: "bg-rose-100 text-rose-800 border-rose-300", bar: "#e53e3e" },
-  "H":     { chip: "bg-slate-800 text-white border-slate-900", bar: "#0a0a0a" },
-  "미평가": { chip: "bg-slate-100 text-slate-600 border-slate-300", bar: "#94a3b8" },
+const GRADE_CHIP: Record<string, string> = {
+  "A":     "bg-violet-100 text-violet-800 border-violet-300",
+  "B+":    "bg-emerald-100 text-emerald-800 border-emerald-300",
+  "B":     "bg-sky-100 text-sky-800 border-sky-300",
+  "C":     "bg-amber-100 text-amber-800 border-amber-300",
+  "N":     "bg-rose-100 text-rose-800 border-rose-300",
+  "H":     "bg-slate-800 text-white border-slate-900",
+  "미평가": "bg-slate-100 text-slate-600 border-slate-300",
 };
-const SCOPE_LABEL: Record<string, string> = { excluded: "제외(X)", knockout: "거래불가(H)" };
 const NA_REASONS = ["시계열부족", "검색어미확정", "매장미검출", "현장미확인", "표본부족"] as const;
 
 function GradeBadge({ g }: { g: string }) {
-  const s = GRADE_STYLE[g] ?? GRADE_STYLE["미평가"];
-  return <span className={`inline-block border px-1.5 py-0.5 text-[10px] font-extrabold ${s.chip}`}>{g || "—"}</span>;
+  const chip = GRADE_CHIP[g] ?? GRADE_CHIP["미평가"];
+  return <span className={`inline-block border px-1.5 py-0.5 text-[10px] font-extrabold ${chip}`}>{g || "—"}</span>;
 }
 
 interface Row {
@@ -239,11 +227,17 @@ export default function BrandConceptClient({
         <Kpi label="N/A 초과(미평가)" value={(scores.filter((s) => s.grade === "미평가").length).toLocaleString()} sub="지표 결측 과다" />
       </div>
 
-      {/* 기준 설명 (누구나) */}
+      {/* 기준 설명 · HTML 내보내기 (누구나) */}
       <div>
-        <button onClick={() => setShowHelp((v) => !v)} className={TOKENS.btn.secondary}>
-          {showHelp ? "✕ 닫기" : "❓ C1~C8 점수 기준 설명"}
-        </button>
+        <div className="flex flex-wrap items-center gap-2">
+          <button onClick={() => setShowHelp((v) => !v)} className={TOKENS.btn.secondary}>
+            {showHelp ? "✕ 닫기" : "❓ C1~C8 점수 기준 설명"}
+          </button>
+          {/* 단독 HTML 스냅샷 — 로그인 없이 열리는 공유용 파일 1개 */}
+          <a href="/api/bcd/export/html" download className={TOKENS.btn.secondary}>
+            ⬇ HTML로 내보내기
+          </a>
+        </div>
         {showHelp && (
           <div className="mt-2 overflow-x-auto border-[2px] border-[#0a0a0a] bg-white p-1 shadow-[3px_3px_0_0_#0a0a0a]">
             <table className="w-full min-w-[720px] text-[11px]">
@@ -285,7 +279,7 @@ export default function BrandConceptClient({
                 <div key={g} className="flex items-center gap-2">
                   <span className="w-14 shrink-0"><GradeBadge g={g} /></span>
                   <div className="relative h-4 flex-1 border-[1.5px] border-[#0a0a0a] bg-white">
-                    <div className="absolute inset-y-0 left-0" style={{ width: `${(n / max) * 100}%`, background: GRADE_STYLE[g]?.bar ?? "#94a3b8" }} />
+                    <div className="absolute inset-y-0 left-0" style={{ width: `${(n / max) * 100}%`, background: GRADE_BAR[g] ?? "#94a3b8" }} />
                   </div>
                   <span className="w-10 shrink-0 text-right font-mono text-[11.5px] font-extrabold tabular-nums">{n}</span>
                 </div>
