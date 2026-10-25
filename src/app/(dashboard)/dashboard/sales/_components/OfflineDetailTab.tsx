@@ -6,12 +6,11 @@ import UnitChip from "@/components/ui/UnitChip";
 import StatusLegend from "@/components/ui/StatusLegend";
 import BrandDiagnosis from "./BrandDiagnosis";
 import { pillBtn, inputCompact } from "@/lib/tokens";
-import { displayDivision, isHiddenCat, displayCat, catRank, divisionRank, OTHERS_KEY, OTHERS_LABEL } from "@/lib/sales/labels";
+import { OTHERS_KEY } from "@/lib/sales/labels";
 import type { OffRank, OffOthers } from "@/lib/sales/queries";
 import type { CohortStat } from "@/lib/sales/diagnose";
-
-interface DivSummary { division: string; s: number; ps: number; g: number; gpm: number; yoyPct: number }
-interface CatSummary { cat: string; s: number; ps: number; g: number; gpm: number; yoyPct: number }
+import { buildCohort, buildDetailChips, buildScopeSummary, buildStoreData, selectCatRows,
+  type DivSummary, type CatSummary, type Sel } from "@/lib/sales/detail";
 interface Props {
   periodLabel: string;
   prevLabel: string;
@@ -23,28 +22,11 @@ interface Props {
   monthActive?: { brands: string[]; stores: string[]; detail: string[] } | null;
   /** 누적 개월수. >1 이면 하위 표에 "월평균" 컬럼 추가. 당월상세=1(미표시). */
   monthCount?: number;
+  /** 주어지면 'HTML로 내보내기' 버튼 노출 (단독 스냅샷 파일 다운로드 경로). */
+  exportHref?: string;
 }
 
 const won = (n: number) => n.toLocaleString("ko-KR");
-function median(xs: number[]): number {
-  if (xs.length === 0) return 0;
-  const s = [...xs].sort((a, b) => a - b);
-  const m = Math.floor(s.length / 2);
-  return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2;
-}
-/** 화면에 이미 로드된 형제 목록에서 코호트 통계 계산 (새 쿼리 0). 영업 중 3개 이상이라야 의미. */
-function buildCohort(list: OffRank[], label: string): CohortStat | null {
-  const valid = list.filter((r) => !r.closed && r.s > 0);
-  if (valid.length < 3) return null;
-  return {
-    label,
-    n: valid.length,
-    medianYoy: median(valid.filter((r) => r.ps > 0).map((r) => r.yoyPct)),
-    medianGpm: median(valid.map((r) => r.gpm)),
-    totalS: valid.reduce((t, r) => t + r.s, 0),
-    totalPs: valid.reduce((t, r) => t + r.ps, 0),
-  };
-}
 const eok = (n: number) => (n / 1e8).toFixed(1);
 // 백만 단위 (상세 브랜드/지점 금액 통일)
 const mil = (n: number) => Math.round(n / 1e6).toLocaleString("ko-KR");
@@ -60,27 +42,14 @@ function YoY({ pct, prev, closed }: { pct: number; prev?: number; closed?: boole
   return <span className="whitespace-nowrap tabular-nums" style={{ color: up ? "#0d9e6e" : "#e53e3e", fontWeight: 700 }}>{up ? "▲" : "▼"}&nbsp;{Math.abs(pct).toFixed(1)}%</span>;
 }
 
-type Sel = { type: "cat" | "div"; key: string };
 type Dir = "asc" | "desc";
 type BSortKey = "key" | "subCount" | "s" | "g" | "gpm" | "yoyPct" | "dppSales" | "dppSalesGrowthPct";
 type SSortKey = "key" | "s" | "growthS" | "growthPct" | "g" | "growthG" | "growthGPct" | "area" | "dppSales" | "dppSalesGrowthPct";
 type OffSubLite = import("@/lib/sales/queries").OffSub;
 
 export default function OfflineDetailTab(p: Props) {
-  // 선택 칩 목록: 패션 복종("패션공통" 비노출) + 비패션 부문(F&B/기타/온라인, 기타→"라이프스타일" 라벨)
-  const fashionChips = p.fashionCats
-    .filter((c) => !isHiddenCat(c.cat))
-    .sort((a, b) => catRank(a.cat) - catRank(b.cat))
-    .map((c) => ({ type: "cat" as const, key: c.cat, label: displayCat(c.cat) || "(미분류)", s: c.s }));
-  const divChips = p.divisions
-    .filter((d) => d.division !== "패션")
-    .sort((a, b) => divisionRank(a.division) - divisionRank(b.division))
-    .map((d) => ({ type: "div" as const, key: d.division, label: displayDivision(d.division), s: d.s }));
-  // "그 외" 칩 — 항상 마지막
-  const othersChip = p.others && p.others.brands.length
-    ? [{ type: "div" as const, key: OTHERS_KEY, label: OTHERS_LABEL, s: p.others.total }]
-    : [];
-  const chips = [...fashionChips, ...divChips, ...othersChip];
+  // 선택 칩 목록(패션 복종 + 비패션 부문 + '그 외') — 구성 규칙은 lib/sales/detail.ts 단일 소스.
+  const chips = buildDetailChips(p.divisions, p.fashionCats, p.others);
 
   const [view, setView] = useState<"brand" | "store">("brand");
   const [sel, setSel] = useState<Sel>(chips[0] ? { type: chips[0].type, key: chips[0].key } : { type: "div", key: "패션" });
@@ -101,43 +70,11 @@ export default function OfflineDetailTab(p: Props) {
   const [stSort, setStSort] = useState<BSortKey>("s");    // 지점 랭킹 정렬
   const [stDir, setStDir] = useState<Dir>("desc");
 
-  // 선택 복종/부문 기준으로 지점별 데이터 구성 (detailBrands → 지점 피벗)
-  const storeData = useMemo<OffRank[]>(() => {
-    if (!stSel) return p.stores;   // 전체: 지점 전체 복종 합계
-    if (stSel.type === "div" && stSel.key === OTHERS_KEY) return p.others?.stores ?? [];
-    const selBrands = p.brands.filter((b) => stSel.type === "cat"
-      ? (b.division === "패션" && b.cat === stSel.key)
-      : b.division === stSel.key);
-    // 지점별로 해당 복종 브랜드들을 모음.
-    // areaDays/prevAreaDays: sub.s / sub.dppSales, sub.ps / sub.prevDppSales 로 (평·일) 역산
-    // → 지점 스코프 dppSales / prevDppSales 재계산 (일평당매출 성장율 지원).
-    const m = new Map<string, { s: number; ps: number; g: number; pg: number; areaDays: number; prevAreaDays: number; subs: OffSubLite[] }>();
-    for (const b of selBrands) {
-      for (const sub of b.bySub ?? []) {
-        let e = m.get(sub.key);
-        if (!e) { e = { s: 0, ps: 0, g: 0, pg: 0, areaDays: 0, prevAreaDays: 0, subs: [] }; m.set(sub.key, e); }
-        e.s += sub.s; e.ps += sub.ps; e.g += sub.g; e.pg += sub.pg;
-        if (sub.dppSales) e.areaDays += sub.s / sub.dppSales;
-        if (sub.prevDppSales) e.prevAreaDays += sub.ps / sub.prevDppSales;
-        e.subs.push({ ...sub, key: b.key });   // 하위 = 브랜드 (지점 내)
-      }
-    }
-    return [...m.entries()].map(([store, e]) => {
-      const dppSales = e.areaDays ? Math.round(e.s / e.areaDays) : 0;
-      const prevDppSales = e.prevAreaDays ? Math.round(e.ps / e.prevAreaDays) : 0;
-      return {
-        key: store, s: e.s, ps: e.ps, g: e.g, pg: e.pg,
-        gpm: e.s ? +(e.g / e.s * 100).toFixed(1) : 0,
-        yoyPct: e.ps ? +((e.s - e.ps) / e.ps * 100).toFixed(1) : 0,
-        subCount: e.subs.filter((x) => x.s > 0).length,
-        dppSales,
-        prevDppSales,
-        dppSalesGrowthPct: prevDppSales ? +((dppSales - prevDppSales) / prevDppSales * 100).toFixed(1) : 0,
-        closed: e.s === 0 && e.ps > 0,
-        bySub: e.subs,
-      };
-    }).sort((a, b) => b.s - a.s);
-  }, [stSel, p.stores, p.brands, p.others]);
+  // 선택 복종/부문 기준 지점 피벗 — 계산은 lib/sales/detail.ts 단일 소스.
+  const storeData = useMemo<OffRank[]>(
+    () => buildStoreData(stSel, p.stores, p.brands, p.others),
+    [stSel, p.stores, p.brands, p.others]
+  );
 
   const storeRows = useMemo(() => {
     const base = stQ ? storeData.filter((s) => s.key.includes(stQ)) : storeData;
@@ -163,10 +100,7 @@ export default function OfflineDetailTab(p: Props) {
     enableLeft && !r.closed && r.s > 0 && !storeSet.has(r.key), [enableLeft, storeSet]);
 
   // 선택 카테고리 브랜드 (요약·칩 기준 — 검색 무관)
-  const catRows = useMemo(() => {
-    if (sel.type === "div" && sel.key === OTHERS_KEY) return p.others?.detailBrands ?? [];
-    return p.brands.filter((b) => sel.type === "cat" ? (b.division === "패션" && b.cat === sel.key) : b.division === sel.key);
-  }, [p.brands, p.others, sel]);
+  const catRows = useMemo(() => selectCatRows(sel, p.brands, p.others), [p.brands, p.others, sel]);
 
   // 표시 행: 검색어 있으면 전 부문에서 브랜드명 검색, 없으면 선택 카테고리. + 정렬
   const rows = useMemo(() => {
@@ -188,30 +122,7 @@ export default function OfflineDetailTab(p: Props) {
   const onToggleStore = useCallback((key: string) => setStExpanded((cur) => cur === key ? null : key), []);
   const bArrow = (k: BSortKey) => bSort === k ? (bDir === "asc" ? " ▲" : " ▼") : "";
 
-  const summary = useMemo(() => {
-    const s = catRows.reduce((t, r) => t + r.s, 0);
-    const ps = catRows.reduce((t, r) => t + r.ps, 0);
-    const g = catRows.reduce((t, r) => t + r.g, 0);
-    // 일평당 = Σ매출 / Σ(평·일). dppSales=매출/평일 이므로 평일=매출/dpp → 역산 합산.
-    // prevAreaDays 는 전기 dppSales/매출로 별도 역산 (면적 변동 반영).
-    let areaDays = 0;
-    let prevAreaDays = 0;
-    for (const r of catRows) {
-      if (r.dppSales) areaDays += r.s / r.dppSales;
-      if (r.prevDppSales) prevAreaDays += r.ps / r.prevDppSales;
-    }
-    const dppSales = areaDays ? Math.round(s / areaDays) : 0;
-    const prevDppSales = prevAreaDays ? Math.round(ps / prevAreaDays) : 0;
-    return {
-      s, ps, g, gpm: s ? +(g / s * 100).toFixed(1) : 0,
-      yoyPct: ps ? +((s - ps) / ps * 100).toFixed(1) : 0,
-      brands: catRows.filter((r) => !r.closed).length,
-      closedCount: catRows.filter((r) => r.closed).length,
-      dppSales,
-      prevDppSales,
-      dppSalesGrowthPct: prevDppSales ? +((dppSales - prevDppSales) / prevDppSales * 100).toFixed(1) : 0,
-    };
-  }, [catRows]);
+  const summary = useMemo(() => buildScopeSummary(catRows), [catRows]);
 
   // 그 외 탭은 본류 당월 활성 키에 없어 전부 '이탈'로 오인됨 → 이탈 판정 제외
   const isOthersSel = sel.type === "div" && sel.key === OTHERS_KEY;
@@ -233,6 +144,13 @@ export default function OfflineDetailTab(p: Props) {
         <button onClick={() => setView("brand")} className={pillBtn(view === "brand")}>브랜드별</button>
         <button onClick={() => setView("store")} className={pillBtn(view === "store")}>지점별 ({p.stores.length})</button>
         <span className="ml-1"><UnitChip>단위: 백만원</UnitChip></span>
+        {p.exportHref && (
+          // 단독 HTML 스냅샷 — 로그인 없이 열리는 공유용 파일 1개
+          <a href={p.exportHref} download
+            className="ml-auto border-[2px] border-[#0a0a0a] bg-white px-3 py-1.5 text-[12px] font-bold shadow-[2px_2px_0_0_#0a0a0a] transition hover:bg-yellow-100">
+            ⬇ HTML로 내보내기
+          </a>
+        )}
       </div>
       <StatusLegend items={enableLeft ? ["closed", "left", "new"] : ["closed", "new"]} />
 
