@@ -14,13 +14,15 @@ const securityHeaders = [
     key: "Content-Security-Policy",
     value: [
       "default-src 'self'",
-      // Next.js HMR + RSC payload + Kakao Maps SDK (dapi.kakao.com)
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://dapi.kakao.com https://t1.daumcdn.net",
+      // Next.js HMR + RSC payload + Kakao Maps SDK
+      //   sdk.js(dapi.kakao.com) → 지도 본체 kakao.js 를 t1.kakaocdn.net 에서 로드(2026-11 확인,
+      //   예전 t1.daumcdn.net 에서 이전). 이게 막히면 지도가 "로드 중"에서 멈춘다.
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://dapi.kakao.com https://t1.kakaocdn.net https://t1.daumcdn.net",
       // Tailwind inline styles + Recharts SVG + Kakao Maps inline styles
       "style-src 'self' 'unsafe-inline'",
-      // Supabase API + Storage + Kakao Maps tile/API XHR
-      `connect-src 'self' ${process.env.NEXT_PUBLIC_SUPABASE_URL ?? "*"} wss://*.supabase.co https://dapi.kakao.com https://*.daumcdn.net`,
-      // Kakao 지도 타일은 *.daumcdn.net 에서 로드 (https: 와일드카드로 이미 허용되지만 명시)
+      // Supabase API + Storage + Kakao Maps tile/API XHR (신 CDN *.kakaocdn.net · 구 *.daumcdn.net 병행)
+      `connect-src 'self' ${process.env.NEXT_PUBLIC_SUPABASE_URL ?? "*"} wss://*.supabase.co https://dapi.kakao.com https://*.kakao.com https://*.kakaocdn.net https://*.daumcdn.net`,
+      // Kakao 지도 타일(*.kakaocdn.net / *.daumcdn.net)은 https: 와일드카드로 허용
       "img-src 'self' data: blob: https:",
       "font-src 'self'",
       "frame-ancestors 'none'",

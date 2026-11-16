@@ -23,6 +23,8 @@ interface Props {
 }
 
 const SCRIPT_ID = "kakao-maps-sdk";
+/** 이 시간 안에 지도가 안 그려지면 실패로 본다 */
+const LOAD_TIMEOUT_MS = 15_000;
 
 /**
  * 카카오 JS SDK 지도 컴포넌트 (Client Component).
@@ -67,13 +69,27 @@ export default function KakaoStoreMap({
   useEffect(() => {
     if (!apiKey) return;
     let cancelled = false;          // 언마운트 후 setState 방지
-    let timer: ReturnType<typeof setTimeout> | undefined;
+    let settled = false;            // ready 또는 error 확정 — 감시 타이머 중복 발화 방지
+    let poll: ReturnType<typeof setInterval> | undefined;
+    // 감시 타이머: 카카오의 "로드 완료" 콜백이 끝내 안 오면(본체 kakao.js가 CSP·네트워크로
+    // 차단되는 경우) 무한 "로드 중" 대신 에러 화면으로 넘긴다. 2026-11 실제 발생.
+    const watchdog = setTimeout(() => {
+      void fail("시간 초과", `지도 본체 로드 ${LOAD_TIMEOUT_MS / 1000}초 초과 — 보안 설정(CSP)·네트워크 차단 가능성`);
+    }, LOAD_TIMEOUT_MS);
+    const cleanup = () => {
+      cancelled = true;
+      clearTimeout(watchdog);
+      if (poll) clearInterval(poll);
+    };
 
     const sdkUrl = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${apiKey}&autoload=false`;
 
     /** 실패 사유를 카카오에서 직접 받아 화면·콘솔에 남긴다(조회 실패해도 진행). */
-    async function fail(where: string) {
-      if (cancelled) return;
+    async function fail(where: string, hint?: string) {
+      if (cancelled || settled) return;
+      settled = true;
+      clearTimeout(watchdog);
+      if (poll) clearInterval(poll);
       setStatus("error");
       let detail: string | null = null;
       try {
@@ -87,6 +103,8 @@ export default function KakaoStoreMap({
         // 네트워크 차단 등 — 사유 없이 진행
       }
       if (cancelled) return;
+      // 시간 초과처럼 카카오 응답(200)만으론 원인이 안 보이는 경우 원인 힌트를 앞에 붙인다.
+      if (hint) detail = detail ? `${hint} · 카카오 응답 ${detail}` : hint;
       setReason(detail);
       console.error(
         `[KakaoStoreMap] 지도 로드 실패 (${where}) · origin=${window.location.origin}` +
@@ -130,6 +148,8 @@ export default function KakaoStoreMap({
           fillOpacity: 0.08,
         });
 
+        settled = true;
+        clearTimeout(watchdog);
         setStatus("ready");
       } catch (e) {
         console.error("[KakaoStoreMap] 지도 초기화 예외:", e);
@@ -140,15 +160,22 @@ export default function KakaoStoreMap({
     // 이미 로드되었는지 확인
     if (window.kakao?.maps?.LatLng) {
       initMap();
-      return () => { cancelled = true; };
+      return cleanup;
     }
 
     const existing = document.getElementById(SCRIPT_ID);
     if (existing) {
-      // 다른 인스턴스가 로딩 중 — ready 이벤트를 기다린다.
-      if (window.kakao?.maps?.load) window.kakao.maps.load(initMap);
-      else timer = setTimeout(initMap, 300);   // 그래도 없으면 initMap이 fail 처리
-      return () => { cancelled = true; if (timer) clearTimeout(timer); };
+      // 다른 인스턴스(또는 이전 effect)가 넣은 script — sdk.js가 실행돼 load 함수가 생길 때까지
+      // 기다렸다가 load를 부른다. 이전 effect가 취소되면 그쪽 onload는 load를 안 부르므로
+      // 여기서 직접 불러야 한다(예전엔 300ms 한 번만 보고 실패 처리 → 개발모드에서 오탐).
+      poll = setInterval(() => {
+        if (cancelled) return;
+        if (window.kakao?.maps?.load) {
+          clearInterval(poll);
+          window.kakao.maps.load(initMap);
+        }
+      }, 100);
+      return cleanup;   // 끝내 안 생기면 감시 타이머가 fail 처리
     }
 
     const script = document.createElement("script");
@@ -166,7 +193,7 @@ export default function KakaoStoreMap({
     };
     document.head.appendChild(script);
 
-    return () => { cancelled = true; if (timer) clearTimeout(timer); };
+    return cleanup;
   }, [lat, lng, label, radius, apiKey, attempt]);
 
   if (status === "missing-key") {
