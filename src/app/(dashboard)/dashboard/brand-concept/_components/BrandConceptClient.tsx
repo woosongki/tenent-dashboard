@@ -10,7 +10,7 @@ import ScrollHint from "@/components/ui/ScrollHint";
 import { registerBrand, saveMetric, setBrandScope, addList, deleteList, saveRuleset, setC1Presence, deleteBrand } from "../_actions";
 import { CRITERIA_HELP, GRADE_BAR, GRADE_ORDER, SCOPE_LABEL } from "@/lib/bcd/display";
 
-// 분류체계 (대분류 8 · 중분류 28) — 마스터 02_분류체계 기준. 등록 폼 드롭다운 소스.
+// 분류체계 (대분류 9 · 중분류 28) — 마스터 02_분류체계 기준 + 가전 대분류 분리(2026-11). 등록 폼 드롭다운 소스.
 const TAXONOMY: Record<string, string[]> = {
   "키즈·교육": ["키즈카페·놀이시설", "교육·학원", "완구"],
   "홈·리빙": ["침구·매트리스", "주방·식기", "가구", "홈데코·패브릭"],
@@ -18,7 +18,10 @@ const TAXONOMY: Record<string, string[]> = {
   "스포츠·레저": ["피트니스·필라테스", "골프·스크린", "구기·체험스포츠"],
   "문화·엔터": ["서점·문구", "게임·보드게임", "전시·체험", "영화·미디어"],
   "생활서비스": ["세탁", "플라워·공방", "반려동물", "자동차"],
-  "리테일·기타": ["패션·잡화", "생활잡화·리세일", "가전·전자", "식품·건강"],
+  "리테일·기타": ["패션·잡화", "생활잡화·리세일", "식품·건강"],
+  // 2026-11: 가전을 리테일·기타에서 대분류로 분리(필터·등록에서 바로 보이게). 중분류명은 그대로라
+  // 가전 브랜드끼리의 비교군(category_minor:가전·전자)은 변하지 않는다.
+  "가전·전자": ["가전·전자"],
   "의료·약국·안경": ["의원·병원", "안경·콘택트", "약국"],
 };
 const MAJORS = Object.keys(TAXONOMY);
